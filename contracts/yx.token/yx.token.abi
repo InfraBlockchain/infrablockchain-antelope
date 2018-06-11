@@ -1,0 +1,142 @@
+{
+  "types": [
+    {
+      "new_type_name": "account_name",
+      "type": "name"
+    }
+  ],
+  "structs": [
+    {
+      "name": "extended_symbol",
+      "base": "",
+      "fields": [
+        {"name":"symbol",   "type":"symbol"},
+        {"name":"contract", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "extended_asset",
+      "base": "",
+      "fields": [
+        {"name":"quantity", "type":"asset"},
+        {"name":"contract", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "transfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "create",
+      "base": "",
+      "fields": [
+        {"name":"token", "type":"extended_symbol"},
+        {"name":"can_freeze", "type":"uint8"},
+        {"name":"can_recall", "type":"uint8"},
+        {"name":"can_whitelist", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "issue",
+      "base": "",
+      "fields": [
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"extended_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "redeem",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"quantity", "type":"extended_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "printsupply",
+      "base": "",
+      "fields": [
+        {"name":"symbol", "type":"extended_symbol"}
+      ]
+    },
+    {
+      "name": "printbalance",
+      "base": "",
+      "fields": [
+         {"name":"owner", "type":"account_name"},
+         {"name":"symbol", "type":"extended_symbol"}
+      ]
+    },
+    {
+      "name": "rmall",
+      "base": "",
+      "fields": [
+        {"name":"owner", "type":"account_name"},
+        {"name":"symbol", "type":"extended_symbol"}
+      ]
+    },
+    {
+      "name": "setfee",
+      "base": "",
+      "fields": [
+        {"name":"operation", "type":"name"},
+        {"name":"fee", "type":"asset"}
+      ]
+    },
+    {
+      "name": "account",
+      "base": "",
+      "fields": [
+        {"name":"balance", "type":"asset"},
+        {"name":"frozen", "type":"uint8"},
+        {"name":"whitelist", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "token_stats",
+      "base": "",
+      "fields": [
+        {"name":"supply", "type":"asset"},
+        {"name":"issuer", "type":"account_name"},
+        {"name":"can_freeze", "type":"uint8"},
+        {"name":"can_recall", "type":"uint8"},
+        {"name":"can_whitelist", "type":"uint8"},
+        {"name":"is_frozen", "type":"uint8"},
+        {"name":"enforce_whitelist", "type":"uint8"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
+    { "name": "issue", "type": "issue", "ricardian_contract": "" },
+    { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
+    { "name": "create", "type": "create", "ricardian_contract": "" },
+    { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
+    { "name": "printsupply", "type": "printsupply", "ricardian_contract": "" },
+    { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" },
+    { "name": "rmall", "type": "rmall", "ricardian_contract": "" }
+  ],
+  "tables": [{
+      "name": "accounts",
+      "type": "account",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "stats",
+      "type": "token_stats",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "ricardian_clauses": []
+}
