@@ -23,10 +23,7 @@ namespace yosemitex {
             operations.insert(N(transfer));
         }
 
-        void create(extended_symbol symbol,
-                    uint8_t issuer_can_freeze,
-                    uint8_t issuer_can_recall,
-                    uint8_t issuer_can_whitelist);
+        void create(extended_symbol symbol);
 
         void issue(account_name to, extended_asset quantity, string memo);
 
@@ -63,9 +60,6 @@ namespace yosemitex {
         struct token_stats {
             asset supply;
             account_name issuer{};
-            bool can_freeze = true;
-            bool can_recall = true;
-            bool can_whitelist = true;
             bool is_frozen = false;
             bool enforce_whitelist = false;
         };

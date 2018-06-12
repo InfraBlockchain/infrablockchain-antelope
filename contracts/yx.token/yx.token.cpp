@@ -7,10 +7,7 @@
 
 namespace yosemitex {
 
-    void token::create(extended_symbol symbol,
-                       uint8_t issuer_can_freeze,
-                       uint8_t issuer_can_recall,
-                       uint8_t issuer_can_whitelist) {
+    void token::create(extended_symbol symbol) {
         eosio_assert(static_cast<uint32_t>(symbol.is_valid()), "invalid symbol name");
         eosio_assert(static_cast<uint32_t>(symbol.precision() >= 4), "token precision must be equal or larger than 4");
 
@@ -30,9 +27,6 @@ namespace yosemitex {
         token_stats new_stats;
         new_stats.supply.symbol = symbol;
         new_stats.issuer = symbol.contract;
-        new_stats.can_freeze = issuer_can_freeze;
-        new_stats.can_recall = issuer_can_recall;
-        new_stats.can_whitelist = issuer_can_whitelist;
 
         if (holder == stats_table.end()) {
             stats_table.emplace(get_self(), [&](auto &s) {
@@ -151,11 +145,9 @@ namespace yosemitex {
             auto itr = stats_holder.stats_map.find(from_balance.first);
             eosio_assert(static_cast<uint32_t>(itr != stats_holder.stats_map.end()), "issuer not found");
             if (has_auth(from)) {
-                eosio_assert(static_cast<uint32_t>(!itr->second.can_freeze || !from_balance.second.frozen), "account is frozen by issuer");
-                eosio_assert(static_cast<uint32_t>(!itr->second.can_freeze || !itr->second.is_frozen), "all transfers are frozen by issuer");
+                eosio_assert(static_cast<uint32_t>(!from_balance.second.frozen), "account is frozen by issuer");
+                eosio_assert(static_cast<uint32_t>(!itr->second.is_frozen), "all transfers are frozen by issuer");
                 eosio_assert(static_cast<uint32_t>(!itr->second.enforce_whitelist || from_balance.second.whitelist), "account is not whitelisted");
-            } else if (has_auth(itr->second.issuer)) {
-                eosio_assert(static_cast<uint32_t>(itr->second.can_recall), "issuer may not recall token");
             } else {
                 eosio_assert(false, "insufficient authority");
             }
