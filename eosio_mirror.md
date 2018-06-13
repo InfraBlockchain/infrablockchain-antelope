@@ -21,8 +21,8 @@ git push --mirror
 #### cloning yosemite-public-blockchain
 ```console
 git clone https://github.com/YosemiteLabs/yosemite-public-blockchain
+cd yosemite-public-blockchain
 git submodule update --init --recursive
-#git checkout tags/v1.0.2
 git checkout yosemite-master
 ./eosio_build.sh
 ```
