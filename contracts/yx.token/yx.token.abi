@@ -28,7 +28,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"asset"},
+        {"name":"quantity", "type":"extended_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -36,10 +36,14 @@
       "name": "create",
       "base": "",
       "fields": [
-        {"name":"token", "type":"extended_symbol"},
-        {"name":"can_freeze", "type":"uint8"},
-        {"name":"can_recall", "type":"uint8"},
-        {"name":"can_whitelist", "type":"uint8"}
+        {"name":"token", "type":"extended_symbol"}
+      ]
+    },
+    {
+      "name": "createnative",
+      "base": "",
+      "fields": [
+        {"name":"depository", "type":"account_name"}
       ]
     },
     {
@@ -55,7 +59,6 @@
       "name": "redeem",
       "base": "",
       "fields": [
-        {"name":"from", "type":"account_name"},
         {"name":"quantity", "type":"extended_asset"},
         {"name":"memo", "type":"string"}
       ]
@@ -88,7 +91,7 @@
       "base": "",
       "fields": [
         {"name":"operation", "type":"name"},
-        {"name":"fee", "type":"asset"}
+        {"name":"fee", "type":"extended_asset"}
       ]
     },
     {
@@ -115,10 +118,11 @@
     }
   ],
   "actions": [
+    { "name": "create", "type": "create", "ricardian_contract": "" },
+    { "name": "createnative", "type": "createnative", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
-    { "name": "create", "type": "create", "ricardian_contract": "" },
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
     { "name": "printsupply", "type": "printsupply", "ricardian_contract": "" },
     { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" },

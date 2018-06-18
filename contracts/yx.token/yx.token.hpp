@@ -4,6 +4,7 @@
 #include <eosiolib/asset.hpp>
 
 #include <string>
+#include <musl/upstream/include/bits/stdint.h>
 
 namespace yosemitex {
 
@@ -12,7 +13,10 @@ namespace yosemitex {
     using boost::container::flat_map;
     using boost::container::flat_set;
 
-    static constexpr uint64_t NATIVE_COIN = S(4,DKRW);
+    static const uint64_t NATIVE_TOKEN_NAME = S(0, DKRW) >> 8;
+    static const uint64_t NATIVE_TOKEN = S(4, DKRW);
+    static const uint64_t NATIVE_TOKEN_SYS = N(yx.token);
+    static const account_name FEEDIST_ACCOUNT_NAME = N(yx.feedist);
 
     class token : public contract {
     public:
@@ -23,19 +27,18 @@ namespace yosemitex {
             operations.insert(N(transfer));
         }
 
-        void create(extended_symbol symbol);
-
-        void issue(account_name to, extended_asset quantity, string memo);
-
-        void redeem(account_name from, extended_asset quantity, string memo);
-
+        void create(const extended_symbol &symbol);
+        void issue(const account_name &to, const extended_asset &quantity, const string &memo);
+        void redeem(const extended_asset &quantity, const string &memo);
         void transfer(account_name from,
                       account_name to,
-                      asset quantity,
-                      string memo);
+                      extended_asset quantity,
+                      const string &memo);
 
-        /* multisig */
-        void setfee(name operation_name, asset fee);
+        void setfee(const name &operation_name, const extended_asset &fee);
+
+        void createnative(const account_name &depository);
+        void issuenative(const account_name &depository, const account_name &to, const extended_asset &quantity, const string &memo);
 
         void printsupply(extended_symbol symbol);
         void printbalance(account_name owner, extended_symbol symbol);
@@ -43,48 +46,74 @@ namespace yosemitex {
     private:
         flat_set<uint64_t> operations{};
 
+        struct fee_holder {
+            uint64_t operation;
+            extended_asset fee;
+
+            uint64_t primary_key() const { return operation; }
+        };
+
         //TODO: make the specific account as frozen
-        struct account_balance {
+        struct token_balance {
             int64_t amount{};
             bool whitelist = true;
             bool frozen = false;
         };
 
-        struct account_balance_holder {
-            asset total_balance;
-            flat_map<account_name, account_balance> balance_map{}; // account_name is issuer
+        struct balance_holder {
+            account_name owner;
+            bool frozen = false;
+            flat_map<extended_symbol, token_balance> balance_map{};
 
-            uint64_t primary_key() const { return total_balance.symbol.name(); }
+            uint64_t primary_key() const { return owner; }
+        };
+
+        struct native_balance_holder {
+            account_name owner;
+            int64_t total_balance = 0;
+            flat_map<account_name, token_balance> balance_map{}; // account_name is depository
+
+            uint64_t primary_key() const { return owner; }
         };
 
         struct token_stats {
-            asset supply;
-            account_name issuer{};
-            bool is_frozen = false;
+            int64_t supply = 0;
+            bool frozen = false;
             bool enforce_whitelist = false;
         };
 
         struct token_stats_holder {
-            symbol_name symbol;
-            flat_map<account_name, token_stats> stats_map; // account_name is issuer
+            uint64_t id;
+            uint128_t extended_symbol_s;
+            token_stats tstats;
 
-            uint64_t primary_key() const { return symbol; }
+            uint64_t primary_key() const { return id; }
+            uint128_t by_extended_symbol_s() const { return extended_symbol_s; }
         };
 
-        struct fee_holder {
-            uint64_t operation;
-            asset fee;
+        struct native_token_stats_holder {
+            account_name depository;
+            token_stats tstats;
 
-            uint64_t primary_key() const { return operation; }
+            uint64_t primary_key() const { return depository; }
         };
 
-        typedef eosio::multi_index<N(accounts), account_balance_holder> accounts;
-        typedef eosio::multi_index<N(stats), token_stats_holder> stats;
+        typedef eosio::multi_index<N(nativestats), native_token_stats_holder> native_stats;
+        typedef eosio::multi_index<N(stats), token_stats_holder,
+                indexed_by<N(extendedsym), const_mem_fun<token_stats_holder, uint128_t, &token_stats_holder::by_extended_symbol_s> >
+        > stats;
+        typedef eosio::multi_index<N(accounts), balance_holder> accounts;
+        typedef eosio::multi_index<N(accnative), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(fees), fee_holder> fees;
 
-        void add_balance(account_name owner, extended_asset value);
-        asset get_supply(extended_symbol symbol) const;
+        void add_token_balance(const account_name &owner, const extended_asset &quantity);
+        void sub_token_balance(const account_name &owner, const extended_asset &quantity);
+        void add_native_token_balance(const account_name &owner, const int64_t &quantity);
+        int64_t get_supply(extended_symbol symbol) const;
         asset get_total_balance(account_name owner, extended_symbol symbol) const;
         void pay_fee(account_name payer, uint64_t operation);
+        uint128_t extended_symbol_to_uint128(const extended_symbol &symbol) const;
+
+        void transfer_token(account_name from, account_name to, const extended_asset &quantity);
     };
 }
