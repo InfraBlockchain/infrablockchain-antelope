@@ -23,16 +23,6 @@
       ]
     },
     {
-      "name": "transfer",
-      "base": "",
-      "fields": [
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"extended_asset"},
-        {"name":"memo", "type":"string"}
-      ]
-    },
-    {
       "name": "create",
       "base": "",
       "fields": [
@@ -40,7 +30,7 @@
       ]
     },
     {
-      "name": "createnative",
+      "name": "createn",
       "base": "",
       "fields": [
         {"name":"depository", "type":"account_name"}
@@ -56,10 +46,50 @@
       ]
     },
     {
+      "name": "issuen",
+      "base": "",
+      "fields": [
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"extended_asset"},
+        {"name":"depository", "type":"account_name"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
       "name": "redeem",
       "base": "",
       "fields": [
         {"name":"quantity", "type":"extended_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "redeemn",
+      "base": "",
+      "fields": [
+        {"name":"quantity", "type":"extended_asset"},
+        {"name":"depository", "type":"account_name"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "transfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"extended_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "transfern",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"extended_asset"},
+        {"name":"depository", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -71,15 +101,14 @@
       ]
     },
     {
-      "name": "printbalance",
+      "name": "printsupplyn",
       "base": "",
       "fields": [
-         {"name":"owner", "type":"account_name"},
-         {"name":"symbol", "type":"extended_symbol"}
+        {"name":"depository", "type":"account_name"}
       ]
     },
     {
-      "name": "rmall",
+      "name": "printbalance",
       "base": "",
       "fields": [
         {"name":"owner", "type":"account_name"},
@@ -92,6 +121,19 @@
       "fields": [
         {"name":"operation", "type":"name"},
         {"name":"fee", "type":"extended_asset"}
+      ]
+    },
+    {
+      "name": "clear",
+      "base": "",
+      "fields": [
+        {"name":"symbol", "type":"extended_symbol"}
+      ]
+    },
+    {
+      "name": "clearn",
+      "base": "",
+      "fields": [
       ]
     },
     {
@@ -119,14 +161,19 @@
   ],
   "actions": [
     { "name": "create", "type": "create", "ricardian_contract": "" },
-    { "name": "createnative", "type": "createnative", "ricardian_contract": "" },
-    { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
+    { "name": "createn", "type": "createn", "ricardian_contract": "" },
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
+    { "name": "issuen", "type": "issuen", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
+    { "name": "redeemn", "type": "redeemn", "ricardian_contract": "" },
+    { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
+    { "name": "transfern", "type": "transfern", "ricardian_contract": "" },
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
     { "name": "printsupply", "type": "printsupply", "ricardian_contract": "" },
+    { "name": "printsupplyn", "type": "printsupplyn", "ricardian_contract": "" },
     { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" },
-    { "name": "rmall", "type": "rmall", "ricardian_contract": "" }
+    { "name": "clear", "type": "clear", "ricardian_contract": "" },
+    { "name": "clearn", "type": "clearn", "ricardian_contract": "" },
   ],
   "tables": [{
       "name": "accounts",

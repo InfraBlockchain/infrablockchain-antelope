@@ -37,12 +37,18 @@ namespace yosemitex {
 
         void setfee(const name &operation_name, const extended_asset &fee);
 
-        void createnative(const account_name &depository);
-        void issuenative(const account_name &depository, const account_name &to, const extended_asset &quantity, const string &memo);
+        void createn(const account_name &depository);
+        void issuen(const account_name &to, const extended_asset &quantity, const account_name &depository, const string &memo);
+        void redeemn(const extended_asset &quantity, const account_name &depository, const string &memo);
+        void transfern(const account_name &from, const account_name &to, const extended_asset &quantity,
+                       const account_name &depository,
+                       const string &memo);
 
-        void printsupply(extended_symbol symbol);
+        void printsupply(const extended_symbol &symbol);
+        void printsupplyn(const account_name &depository);
         void printbalance(account_name owner, extended_symbol symbol);
-        void rmall(account_name owner, extended_symbol symbol);
+        void clear(const extended_symbol &symbol);
+        void clearn();
     private:
         flat_set<uint64_t> operations{};
 
@@ -98,22 +104,25 @@ namespace yosemitex {
             uint64_t primary_key() const { return depository; }
         };
 
-        typedef eosio::multi_index<N(nativestats), native_token_stats_holder> native_stats;
         typedef eosio::multi_index<N(stats), token_stats_holder,
                 indexed_by<N(extendedsym), const_mem_fun<token_stats_holder, uint128_t, &token_stats_holder::by_extended_symbol_s> >
         > stats;
         typedef eosio::multi_index<N(accounts), balance_holder> accounts;
+        typedef eosio::multi_index<N(nativestats), native_token_stats_holder> stats_native;
         typedef eosio::multi_index<N(accnative), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(fees), fee_holder> fees;
 
         void add_token_balance(const account_name &owner, const extended_asset &quantity);
         void sub_token_balance(const account_name &owner, const extended_asset &quantity);
-        void add_native_token_balance(const account_name &owner, const int64_t &quantity);
+        void
+        add_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
+        void
+        sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
         int64_t get_supply(extended_symbol symbol) const;
-        asset get_total_balance(account_name owner, extended_symbol symbol) const;
         void pay_fee(account_name payer, uint64_t operation);
         uint128_t extended_symbol_to_uint128(const extended_symbol &symbol) const;
 
-        void transfer_token(account_name from, account_name to, const extended_asset &quantity);
+        void transfer_token(const account_name &from, const account_name &to, const extended_asset &quantity);
+        void transfer_native_token(const account_name &from, const account_name &to, extended_asset quantity);
     };
 }
