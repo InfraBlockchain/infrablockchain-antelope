@@ -3,6 +3,7 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
+#include <eosiolib/transaction.hpp>
 #include "yx.token.hpp"
 
 namespace yosemitex {
@@ -16,8 +17,7 @@ namespace yosemitex {
         eosio_assert(static_cast<uint32_t>(symbol.precision() >= 4), "token precision must be equal or larger than 4");
         eosio_assert(static_cast<uint32_t>(symbol.name() != NATIVE_TOKEN_NAME), "cannot create native token without permission");
 
-        //TODO:fee feature
-        //pay_fee(symbol.contract, N(create));
+        pay_fee(symbol.contract, N(create));
 
         stats stats_table(get_self(), symbol.value);
         const auto &sym_index = stats_table.get_index<N(extendedsym)>();
@@ -36,6 +36,7 @@ namespace yosemitex {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
         eosio_assert(static_cast<uint32_t>(quantity.symbol.name() != NATIVE_TOKEN_NAME), "cannot issue native token with this operation");
+        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         print("issue requested to : ", to, ", quantity=");
         quantity.print();
@@ -67,10 +68,11 @@ namespace yosemitex {
         }
     }
 
-    void token::redeem(const extended_asset &quantity, const string &/*memo*/) {
+    void token::redeem(const extended_asset &quantity, const string &memo) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
         eosio_assert(static_cast<uint32_t>(quantity.symbol.name() != NATIVE_TOKEN_NAME), "cannot redeem native token with this operation");
+        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         stats stats_table(get_self(), quantity.symbol.value);
         auto sym_index = stats_table.get_index<N(extendedsym)>();
@@ -93,16 +95,21 @@ namespace yosemitex {
         sub_token_balance(quantity.contract, quantity);
     }
 
-    void token::transfer(account_name from, account_name to, extended_asset quantity, const string &/*memo*/) {
+    void token::transfer(account_name from, account_name to, extended_asset quantity, const string &memo) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
+        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         print("transfer requested by ", from, " to ", to, ", amount=");
         quantity.print();
         print("\n");
 
         require_auth(from);
+        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+
+        require_recipient(from);
+        require_recipient(to);
 
         if (quantity.symbol.name() == NATIVE_TOKEN_NAME) {
             transfer_native_token(from, to, quantity);
@@ -265,7 +272,7 @@ namespace yosemitex {
         eosio_assert(static_cast<uint32_t>(fee.amount >= 0), "negative fee");
         eosio_assert(static_cast<uint32_t>(operations.find(operation_name.value) != operations.end()), "wrong operation name");
         //TODO:NATIVE coin check, how?
-        eosio_assert(static_cast<uint32_t>(fee.symbol.value == NATIVE_TOKEN), "wrong symbol for fee");
+        eosio_assert(static_cast<uint32_t>(fee.symbol.value == NATIVE_TOKEN), "only the native token is allowed for fee");
 
         fees fee_table(get_self(), get_self());
 
@@ -284,7 +291,7 @@ namespace yosemitex {
 
     void token::pay_fee(account_name payer, uint64_t operation) {
         fees fee_table(get_self(), get_self());
-        const auto &fee_holder = fee_table.get(operation);
+        const auto &fee_holder = fee_table.get(operation, "fee is not set");
 
         transfer(payer, FEEDIST_ACCOUNT_NAME, fee_holder.fee, "fee");
     }
@@ -307,6 +314,7 @@ namespace yosemitex {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
         eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot issue non-native token with this operation");
+        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         stats_native stats(get_self(), NATIVE_TOKEN);
         const auto &holder = stats.get(depository, "native token is not created by the depository");
@@ -325,10 +333,11 @@ namespace yosemitex {
         }
     }
 
-    void token::redeemn(const extended_asset &quantity, const account_name &depository, const string &/*memo*/) {
+    void token::redeemn(const extended_asset &quantity, const account_name &depository, const string &memo) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
         eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot redeem non-native token with this operation");
+        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         stats_native stats(get_self(), NATIVE_TOKEN);
         const auto &stats_holder = stats.get(depository, "native token is not created by the depository");
@@ -395,17 +404,23 @@ namespace yosemitex {
     }
 
     void token::transfern(const account_name &from, const account_name &to, const extended_asset &quantity,
-                          const account_name &depository, const string &/*memo*/) {
+                          const account_name &depository, const string &memo) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
         eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot transfer non-native token with this operation");
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
+        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         print("transfer_native requested by ", from, " to ", to, ", amount=");
         quantity.print();
         print("\n");
 
         require_auth(from);
+        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+
+        require_recipient(from);
+        require_recipient(to);
+
         sub_native_token_balance(from, quantity.amount, depository);
         add_native_token_balance(to, quantity.amount, depository);
     }
