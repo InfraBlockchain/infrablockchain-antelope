@@ -25,6 +25,10 @@ namespace yosemitex {
             operations.insert(N(issue));
             operations.insert(N(redeem));
             operations.insert(N(transfer));
+            //operations.insert(N(createn));
+            operations.insert(N(issuen));
+            operations.insert(N(redeemn));
+            operations.insert(N(transfern));
         }
 
         void create(const extended_symbol &symbol);
@@ -41,8 +45,7 @@ namespace yosemitex {
         void issuen(const account_name &to, const extended_asset &quantity, const account_name &depository, const string &memo);
         void redeemn(const extended_asset &quantity, const account_name &depository, const string &memo);
         void transfern(const account_name &from, const account_name &to, const extended_asset &quantity,
-                       const account_name &depository,
-                       const string &memo);
+                       const account_name &depository, const string &memo);
 
         void printsupply(const extended_symbol &symbol);
         void printsupplyn(const account_name &depository);
@@ -112,6 +115,10 @@ namespace yosemitex {
         typedef eosio::multi_index<N(accnative), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(fees), fee_holder> fees;
 
+        void transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required);
+        void transfern_internal(const account_name &from, const account_name &to, const extended_asset &quantity,
+                                        const account_name &depository, bool fee_required);
+
         void add_token_balance(const account_name &owner, const extended_asset &quantity);
         void sub_token_balance(const account_name &owner, const extended_asset &quantity);
         void
@@ -119,7 +126,7 @@ namespace yosemitex {
         void
         sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
         int64_t get_supply(extended_symbol symbol) const;
-        void pay_fee(account_name payer, uint64_t operation);
+        void charge_fee(account_name payer, uint64_t operation);
         uint128_t extended_symbol_to_uint128(const extended_symbol &symbol) const;
 
         void transfer_token(const account_name &from, const account_name &to, const extended_asset &quantity);
