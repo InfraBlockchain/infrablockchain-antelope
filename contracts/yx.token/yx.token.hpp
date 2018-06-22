@@ -4,7 +4,6 @@
 #include <eosiolib/asset.hpp>
 
 #include <string>
-#include <musl/upstream/include/bits/stdint.h>
 
 namespace yosemitex {
 

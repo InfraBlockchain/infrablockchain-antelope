@@ -428,7 +428,7 @@ namespace yosemitex {
     }
 
     void token::transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required) {
-        require_auth(from);
+        require_auth(from); //TODO:if from is FEEDIST_ACCOUNT_NAME, check multisig?
         eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
         if (fee_required) {
