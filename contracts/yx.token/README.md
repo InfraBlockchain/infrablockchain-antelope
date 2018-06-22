@@ -1,4 +1,5 @@
 # Abstract
+* There are three groups of operations for native token, non-native token and other management purpose. 
 * Yosemite Public Blockchain supports only one type of FIAT token as its native token. First of all, it is used as the fee of operations.
 * Through yx.token contract, several depositories can issue and redeem the native token.
   * For example, if the native token is DKRW, the depository account d1(depository 1) and d2 can issue and redeem DKRW separately.
