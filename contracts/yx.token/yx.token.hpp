@@ -46,6 +46,8 @@ namespace yosemitex {
         void transfern(const account_name &from, const account_name &to, const extended_asset &quantity,
                        const account_name &depository, const string &memo);
 
+        inline int64_t get_total_native_token_balance(const account_name &owner) const;
+
         void printsupply(const extended_symbol &symbol);
         void printsupplyn(const account_name &depository);
         void printbalance(account_name owner, extended_symbol symbol);
@@ -116,7 +118,7 @@ namespace yosemitex {
 
         void transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required);
         void transfern_internal(const account_name &from, const account_name &to, const extended_asset &quantity,
-                                        const account_name &depository, bool fee_required);
+                                const account_name &depository, bool fee_required);
 
         void add_token_balance(const account_name &owner, const extended_asset &quantity);
         void sub_token_balance(const account_name &owner, const extended_asset &quantity);
@@ -131,4 +133,10 @@ namespace yosemitex {
         void transfer_token(const account_name &from, const account_name &to, const extended_asset &quantity);
         void transfer_native_token(const account_name &from, const account_name &to, extended_asset quantity);
     };
+
+    int64_t token::get_total_native_token_balance(const account_name &owner) const {
+        accounts_native accounts_table(N(yx.token), NATIVE_TOKEN);
+        const auto &balance_holder = accounts_table.get(owner, "account not found");
+        return balance_holder.total_balance;
+    }
 }

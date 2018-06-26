@@ -1,8 +1,3 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE.txt
- */
-
 #include "yx.token.hpp"
 
 namespace yosemitex {
@@ -90,7 +85,7 @@ namespace yosemitex {
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        transfer_internal(from, to, quantity, false);
+        transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME);
     }
 
     void token::transfer_native_token(const account_name &from, const account_name &to, extended_asset quantity) {
@@ -394,7 +389,7 @@ namespace yosemitex {
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        transfern_internal(from, to, quantity, depository, false);
+        transfern_internal(from, to, quantity, depository, true);
     }
 
     void token::clear(const extended_symbol &symbol) {
@@ -428,7 +423,7 @@ namespace yosemitex {
     }
 
     void token::transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required) {
-        require_auth(from); //TODO:if from is FEEDIST_ACCOUNT_NAME, check multisig?
+        require_auth(from);
         eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
         if (fee_required) {
