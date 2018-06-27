@@ -1,0 +1,27 @@
+{
+  "types": [
+  ],
+  "structs": [
+    {
+      "name": "startfeedist",
+      "base": "",
+      "fields": [
+        {"name":"days", "type":"uint32"}
+      ]
+    },
+    {
+      "name": "empty",
+      "base": "",
+      "fields": [
+      ]
+    },
+  ],
+  "actions": [
+    { "name": "startfeedist", "type": "startfeedist", "ricardian_contract": "" },
+    { "name": "dofeedist", "type": "empty", "ricardian_contract": "" },
+    { "name": "stopfeedist", "type": "empty", "ricardian_contract": "" },
+  ],
+  "tables": [
+  ],
+  "ricardian_clauses": []
+}
