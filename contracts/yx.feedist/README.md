@@ -8,12 +8,6 @@
 ## deploy yx.feedist contract
 `cleos set contract yx.feedist build/contracts/yx.feedist -p yx.feedist`
 
-## set yx.feedist as privileged account
-* To call the transfer operation of the yx.token contract, from yx.feedist account to the accounts of block producers, yx.feedist account must be set as privileged.
-```
-cleos push action eosio setpriv '["yx.feedist", 1]' -p eosio
-```
-
 ## call startfeedist operation
 * To schedule dofeedist operation as deferred transaction
 * [Temporary] for test convenience, the paramater of startfeedist is not days but seconds.
