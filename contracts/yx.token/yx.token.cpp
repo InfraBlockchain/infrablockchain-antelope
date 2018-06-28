@@ -235,13 +235,28 @@ namespace yosemitex {
         }
     }
 
+    bool token::check_fee_operation(const uint64_t &operation_name) {
+        switch (operation_name) {
+            case N(create):
+            case N(issue):
+            case N(redeem):
+            case N(transfer):
+            //case N(createn):
+            case N(issuen):
+            case N(redeemn):
+            case N(transfern):
+                return true;
+            default:
+                return false;
+        }
+    }
+
     void token::setfee(const name &operation_name, const extended_asset &fee) {
         //require_auth(N(yx.prods)); //TODO:multisig
 
         eosio_assert(static_cast<uint32_t>(fee.is_valid()), "wrong fee format");
         eosio_assert(static_cast<uint32_t>(fee.amount >= 0), "negative fee is not allowed");
-        eosio_assert(static_cast<uint32_t>(operations.find(operation_name.value) != operations.end()), "wrong operation name");
-        //TODO:NATIVE coin check, how?
+        eosio_assert(static_cast<uint32_t>(check_fee_operation(operation_name.value)), "wrong operation name");
         eosio_assert(static_cast<uint32_t>(fee.symbol.value == NATIVE_TOKEN), "only the native token is allowed for fee");
 
         fees fee_table(get_self(), get_self());

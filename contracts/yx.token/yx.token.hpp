@@ -10,7 +10,6 @@ namespace yosemitex {
     using namespace eosio;
     using std::string;
     using boost::container::flat_map;
-    using boost::container::flat_set;
 
     static const uint64_t NATIVE_TOKEN_NAME = S(0, DKRW) >> 8;
     static const uint64_t NATIVE_TOKEN = S(4, DKRW);
@@ -20,14 +19,6 @@ namespace yosemitex {
     class token : public contract {
     public:
         explicit token(account_name self) : contract(self) {
-            operations.insert(N(create));
-            operations.insert(N(issue));
-            operations.insert(N(redeem));
-            operations.insert(N(transfer));
-            //operations.insert(N(createn));
-            operations.insert(N(issuen));
-            operations.insert(N(redeemn));
-            operations.insert(N(transfern));
         }
 
         void create(const extended_symbol &symbol);
@@ -54,8 +45,6 @@ namespace yosemitex {
         void clear(const extended_symbol &symbol);
         void clearn();
     private:
-        flat_set<uint64_t> operations{};
-
         struct fee_holder {
             uint64_t operation;
             extended_asset fee;
@@ -127,6 +116,7 @@ namespace yosemitex {
         void
         sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
         int64_t get_supply(extended_symbol symbol) const;
+        bool check_fee_operation(const uint64_t &operation_name);
         void charge_fee(account_name payer, uint64_t operation);
         uint128_t extended_symbol_to_uint128(const extended_symbol &symbol) const;
 
