@@ -10,7 +10,6 @@ namespace yosemitex {
     using namespace eosio;
     using std::string;
     using boost::container::flat_map;
-    using boost::container::flat_set;
 
     static const uint64_t NATIVE_TOKEN_NAME = S(0, DKRW) >> 8;
     static const uint64_t NATIVE_TOKEN = S(4, DKRW);
@@ -20,14 +19,6 @@ namespace yosemitex {
     class token : public contract {
     public:
         explicit token(account_name self) : contract(self) {
-            operations.insert(N(create));
-            operations.insert(N(issue));
-            operations.insert(N(redeem));
-            operations.insert(N(transfer));
-            //operations.insert(N(createn));
-            operations.insert(N(issuen));
-            operations.insert(N(redeemn));
-            operations.insert(N(transfern));
         }
 
         void create(const extended_symbol &symbol);
@@ -36,7 +27,8 @@ namespace yosemitex {
         void transfer(account_name from,
                       account_name to,
                       extended_asset quantity,
-                      const string &memo);
+                      const string &memo,
+                      account_name payer);
 
         void setfee(const name &operation_name, const extended_asset &fee);
 
@@ -54,8 +46,6 @@ namespace yosemitex {
         void clear(const extended_symbol &symbol);
         void clearn();
     private:
-        flat_set<uint64_t> operations{};
-
         struct fee_holder {
             uint64_t operation;
             extended_asset fee;
@@ -116,7 +106,7 @@ namespace yosemitex {
         typedef eosio::multi_index<N(accnative), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(fees), fee_holder> fees;
 
-        void transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required);
+        void transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required, account_name payer);
         void transfern_internal(const account_name &from, const account_name &to, const extended_asset &quantity,
                                 const account_name &depository, bool fee_required);
 
@@ -127,6 +117,7 @@ namespace yosemitex {
         void
         sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
         int64_t get_supply(extended_symbol symbol) const;
+        bool check_fee_operation(const uint64_t &operation_name);
         void charge_fee(account_name payer, uint64_t operation);
         uint128_t extended_symbol_to_uint128(const extended_symbol &symbol) const;
 

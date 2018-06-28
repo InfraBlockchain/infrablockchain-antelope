@@ -79,7 +79,8 @@
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
         {"name":"quantity", "type":"extended_asset"},
-        {"name":"memo", "type":"string"}
+        {"name":"memo", "type":"string"},
+        {"name":"payer", "type":"account_name"}
       ]
     },
     {

@@ -1,5 +1,8 @@
 #include "yx.token.hpp"
 
+//TODO:1. freeze by account/token
+//TODO:2. whitelist or blacklist
+
 namespace yosemitex {
 
     uint128_t token::extended_symbol_to_uint128(const extended_symbol &symbol) const {
@@ -49,7 +52,7 @@ namespace yosemitex {
         add_token_balance(quantity.contract, quantity);
 
         if (to != quantity.contract) {
-            transfer_internal(quantity.contract, to, quantity, false);
+            transfer_internal(quantity.contract, to, quantity, false, 0);
         }
     }
 
@@ -79,13 +82,14 @@ namespace yosemitex {
         sub_token_balance(quantity.contract, quantity);
     }
 
-    void token::transfer(account_name from, account_name to, extended_asset quantity, const string &memo) {
+    void token::transfer(account_name from, account_name to, extended_asset quantity, const string &memo,
+                         account_name payer) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME);
+        transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME, payer);
     }
 
     void token::transfer_native_token(const account_name &from, const account_name &to, extended_asset quantity) {
@@ -235,13 +239,28 @@ namespace yosemitex {
         }
     }
 
+    bool token::check_fee_operation(const uint64_t &operation_name) {
+        switch (operation_name) {
+            case N(create):
+            case N(issue):
+            case N(redeem):
+            case N(transfer):
+            //case N(createn):
+            case N(issuen):
+            case N(redeemn):
+            case N(transfern):
+                return true;
+            default:
+                return false;
+        }
+    }
+
     void token::setfee(const name &operation_name, const extended_asset &fee) {
         //require_auth(N(yx.prods)); //TODO:multisig
 
         eosio_assert(static_cast<uint32_t>(fee.is_valid()), "wrong fee format");
         eosio_assert(static_cast<uint32_t>(fee.amount >= 0), "negative fee is not allowed");
-        eosio_assert(static_cast<uint32_t>(operations.find(operation_name.value) != operations.end()), "wrong operation name");
-        //TODO:NATIVE coin check, how?
+        eosio_assert(static_cast<uint32_t>(check_fee_operation(operation_name.value)), "wrong operation name");
         eosio_assert(static_cast<uint32_t>(fee.symbol.value == NATIVE_TOKEN), "only the native token is allowed for fee");
 
         fees fee_table(get_self(), get_self());
@@ -264,7 +283,7 @@ namespace yosemitex {
         const auto &fee_holder = fee_table.get(operation, "fee is not set");
 
         if (fee_holder.fee.amount > 0) {
-            transfer_internal(payer, FEEDIST_ACCOUNT_NAME, fee_holder.fee, false);
+            transfer_internal(payer, FEEDIST_ACCOUNT_NAME, fee_holder.fee, false, 0);
         }
     }
 
@@ -422,12 +441,16 @@ namespace yosemitex {
         }
     }
 
-    void token::transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required) {
+    void token::transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required,
+                                  account_name payer) {
         require_auth(from);
         eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
         if (fee_required) {
-            charge_fee(from, N(transfer));
+            if (from != payer) {
+                eosio_assert(static_cast<uint32_t>(is_account(payer)), "payer account does not exist");
+            }
+            charge_fee(payer, N(transfer));
         }
 
         require_recipient(from);
