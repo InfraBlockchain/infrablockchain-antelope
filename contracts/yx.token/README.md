@@ -69,11 +69,13 @@ cleos push action yx.token redeemn '[ {"quantity":"10000.0000 DKRW","contract":"
 ```
 
 ## transfer native token from user1 to user2
-1. use normal transfer operation : DKRW tokens issued by many depositories can be tranferred.
+### use normal transfer operation
+* DKRW tokens issued by any depositories can be transferred.
 ```
-cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","contract":"system"}, "m" ]' -p user1
+cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","contract":"system"}, "m", "user1" ]' -p user1
 ```
-1. use transfern operation
+### use transfern operation
+* would be used by depository only
 ```
 cleos push action yx.token transfern '[ "user1", "user2", {"quantity":"100000.0000 DKRW","contract":"system"}, "d1", "memo" ]' -p user1
 ```
@@ -104,8 +106,21 @@ cleos push action yx.token redeem '[ {"quantity":"10000.0000 BTC","contract":"d2
 
 ## transfer non-native token from user1 to user2
 ```
-cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","contract":"d2"}, "m" ]' -p user1
+cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","contract":"d2"}, "m", "user1" ]' -p user1
 ```
+* Parameters
+   1. from account name
+   1. to account name
+   1. token amount and symbol with depository account
+   1. memo : string less than 256 bytes
+   1. fee payer account name : usually the same as from account name
+
+### if the fee payer account is different from 'from' account
+* It requires the signature of the fee payer account.
+```
+cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","contract":"d2"}, "m", "servprovider" ]' -p user1 servprovider
+```
+
 
 # Example
 * Let's say d1 is the depository for DKRW with precision 4, the native token of the blockchain.

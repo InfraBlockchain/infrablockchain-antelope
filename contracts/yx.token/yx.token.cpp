@@ -448,7 +448,7 @@ namespace yosemitex {
 
         if (fee_required) {
             if (from != payer) {
-                eosio_assert(static_cast<uint32_t>(is_account(payer)), "payer account does not exist");
+                require_auth(payer);
             }
             charge_fee(payer, N(transfer));
         }
