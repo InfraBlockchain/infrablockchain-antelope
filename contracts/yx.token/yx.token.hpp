@@ -27,7 +27,8 @@ namespace yosemitex {
         void transfer(account_name from,
                       account_name to,
                       extended_asset quantity,
-                      const string &memo);
+                      const string &memo,
+                      account_name payer);
 
         void setfee(const name &operation_name, const extended_asset &fee);
 
@@ -105,7 +106,7 @@ namespace yosemitex {
         typedef eosio::multi_index<N(accnative), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(fees), fee_holder> fees;
 
-        void transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required);
+        void transfer_internal(account_name from, account_name to, extended_asset quantity, bool fee_required, account_name payer);
         void transfern_internal(const account_name &from, const account_name &to, const extended_asset &quantity,
                                 const account_name &depository, bool fee_required);
 

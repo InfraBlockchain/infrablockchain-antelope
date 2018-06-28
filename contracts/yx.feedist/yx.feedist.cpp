@@ -115,7 +115,7 @@ namespace yosemitex {
 
                 INLINE_ACTION_SENDER(yosemitex::token, transfer)
                         (N(yx.token), {get_self(), N(eosio.code)},
-                         { get_self(), itr->owner, extended_asset{itr->fee_amount, native_symbol}, memo });
+                         { get_self(), itr->owner, extended_asset{itr->fee_amount, native_symbol}, memo, get_self() });
 
                 itr = feedist_idx.erase(itr);
             }
