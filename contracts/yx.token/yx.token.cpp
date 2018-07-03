@@ -280,7 +280,7 @@ namespace yosemitex {
 
     void token::charge_fee(account_name payer, uint64_t operation) {
         fees fee_table(get_self(), get_self());
-        const auto &fee_holder = fee_table.get(operation, "fee is not set");
+        const auto &fee_holder = fee_table.get(operation, "fee is not set or unknown operation");
 
         if (fee_holder.fee.amount > 0) {
             transfer_internal(payer, FEEDIST_ACCOUNT_NAME, fee_holder.fee, false, 0);
