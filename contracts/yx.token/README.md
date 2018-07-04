@@ -123,7 +123,7 @@ cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000
    1. from account name
    1. to account name
    1. token amount and symbol with depository account
-   1. memo : string less than 256 bytes
+   1. memo : string less or equal than 256 bytes
    1. fee payer account name : usually the same as from account name
 
 ### if the fee payer account is different from 'from' account
