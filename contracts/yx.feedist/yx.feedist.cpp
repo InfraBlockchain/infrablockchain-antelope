@@ -2,7 +2,7 @@
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/chain.h>
 
-namespace yosemitex {
+namespace yosemite {
     namespace config {
         bool get(sysconfig &out, const account_name &self) {
             auto it = db_find_i64(self, self, N(config), sysconfig::key);
@@ -68,7 +68,7 @@ namespace yosemitex {
         print("size=", size, ", active_producer_count=", active_prods_count, "\n");
         eosio_assert(static_cast<uint32_t>(active_prods_count > 0), "illegal active producer count");
 
-        int64_t balance = yosemitex::token(N(yx.token)).get_total_native_token_balance(FEEDIST_ACCOUNT_NAME);
+        int64_t balance = yosemite::token(N(yx.token)).get_total_native_token_balance(FEEDIST_ACCOUNT_NAME);
         if (balance > 0) { // TODO: Let's set minimum instead of 0
             print("yx.feedist native balance : ", balance, "\n");
 
@@ -103,7 +103,7 @@ namespace yosemitex {
         uint32_t remained_count = --cfg.remained_count;
         if (remained_count <= 0) {
             feedist_index feedist_idx(get_self(), get_self());
-            extended_symbol native_symbol{NATIVE_TOKEN, N(system)};
+            yx_symbol native_symbol{NATIVE_TOKEN, 0};
             std::string memo{"feedist"};
 
             for (auto itr = feedist_idx.begin(); itr != feedist_idx.end(); ) {
@@ -113,9 +113,9 @@ namespace yosemitex {
                 printn(get_self());
                 print("\n");
 
-                INLINE_ACTION_SENDER(yosemitex::token, transfer)
+                INLINE_ACTION_SENDER(yosemite::token, transfer)
                         (N(yx.token), {get_self(), N(eosio.code)},
-                         { get_self(), itr->owner, extended_asset{itr->fee_amount, native_symbol}, memo, get_self() });
+                         { get_self(), itr->owner, yx_asset{itr->fee_amount, native_symbol}, memo, get_self() });
 
                 itr = feedist_idx.erase(itr);
             }
@@ -138,4 +138,4 @@ namespace yosemitex {
     }
 }
 
-EOSIO_ABI(yosemitex::feedist, (startfeedist)(dofeedist)(stopfeedist))
+EOSIO_ABI(yosemite::feedist, (startfeedist)(dofeedist)(stopfeedist))

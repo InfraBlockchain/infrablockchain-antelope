@@ -3,7 +3,7 @@
 #include <yx.token/yx.token.hpp>
 #include <string>
 
-namespace yosemitex {
+namespace yosemite {
 
     using namespace eosio;
     using std::string;

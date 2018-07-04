@@ -7,30 +7,30 @@
   ],
   "structs": [
     {
-      "name": "extended_symbol",
+      "name": "yx_symbol",
       "base": "",
       "fields": [
         {"name":"symbol",   "type":"symbol"},
-        {"name":"contract", "type":"account_name"}
+        {"name":"issuer", "type":"account_name"}
       ]
     },
     {
-      "name": "extended_asset",
+      "name": "yx_asset",
       "base": "",
       "fields": [
         {"name":"quantity", "type":"asset"},
-        {"name":"contract", "type":"account_name"}
+        {"name":"issuer", "type":"account_name"}
       ]
     },
     {
-      "name": "create",
+      "name": "regdepo",
       "base": "",
       "fields": [
-        {"name":"token", "type":"extended_symbol"}
+        {"name":"token", "type":"yx_symbol"}
       ]
     },
     {
-      "name": "createn",
+      "name": "regdepon",
       "base": "",
       "fields": [
         {"name":"depository", "type":"account_name"}
@@ -41,7 +41,7 @@
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"extended_asset"},
+        {"name":"quantity", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -50,8 +50,7 @@
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"extended_asset"},
-        {"name":"depository", "type":"account_name"},
+        {"name":"quantity", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -59,7 +58,7 @@
       "name": "redeem",
       "base": "",
       "fields": [
-        {"name":"quantity", "type":"extended_asset"},
+        {"name":"quantity", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -67,8 +66,7 @@
       "name": "redeemn",
       "base": "",
       "fields": [
-        {"name":"quantity", "type":"extended_asset"},
-        {"name":"depository", "type":"account_name"},
+        {"name":"quantity", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -78,7 +76,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"extended_asset"},
+        {"name":"quantity", "type":"yx_asset"},
         {"name":"memo", "type":"string"},
         {"name":"payer", "type":"account_name"}
       ]
@@ -89,16 +87,16 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"extended_asset"},
-        {"name":"depository", "type":"account_name"},
-        {"name":"memo", "type":"string"}
+        {"name":"quantity", "type":"yx_asset"},
+        {"name":"memo", "type":"string"},
+        {"name":"payer", "type":"account_name"}
       ]
     },
     {
       "name": "printsupply",
       "base": "",
       "fields": [
-        {"name":"symbol", "type":"extended_symbol"}
+        {"name":"symbol", "type":"yx_symbol"}
       ]
     },
     {
@@ -113,7 +111,7 @@
       "base": "",
       "fields": [
         {"name":"owner", "type":"account_name"},
-        {"name":"symbol", "type":"extended_symbol"}
+        {"name":"symbol", "type":"yx_symbol"}
       ]
     },
     {
@@ -121,21 +119,20 @@
       "base": "",
       "fields": [
         {"name":"operation", "type":"name"},
-        {"name":"fee", "type":"extended_asset"}
+        {"name":"fee", "type":"asset"}
       ]
     },
     {
       "name": "clear",
       "base": "",
       "fields": [
-        {"name":"symbol", "type":"extended_symbol"}
+        {"name":"symbol", "type":"yx_symbol"}
       ]
     },
     {
       "name": "clearn",
       "base": "",
-      "fields": [
-      ]
+      "fields": []
     },
     {
       "name": "account",
@@ -161,8 +158,8 @@
     }
   ],
   "actions": [
-    { "name": "create", "type": "create", "ricardian_contract": "" },
-    { "name": "createn", "type": "createn", "ricardian_contract": "" },
+    { "name": "regdepo", "type": "regdepo", "ricardian_contract": "" },
+    { "name": "regdepon", "type": "regdepon", "ricardian_contract": "" },
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "issuen", "type": "issuen", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
