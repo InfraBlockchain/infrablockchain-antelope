@@ -7,7 +7,7 @@
   * They are all different for each token issuer. For example, BTC/d1 and BTC/d2 are both different.
 
 # Types of Token Operations
-* There are three types of operations
+* There are three types of operations.
   1. for native token
   1. for non-native token
   1. for management purpose 

@@ -38,6 +38,7 @@ namespace yosemite {
                        const string &memo, account_name payer);
 
         inline int64_t get_total_native_token_balance(const account_name &owner) const;
+        inline bool is_kyc_depository(const account_name &depository) const;
 
         void printsupply(const yx_symbol &symbol);
         void printsupplyn(const account_name &depository);
@@ -109,10 +110,8 @@ namespace yosemite {
 
         void add_token_balance(const account_name &owner, const yx_asset &quantity);
         void sub_token_balance(const account_name &owner, const yx_asset &quantity);
-        void
-        add_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
-        void
-        sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
+        void add_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
+        void sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
         int64_t get_supply(yx_symbol symbol) const;
         bool check_fee_operation(const uint64_t &operation_name);
         void charge_fee(account_name payer, uint64_t operation);
@@ -124,7 +123,13 @@ namespace yosemite {
 
     int64_t token::get_total_native_token_balance(const account_name &owner) const {
         accounts_native accounts_table(N(yx.token), NATIVE_TOKEN);
-        const auto &balance_holder = accounts_table.get(owner, "account not found");
+        const auto &balance_holder = accounts_table.get(owner, "account doesn't have native token balance");
         return balance_holder.total_balance;
+    }
+
+    bool token::is_kyc_depository(const account_name &depository) const {
+        stats_native stats(get_self(), NATIVE_TOKEN);
+        const auto &holder = stats.find(depository);
+        return holder != stats.end();
     }
 }
