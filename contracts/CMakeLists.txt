@@ -34,8 +34,9 @@ add_subdirectory(noop)
 add_subdirectory(dice)
 add_subdirectory(tic_tac_toe)
 add_subdirectory(payloadless)
-add_subdirectory(yx.kyc)
+add_subdirectory(yx.ntoken)
 add_subdirectory(yx.token)
+add_subdirectory(yx.kyc)
 add_subdirectory(yx.feedist)
 
 

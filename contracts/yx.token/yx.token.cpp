@@ -1,13 +1,9 @@
 #include "yx.token.hpp"
+#include <yx.ntoken/yx.ntoken.hpp>
 
 //TODO:1. freeze by account/token
-//TODO:2. whitelist or blacklist
 
 namespace yosemite {
-
-    uint128_t token::yx_symbol_to_uint128(const yx_symbol &symbol) const {
-        return (uint128_t(symbol.value) << 64) | symbol.issuer;
-    }
 
     void token::regdepo(const yx_symbol &symbol) {
         eosio_assert(static_cast<uint32_t>(symbol.is_valid()), "invalid symbol name");
@@ -17,7 +13,7 @@ namespace yosemite {
 
         stats stats_table(get_self(), symbol.value);
         const auto &sym_index = stats_table.get_index<N(extendedsym)>();
-        const uint128_t &yx_symbol_s = yx_symbol_to_uint128(symbol);
+        const uint128_t &yx_symbol_s = symbol.to_uint128();
         const auto &holder = sym_index.find(yx_symbol_s);
         eosio_assert(static_cast<uint32_t>(holder == sym_index.end()), "already registered");
 
@@ -38,7 +34,7 @@ namespace yosemite {
         stats stats_table(get_self(), quantity.symbol.value);
         auto sym_index = stats_table.get_index<N(extendedsym)>();
         const yx_symbol &symbol = quantity.get_yx_symbol();
-        const uint128_t &yx_symbol_s = yx_symbol_to_uint128(symbol);
+        const uint128_t &yx_symbol_s = symbol.to_uint128();
         const auto &holder = sym_index.find(yx_symbol_s);
         eosio_assert(static_cast<uint32_t>(holder != sym_index.end()), "not yet registered token");
 
@@ -66,7 +62,7 @@ namespace yosemite {
         stats stats_table(get_self(), quantity.symbol.value);
         auto sym_index = stats_table.get_index<N(extendedsym)>();
         const yx_symbol &symbol = quantity.get_yx_symbol();
-        const uint128_t &yx_symbol_s = yx_symbol_to_uint128(symbol);
+        const uint128_t &yx_symbol_s = symbol.to_uint128();
         const auto &stats_holder = sym_index.find(yx_symbol_s);
 
         eosio_assert(static_cast<uint32_t>(stats_holder != sym_index.end()), "not yet registered token");
@@ -83,61 +79,35 @@ namespace yosemite {
         sub_token_balance(quantity.issuer, quantity);
     }
 
-    void token::transfer(account_name from, account_name to, yx_asset quantity, const string &memo,
-                         account_name payer) {
+    void token::transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+        eosio_assert(static_cast<uint32_t>(quantity.symbol.name() != NATIVE_TOKEN_NAME), "cannot transfer native token with this contract; use yx.ntoken");
 
         transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME, payer);
     }
 
-    void token::transfer_native_token(const account_name &from, const account_name &to, yx_asset quantity) {
-        accounts_native accounts_table_native(get_self(), NATIVE_TOKEN);
-        const auto &native_holder = accounts_table_native.get(from, "account not found");
-        eosio_assert(static_cast<uint32_t>(native_holder.total_balance >= quantity.amount), "insufficient native token balance");
+    void token::transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required,
+                                  account_name payer) {
+        require_auth(from);
+        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        for (auto &from_balance : native_holder.balance_map) {
-            if (quantity.amount == 0) {
-                break;
+        if (fee_required) {
+            if (from != payer) {
+                require_auth(payer);
             }
-
-            const auto &stats_holder = stats.get(from_balance.first, "native token is not created by the depository");
-            eosio_assert(static_cast<uint32_t>(!from_balance.second.frozen), "account is frozen by issuer");
-            eosio_assert(static_cast<uint32_t>(!stats_holder.tstats.frozen), "all transfers are frozen by depository");
-
-            int64_t to_balance = 0;
-            // subtract the balance from the 'from' account
-            accounts_table_native.modify(native_holder, 0, [&](auto &_holder) {
-                auto acc_balance = _holder.balance_map[from_balance.first];
-                if (acc_balance.amount <= quantity.amount) {
-                    to_balance = acc_balance.amount;
-                    quantity.amount -= acc_balance.amount;
-                    acc_balance.amount = 0;
-                } else {
-                    to_balance = quantity.amount;
-                    acc_balance.amount -= quantity.amount;
-                    quantity.amount = 0;
-                }
-                if (acc_balance.amount == 0) {
-                    _holder.balance_map.erase(from_balance.first);
-                } else {
-                    _holder.balance_map[from_balance.first] = acc_balance;
-                }
-                _holder.total_balance -= to_balance;
-            });
-
-            add_native_token_balance(to, to_balance, from_balance.first);
+            charge_fee(payer, N(transfer));
         }
-    }
 
-    void token::transfer_token(const account_name &from, const account_name &to, const yx_asset &quantity) {
+        require_recipient(from);
+        require_recipient(to);
+
         stats stats_table(get_self(), quantity.symbol.value);
         auto sym_index = stats_table.get_index<N(extendedsym)>();
         const yx_symbol &symbol = quantity.get_yx_symbol();
-        const uint128_t &yx_symbol_s = yx_symbol_to_uint128(symbol);
+        const uint128_t &yx_symbol_s = symbol.to_uint128();
         const auto &stats_holder = sym_index.find(yx_symbol_s);
 
         eosio_assert(static_cast<uint32_t>(stats_holder != sym_index.end()), "not yet registered token");
@@ -150,7 +120,7 @@ namespace yosemite {
     int64_t token::get_supply(yx_symbol symbol) const {
         stats stats_table(get_self(), symbol.value);
         const auto &sym_index = stats_table.get_index<N(extendedsym)>();
-        const uint128_t &yx_symbol_s = yx_symbol_to_uint128(symbol);
+        const uint128_t &yx_symbol_s = symbol.to_uint128();
         const auto &holder = sym_index.get(yx_symbol_s);
 
         return holder.tstats.supply;
@@ -212,30 +182,14 @@ namespace yosemite {
         print(get_supply(symbol));
     }
 
-    void token::printsupplyn(const account_name &depository) {
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &holder = stats.get(depository, "depository for the native token is not registered");
-        print(holder.tstats.supply);
-    }
-
     void token::printbalance(account_name owner, yx_symbol symbol) {
-        if (symbol.name() == NATIVE_TOKEN_NAME) {
-            accounts_native accounts_table(get_self(), NATIVE_TOKEN);
-            const auto &balance_holder = accounts_table.get(owner, "account not found");
-            print("total native : ", balance_holder.total_balance, "\n");
-            for (auto &balance : balance_holder.balance_map) {
-                print("depository=", balance.first);
-                print(", balance=", balance.second.amount, "\n");
-            }
-        } else {
-            accounts accounts_table(get_self(), symbol.value);
-            const auto &balance_holder = accounts_table.get(owner, "account not found");
+        accounts accounts_table(get_self(), symbol.value);
+        const auto &balance_holder = accounts_table.get(owner, "account not found");
 
-            for (auto &balance : balance_holder.balance_map) {
-                print("symbol=");
-                balance.first.print();
-                print(", balance=", balance.second.amount, "\n");
-            }
+        for (auto &balance : balance_holder.balance_map) {
+            print("symbol=");
+            balance.first.print();
+            print(", balance=", balance.second.amount, "\n");
         }
     }
 
@@ -245,171 +199,21 @@ namespace yosemite {
             case N(issue):
             case N(redeem):
             case N(transfer):
-            //case N(regdepon):
-            case N(issuen):
-            case N(redeemn):
-            case N(transfern):
                 return true;
             default:
                 return false;
         }
     }
 
-    void token::setfee(const name &operation_name, const asset &fee) {
-        //require_auth(N(yx.prods)); //TODO:multisig
-
-        eosio_assert(static_cast<uint32_t>(fee.is_valid()), "wrong fee format");
-        eosio_assert(static_cast<uint32_t>(fee.amount >= 0), "negative fee is not allowed");
-        eosio_assert(static_cast<uint32_t>(fee.symbol.value == NATIVE_TOKEN), "only the native token is allowed for fee");
-        eosio_assert(static_cast<uint32_t>(check_fee_operation(operation_name.value)), "wrong operation name");
-
-        fees fee_table(get_self(), get_self());
-
-        const auto &holder = fee_table.find(operation_name.value);
-        if (holder == fee_table.end()) {
-            fee_table.emplace(get_self(), [&](auto& a) {
-                a.operation = operation_name.value;
-                a.fee = fee;
-            });
-        } else {
-            fee_table.modify(holder, 0, [&](auto& a) {
-                a.fee = fee;
-            });
-        }
-    }
-
-    void token::charge_fee(account_name payer, uint64_t operation) {
+    void token::charge_fee(const account_name &payer, uint64_t operation) {
         fees fee_table(get_self(), get_self());
         const auto &fee_holder = fee_table.get(operation, "fee is not set or unknown operation");
 
         if (fee_holder.fee.amount > 0) {
-            transfer_internal(payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, false, 0);
+            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+                    (N(yx.ntoken), {payer, N(active)},
+                     { payer, FEEDIST_ACCOUNT_NAME, yx_asset{fee_holder.fee, 0}, payer, "" });
         }
-    }
-
-    void token::regdepon(const account_name &issuer) {
-        //TODO:multisig
-        //require_auth(N(yx.prods));
-        //require_auth(N(eosio.prods));
-        eosio_assert(static_cast<uint32_t>(is_account(issuer)), "issuer account does not exist");
-
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &holder = stats.find(issuer);
-        eosio_assert(static_cast<uint32_t>(holder == stats.end()), "already registered");
-
-        stats.emplace(get_self(), [&](auto &s) {
-            s.depository = issuer;
-        });
-    }
-
-    void token::issuen(const account_name &to, const yx_asset &quantity, const string &memo) {
-        eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot issue non-native token with this operation or wrong precision is specified");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &holder = stats.get(quantity.issuer, "the depository is not registered");
-
-        require_auth(quantity.issuer);
-
-        if (to != quantity.issuer) {
-            charge_fee(quantity.issuer, N(issuen));
-        }
-        //TODO:how to limit self-issuance properly?
-
-        stats.modify(holder, 0, [&](auto &s) {
-            s.tstats.supply += quantity.amount;
-        });
-
-        add_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
-
-        if (to != quantity.issuer) {
-            transfern_internal(quantity.issuer, to, quantity, false, 0);
-        }
-    }
-
-    void token::redeemn(const yx_asset &quantity, const string &memo) {
-        eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot redeem non-native token with this operation or wrong precision is specified");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &stats_holder = stats.get(quantity.issuer, "depository is not registered");
-        eosio_assert(static_cast<uint32_t>(stats_holder.tstats.supply >= quantity.amount), "insufficient supply of the native token of the specified depository");
-
-        require_auth(quantity.issuer);
-
-        charge_fee(quantity.issuer, N(redeemn));
-
-        stats.modify(stats_holder, 0, [&](auto &s) {
-            s.tstats.supply -= quantity.amount;
-        });
-
-        sub_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
-    }
-
-    void token::add_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository) {
-        accounts_native accounts_table_native(get_self(), NATIVE_TOKEN);
-        const auto &native_holder = accounts_table_native.find(owner);
-
-        if (native_holder == accounts_table_native.end()) {
-            accounts_table_native.emplace(get_self(), [&](auto &holder) {
-                holder.owner = owner;
-                holder.total_balance = quantity;
-
-                token_balance tkbal;
-                tkbal.amount = quantity;
-                holder.balance_map[depository] = tkbal;
-            });
-        } else {
-            auto itr = native_holder->balance_map.find(depository);
-            if (itr == native_holder->balance_map.end()) {
-                accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-                    holder.total_balance += quantity;
-
-                    token_balance tkbal;
-                    tkbal.amount = quantity;
-                    holder.balance_map[depository] = tkbal;
-                });
-            } else {
-                accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-                    holder.total_balance += quantity;
-
-                    token_balance tkbal = holder.balance_map[depository];
-                    tkbal.amount += quantity;
-                    holder.balance_map[depository] = tkbal;
-                });
-            }
-        }
-    }
-
-    void token::sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository) {
-        accounts_native accounts_table_native(get_self(), NATIVE_TOKEN);
-        const auto &native_holder = accounts_table_native.get(owner, "account not found");
-        auto itr = native_holder.balance_map.find(depository);
-        eosio_assert(static_cast<uint32_t>(itr != native_holder.balance_map.end()), "account doesn't have native token of the specified depository");
-        eosio_assert(static_cast<uint32_t>(itr->second.amount >= quantity), "insufficient native token of the specified depository");
-
-        accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-            holder.total_balance -= quantity;
-
-            token_balance tkbal = holder.balance_map[depository];
-            tkbal.amount -= quantity;
-            holder.balance_map[depository] = tkbal;
-        });
-    }
-
-    void token::transfern(account_name from, account_name to, const yx_asset &quantity,
-                          const string &memo, account_name payer) {
-        eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot transfer non-native token with this operation or wrong precision is specified");
-        eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-
-        transfern_internal(from, to, quantity, true, payer);
     }
 
     void token::clear(const yx_symbol &symbol) {
@@ -427,64 +231,7 @@ namespace yosemite {
             iterator = stats_table.erase(iterator);
         }
     }
-
-    void token::clearn() {
-        require_auth(get_self());
-
-        accounts_native accounts_table(get_self(), NATIVE_TOKEN);
-        for (auto iterator = accounts_table.begin(); iterator != accounts_table.end(); ) {
-            iterator = accounts_table.erase(iterator);
-        }
-
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        for (auto iterator = stats.begin(); iterator != stats.end(); ) {
-            iterator = stats.erase(iterator);
-        }
-    }
-
-    void token::transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required,
-                                  account_name payer) {
-        require_auth(from);
-        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-
-        if (fee_required) {
-            if (from != payer) {
-                require_auth(payer);
-            }
-            charge_fee(payer, N(transfer));
-        }
-
-        require_recipient(from);
-        require_recipient(to);
-
-        if (quantity.symbol.name() == NATIVE_TOKEN_NAME) {
-            eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "invalid precision");
-            eosio_assert(static_cast<uint32_t>(quantity.issuer == 0), "invalid issuer : 0 is only allowed");
-            transfer_native_token(from, to, quantity);
-        } else {
-            transfer_token(from, to, quantity);
-        }
-    }
-
-    void token::transfern_internal(const account_name &from, const account_name &to, const yx_asset &quantity,
-                                   bool fee_required, const account_name &payer) {
-        require_auth(from);
-        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-
-        if (fee_required) {
-            if (from != payer) {
-                require_auth(payer);
-            }
-            charge_fee(payer, N(transfern));
-        }
-
-        require_recipient(from);
-        require_recipient(to);
-
-        sub_native_token_balance(from, quantity.amount, quantity.issuer);
-        add_native_token_balance(to, quantity.amount, quantity.issuer);
-    }
 }
 
-EOSIO_ABI(yosemite::token, (regdepo)(regdepon)(issue)(issuen)(redeem)(redeemn)(transfer)(transfern)(setfee)
-                           (printsupply)(printsupplyn)(printbalance)(clear)(clearn))
+EOSIO_ABI(yosemite::token, (regdepo)(issue)(redeem)(transfer)(setfee)
+                           (printsupply)(printbalance)(clear))

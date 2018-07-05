@@ -1,6 +1,6 @@
 #pragma once
 
-#include <yx.token/yx.token.hpp>
+#include <yx.ntoken/yx.ntoken.hpp>
 #include <string>
 
 namespace yosemite {

@@ -68,7 +68,7 @@ namespace yosemite {
         print("size=", size, ", active_producer_count=", active_prods_count, "\n");
         eosio_assert(static_cast<uint32_t>(active_prods_count > 0), "illegal active producer count");
 
-        int64_t balance = yosemite::token(N(yx.token)).get_total_native_token_balance(FEEDIST_ACCOUNT_NAME);
+        int64_t balance = yosemite::ntoken(N(yx.ntoken)).get_total_native_token_balance(FEEDIST_ACCOUNT_NAME);
         if (balance > 0) { // TODO: Let's set minimum instead of 0
             print("yx.feedist native balance : ", balance, "\n");
 
@@ -113,9 +113,9 @@ namespace yosemite {
                 printn(get_self());
                 print("\n");
 
-                INLINE_ACTION_SENDER(yosemite::token, transfer)
-                        (N(yx.token), {get_self(), N(eosio.code)},
-                         { get_self(), itr->owner, yx_asset{itr->fee_amount, native_symbol}, memo, get_self() });
+                INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+                        (N(yx.ntoken), {get_self(), N(eosio.code)},
+                         { get_self(), itr->owner, yx_asset{itr->fee_amount, native_symbol}, get_self(), memo });
 
                 itr = feedist_idx.erase(itr);
             }

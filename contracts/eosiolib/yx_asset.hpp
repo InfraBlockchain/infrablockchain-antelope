@@ -1,5 +1,5 @@
-#ifndef EOSIO_YX_ASSET_HPP
-#define EOSIO_YX_ASSET_HPP
+#ifndef YX_ASSET_HPP
+#define YX_ASSET_HPP
 
 #include <eosiolib/asset.hpp>
 #include <eosiolib/yx_symbol.hpp>
@@ -45,4 +45,4 @@ namespace yosemite {
 
 }
 
-#endif //EOSIO_YX_ASSET_HPP
+#endif //YX_ASSET_HPP

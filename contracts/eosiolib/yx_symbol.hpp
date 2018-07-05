@@ -1,5 +1,5 @@
-#ifndef EOSIO_YX_SYMBOL_HPP
-#define EOSIO_YX_SYMBOL_HPP
+#ifndef YX_SYMBOL_HPP
+#define YX_SYMBOL_HPP
 
 #include <eosiolib/symbol.hpp>
 
@@ -16,6 +16,10 @@ namespace yosemite {
             printn(issuer);
         }
 
+        uint128_t to_uint128() const {
+            return (uint128_t(value) << 64) | issuer;
+        }
+
         friend bool operator==(const yx_symbol &a, const yx_symbol &b) {
             return std::tie(a.value, a.issuer) == std::tie(b.value, b.issuer);
         }
@@ -29,4 +33,4 @@ namespace yosemite {
 
 }
 
-#endif //EOSIO_YX_SYMBOL_HPP
+#endif //YX_SYMBOL_HPP

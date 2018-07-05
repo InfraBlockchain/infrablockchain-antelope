@@ -1,5 +1,5 @@
 #include "yx.kyc.hpp"
-#include <yx.token/yx.token.hpp>
+#include <yx.ntoken/yx.ntoken.hpp>
 
 namespace yosemite {
     void kyc::setinfo(account_name account, account_name depository, uint32_t level, const string &addendum) {
@@ -9,7 +9,7 @@ namespace yosemite {
         //TODO:fee
 
         require_auth(depository);
-        eosio_assert(static_cast<uint32_t>(yosemite::token(N(yx.token)).is_kyc_depository(depository)),
+        eosio_assert(static_cast<uint32_t>(yosemite::ntoken(N(yx.ntoken)).is_kyc_depository(depository)),
                      "depository account is not the native token depository");
 
         kyc_index kycdb{get_self(), get_self()};
