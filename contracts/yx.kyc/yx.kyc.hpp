@@ -1,5 +1,6 @@
 #pragma once
 
+#include <eosiolib/yx_kyc.hpp>
 #include <yx.token/yx.token.hpp>
 #include <string>
 
@@ -15,30 +16,35 @@ namespace yosemite {
         explicit kyc(account_name self) : contract(self) {
         }
 
-        void setinfo(account_name account, account_name depository, uint32_t level, const string &addendum);
+        void setinfo(account_name account, account_name depository, uint32_t authvector, const string &addendum);
         void delinfo(account_name account);
-        void uplevel(account_name account, uint32_t level);
+        void upauthvector(account_name account, uint32_t authvector);
         void upaddendum(account_name account, const string &addendum);
 
-        inline uint32_t get_kyc_level(const account_name &account) const;
+        inline uint32_t get_kyc_authvector(const account_name &account) const;
     };
 
     /* scope = self */
     struct kyc_holder {
         account_name owner;
         account_name depository;
-        uint32_t level;
+        uint32_t authvector;
         vector<char> addendum;
 
         uint64_t primary_key() const { return owner; }
     };
 
-    typedef eosio::multi_index<N(kyc), kyc_holder> kyc_index; //TODO:need depository secondary index?
+    typedef eosio::multi_index<N(kyc), kyc_holder> kyc_index;
 
-    uint32_t kyc::get_kyc_level(const account_name &account) const {
+    uint32_t kyc::get_kyc_authvector(const account_name &account) const {
+        // for all system accounts
+        if (account == FEEDIST_ACCOUNT_NAME) {
+            return KYC_AUTHVECTOR_MAX_VALUE;
+        }
+
         kyc_index kycdb{get_self(), get_self()};
         auto info = kycdb.find(account);
         eosio_assert(static_cast<uint32_t>(info != kycdb.end()), "account's KYC information does not exist");
-        return info->level;
+        return info->authvector;
     }
 }
