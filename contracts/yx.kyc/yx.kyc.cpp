@@ -1,3 +1,7 @@
+/**
+ *  @copyright defined in LICENSE.txt
+ */
+
 #include "yx.kyc.hpp"
 #include <yx.ntoken/yx.ntoken.hpp>
 
@@ -42,6 +46,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(info != kycdb.end()), "account's KYC information does not exist");
 
         require_auth(info->depository);
+        eosio_assert(static_cast<uint32_t>(info->authvector != authvector), "the same value");
 
         kycdb.modify(info, 0, [&](auto &i) {
             i.authvector = authvector;
@@ -56,6 +61,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(info != kycdb.end()), "account's KYC information does not exist");
 
         require_auth(info->depository);
+        eosio_assert(static_cast<uint32_t>(!std::equal(info->addendum.begin(), info->addendum.end(), addendum.begin())), "the same value");
 
         kycdb.modify(info, 0, [&](auto &i) {
             i.addendum.clear();

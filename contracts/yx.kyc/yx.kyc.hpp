@@ -1,3 +1,7 @@
+/**
+ *  @copyright defined in LICENSE.txt
+ */
+
 #pragma once
 
 #include <eosiolib/yx_kyc.hpp>
@@ -21,7 +25,7 @@ namespace yosemite {
         void upauthvector(account_name account, uint32_t authvector);
         void upaddendum(account_name account, const string &addendum);
 
-        inline uint32_t get_kyc_authvector(const account_name &account) const;
+        inline uint32_t get_kyc_authvector(const account_name &account, bool assert = true) const;
     };
 
     /* scope = self */
@@ -36,7 +40,7 @@ namespace yosemite {
 
     typedef eosio::multi_index<N(kyc), kyc_holder> kyc_index;
 
-    uint32_t kyc::get_kyc_authvector(const account_name &account) const {
+    uint32_t kyc::get_kyc_authvector(const account_name &account, bool assert) const {
         // for all system accounts
         if (account == FEEDIST_ACCOUNT_NAME) {
             return KYC_AUTHVECTOR_MAX_VALUE;
@@ -44,7 +48,11 @@ namespace yosemite {
 
         kyc_index kycdb{get_self(), get_self()};
         auto info = kycdb.find(account);
-        eosio_assert(static_cast<uint32_t>(info != kycdb.end()), "account's KYC information does not exist");
+        if (assert) {
+            eosio_assert(static_cast<uint32_t>(info != kycdb.end()), "account's KYC information does not exist");
+        } else {
+            return KYC_AUTHVECTOR_NO_AUTH;
+        }
         return info->authvector;
     }
 }
