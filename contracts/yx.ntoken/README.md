@@ -1,5 +1,6 @@
 # Abtract
-This contract is for native token. The contract for non-native tokens is `yx.token`.
+* This contract is for native token.
+* The contract for non-native tokens is [`yx.token`](../../contracts/yx.token/README.md). It's recommended to read about native token first.
 
 # Types of Tokens
 * There are two types of tokens in Yosemite Public Blockchain.
