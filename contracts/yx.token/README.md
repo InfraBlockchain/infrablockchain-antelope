@@ -1,6 +1,6 @@
 # Abtract
 * This contract is for non-native tokens.
-* The contract for native token is [`yx.ntoken`](contracts/yx.ntoken/README.md). You must read it first.
+* The contract for native token is [`yx.ntoken`](../../contracts/yx.ntoken/README.md). You must read it first.
 
 # What You Can Do With This Contract
 * An account which wants to register as the depository must call `regdepo` operation with its token symbol and precision.
