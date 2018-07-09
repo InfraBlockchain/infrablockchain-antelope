@@ -96,12 +96,6 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        kyc kyc_contract(N(yx.kyc));
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(from))),
-                     "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(to))),
-                     "authentication for to account is not enough");
-
         transfern_internal(from, to, quantity, true, payer);
     }
 
@@ -274,6 +268,12 @@ namespace yosemite {
                                     bool fee_required, const account_name &payer) {
         require_auth(from);
         eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+
+        kyc kyc_contract(N(yx.kyc));
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(from))),
+                     "authentication for from account is not enough");
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(to))),
+                     "authentication for to account is not enough");
 
         if (fee_required) {
             if (from != payer) {
