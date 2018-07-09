@@ -40,13 +40,6 @@ cleos push action yx.token setfee '[ "redeem", "1000.0000 DKRW" ]' -p yx.token
 cleos push action yx.token setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.token
 ```
 
-# Setting user's permission
-```
-cleos set account permission user1 active '{"threshold": 1, "keys":[{"key":"EOS7NaaAkmNGEXa2UkgUmxdkwxA2tf8Tn7y9YmMykLEcSpTSc6tgk", "weight":1}], "accounts":[{"permission":{"actor":"yx.token","permission":"eosio.code"},"weight":1}], "waits":[] }' owner -p user1
-```
-* EOS7NaaAkmNGEXa2UkgUmxdkwxA2tf8Tn7y9YmMykLEcSpTSc6tgk is the user1's public key for active permission.
-* This job is required for fee transfer with yx.ntoken.
-
 # Operations
 
 ## register d2 as non-native token depository
