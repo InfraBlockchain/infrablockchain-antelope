@@ -1,3 +1,7 @@
+/**
+ *  @copyright defined in LICENSE.txt
+ */
+
 #pragma once
 
 #include <eosiolib/eosio.hpp>
@@ -72,6 +76,7 @@ namespace yosemite {
         void sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
 
         void transfer_native_token(const account_name &from, const account_name &to, yx_asset quantity);
+        bool is_auth_enought_for_transfer(uint32_t authvector);
     };
 
     int64_t ntoken::get_total_native_token_balance(const account_name &owner) const {

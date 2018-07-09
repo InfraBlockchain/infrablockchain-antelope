@@ -17,7 +17,7 @@ namespace yosemite {
         explicit token(account_name self) : fee_contract(self) {
         }
 
-        void regdepo(const yx_symbol &symbol);
+        void regdepo(const yx_symbol &symbol, uint32_t authvector);
         void issue(const account_name &to, const yx_asset &quantity, const string &memo);
         void redeem(const yx_asset &quantity, const string &memo);
         void transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo);
@@ -46,21 +46,18 @@ namespace yosemite {
         };
 
         struct token_stats {
-            int64_t supply = 0;
-            bool frozen = false;
-        };
-
-        struct token_stats_holder {
             uint64_t id{};
             uint128_t yx_symbol_s{};
-            token_stats tstats;
+            uint32_t required_authvector;
+            int64_t supply = 0;
+            bool frozen = false;
 
             uint64_t primary_key() const { return id; }
             uint128_t by_yx_symbol_s() const { return yx_symbol_s; }
         };
 
-        typedef eosio::multi_index<N(stats), token_stats_holder,
-                indexed_by<N(extendedsym), const_mem_fun<token_stats_holder, uint128_t, &token_stats_holder::by_yx_symbol_s> >
+        typedef eosio::multi_index<N(stats), token_stats,
+                indexed_by<N(extendedsym), const_mem_fun<token_stats, uint128_t, &token_stats::by_yx_symbol_s> >
         > stats;
         typedef eosio::multi_index<N(accounts), balance_holder> accounts;
 

@@ -50,7 +50,7 @@ namespace yosemite {
         auto info = kycdb.find(account);
         if (assert) {
             eosio_assert(static_cast<uint32_t>(info != kycdb.end()), "account's KYC information does not exist");
-        } else {
+        } else if (info == kycdb.end()) {
             return KYC_AUTHVECTOR_NO_AUTH;
         }
         return info->authvector;

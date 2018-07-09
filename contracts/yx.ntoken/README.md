@@ -27,7 +27,6 @@
 # Before testing the contract
 * Assume that the eosio.bios contract is prepared.
    * https://github.com/EOSIO/eos/wiki/Tutorial-Getting-Started-With-Contracts
-* Assume that yx.feedist, d1, d2, user1 and user2 accounts are created.
 
 ## Unlock wallet
 cleos wallet unlock --password \<your-wallet-password\>
@@ -42,7 +41,7 @@ cleos create account eosio yx.ntoken EOS5NQoKnxzmkrTRHydYyicYYQQ59hGFLe1qj6vWnJk
 ## deploy the contract
 `cleos set contract yx.ntoken build/contracts/yx.ntoken -p yx.ntoken`
 
-# Setting Fee for Operations
+## setting fee for operations
 * Fee for operations is set by `setfee` operation.
 * The majority of the current depositories must agree using multisig feature.
 * [Temporary] For test convenience, this operation is not yet multisig.
@@ -52,6 +51,10 @@ cleos push action yx.ntoken setfee '[ "redeemn", "1000.0000 DKRW" ]' -p yx.ntoke
 cleos push action yx.ntoken setfee '[ "transfern", "10.0000 DKRW" ]' -p yx.ntoken
 cleos push action yx.ntoken setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.ntoken
 ```
+
+## setting account's authentication vector to yx.kyc contract
+* Transferring the native token with transfer and transfern operations requires KYC_AUTHVECTOR_REAL_NAME_AUTH and KYC_AUTHVECTOR_BANK_ACCOUNT_AUTH.
+* You must set d1, d2, user1 and user2's KYC authvector as above. Refer to [`yx.kyc README`](../../contracts/yx.kyc/README.md).
 
 # Operations
 
@@ -105,7 +108,7 @@ cleos push action yx.ntoken transfer '[ "user1", "user2", {"quantity":"10000.000
 
 # Example
 * Let's say d1 is the depository for DKRW with precision 4, the native token of the blockchain.
-* First of all, you must set fee for all operations.
+* First of all, you must set fee for all operations and d1, d2, user1 and user2 accounts are KYC'ed.
 * Note that printsupplyn, printbalance are not public operations.
 
 ```

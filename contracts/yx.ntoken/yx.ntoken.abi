@@ -97,12 +97,11 @@
       "fields": []
     },
     {
-      "name": "account",
+      "name": "account_native",
       "base": "",
       "fields": [
-        {"name":"balance", "type":"asset"},
-        {"name":"frozen", "type":"uint8"},
-        {"name":"whitelist", "type":"uint8"}
+        {"name":"owner", "type":"account_name"},
+        {"name":"total_balance", "type":"int64"}
       ]
     },
     {
@@ -131,16 +130,16 @@
     { "name": "clearn", "type": "clearn", "ricardian_contract": "" },
   ],
   "tables": [{
-      "name": "accounts",
-      "type": "account",
+      "name": "accnative",
+      "type": "account_native",
       "index_type": "i64",
-      "key_names" : ["currency"],
+      "key_names" : ["owner"],
       "key_types" : ["uint64"]
     },{
-      "name": "stats",
+      "name": "nativestats",
       "type": "token_stats",
       "index_type": "i64",
-      "key_names" : ["currency"],
+      "key_names" : ["depository"],
       "key_types" : ["uint64"]
     }
   ],

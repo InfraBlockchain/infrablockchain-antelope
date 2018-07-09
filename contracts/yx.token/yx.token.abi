@@ -26,7 +26,8 @@
       "name": "regdepo",
       "base": "",
       "fields": [
-        {"name":"token", "type":"yx_symbol"}
+        {"name":"token", "type":"yx_symbol"},
+        {"name":"authvector", "type":"uint32"}
       ]
     },
     {

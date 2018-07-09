@@ -51,8 +51,10 @@ cleos set account permission user1 active '{"threshold": 1, "keys":[{"key":"EOS7
 
 ## register d2 as non-native token depository
 * d2 wants to be the depository of BTC token with precision 4.
+* KYC authentication for native token transfer of d2 must be set first because of fee. That also means d2 must have sufficient DKRW.
+* d2 will set its BTC token with no authentication. d2 considers KYC unnecessary.
 ```
-cleos push action yx.token regdepo '[ {"symbol":"4,BTC","issuer":"d2"}]' -p d2
+cleos push action yx.token regdepo '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d2
 ```
 
 ## issue non-native token to user2 by d2
@@ -92,11 +94,21 @@ cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000
 * At first, you must execute yx.ntoken example and must set fee for all operations.
 * d2 wants to create and issue BTC with precision 4 token to user1.
 
+## 1. With KYC
 ```
-cleos push action yx.token regdepo '[ {"symbol":"4,BTC","issuer":"d2"}]' -p d2
+cleos push action yx.token regdepo '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d2
 cleos push action yx.token printbalance '{"owner":"d2", "symbol":{"symbol":"4,DKRW","issuer":"system"}}' -p yx.token
 cleos push action yx.token printbalance '{"owner":"yx.feedist", "symbol":{"symbol":"4,DKRW","issuer":"system"}}' -p yx.token
 cleos push action yx.token issue '[ "user2", {"quantity":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
 cleos push action yx.token printbalance '{"owner":"user2", "symbol":{"symbol":"4,BTC","issuer":"d2"}}' -p yx.token
 cleos push action yx.token transfer '[ "user2", "user1", {"quantity":"10000.0000 BTC","issuer":"d2"}, "user2", "memo" ]' -p user2
+```
+
+## 1. Without KYC like KYC_AUTHVECTOR_REAL_NAME_AUTH
+* Creates user3 and don't set any user3's KYC information.
+```
+cleos push action yx.token regdepo '[ {"symbol":"8,ETH","issuer":"d2"}, 4 ]' -p d2
+
+# KYC error!
+cleos push action yx.token issue '[ "user3", {"quantity":"100.00000000 ETH","issuer":"d2"}, "memo" ]' -p d2
 ```

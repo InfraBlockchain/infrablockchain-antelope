@@ -1,15 +1,17 @@
 #include "yx.token.hpp"
 #include <yx.ntoken/yx.ntoken.hpp>
+#include <yx.kyc/yx.kyc.hpp>
 
 //TODO:1. freeze by account/token
 
 namespace yosemite {
 
-    void token::regdepo(const yx_symbol &symbol) {
+    void token::regdepo(const yx_symbol &symbol, uint32_t authvector) {
         eosio_assert(static_cast<uint32_t>(symbol.is_valid()), "invalid symbol name");
         eosio_assert(static_cast<uint32_t>(symbol.precision() >= 4), "token precision must be equal or larger than 4");
         eosio_assert(static_cast<uint32_t>(symbol.name() != NATIVE_TOKEN_NAME), "cannot register depository for the native token with this operation");
         eosio_assert(static_cast<uint32_t>(is_account(symbol.issuer)), "issuer account does not exist");
+        eosio_assert(static_cast<uint32_t>(authvector <= KYC_AUTHVECTOR_MAX_VALUE), "invalid authvector value");
 
         stats stats_table(get_self(), symbol.value);
         const auto &sym_index = stats_table.get_index<N(extendedsym)>();
@@ -22,6 +24,7 @@ namespace yosemite {
         stats_table.emplace(get_self(), [&](auto &s) {
             s.id = stats_table.available_primary_key();
             s.yx_symbol_s = yx_symbol_s;
+            s.required_authvector = authvector;
         });
     }
 
@@ -35,15 +38,15 @@ namespace yosemite {
         auto sym_index = stats_table.get_index<N(extendedsym)>();
         const yx_symbol &symbol = quantity.get_yx_symbol();
         const uint128_t &yx_symbol_s = symbol.to_uint128();
-        const auto &holder = sym_index.find(yx_symbol_s);
-        eosio_assert(static_cast<uint32_t>(holder != sym_index.end()), "not yet registered token");
+        const auto &tstats = sym_index.find(yx_symbol_s);
+        eosio_assert(static_cast<uint32_t>(tstats != sym_index.end()), "not yet registered token");
 
         require_auth(quantity.issuer);
 
         charge_fee(quantity.issuer, N(issue));
 
-        sym_index.modify(holder, 0, [&](auto &s) {
-            s.tstats.supply += quantity.amount;
+        sym_index.modify(tstats, 0, [&](auto &s) {
+            s.supply += quantity.amount;
         });
 
         add_token_balance(quantity.issuer, quantity);
@@ -63,17 +66,17 @@ namespace yosemite {
         auto sym_index = stats_table.get_index<N(extendedsym)>();
         const yx_symbol &symbol = quantity.get_yx_symbol();
         const uint128_t &yx_symbol_s = symbol.to_uint128();
-        const auto &stats_holder = sym_index.find(yx_symbol_s);
+        const auto &tstats = sym_index.find(yx_symbol_s);
 
-        eosio_assert(static_cast<uint32_t>(stats_holder != sym_index.end()), "not yet registered token");
-        eosio_assert(static_cast<uint32_t>(quantity.amount <= stats_holder->tstats.supply), "redeem quantity exceeds supply amount");
+        eosio_assert(static_cast<uint32_t>(tstats != sym_index.end()), "not yet registered token");
+        eosio_assert(static_cast<uint32_t>(quantity.amount <= tstats->supply), "redeem quantity exceeds supply amount");
 
         require_auth(quantity.issuer);
 
         charge_fee(quantity.issuer, N(redeem));
 
-        sym_index.modify(stats_holder, 0, [&](auto &s) {
-            s.tstats.supply -= quantity.amount;
+        sym_index.modify(tstats, 0, [&](auto &s) {
+            s.supply -= quantity.amount;
         });
 
         sub_token_balance(quantity.issuer, quantity);
@@ -101,17 +104,23 @@ namespace yosemite {
             charge_fee(payer, N(transfer));
         }
 
-        require_recipient(from);
-        require_recipient(to);
-
         stats stats_table(get_self(), quantity.symbol.value);
         auto sym_index = stats_table.get_index<N(extendedsym)>();
         const yx_symbol &symbol = quantity.get_yx_symbol();
         const uint128_t &yx_symbol_s = symbol.to_uint128();
-        const auto &stats_holder = sym_index.find(yx_symbol_s);
+        const auto &tstats = sym_index.find(yx_symbol_s);
 
-        eosio_assert(static_cast<uint32_t>(stats_holder != sym_index.end()), "not yet registered token");
-        eosio_assert(static_cast<uint32_t>(!stats_holder->tstats.frozen), "token is frozen by issuer");
+        eosio_assert(static_cast<uint32_t>(tstats != sym_index.end()), "not yet registered token");
+        eosio_assert(static_cast<uint32_t>(!tstats->frozen), "token is frozen by issuer");
+
+        kyc kyc_contract(N(yx.kyc));
+        eosio_assert(static_cast<uint32_t>((kyc_contract.get_kyc_authvector(from, false) & tstats->required_authvector) == tstats->required_authvector),
+                     "authentication for from account is not enough");
+        eosio_assert(static_cast<uint32_t>((kyc_contract.get_kyc_authvector(to, false) & tstats->required_authvector) == tstats->required_authvector),
+                     "authentication for to account is not enough");
+
+        require_recipient(from);
+        require_recipient(to);
 
         sub_token_balance(from, quantity);
         add_token_balance(to, quantity);
@@ -121,9 +130,9 @@ namespace yosemite {
         stats stats_table(get_self(), symbol.value);
         const auto &sym_index = stats_table.get_index<N(extendedsym)>();
         const uint128_t &yx_symbol_s = symbol.to_uint128();
-        const auto &holder = sym_index.get(yx_symbol_s);
+        const auto &tstats = sym_index.get(yx_symbol_s, "token symbol not found");
 
-        return holder.tstats.supply;
+        return tstats.supply;
     }
 
     void token::add_token_balance(const account_name &owner, const yx_asset &quantity) {
@@ -227,7 +236,7 @@ namespace yosemite {
 
         stats stats_table(get_self(), symbol.value);
         for (auto iterator = stats_table.begin(); iterator != stats_table.end(); ) {
-            print("supply=", iterator->tstats.supply, "\n");
+            print("supply=", iterator->supply, "\n");
             iterator = stats_table.erase(iterator);
         }
     }
