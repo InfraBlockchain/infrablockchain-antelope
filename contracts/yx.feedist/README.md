@@ -8,6 +8,11 @@
 ## deploy yx.feedist contract
 `cleos set contract yx.feedist build/contracts/yx.feedist -p yx.feedist`
 
+## setting the contract as privileged
+```
+cleos push action eosio setpriv '["yx.feedist", 1]' -p eosio
+```
+
 ## call startfeedist operation
 * To schedule dofeedist operation as deferred transaction
 * [Temporary] for test convenience, the paramater of startfeedist is not days but seconds.

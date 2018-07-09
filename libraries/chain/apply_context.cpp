@@ -196,7 +196,7 @@ void apply_context::execute_inline( action&& a ) {
    }
 
    // No need to check authorization if: replaying irreversible blocks; contract is privileged; or, contract is calling itself.
-   if( !control.skip_auth_check() && !privileged && a.account != receiver && receiver != N(yx.token) ) {
+   if( !control.skip_auth_check() && !privileged && a.account != receiver ) {
       control.get_authorization_manager()
              .check_authorization( {a},
                                    {},

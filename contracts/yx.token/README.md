@@ -29,7 +29,12 @@ cleos create account eosio yx.token EOS5NQoKnxzmkrTRHydYyicYYQQ59hGFLe1qj6vWnJk2
 ## deploy the contract
 `cleos set contract yx.token build/contracts/yx.token -p yx.token`
 
-# Setting Fee for Operations
+## setting the contract as privileged
+```
+cleos push action eosio setpriv '["yx.token", 1]' -p eosio
+```
+
+## setting fee for operations
 * Fee for operations is set by `setfee` operation.
 * The majority of the current depositories must agree using multisig feature.
 * [Temporary] For test convenience, this operation is not yet multisig.

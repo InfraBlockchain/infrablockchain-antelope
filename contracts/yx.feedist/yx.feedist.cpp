@@ -114,7 +114,7 @@ namespace yosemite {
                 print("\n");
 
                 INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                        (N(yx.ntoken), {get_self(), N(eosio.code)},
+                        (N(yx.ntoken), {get_self(), N(active)},
                          { get_self(), itr->owner, yx_asset{itr->fee_amount, native_symbol}, get_self(), memo });
 
                 itr = feedist_idx.erase(itr);
