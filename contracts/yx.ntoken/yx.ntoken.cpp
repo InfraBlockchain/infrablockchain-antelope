@@ -31,7 +31,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &holder = stats.get(quantity.issuer, "the depository is not registered");
+        const auto &tstats = stats.get(quantity.issuer, "depository is not registered");
 
         require_auth(quantity.issuer);
 
@@ -40,8 +40,8 @@ namespace yosemite {
         }
         //TODO:how to limit self-issuance properly?
 
-        stats.modify(holder, 0, [&](auto &s) {
-            s.tstats.supply += quantity.amount;
+        stats.modify(tstats, 0, [&](auto &s) {
+            s.supply += quantity.amount;
         });
 
         add_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
@@ -58,15 +58,15 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &stats_holder = stats.get(quantity.issuer, "depository is not registered");
-        eosio_assert(static_cast<uint32_t>(stats_holder.tstats.supply >= quantity.amount), "insufficient supply of the native token of the specified depository");
+        const auto &tstats = stats.get(quantity.issuer, "depository is not registered");
+        eosio_assert(static_cast<uint32_t>(tstats.supply >= quantity.amount), "insufficient supply of the native token of the specified depository");
 
         require_auth(quantity.issuer);
 
         charge_fee(quantity.issuer, N(redeemn));
 
-        stats.modify(stats_holder, 0, [&](auto &s) {
-            s.tstats.supply -= quantity.amount;
+        stats.modify(tstats, 0, [&](auto &s) {
+            s.supply -= quantity.amount;
         });
 
         sub_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
@@ -110,9 +110,9 @@ namespace yosemite {
                 break;
             }
 
-            const auto &stats_holder = stats.get(from_balance.first, "native token is not created by the depository");
+            const auto &tstats = stats.get(from_balance.first, "native token is not created by the depository");
             eosio_assert(static_cast<uint32_t>(!from_balance.second.frozen), "account is frozen by issuer");
-            eosio_assert(static_cast<uint32_t>(!stats_holder.tstats.frozen), "all transfers are frozen by depository");
+            eosio_assert(static_cast<uint32_t>(!tstats.frozen), "all transfers are frozen by depository");
 
             int64_t to_balance = 0;
             // subtract the balance from the 'from' account
@@ -142,7 +142,7 @@ namespace yosemite {
     void ntoken::printsupplyn(const account_name &depository) {
         stats_native stats(get_self(), NATIVE_TOKEN);
         const auto &holder = stats.get(depository, "depository for the native token is not registered");
-        print(holder.tstats.supply);
+        print(holder.supply);
     }
 
     void ntoken::printbalance(account_name owner, yx_symbol symbol) {

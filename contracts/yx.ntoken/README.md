@@ -106,6 +106,11 @@ cleos push action yx.ntoken transfern '[ "user1", "user2", {"quantity":"10000.00
 cleos push action yx.ntoken transfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "servprovider", "memo" ]' -p user1 servprovider
 ```
 
+## get all the stats of native token
+```
+cleos get table yx.ntoken 4,DKRW statsnative
+```
+
 # Example
 * Let's say d1 is the depository for DKRW with precision 4, the native token of the blockchain.
 * First of all, you must set fee for all operations and d1, d2, user1 and user2 accounts are KYC'ed.

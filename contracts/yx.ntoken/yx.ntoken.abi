@@ -105,16 +105,12 @@
       ]
     },
     {
-      "name": "token_stats",
+      "name": "stats_native",
       "base": "",
       "fields": [
-        {"name":"supply", "type":"asset"},
-        {"name":"issuer", "type":"account_name"},
-        {"name":"can_freeze", "type":"uint8"},
-        {"name":"can_recall", "type":"uint8"},
-        {"name":"can_whitelist", "type":"uint8"},
-        {"name":"is_frozen", "type":"uint8"},
-        {"name":"enforce_whitelist", "type":"uint8"}
+        {"name":"depository", "type":"account_name"},
+        {"name":"supply", "type":"int64"},
+        {"name":"is_frozen", "type":"uint8"}
       ]
     }
   ],
@@ -136,8 +132,8 @@
       "key_names" : ["owner"],
       "key_types" : ["uint64"]
     },{
-      "name": "nativestats",
-      "type": "token_stats",
+      "name": "statsnative",
+      "type": "stats_native",
       "index_type": "i64",
       "key_names" : ["depository"],
       "key_types" : ["uint64"]

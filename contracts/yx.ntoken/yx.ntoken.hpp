@@ -53,19 +53,16 @@ namespace yosemite {
             uint64_t primary_key() const { return owner; }
         };
 
-        struct token_stats {
+        /* native token stats per depository */
+        struct native_token_stats {
+            account_name depository{};
             int64_t supply = 0;
             bool frozen = false;
-        };
-
-        struct native_token_stats_holder {
-            account_name depository{};
-            token_stats tstats;
 
             uint64_t primary_key() const { return depository; }
         };
 
-        typedef eosio::multi_index<N(nativestats), native_token_stats_holder> stats_native;
+        typedef eosio::multi_index<N(statsnative), native_token_stats> stats_native;
         typedef eosio::multi_index<N(accnative), native_balance_holder> accounts_native;
 
         void transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required, account_name payer);
@@ -87,7 +84,7 @@ namespace yosemite {
 
     bool ntoken::is_kyc_depository(const account_name &depository) const {
         stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &holder = stats.find(depository);
-        return holder != stats.end();
+        const auto &tstats = stats.find(depository);
+        return tstats != stats.end();
     }
 }
