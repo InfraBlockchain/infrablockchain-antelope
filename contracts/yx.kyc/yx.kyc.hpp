@@ -5,7 +5,7 @@
 #pragma once
 
 #include <eosiolib/yx_kyc.hpp>
-#include <yx.token/yx.token.hpp>
+#include <eosiolib/yx_fee.hpp>
 #include <string>
 
 namespace yosemite {
