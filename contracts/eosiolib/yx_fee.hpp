@@ -2,7 +2,7 @@
 #define YX_FEE_HPP
 
 #include <eosiolib/eosio.hpp>
-#include <eosiolib/symbol.hpp>
+#include <eosiolib/asset.hpp>
 
 namespace yosemite {
     static const uint64_t NATIVE_TOKEN_NAME = S(0, DKRW) >> 8;
