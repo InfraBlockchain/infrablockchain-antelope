@@ -48,13 +48,13 @@
         {"name":"authvector", "type":"uint32"},
         {"name":"addendum", "type":"bytes"}
       ]
-    },
+    }
   ],
   "actions": [
     { "name": "setinfo", "type": "setinfo", "ricardian_contract": "" },
     { "name": "delinfo", "type": "delinfo", "ricardian_contract": "" },
     { "name": "upauthvector", "type": "upauthvector", "ricardian_contract": "" },
-    { "name": "upaddendum", "type": "upaddendum", "ricardian_contract": "" },
+    { "name": "upaddendum", "type": "upaddendum", "ricardian_contract": "" }
   ],
   "tables": [
     {
@@ -63,7 +63,7 @@
       "index_type": "i64",
       "key_names" : ["owner"],
       "key_types" : ["uint64"]
-    },
+    }
   ],
   "ricardian_clauses": []
 }

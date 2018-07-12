@@ -123,7 +123,7 @@
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
     { "name": "printsupplyn", "type": "printsupplyn", "ricardian_contract": "" },
     { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" },
-    { "name": "clearn", "type": "clearn", "ricardian_contract": "" },
+    { "name": "clearn", "type": "clearn", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "accnative",

@@ -119,7 +119,7 @@
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
     { "name": "printsupply", "type": "printsupply", "ricardian_contract": "" },
     { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" },
-    { "name": "clear", "type": "clear", "ricardian_contract": "" },
+    { "name": "clear", "type": "clear", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "accounts",
