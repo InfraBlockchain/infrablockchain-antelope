@@ -203,15 +203,11 @@ namespace yosemite {
     }
 
     bool token::check_fee_operation(const uint64_t &operation_name) {
-        switch (operation_name) {
-            case N(regdepo):
-            case N(issue):
-            case N(redeem):
-            case N(transfer):
-                return true;
-            default:
-                return false;
-        }
+        return operation_name == N(regdepo) ||
+               operation_name == N(issue) ||
+               operation_name == N(redeem) ||
+               operation_name == N(transfer)
+               ;
     }
 
     void token::charge_fee(const account_name &payer, uint64_t operation) {
