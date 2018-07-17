@@ -5,10 +5,10 @@
 #pragma once
 
 #include <eosiolib/eosio.hpp>
-#include <eosiolib/yx_asset.hpp>
+#include "../eosiolib/yx_asset.hpp"
 
 #include <string>
-#include <eosiolib/yx_fee.hpp>
+#include "../eosiolib/yx_fee.hpp"
 
 namespace yosemite {
 
@@ -28,7 +28,7 @@ namespace yosemite {
         void transfern(account_name from, account_name to, const yx_asset &quantity, account_name payer,
                        const string &memo);
 
-        inline int64_t get_total_native_token_balance(const account_name &owner) const;
+        static inline int64_t get_total_native_token_balance(const account_name &owner);
         inline bool is_kyc_depository(const account_name &depository) const;
 
         void printsupplyn(const account_name &depository);
@@ -76,7 +76,7 @@ namespace yosemite {
         bool is_auth_enought_for_transfer(uint32_t authvector);
     };
 
-    int64_t ntoken::get_total_native_token_balance(const account_name &owner) const {
+    int64_t ntoken::get_total_native_token_balance(const account_name &owner) {
         accounts_native accounts_table(N(yx.token), NATIVE_TOKEN);
         const auto &balance_holder = accounts_table.get(owner, "account doesn't have native token balance");
         return balance_holder.total_balance;
