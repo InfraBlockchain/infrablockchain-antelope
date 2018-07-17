@@ -113,10 +113,9 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(tstats != sym_index.end()), "not yet registered token");
         eosio_assert(static_cast<uint32_t>(!tstats->frozen), "token is frozen by issuer");
 
-        kyc kyc_contract(N(yx.kyc));
-        eosio_assert(static_cast<uint32_t>((kyc_contract.get_kyc_authvector(from, false) & tstats->required_authvector) == tstats->required_authvector),
+        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_authvector(from, false) & tstats->required_authvector) == tstats->required_authvector),
                      "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>((kyc_contract.get_kyc_authvector(to, false) & tstats->required_authvector) == tstats->required_authvector),
+        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_authvector(to, false) & tstats->required_authvector) == tstats->required_authvector),
                      "authentication for to account is not enough");
 
         require_recipient(from);

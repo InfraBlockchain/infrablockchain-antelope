@@ -68,7 +68,7 @@ namespace yosemite {
         print("size=", size, ", active_producer_count=", active_prods_count, "\n");
         eosio_assert(static_cast<uint32_t>(active_prods_count > 0), "illegal active producer count");
 
-        int64_t balance = yosemite::ntoken(N(yx.ntoken)).get_total_native_token_balance(FEEDIST_ACCOUNT_NAME);
+        int64_t balance = ntoken::get_total_native_token_balance(FEEDIST_ACCOUNT_NAME);
         if (balance > 0) { // TODO: Let's set minimum instead of 0
             print("yx.feedist native balance : ", balance, "\n");
 

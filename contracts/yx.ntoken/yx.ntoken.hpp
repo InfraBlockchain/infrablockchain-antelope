@@ -29,7 +29,6 @@ namespace yosemite {
                        const string &memo);
 
         static inline int64_t get_total_native_token_balance(const account_name &owner);
-        inline bool is_kyc_depository(const account_name &depository) const;
 
         void printsupplyn(const account_name &depository);
         void printbalance(account_name owner, yx_symbol symbol);
@@ -77,14 +76,8 @@ namespace yosemite {
     };
 
     int64_t ntoken::get_total_native_token_balance(const account_name &owner) {
-        accounts_native accounts_table(N(yx.token), NATIVE_TOKEN);
+        accounts_native accounts_table(N(yx.ntoken), NATIVE_TOKEN);
         const auto &balance_holder = accounts_table.get(owner, "account doesn't have native token balance");
         return balance_holder.total_balance;
-    }
-
-    bool ntoken::is_kyc_depository(const account_name &depository) const {
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &tstats = stats.find(depository);
-        return tstats != stats.end();
     }
 }

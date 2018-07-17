@@ -80,10 +80,9 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        kyc kyc_contract(N(yx.kyc));
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(from))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(from))),
                      "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(to))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(to))),
                      "authentication for to account is not enough");
 
         transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME && to != FEEDIST_ACCOUNT_NAME, payer);
@@ -248,7 +247,7 @@ namespace yosemite {
         if (fee_required) {
             if (from != payer) {
                 require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc(N(yx.kyc)).get_kyc_authvector(payer))),
+                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(payer))),
                              "authentication for fee payer account is not enough");
             }
             charge_fee(payer, N(transfer));
@@ -265,16 +264,15 @@ namespace yosemite {
         require_auth(from);
         eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
-        kyc kyc_contract(N(yx.kyc));
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(from))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(from))),
                      "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc_contract.get_kyc_authvector(to))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(to))),
                      "authentication for to account is not enough");
 
         if (fee_required) {
             if (from != payer) {
                 require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc(N(yx.kyc)).get_kyc_authvector(payer))),
+                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(payer))),
                              "authentication for fee payer account is not enough");
             }
             charge_fee(payer, N(transfern));
