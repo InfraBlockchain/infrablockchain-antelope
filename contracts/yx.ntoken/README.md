@@ -58,9 +58,8 @@ cleos push action yx.ntoken setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.ntoken
 
 # Operations
 
-## register d1 as native token depository
-* d1 wants to join as the depository.
-* [Temporary] For test convenience, this operation is not yet multisig.
+## d1 wants to create native token
+* d1 must be registered as system depository by yx.system. Refer to [`yx.system`](../../contracts/yx.system/).
 ```
 cleos push action yx.ntoken createn '[ "d1" ]' -p d1
 ```
