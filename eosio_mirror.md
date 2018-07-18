@@ -19,6 +19,7 @@ git push --mirror
 ```
 
 #### Tagging EOSIO/eos Release Version After Mirroring
+* **CAUTION : DO NOT EXECUTE THIS OPERATION ON THE yosemite-public-blockchain-git-mirror.**
 * You must do this on your clone of yosemite-public-blockchain. Pull and rebase yosemite-master branch to the latest.
 * For example, if release version is 1.0.10
 ```console
