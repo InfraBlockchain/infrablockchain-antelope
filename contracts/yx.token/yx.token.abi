@@ -23,11 +23,11 @@
       ]
     },
     {
-      "name": "regdepo",
+      "name": "create",
       "base": "",
       "fields": [
         {"name":"token", "type":"yx_symbol"},
-        {"name":"authvector", "type":"uint32"}
+        {"name":"kycvector", "type":"uint32"}
       ]
     },
     {
@@ -112,7 +112,7 @@
     }
   ],
   "actions": [
-    { "name": "regdepo", "type": "regdepo", "ricardian_contract": "" },
+    { "name": "create", "type": "create", "ricardian_contract": "" },
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },

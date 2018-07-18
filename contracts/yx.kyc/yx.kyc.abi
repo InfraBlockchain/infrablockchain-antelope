@@ -12,7 +12,7 @@
       "fields": [
         {"name":"account", "type":"account_name"},
         {"name":"depository", "type":"account_name"},
-        {"name":"authvector", "type":"uint32"},
+        {"name":"kycvector", "type":"uint32"},
         {"name":"addendum", "type":"string"}
       ]
     },
@@ -24,11 +24,11 @@
       ]
     },
     {
-      "name": "upauthvector",
+      "name": "upkycvector",
       "base": "",
       "fields": [
         {"name":"account", "type":"account_name"},
-        {"name":"authvector", "type":"uint32"}
+        {"name":"kycvector", "type":"uint32"}
       ]
     },
     {
@@ -45,7 +45,7 @@
       "fields": [
         {"name":"owner", "type":"account_name"},
         {"name":"depository", "type":"account_name"},
-        {"name":"authvector", "type":"uint32"},
+        {"name":"kycvector", "type":"uint32"},
         {"name":"addendum", "type":"bytes"}
       ]
     }
@@ -53,7 +53,7 @@
   "actions": [
     { "name": "setinfo", "type": "setinfo", "ricardian_contract": "" },
     { "name": "delinfo", "type": "delinfo", "ricardian_contract": "" },
-    { "name": "upauthvector", "type": "upauthvector", "ricardian_contract": "" },
+    { "name": "upkycvector", "type": "upkycvector", "ricardian_contract": "" },
     { "name": "upaddendum", "type": "upaddendum", "ricardian_contract": "" }
   ],
   "tables": [

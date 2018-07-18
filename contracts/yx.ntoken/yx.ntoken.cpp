@@ -1,19 +1,20 @@
 #include "yx.ntoken.hpp"
 #include <yx.kyc/yx.kyc.hpp>
+#include <yx.system/yx.system.hpp>
 
 //TODO:1. freeze by account/token
 
 namespace yosemite {
 
-    bool ntoken::is_auth_enought_for_transfer(uint32_t authvector) {
-        return ((authvector & KYC_AUTHVECTOR_REAL_NAME_AUTH) == KYC_AUTHVECTOR_REAL_NAME_AUTH) &&
-               ((authvector & KYC_AUTHVECTOR_BANK_ACCOUNT_AUTH) == KYC_AUTHVECTOR_BANK_ACCOUNT_AUTH);
+    bool ntoken::is_auth_enought_for_transfer(uint32_t kycvector) {
+        return ((kycvector & KYC_VECTOR_REAL_NAME_AUTH) == KYC_VECTOR_REAL_NAME_AUTH) &&
+               ((kycvector & KYC_VECTOR_BANK_ACCOUNT_AUTH) == KYC_VECTOR_BANK_ACCOUNT_AUTH);
     }
 
-    void ntoken::regdepon(const account_name &issuer) {
-        //TODO:multisig
-        //require_auth(N(eosio.prods));
-        eosio_assert(static_cast<uint32_t>(is_account(issuer)), "issuer account does not exist");
+    void ntoken::createn(const account_name &issuer) {
+        eosio_assert(static_cast<uint32_t>(yosemitesys::system_contract::is_authorized_sys_depository(issuer)),
+                     "issuer for native token must be authrized as system depository");
+        require_auth(issuer);
 
         stats_native stats(get_self(), NATIVE_TOKEN);
         const auto &holder = stats.find(issuer);
@@ -80,9 +81,9 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(from))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_vector(from))),
                      "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(to))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_vector(to))),
                      "authentication for to account is not enough");
 
         transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME && to != FEEDIST_ACCOUNT_NAME, payer);
@@ -157,7 +158,7 @@ namespace yosemite {
     }
 
     bool ntoken::check_fee_operation(const uint64_t &operation_name) {
-        return operation_name == N(regdepon) ||
+        return operation_name == N(createn) ||
                operation_name == N(issuen) ||
                operation_name == N(redeemn) ||
                operation_name == N(transfer) ||
@@ -247,7 +248,7 @@ namespace yosemite {
         if (fee_required) {
             if (from != payer) {
                 require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(payer))),
+                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_vector(payer))),
                              "authentication for fee payer account is not enough");
             }
             charge_fee(payer, N(transfer));
@@ -264,15 +265,15 @@ namespace yosemite {
         require_auth(from);
         eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(from))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_vector(from))),
                      "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(to))),
+        eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_vector(to))),
                      "authentication for to account is not enough");
 
         if (fee_required) {
             if (from != payer) {
                 require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_authvector(payer))),
+                eosio_assert(static_cast<uint32_t>(is_auth_enought_for_transfer(kyc::get_kyc_vector(payer))),
                              "authentication for fee payer account is not enough");
             }
             charge_fee(payer, N(transfern));
@@ -286,5 +287,5 @@ namespace yosemite {
     }
 }
 
-EOSIO_ABI(yosemite::ntoken, (regdepon)(issuen)(redeemn)(transfer)(transfern)(setfee)
+EOSIO_ABI(yosemite::ntoken, (createn)(issuen)(redeemn)(transfer)(transfern)(setfee)
                             (printsupplyn)(printbalance)(clearn))

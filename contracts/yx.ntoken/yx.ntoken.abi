@@ -23,7 +23,7 @@
       ]
     },
     {
-      "name": "regdepon",
+      "name": "createn",
       "base": "",
       "fields": [
         {"name":"depository", "type":"account_name"}
@@ -115,7 +115,7 @@
     }
   ],
   "actions": [
-    { "name": "regdepon", "type": "regdepon", "ricardian_contract": "" },
+    { "name": "createn", "type": "createn", "ricardian_contract": "" },
     { "name": "issuen", "type": "issuen", "ricardian_contract": "" },
     { "name": "redeemn", "type": "redeemn", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },

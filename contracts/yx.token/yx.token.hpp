@@ -17,7 +17,7 @@ namespace yosemite {
         explicit token(account_name self) : fee_contract(self) {
         }
 
-        void regdepo(const yx_symbol &symbol, uint32_t authvector);
+        void create(const yx_symbol &symbol, uint32_t kycvector);
         void issue(const account_name &to, const yx_asset &quantity, const string &memo);
         void redeem(const yx_asset &quantity, const string &memo);
         void transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo);
@@ -48,7 +48,7 @@ namespace yosemite {
         struct token_stats {
             uint64_t id{};
             uint128_t yx_symbol_s{};
-            uint32_t required_authvector;
+            uint32_t required_kycvector;
             int64_t supply = 0;
             bool frozen = false;
 

@@ -3,7 +3,7 @@
 * The contract for native token is [`yx.ntoken`](../../contracts/yx.ntoken/README.md). You must read it first.
 
 # What You Can Do With This Contract
-* An account which wants to register as the depository must call `regdepo` operation with its token symbol and precision.
+* An account which wants to register as the depository must call `create` operation with its token symbol and precision.
    * Example symbol : BTC
    * Example precision : 8
    * Full Example : 1.00000000 BTC
@@ -39,7 +39,7 @@ cleos push action eosio setpriv '["yx.token", 1]' -p eosio
 * The majority of the current depositories must agree using multisig feature.
 * [Temporary] For test convenience, this operation is not yet multisig.
 ```
-cleos push action yx.token setfee '[ "regdepo", "10000.0000 DKRW" ]' -p yx.token
+cleos push action yx.token setfee '[ "create", "10000.0000 DKRW" ]' -p yx.token
 cleos push action yx.token setfee '[ "issue", "0.0000 DKRW" ]' -p yx.token
 cleos push action yx.token setfee '[ "redeem", "1000.0000 DKRW" ]' -p yx.token
 cleos push action yx.token setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.token
@@ -52,7 +52,7 @@ cleos push action yx.token setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.token
 * KYC authentication for native token transfer of d2 must be set first because of fee. That also means d2 must have sufficient DKRW.
 * d2 will set its BTC token with no authentication. d2 considers KYC unnecessary.
 ```
-cleos push action yx.token regdepo '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d2
+cleos push action yx.token create '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d2
 ```
 
 ## issue non-native token to user2 by d2
@@ -94,7 +94,7 @@ cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000
 
 ## 1. With KYC
 ```
-cleos push action yx.token regdepo '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d2
+cleos push action yx.token create '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d2
 cleos push action yx.token printbalance '{"owner":"d2", "symbol":{"symbol":"4,DKRW","issuer":"system"}}' -p yx.token
 cleos push action yx.token printbalance '{"owner":"yx.feedist", "symbol":{"symbol":"4,DKRW","issuer":"system"}}' -p yx.token
 cleos push action yx.token issue '[ "user2", {"quantity":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
@@ -102,10 +102,10 @@ cleos push action yx.token printbalance '{"owner":"user2", "symbol":{"symbol":"4
 cleos push action yx.token transfer '[ "user2", "user1", {"quantity":"10000.0000 BTC","issuer":"d2"}, "user2", "memo" ]' -p user2
 ```
 
-## 1. Without KYC like KYC_AUTHVECTOR_REAL_NAME_AUTH
+## 1. Without KYC like KYC_VECTOR_REAL_NAME_AUTH
 * Creates user3 and don't set any user3's KYC information.
 ```
-cleos push action yx.token regdepo '[ {"symbol":"8,ETH","issuer":"d2"}, 4 ]' -p d2
+cleos push action yx.token create '[ {"symbol":"8,ETH","issuer":"d2"}, 4 ]' -p d2
 
 # KYC error!
 cleos push action yx.token issue '[ "user3", {"quantity":"100.00000000 ETH","issuer":"d2"}, "memo" ]' -p d2

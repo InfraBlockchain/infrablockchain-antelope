@@ -63,8 +63,8 @@ public:
         return data.empty() ? fc::variant() : abi_ser.binary_to_variant("account", data);
     }
 
-    action_result regdepon(account_name issuer) {
-        return push_action(N(yx.ntoken), N(regdepon), mvo()
+    action_result createn(account_name issuer) {
+        return push_action(N(yx.ntoken), N(createn), mvo()
                 ("issuer", issuer)
         );
     }
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
 
     BOOST_FIXTURE_TEST_CASE(regdepon_tests, yx_ntoken_tester) try {
 
-        auto token = regdepon(N(d1));
+        auto token = createn(N(d1));
         auto stats = get_stats("4,DKRW");
         REQUIRE_MATCHING_OBJECT(stats, mvo()
                 ("supply", "0")

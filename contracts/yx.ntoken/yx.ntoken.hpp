@@ -21,7 +21,7 @@ namespace yosemite {
         explicit ntoken(account_name self) : fee_contract(self) {
         }
 
-        void regdepon(const account_name &issuer);
+        void createn(const account_name &issuer);
         void issuen(const account_name &to, const yx_asset &quantity, const string &memo);
         void redeemn(const yx_asset &quantity, const string &memo);
         void transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo);
@@ -72,7 +72,7 @@ namespace yosemite {
         void sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
 
         void transfer_native_token(const account_name &from, const account_name &to, yx_asset quantity);
-        bool is_auth_enought_for_transfer(uint32_t authvector);
+        bool is_auth_enought_for_transfer(uint32_t kycvector);
     };
 
     int64_t ntoken::get_total_native_token_balance(const account_name &owner) {

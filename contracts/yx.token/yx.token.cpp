@@ -6,12 +6,12 @@
 
 namespace yosemite {
 
-    void token::regdepo(const yx_symbol &symbol, uint32_t authvector) {
+    void token::create(const yx_symbol &symbol, uint32_t kycvector) {
         eosio_assert(static_cast<uint32_t>(symbol.is_valid()), "invalid symbol name");
         eosio_assert(static_cast<uint32_t>(symbol.precision() >= 4), "token precision must be equal or larger than 4");
         eosio_assert(static_cast<uint32_t>(symbol.name() != NATIVE_TOKEN_NAME), "cannot register depository for the native token with this operation");
         eosio_assert(static_cast<uint32_t>(is_account(symbol.issuer)), "issuer account does not exist");
-        eosio_assert(static_cast<uint32_t>(authvector <= KYC_AUTHVECTOR_MAX_VALUE), "invalid authvector value");
+        eosio_assert(static_cast<uint32_t>(kycvector <= KYC_VECTOR_MAX_VALUE), "invalid kycvector value");
 
         stats stats_table(get_self(), symbol.value);
         const auto &sym_index = stats_table.get_index<N(extendedsym)>();
@@ -19,12 +19,12 @@ namespace yosemite {
         const auto &holder = sym_index.find(yx_symbol_s);
         eosio_assert(static_cast<uint32_t>(holder == sym_index.end()), "already registered");
 
-        charge_fee(symbol.issuer, N(regdepo));
+        charge_fee(symbol.issuer, N(create));
 
         stats_table.emplace(get_self(), [&](auto &s) {
             s.id = stats_table.available_primary_key();
             s.yx_symbol_s = yx_symbol_s;
-            s.required_authvector = authvector;
+            s.required_kycvector = kycvector;
         });
     }
 
@@ -113,9 +113,9 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(tstats != sym_index.end()), "not yet registered token");
         eosio_assert(static_cast<uint32_t>(!tstats->frozen), "token is frozen by issuer");
 
-        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_authvector(from, false) & tstats->required_authvector) == tstats->required_authvector),
+        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_vector(from, false) & tstats->required_kycvector) == tstats->required_kycvector),
                      "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_authvector(to, false) & tstats->required_authvector) == tstats->required_authvector),
+        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_vector(to, false) & tstats->required_kycvector) == tstats->required_kycvector),
                      "authentication for to account is not enough");
 
         require_recipient(from);
@@ -202,7 +202,7 @@ namespace yosemite {
     }
 
     bool token::check_fee_operation(const uint64_t &operation_name) {
-        return operation_name == N(regdepo) ||
+        return operation_name == N(create) ||
                operation_name == N(issue) ||
                operation_name == N(redeem) ||
                operation_name == N(transfer)
@@ -237,5 +237,5 @@ namespace yosemite {
     }
 }
 
-EOSIO_ABI(yosemite::token, (regdepo)(issue)(redeem)(transfer)(setfee)
+EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(setfee)
                            (printsupply)(printbalance)(clear))

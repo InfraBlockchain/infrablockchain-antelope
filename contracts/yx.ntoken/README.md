@@ -18,7 +18,7 @@
 # What You Can Do With This Contract
 * Depositories can issue and redeem the native token.
   * For example, if the native token is DKRW, the depository account d1(depository 1) and d2 can issue and redeem DKRW separately.
-  * If a new depository wants to issue the native token, it must call the 'regdepon' operation with multisig to propose that it wants to join in.
+  * If a new depository wants to issue the native token, it must call the 'createn' operation with multisig to propose that it wants to join in.
      * The majority of the current depositories must agree using multisig feature.
 * Through the contract, blockchain users can transfer the native token regardless of depositories. There would be two general cases.
   1. When user1 has 1000 DKRW/d1 and 1000 DKRW/d2, total 2000 DKRW, and transfers 2000 DKRW to user2, user2 will have 1000 DKRW/d1 and 1000 DKRW/d2.
@@ -52,9 +52,9 @@ cleos push action yx.ntoken setfee '[ "transfern", "10.0000 DKRW" ]' -p yx.ntoke
 cleos push action yx.ntoken setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.ntoken
 ```
 
-## setting account's authentication vector to yx.kyc contract
-* Transferring the native token with transfer and transfern operations requires KYC_AUTHVECTOR_REAL_NAME_AUTH and KYC_AUTHVECTOR_BANK_ACCOUNT_AUTH.
-* You must set d1, d2, user1 and user2's KYC authvector as above. Refer to [`yx.kyc README`](../../contracts/yx.kyc/README.md).
+## setting account's KYC vector to yx.kyc contract
+* Transferring the native token with transfer and transfern operations requires KYC_VECTOR_REAL_NAME_AUTH and KYC_VECTOR_BANK_ACCOUNT_AUTH.
+* You must set d1, d2, user1 and user2's KYC vector as above. Refer to [`yx.kyc README`](../../contracts/yx.kyc/README.md).
 
 # Operations
 
@@ -62,7 +62,7 @@ cleos push action yx.ntoken setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.ntoken
 * d1 wants to join as the depository.
 * [Temporary] For test convenience, this operation is not yet multisig.
 ```
-cleos push action yx.ntoken regdepon '[ "d1" ]' -p d1
+cleos push action yx.ntoken createn '[ "d1" ]' -p d1
 ```
 
 ## issue native token to user1 by d1
@@ -117,7 +117,7 @@ cleos get table yx.ntoken 4,DKRW statsnative
 * Note that printsupplyn, printbalance are not public operations.
 
 ```
-cleos push action yx.ntoken regdepon '[ "d1" ]' -p d1
+cleos push action yx.ntoken createn '[ "d1" ]' -p d1
 cleos push action yx.ntoken issuen '[ "d1", {"quantity":"1000000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
 cleos push action yx.ntoken issuen '[ "d2", {"quantity":"100000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
 cleos push action yx.ntoken printsupplyn '[ "d1" ]' -p yx.ntoken
