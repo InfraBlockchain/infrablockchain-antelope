@@ -35,7 +35,7 @@ public:
         const auto &accnt = control->db().get<account_object, by_name>(N(yx.ntoken));
         abi_def abi;
         BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt.abi, abi), true);
-        abi_ser.set_abi(abi);
+        abi_ser.set_abi(abi, abi_serializer_max_time);
     }
 
     action_result push_action(const account_name &signer, const action_name &name, const variant_object &data) {
@@ -44,7 +44,7 @@ public:
         action act;
         act.account = N(yx.ntoken);
         act.name = name;
-        act.data = abi_ser.variant_to_binary(action_type_name, data);
+        act.data = abi_ser.variant_to_binary(action_type_name, data, abi_serializer_max_time);
 
         return base_tester::push_action(std::move(act), uint64_t(signer));
     }
@@ -53,14 +53,14 @@ public:
         auto symb = eosio::chain::symbol::from_string(symbolname);
         auto symbol_code = symb.to_symbol_code().value;
         vector<char> data = get_row_by_account(N(yx.ntoken), symbol_code, N(statsnative), symbol_code);
-        return data.empty() ? fc::variant() : abi_ser.binary_to_variant("stats_native", data);
+        return data.empty() ? fc::variant() : abi_ser.binary_to_variant("stats_native", data, abi_serializer_max_time);
     }
 
     fc::variant get_account(account_name acc, const string &symbolname) {
         auto symb = eosio::chain::symbol::from_string(symbolname);
         auto symbol_code = symb.to_symbol_code().value;
         vector<char> data = get_row_by_account(N(yx.ntoken), acc, N(accounts), symbol_code);
-        return data.empty() ? fc::variant() : abi_ser.binary_to_variant("account", data);
+        return data.empty() ? fc::variant() : abi_ser.binary_to_variant("account", data, abi_serializer_max_time);
     }
 
     action_result createn(account_name issuer) {
