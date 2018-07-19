@@ -78,15 +78,15 @@ namespace yosemitesys {
                 }
                 // new account whose size is less than 12 characters can only be created by system account
             }
-        }
 
-        if (!system_contract::is_authorized_sys_depository(creator)) {
-            // system depositories are exempted for new account transaction fee
+            if (!system_contract::is_authorized_sys_depository(creator)) {
+                // system depositories are exempted for new account transaction fee
 
-            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {creator, N(active)},
-                     { creator, YOSEMITE_SYSTEM_ACCOUNT_NAME, yx_asset{YOSEMITE_NEW_ACCOUNT_TX_FEE, 0}, creator, "" });
+                INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+                        (N(yx.ntoken), {creator, N(active)},
+                         { creator, YOSEMITE_SYSTEM_ACCOUNT_NAME, yx_asset{YOSEMITE_NEW_ACCOUNT_TX_FEE, 0}, creator, "" });
 
+            }
         }
 
         // no resource limit, Yosemite is transaction-fee based blockchain.
