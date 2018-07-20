@@ -31,7 +31,7 @@ cleos push action yx.dcontract sign '{"creator":"legal1", "id":"1", "signer":"us
 
 ## change the additional document hash address
 ```
-cleos push action yx.digital_contract delinfo '{"account":"user1"}' -p d1
+cleos push action yx.dcontract upadddochash '{"creator":"legal1", "id":"1", "adddochash":"oiuoiu"}' -p legal1
 ```
 
 ## remove the digital contract
