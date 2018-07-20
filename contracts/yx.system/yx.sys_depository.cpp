@@ -60,11 +60,4 @@ namespace yosemitesys {
        });
     }
 
-    // public static
-    bool system_contract::is_authorized_sys_depository(const account_name depository) {
-        sys_depository_table depositories(YOSEMITE_SYSTEM_ACCOUNT_NAME, YOSEMITE_SYSTEM_ACCOUNT_NAME);
-        auto depo = depositories.find( depository );
-        return depo != depositories.end() && (*depo).is_authorized;
-    }
-
 } //namespace yosemitesys
