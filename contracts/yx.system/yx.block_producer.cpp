@@ -47,7 +47,7 @@ namespace yosemitesys {
         std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
         top_producers.reserve(YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT);
 
-        for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && 0 < it->total_votes && it->active() && it->is_trusted_seed; ++it ) {
+        for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && 0 <= it->total_votes && it->active() && it->is_trusted_seed; ++it ) {
             top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
         }
 
