@@ -1,0 +1,77 @@
+{
+  "types": [
+   {
+      "new_type_name": "account_name",
+      "type": "name"
+   }
+  ],
+  "structs": [
+    {
+      "name": "create",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"dochash", "type":"string"},
+        {"name":"adddochash", "type":"string"},
+        {"name":"signers", "type":"account_name[]"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"options", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "addsigners",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"id", "type":"uint64"},
+        {"name":"signers", "type":"account_name[]"}
+      ]
+    },
+    {
+      "name": "sign",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"id", "type":"uint64"},
+        {"name":"signer", "type":"account_name"},
+        {"name":"signerinfo", "type":"string"}
+      ]
+    },
+    {
+      "name": "upadddochash",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"id", "type":"uint64"},
+        {"name":"adddochash", "type":"string"}
+      ]
+    },
+    {
+      "name": "remove",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"id", "type":"uint64"}
+      ]
+    },
+    {
+      "name": "dump",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"id", "type":"uint64"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "create", "type": "create", "ricardian_contract": "" },
+    { "name": "addsigners", "type": "addsigners", "ricardian_contract": "" },
+    { "name": "sign", "type": "sign", "ricardian_contract": "" },
+    { "name": "upadddochash", "type": "upadddochash", "ricardian_contract": "" },
+    { "name": "remove", "type": "remove", "ricardian_contract": "" },
+    { "name": "dump", "type": "dump", "ricardian_contract": "" }
+  ],
+  "tables": [
+  ],
+  "ricardian_clauses": []
+}
