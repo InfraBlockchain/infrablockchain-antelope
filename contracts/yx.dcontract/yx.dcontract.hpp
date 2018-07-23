@@ -20,9 +20,9 @@ namespace yosemite {
      * Hereby 'contract' of digital contract means the 'documented' and 'sign-required' contract on real-world business or peer-to-peer field.
      * But the parent class 'contract' means the smart contract of blockchain.
      */
-    class digital_contract : public contract {
+    class digital_contract : public fee_contract {
     public:
-        explicit digital_contract(account_name self) : contract(self) {
+        explicit digital_contract(account_name self) : fee_contract(self) {
         }
 
         void create(account_name creator, const string &dochash, const string &adddochash,
@@ -32,6 +32,10 @@ namespace yosemite {
         void upadddochash(account_name creator, uint64_t id, const string &adddochash);
         void remove(account_name creator, uint64_t id);
         void dump(account_name creator, uint64_t id);
+
+    protected:
+        bool check_fee_operation(const uint64_t &operation_name) override;
+        void charge_fee(const account_name &payer, uint64_t operation) override;
 
     private:
         void check_signers_param(const vector<account_name> &signers) const;

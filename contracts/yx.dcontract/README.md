@@ -8,6 +8,19 @@
 ## deploy the contract
 `cleos set contract yx.dcontract build/contracts/yx.dcontract -p yx.dcontract`
 
+## setting fee for operations
+* Fee for operations is set by `setfee` operation.
+* The majority of the current depositories must agree using multisig feature.
+* [Temporary] For test convenience, this operation is not yet multisig.
+```
+cleos push action yx.dcontract setfee '[ "create", "500.0000 DKRW" ]' -p yx.dcontract
+cleos push action yx.dcontract setfee '[ "addsigners", "100.0000 DKRW" ]' -p yx.dcontract
+cleos push action yx.dcontract setfee '[ "sign", "100.0000 DKRW" ]' -p yx.dcontract
+cleos push action yx.dcontract setfee '[ "upadddochash", "5.0000 DKRW" ]' -p yx.dcontract
+cleos push action yx.dcontract setfee '[ "remove", "0.0000 DKRW" ]' -p yx.dcontract
+```
+
+
 # Operations
 
 ## create a digital contract
