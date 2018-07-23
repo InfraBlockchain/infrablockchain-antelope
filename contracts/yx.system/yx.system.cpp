@@ -102,7 +102,7 @@ EOSIO_ABI( yosemitesys::system_contract,
            // yx.system.cpp
            (setram)(setparams)(setpriv)
            // yx.block_producer.cpp
-           (onblock)(regproducer)(unregprod)(rmvproducer)(claimrewards)
+           (onblock)(regproducer)(authproducer)(unregprod)(rmvproducer)(claimrewards)
            // yx.sys_depository.cpp
            (regsysdepo)(authsysdepo)(rmvsysdepo)
 )
