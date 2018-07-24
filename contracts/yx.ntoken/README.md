@@ -105,9 +105,22 @@ cleos push action yx.ntoken transfern '[ "user1", "user2", {"quantity":"10000.00
 cleos push action yx.ntoken transfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "servprovider", "memo" ]' -p user1 servprovider
 ```
 
-## get all the stats of native token
+## get the stats of native token per depository
+* d1 is the name of system depository account.
 ```
-cleos get table yx.ntoken 4,DKRW statsnative
+cleos get table yx.ntoken d1 stats
+```
+
+## get the native token balance of the user for each depository
+* For example, user1 is the name of user account.
+```
+cleos get table yx.ntoken user1 account
+```
+
+## get the sum of native token balance for all system depositories of the user
+* For example, user1 is the name of user account.
+```
+cleos get table yx.ntoken user1 accounttotal
 ```
 
 # Example
@@ -119,13 +132,17 @@ cleos get table yx.ntoken 4,DKRW statsnative
 cleos push action yx.ntoken createn '[ "d1" ]' -p d1
 cleos push action yx.ntoken issuen '[ "d1", {"quantity":"1000000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
 cleos push action yx.ntoken issuen '[ "d2", {"quantity":"100000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
-cleos push action yx.ntoken printsupplyn '[ "d1" ]' -p yx.ntoken
-cleos push action yx.ntoken printbalance '{"owner":"d1", "symbol":{"symbol":"4,DKRW","issuer":""}}' -p yx.ntoken
-cleos push action yx.ntoken printbalance '{"owner":"d2", "symbol":{"symbol":"4,DKRW","issuer":""}}' -p yx.ntoken
+cleos get table yx.ntoken d1 stats
+cleos get table yx.ntoken d1 account
+cleos get table yx.ntoken d2 account
 cleos push action yx.ntoken transfer '[ "d1", "user1", {"quantity":"10000.0000 DKRW","issuer":""}, "d1", "memo"]' -p d1
 cleos push action yx.ntoken transfern '[ "d1", "user1", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p d1
-cleos push action yx.ntoken printbalance '{"owner":"user1", "symbol":{"symbol":"4,DKRW","issuer":""}}' -p yx.ntoken
+cleos get table yx.ntoken user1 account
+cleos get table yx.ntoken user1 accounttotal
 cleos push action yx.ntoken transfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","issuer":""}, "d2", "memo" ]' -p user1 d2
+cleos get table yx.ntoken user1 account
+cleos get table yx.ntoken d2 account
+cleos get table yx.ntoken user2 account
 # error transactions
 cleos push action yx.ntoken transfern '[ "d1", "user1", {"quantity":"100000000.0000 DKRW","issuer":"d1"}, "d1", m"]' -p d1
 cleos push action yx.ntoken transfern '[ "d1", "user1", {"quantity":"10000.0000 DKRW","issuer":"d2"}, "d1", "m" ]' -p d1

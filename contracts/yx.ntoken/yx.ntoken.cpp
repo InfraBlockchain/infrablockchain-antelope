@@ -16,12 +16,12 @@ namespace yosemite {
                      "issuer for native token must be authrized as system depository");
         require_auth(issuer);
 
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &holder = stats.find(issuer);
-        eosio_assert(static_cast<uint32_t>(holder == stats.end()), "already registered");
+        stats_native stats(get_self(), issuer);
+        const auto &holder = stats.find(NTOKEN_STATS_KEY);
+        eosio_assert(static_cast<uint32_t>(holder == stats.end()), "already created");
 
         stats.emplace(get_self(), [&](auto &s) {
-            s.depository = issuer;
+            s.supply = 0;
         });
     }
 
@@ -31,10 +31,10 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot issue non-native token with this operation or wrong precision is specified");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &tstats = stats.get(quantity.issuer, "depository is not registered");
-
         require_auth(quantity.issuer);
+
+        stats_native stats(get_self(), quantity.issuer);
+        const auto &tstats = stats.get(NTOKEN_STATS_KEY, "createn for the issuer is not called");
 
         if (to != quantity.issuer) {
             charge_fee(quantity.issuer, N(issuen));
@@ -58,11 +58,11 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot redeem non-native token with this operation or wrong precision is specified");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &tstats = stats.get(quantity.issuer, "depository is not registered");
-        eosio_assert(static_cast<uint32_t>(tstats.supply >= quantity.amount), "insufficient supply of the native token of the specified depository");
-
         require_auth(quantity.issuer);
+
+        stats_native stats(get_self(), quantity.issuer);
+        const auto &tstats = stats.get(NTOKEN_STATS_KEY, "createn for the issuer is not called");
+        eosio_assert(static_cast<uint32_t>(tstats.supply >= quantity.amount), "insufficient supply of the native token of the specified depository");
 
         charge_fee(quantity.issuer, N(redeemn));
 
@@ -100,62 +100,55 @@ namespace yosemite {
     }
 
     void ntoken::transfer_native_token(const account_name &from, const account_name &to, yx_asset quantity) {
-        accounts_native accounts_table_native(get_self(), NATIVE_TOKEN);
-        const auto &native_holder = accounts_table_native.get(from, "account not found");
-        eosio_assert(static_cast<uint32_t>(native_holder.total_balance >= quantity.amount), "insufficient native token balance");
+        accounts_native_total from_total(get_self(), from);
+        const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
+        eosio_assert(static_cast<uint32_t>(total_holder.amount >= quantity.amount), "insufficient native token balance");
 
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        for (auto &from_balance : native_holder.balance_map) {
+        accounts_native accounts_table_native(get_self(), from);
+        for (auto &from_balance_holder : accounts_table_native) {
             if (quantity.amount == 0) {
                 break;
             }
 
-            const auto &tstats = stats.get(from_balance.first, "native token is not created by the depository");
-            eosio_assert(static_cast<uint32_t>(!from_balance.second.frozen), "account is frozen by issuer");
-            eosio_assert(static_cast<uint32_t>(!tstats.frozen), "all transfers are frozen by depository");
+            //TODO: add freeze functionality and check
 
             int64_t to_balance = 0;
-            // subtract the balance from the 'from' account
-            accounts_table_native.modify(native_holder, 0, [&](auto &_holder) {
-                auto acc_balance = _holder.balance_map[from_balance.first];
-                if (acc_balance.amount <= quantity.amount) {
-                    to_balance = acc_balance.amount;
-                    quantity.amount -= acc_balance.amount;
-                    acc_balance.amount = 0;
-                } else {
-                    to_balance = quantity.amount;
-                    acc_balance.amount -= quantity.amount;
-                    quantity.amount = 0;
-                }
-                if (acc_balance.amount == 0) {
-                    _holder.balance_map.erase(from_balance.first);
-                } else {
-                    _holder.balance_map[from_balance.first] = acc_balance;
-                }
-                _holder.total_balance -= to_balance;
-            });
 
-            add_native_token_balance(to, to_balance, from_balance.first);
+            if (from_balance_holder.amount <= quantity.amount) {
+                to_balance = from_balance_holder.amount;
+                quantity.amount -= to_balance;
+            } else {
+                to_balance = quantity.amount;
+                quantity.amount = 0;
+            }
+
+            sub_native_token_balance(from, to_balance, from_balance_holder.depository);
+            add_native_token_balance(to, to_balance, from_balance_holder.depository);
         }
     }
 
     void ntoken::printsupplyn(const account_name &depository) {
         require_auth(get_self());
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        const auto &holder = stats.get(depository, "depository for the native token is not registered");
+
+        stats_native stats(get_self(), depository);
+        const auto &holder = stats.get(NTOKEN_STATS_KEY, "createn for system depository is not called");
         print(holder.supply);
     }
 
     void ntoken::printbalance(account_name owner, yx_symbol symbol) {
         require_auth(get_self());
+
         eosio_assert(static_cast<uint32_t>(symbol.value == NATIVE_TOKEN), "cannot print non-native token balance with this operation");
 
-        accounts_native accounts_table(get_self(), NATIVE_TOKEN);
-        const auto &balance_holder = accounts_table.get(owner, "account not found");
-        print("total native : ", balance_holder.total_balance, "\n");
-        for (auto &balance : balance_holder.balance_map) {
-            print("depository=", balance.first);
-            print(", balance=", balance.second.amount, "\n");
+        accounts_native_total accounts_table_total(get_self(), owner);
+        const auto &total_holder = accounts_table_total.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
+        print("total native : ", total_holder.amount, "\n");
+
+        accounts_native accounts_table(get_self(), owner);
+        for (auto &balance : accounts_table) {
+            print("depository=");
+            printn(balance.depository);
+            print(", balance=", balance.amount, "\n");
         }
     }
 
@@ -178,68 +171,47 @@ namespace yosemite {
     }
 
     void ntoken::add_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository) {
-        accounts_native accounts_table_native(get_self(), NATIVE_TOKEN);
-        const auto &native_holder = accounts_table_native.find(owner);
+        accounts_native accounts_table_native(get_self(), owner);
+        const auto &native_holder = accounts_table_native.find(depository);
 
         if (native_holder == accounts_table_native.end()) {
             accounts_table_native.emplace(get_self(), [&](auto &holder) {
-                holder.owner = owner;
-                holder.total_balance = quantity;
-
-                token_balance tkbal;
-                tkbal.amount = quantity;
-                holder.balance_map[depository] = tkbal;
+                holder.depository = depository;
+                holder.amount = quantity;
             });
         } else {
-            auto itr = native_holder->balance_map.find(depository);
-            if (itr == native_holder->balance_map.end()) {
-                accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-                    holder.total_balance += quantity;
+            accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
+                holder.amount += quantity;
+            });
+        }
 
-                    token_balance tkbal;
-                    tkbal.amount = quantity;
-                    holder.balance_map[depository] = tkbal;
-                });
-            } else {
-                accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-                    holder.total_balance += quantity;
-
-                    token_balance tkbal = holder.balance_map[depository];
-                    tkbal.amount += quantity;
-                    holder.balance_map[depository] = tkbal;
-                });
-            }
+        accounts_native_total accounts_table_total(get_self(), owner);
+        const auto &total_holder = accounts_table_total.find(NTOKEN_TOTAL_BALANCE_KEY);
+        if (total_holder == accounts_table_total.end()) {
+            accounts_table_total.emplace(get_self(), [&](auto &tot_holder) {
+                tot_holder.amount = quantity;
+            });
+        } else {
+            accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
+                tot_holder.amount += quantity;
+            });
         }
     }
 
     void ntoken::sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository) {
-        accounts_native accounts_table_native(get_self(), NATIVE_TOKEN);
-        const auto &native_holder = accounts_table_native.get(owner, "account not found");
-        auto itr = native_holder.balance_map.find(depository);
-        eosio_assert(static_cast<uint32_t>(itr != native_holder.balance_map.end()), "account doesn't have native token of the specified depository");
-        eosio_assert(static_cast<uint32_t>(itr->second.amount >= quantity), "insufficient native token of the specified depository");
+        accounts_native accounts_table_native(get_self(), owner);
+        const auto &native_holder = accounts_table_native.get(depository, "account doesn't have native token of the specified depository");
+        eosio_assert(static_cast<uint32_t>(native_holder.amount >= quantity), "insufficient native token of the specified depository");
 
         accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-            holder.total_balance -= quantity;
-
-            token_balance tkbal = holder.balance_map[depository];
-            tkbal.amount -= quantity;
-            holder.balance_map[depository] = tkbal;
+            holder.amount -= quantity;
         });
-    }
 
-    void ntoken::clearn() {
-        require_auth(get_self());
-
-        accounts_native accounts_table(get_self(), NATIVE_TOKEN);
-        for (auto iterator = accounts_table.begin(); iterator != accounts_table.end(); ) {
-            iterator = accounts_table.erase(iterator);
-        }
-
-        stats_native stats(get_self(), NATIVE_TOKEN);
-        for (auto iterator = stats.begin(); iterator != stats.end(); ) {
-            iterator = stats.erase(iterator);
-        }
+        accounts_native_total accounts_table_total(get_self(), owner);
+        const auto &total_holder = accounts_table_total.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
+        accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
+            tot_holder.amount -= quantity;
+        });
     }
 
     void ntoken::transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required,
@@ -290,4 +262,4 @@ namespace yosemite {
 }
 
 EOSIO_ABI(yosemite::ntoken, (createn)(issuen)(redeemn)(transfer)(transfern)(setfee)
-                            (printsupplyn)(printbalance)(clearn))
+                            (printsupplyn)(printbalance))

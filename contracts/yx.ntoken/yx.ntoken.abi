@@ -92,23 +92,24 @@
       ]
     },
     {
-      "name": "clearn",
-      "base": "",
-      "fields": []
-    },
-    {
-      "name": "account_native",
+      "name": "account_total_type",
       "base": "",
       "fields": [
-        {"name":"owner", "type":"account_name"},
-        {"name":"total_balance", "type":"int64"}
+        {"name":"amount", "type":"int64"}
       ]
     },
     {
-      "name": "stats_native",
+      "name": "account_type",
       "base": "",
       "fields": [
         {"name":"depository", "type":"account_name"},
+        {"name":"amount", "type":"int64"},
+      ]
+    },
+    {
+      "name": "stats_type",
+      "base": "",
+      "fields": [
         {"name":"supply", "type":"int64"},
         {"name":"is_frozen", "type":"uint8"}
       ]
@@ -122,21 +123,26 @@
     { "name": "transfern", "type": "transfern", "ricardian_contract": "" },
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
     { "name": "printsupplyn", "type": "printsupplyn", "ricardian_contract": "" },
-    { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" },
-    { "name": "clearn", "type": "clearn", "ricardian_contract": "" }
+    { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" }
   ],
   "tables": [{
-      "name": "accnative",
-      "type": "account_native",
+      "name": "account",
+      "type": "account_type",
       "index_type": "i64",
       "key_names" : ["owner"],
       "key_types" : ["uint64"]
     },{
-      "name": "statsnative",
-      "type": "stats_native",
+      "name": "accounttotal",
+      "type": "account_total_type",
       "index_type": "i64",
-      "key_names" : ["depository"],
-      "key_types" : ["uint64"]
+      "key_names" : [],
+      "key_types" : []
+    },{
+      "name": "stats",
+      "type": "stats_type",
+      "index_type": "i64",
+      "key_names" : [],
+      "key_types" : []
     }
   ],
   "ricardian_clauses": []
