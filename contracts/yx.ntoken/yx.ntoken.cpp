@@ -140,12 +140,14 @@ namespace yosemite {
     }
 
     void ntoken::printsupplyn(const account_name &depository) {
+        require_auth(get_self());
         stats_native stats(get_self(), NATIVE_TOKEN);
         const auto &holder = stats.get(depository, "depository for the native token is not registered");
         print(holder.supply);
     }
 
     void ntoken::printbalance(account_name owner, yx_symbol symbol) {
+        require_auth(get_self());
         eosio_assert(static_cast<uint32_t>(symbol.value == NATIVE_TOKEN), "cannot print non-native token balance with this operation");
 
         accounts_native accounts_table(get_self(), NATIVE_TOKEN);

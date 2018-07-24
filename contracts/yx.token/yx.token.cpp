@@ -187,10 +187,14 @@ namespace yosemite {
     }
 
     void token::printsupply(const yx_symbol &symbol) {
+        require_auth(get_self());
+
         print(get_supply(symbol));
     }
 
     void token::printbalance(account_name owner, yx_symbol symbol) {
+        require_auth(get_self());
+
         accounts accounts_table(get_self(), symbol.value);
         const auto &balance_holder = accounts_table.get(owner, "account not found");
 
