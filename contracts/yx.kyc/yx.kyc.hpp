@@ -12,8 +12,6 @@ namespace yosemite {
 
     using namespace eosio;
     using std::string;
-    using boost::container::flat_map;
-    using boost::container::flat_set;
 
     class kyc : public contract {
     public:
