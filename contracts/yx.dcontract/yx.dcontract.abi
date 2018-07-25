@@ -7,6 +7,14 @@
   ],
   "structs": [
     {
+      "name": "dcid",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"sequence", "type":"uint64"}
+      ]
+    },
+    {
       "name": "create",
       "base": "",
       "fields": [
@@ -22,8 +30,7 @@
       "name": "addsigners",
       "base": "",
       "fields": [
-        {"name":"creator", "type":"account_name"},
-        {"name":"id", "type":"uint64"},
+        {"name":"dcid", "type":"dcid"},
         {"name":"signers", "type":"account_name[]"}
       ]
     },
@@ -31,8 +38,7 @@
       "name": "sign",
       "base": "",
       "fields": [
-        {"name":"creator", "type":"account_name"},
-        {"name":"id", "type":"uint64"},
+        {"name":"dcid", "type":"dcid"},
         {"name":"signer", "type":"account_name"},
         {"name":"signerinfo", "type":"string"}
       ]
@@ -41,8 +47,7 @@
       "name": "upadddochash",
       "base": "",
       "fields": [
-        {"name":"creator", "type":"account_name"},
-        {"name":"id", "type":"uint64"},
+        {"name":"dcid", "type":"dcid"},
         {"name":"adddochash", "type":"string"}
       ]
     },
@@ -50,8 +55,7 @@
       "name": "remove",
       "base": "",
       "fields": [
-        {"name":"creator", "type":"account_name"},
-        {"name":"id", "type":"uint64"}
+        {"name":"dcid", "type":"dcid"}
       ]
     },
     {
@@ -63,11 +67,32 @@
       ]
     },
     {
+      "name": "dcontracts_type",
+      "base": "",
+      "fields": [
+        {"name":"sequence", "type":"uint64"},
+        {"name":"dochash", "type":"bytes"},
+        {"name":"adddochash", "type":"bytes"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"options", "type":"uint8"},
+        {"name":"signers", "type":"account_name[]"},
+        {"name":"done_signers", "type":"uint8[]"}
+      ]
+    },
+    {
+      "name": "dc_signers_type",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"dcid_serialized", "type":"uint128"},
+        {"name":"signerinfo", "type":"bytes"}
+      ]
+    },
+    {
       "name": "dump",
       "base": "",
       "fields": [
-        {"name":"creator", "type":"account_name"},
-        {"name":"id", "type":"uint64"}
+        {"name":"dcid", "type":"dcid"}
       ]
     }
   ],
@@ -81,6 +106,20 @@
     { "name": "dump", "type": "dump", "ricardian_contract": "" }
   ],
   "tables": [
+    {
+      "name": "dcontracts",
+      "type": "dcontracts_type",
+      "index_type": "i64",
+      "key_names" : ["sequence"],
+      "key_types" : ["uint64"]
+    },
+    {
+      "name": "signers",
+      "type": "dc_signers_type",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    }
   ],
   "ricardian_clauses": []
 }

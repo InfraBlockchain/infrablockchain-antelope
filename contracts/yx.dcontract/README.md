@@ -32,22 +32,32 @@ cleos push action yx.dcontract create '{"creator":"legal1", "dochash":"123456", 
 
 ## add additional signers
 ```
-cleos push action yx.dcontract addsigners '{"creator":"legal1", "id":"1", "signers":["user3"]}' -p legal1
+cleos push action yx.dcontract addsigners '{"dcid":{"creator":"legal1", "sequence":"1"}, "signers":["user3"]}' -p legal1
 ```
 
 ## sign the digital contract
 ```
-cleos push action yx.dcontract sign '{"creator":"legal1", "id":"1", "signer":"user1", "signerinfo":""}' -p user1
-cleos push action yx.dcontract sign '{"creator":"legal1", "id":"1", "signer":"user2", "signerinfo":"bluewolf"}' -p user2
-cleos push action yx.dcontract sign '{"creator":"legal1", "id":"1", "signer":"user3", "signerinfo":"hello"}' -p user3
+cleos push action yx.dcontract sign '{"dcid":{"creator":"legal1", "sequence":"1"}, "signer":"user1", "signerinfo":""}' -p user1
+cleos push action yx.dcontract sign '{"dcid":{"creator":"legal1", "sequence":"1"}, "signer":"user2", "signerinfo":"bluewolf"}' -p user2
+cleos push action yx.dcontract sign '{"dcid":{"creator":"legal1", "sequence":"1"}, "signer":"user3", "signerinfo":"hello"}' -p user3
 ```
 
 ## change the additional document hash address
 ```
-cleos push action yx.dcontract upadddochash '{"creator":"legal1", "id":"1", "adddochash":"oiuoiu"}' -p legal1
+cleos push action yx.dcontract upadddochash '{"dcid":{"creator":"legal1", "sequence":"1"}, "adddochash":"oiuoiu"}' -p legal1
 ```
 
 ## remove the digital contract
 ```
-cleos push action yx.dcontract remove '{"creator":"legal1", "id":"1"}' -p legal1
+cleos push action yx.dcontract remove '{"dcid":{"creator":"legal1", "sequence":"1"}}' -p legal1
+```
+
+## get digital contract information
+```
+cleos get table yx.dcontract legal1 dcontracts
+```
+
+## get the signer information
+```
+cleos get table yx.dcontract user1 signers
 ```
