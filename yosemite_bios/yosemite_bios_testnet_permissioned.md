@@ -6,7 +6,7 @@ Testnet Public Access Node URL
 ---
 * [http://testnet.yosemitelabs.org:8888](http://testnet.yosemitelabs.org:8888)
 
-```console
+```bash
 YOSEMITE_TESTNET_CLEOS="$YOSEMITE_HOME/build/programs/cleos/cleos -u http://testnet.yosemitelabs.org:8888"
 $YOSEMITE_TESTNET_CLEOS get info
 {
@@ -28,7 +28,7 @@ $YOSEMITE_TESTNET_CLEOS get info
 Environment Var.
 ---
 
-```console
+```bash
 YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODEOS=$YOSEMITE_HOME/build/programs/nodeos/nodeos
 YOSEMITE_CLEOS=$YOSEMITE_HOME/build/programs/cleos/cleos
@@ -43,7 +43,7 @@ YOSEMITE_CONTRACTS_DIR=$YOSEMITE_HOME/build/contracts
 
 Initial key
 ---
-```console
+```bash
 $YOSEMITE_CLEOS create key
 Private key: 5KR14orrckPKBxUe4zUZCoY8GF8xhYUtKjiriSnsTGhUKrZTHxo
 Public key: EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
@@ -105,12 +105,12 @@ plugin = eosio::history_api_plugin
 ```
 
 * fresh genesis state
-```console
+```bash
 $YOSEMITE_NODEOS --config $YOSEMITE_NODE_CONFIG --genesis-json $YOSEMITE_NODE_GENESIS_JSON --data-dir $YOSEMITE_NODE_DATA_DIR
 ```
 
 * from existing node data
-```console
+```bash
 $YOSEMITE_NODEOS --print-genesis-json --config $YOSEMITE_NODE_CONFIG --data-dir $YOSEMITE_NODE_DATA_DIR
 nohup $YOSEMITE_NODEOS --config $YOSEMITE_NODE_CONFIG --data-dir $YOSEMITE_NODE_DATA_DIR > /mnt/nodeos.log 2>&1&
 tail -f /mnt/nodeos.log -n 300
@@ -119,7 +119,7 @@ pkill -SIGINT nodeos
 ```
 
 * replay blockchain from tx log
-```console
+```bash
 $YOSEMITE_NODEOS --config $YOSEMITE_NODE_CONFIG --data-dir $YOSEMITE_NODE_DATA_DIR --replay-blockchain
 ```
 
@@ -127,13 +127,13 @@ Start Wallet (keosd)
 ---
 
 * run keosd
-```console
+```bash
 nohup $YOSEMITE_KEOSD --unlock-timeout 999999999 --http-server-address 127.0.0.1:8900 --wallet-dir $YOSEMITE_DEV_WALLET_DIR > /mnt/keosd.log 2>&1&
 tail -f /mnt/keosd.log -n 300
 ```
 
 * create wallet / unlock
-```console
+```bash
 $YOSEMITE_CLEOS wallet create
 Creating wallet: default
 "PW5KH7i8ZEuVMvywMschs3TznhTfCdmgpPBGKJLUQjs6N6oQ7boZj"
@@ -143,7 +143,7 @@ $YOSEMITE_CLEOS wallet unlock
 ```
 
 * eosio initial key
-```console
+```bash
 $YOSEMITE_CLEOS wallet import --private-key 5KR14orrckPKBxUe4zUZCoY8GF8xhYUtKjiriSnsTGhUKrZTHxo
 ```
 
@@ -151,7 +151,7 @@ Create System Accounts
 ---
 
 * eosio.msig(priviliged), yx.kyc, yx.ntoken(priviliged), yx.token(priviliged)
-```console
+```bash
 $YOSEMITE_CLEOS create account eosio eosio.msig EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
 $YOSEMITE_CLEOS create account eosio yx.kyc EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
 $YOSEMITE_CLEOS create account eosio yx.ntoken EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
@@ -162,7 +162,7 @@ Create initial System Depository Account
 ---
 
 * sysdepo
-```console
+```bash
 $YOSEMITE_CLEOS create key
 Private key: 5KCqedPhHjbaBRi4ujhFsS3aGCcNuXwVGrMaxRW3DvB5Wo3beax
 Public key: EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtxKUhxKh5HfSSM1dHeQo
@@ -173,7 +173,7 @@ $YOSEMITE_CLEOS create account eosio sysdepo EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtx
 ```
 
 * sysdepo2
-```console
+```bash
 $YOSEMITE_CLEOS create key
 Private key: 5HyRsRWBi4bUXjmnmaskw9BU8a2sdqn3Jfqt21Few9xUyYR5tXr
 Public key: EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxmPgk7C8fEi4FnQKhHLwM
@@ -184,20 +184,20 @@ $YOSEMITE_CLEOS create account eosio sysdepo2 EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxm
 
 Install Yosemite System Contract
 ---
-```console
+```bash
 $YOSEMITE_CLEOS set contract eosio $YOSEMITE_CONTRACTS_DIR/yx.system/ -p eosio@active
 ```
 
 Install Multi-sig System Contract
 ---
-```console
+```bash
 $YOSEMITE_CLEOS set contract eosio.msig $YOSEMITE_CONTRACTS_DIR/eosio.msig/ -p eosio.msig@active
 $YOSEMITE_CLEOS push action eosio setpriv '["eosio.msig",1]' -p eosio@active
 ```
 
 Register Initial System Depository
 ---
-```console
+```bash
 $YOSEMITE_CLEOS push action eosio regsysdepo '["sysdepo","http://sysdepo.org",1]' -p sysdepo@active -p eosio@active
 $YOSEMITE_CLEOS push action eosio authsysdepo '["sysdepo"]' -p eosio@active
 
@@ -207,27 +207,27 @@ $YOSEMITE_CLEOS push action eosio authsysdepo '["sysdepo2"]' -p eosio@active
 
 Install KYC System Contract
 ---
-```console
+```bash
 $YOSEMITE_CLEOS set contract yx.kyc $YOSEMITE_CONTRACTS_DIR/yx.kyc/
 ```
 
 Install Native Token Contract
 ---
-```console
+```bash
 $YOSEMITE_CLEOS set contract yx.ntoken $YOSEMITE_CONTRACTS_DIR/yx.ntoken/
 $YOSEMITE_CLEOS push action eosio setpriv '["yx.ntoken",1]' -p eosio@active
 ```
 
 Install User Token Contract
 ---
-```console
+```bash
 $YOSEMITE_CLEOS set contract yx.token $YOSEMITE_CONTRACTS_DIR/yx.token/
 $YOSEMITE_CLEOS push action eosio setpriv '["yx.token",1]' -p eosio@active
 ```
 
-Querying the status of System System Depositories and Block Producers
+Querying the status of System Depositories and Block Producers
 ---
-```console
+```bash
 $YOSEMITE_CLEOS get table eosio eosio global
 $YOSEMITE_CLEOS get table eosio eosio sysdepos
 $YOSEMITE_CLEOS get table eosio eosio producers
@@ -258,7 +258,7 @@ signature-provider = EOS8Ab5kDP22ta5FRmShTsZ4SZ3ubwptxzKWSBw7FtZLsew12SfrW=KEY:5
 ```
 
 * create block producer accounts
-```console
+```bash
 $YOSEMITE_CLEOS create key
 Private key: 5JuTjNtFmqWG1ivMLJgeRgo5w2WV5iwHa2u1n8owvpyUdy7DUr6
 Public key: EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y
@@ -293,7 +293,7 @@ $YOSEMITE_CLEOS create account eosio producer.e EOS8Ab5kDP22ta5FRmShTsZ4SZ3ubwpt
 
 * register and authorize block producers (permissioned)
 
-```console
+```bash
 $YOSEMITE_CLEOS push action eosio regproducer '["producer.a","EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y","http://producera.io",1]' -p producer.a@active -p eosio@active
 $YOSEMITE_CLEOS push action eosio regproducer '["producer.b","EOS79oucvH1iBTh5RrMgm6vRe9ERNSPQx4AiXGVctjmZQMkCkFrzS","http://producerb.io",1]' -p producer.b@active -p eosio@active
 
@@ -311,7 +311,7 @@ $YOSEMITE_CLEOS push action eosio authproducer '["producer.e"]' -p eosio@active
 
 Create Native Token
 ---
-```console
+```bash
 $YOSEMITE_CLEOS push action yx.ntoken setfee '[ "issuen", "0.0000 DKRW" ]' -p yx.ntoken@active
 $YOSEMITE_CLEOS push action yx.ntoken setfee '[ "redeemn", "1000.0000 DKRW" ]' -p yx.ntoken@active
 $YOSEMITE_CLEOS push action yx.ntoken setfee '[ "transfern", "10.0000 DKRW" ]' -p yx.ntoken@active
@@ -320,9 +320,9 @@ $YOSEMITE_CLEOS push action yx.ntoken setfee '[ "transfer", "5.0000 DKRW" ]' -p 
 $YOSEMITE_CLEOS push action yx.ntoken createn '["sysdepo"]' -p sysdepo@active
 ```
 
-Resign "eosio" delgating authority to "eosio.prods"
+Resign "eosio" delegating authority to "eosio.prods"
 ---
-```console
+```bash
 $YOSEMITE_CLEOS get account eosio
 $YOSEMITE_CLEOS push action eosio updateauth '{"account":"eosio","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"eosio.prods","permission":"active"}}]}}' -p eosio@owner
 $YOSEMITE_CLEOS push action eosio updateauth '{"account":"eosio","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"eosio.prods","permission":"active"}}]}}' -p eosio@active
@@ -338,7 +338,7 @@ permissions:
 
 Resign "eosio.msig" delegating authority to "eosio"
 ---
-```console
+```bash
 $YOSEMITE_CLEOS get account eosio.msig
 $YOSEMITE_CLEOS push action eosio updateauth '{"account":"eosio.msig","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"eosio","permission":"active"}}]}}' -p eosio.msig@owner
 $YOSEMITE_CLEOS push action eosio updateauth '{"account":"eosio.msig","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"eosio","permission":"active"}}]}}' -p eosio.msig@active
@@ -347,7 +347,7 @@ $YOSEMITE_CLEOS get account eosio.msig
 
 Resign "yx.ntoken", "yx.token", "yx.kyc" delegating authority to "eosio"
 ---
-```console
+```bash
 $YOSEMITE_CLEOS get account yx.ntoken
 $YOSEMITE_CLEOS push action eosio updateauth '{"account":"yx.ntoken","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"eosio","permission":"active"}}]}}' -p yx.ntoken@owner
 $YOSEMITE_CLEOS push action eosio updateauth '{"account":"yx.ntoken","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"eosio","permission":"active"}}]}}' -p yx.ntoken@active
@@ -366,7 +366,7 @@ $YOSEMITE_CLEOS get account yx.ntoken
 
 Unauthorizing Block Producer
 ---
-```console
+```bash
 $YOSEMITE_CLEOS push action -j -d eosio rmvproducer '["producer.e"]' -p eosio@active
 #$YOSEMITE_CLEOS push action eosio rmvproducer '["producer.e"]' -p eosio@active
 #$YOSEMITE_CLEOS push action eosio rmvproducer '["producer.d"]' -p eosio@active
@@ -375,7 +375,7 @@ $YOSEMITE_CLEOS get account eosio.prods
 
 Create Native Token Issue / Transfer
 ---
-```console
+```bash
 $YOSEMITE_CLEOS push action yx.kyc setinfo '{"account":"sysdepo", "depository":"sysdepo", "kycvector":15, "addendum":"kyc by sysdepo"}' -p sysdepo@active
 $YOSEMITE_CLEOS push action yx.kyc setinfo '{"account":"producer.a", "depository":"sysdepo", "kycvector":15, "addendum":"kyc by sysdepo"}' -p sysdepo@active
 $YOSEMITE_CLEOS push action yx.ntoken issuen '["producer.a",{"quantity":"100000.0000 DKRW","issuer":"sysdepo"},"issuen test"]' -p sysdepo@active
@@ -390,7 +390,7 @@ $YOSEMITE_CLEOS push action yx.ntoken printbalance '{"owner":"producer.a", "symb
 
 Claim Producer Rewards
 ---
-```console
+```bash
 $YOSEMITE_CLEOS push action yx.kyc setinfo '{"account":"producer.e", "depository":"sysdepo", "kycvector":15, "addendum":"kyc by sysdepo"}' -p sysdepo@active
 $YOSEMITE_CLEOS push action eosio claimrewards '["producer.e"]' -p producer.e@active
 $YOSEMITE_CLEOS get table eosio eosio producers
@@ -398,7 +398,7 @@ $YOSEMITE_CLEOS get table eosio eosio producers
 
 Synchronize action data 
 ---
-```console
+```bash
 $YOSEMITE_TESTNET_CLEOS get actions yx.ntoken
 #  seq  when                              contract::action => receiver      trx id...   args
 ================================================================================================================
@@ -420,7 +420,7 @@ $YOSEMITE_TESTNET_CLEOS get actions yx.ntoken
 #   15   2018-07-24T05:49:32.500      yx.ntoken::transfern => yx.ntoken     be17abfd... {"from":"producer.a","to":"producer.b","quantity":{"quantity...
 ...
 
-get actions yx.ntoken -1 -1
+$YOSEMITE_TESTNET_CLEOS get actions yx.ntoken -1 -1
 #  seq  when                              contract::action => receiver      trx id...   args
 ================================================================================================================
 #   19   2018-07-24T05:50:25.000   yx.ntoken::printbalance => yx.ntoken     2d50cf84... {"owner":"producer.e","symbol":{"symbol":"4,DKRW","issuer":"...
@@ -429,7 +429,7 @@ get actions yx.ntoken -1 -1
 Get transaction data
 ---
 
-```console
+```bash
 $YOSEMITE_TESTNET_CLEOS get transaction aeff830d9467eb8ee8e821c533b756f5312c505e144d2abefb33ccbbf819d878
 {
   "id": "aeff830d9467eb8ee8e821c533b756f5312c505e144d2abefb33ccbbf819d878",
