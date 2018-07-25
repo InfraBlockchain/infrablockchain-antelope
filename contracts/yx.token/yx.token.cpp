@@ -40,7 +40,7 @@ namespace yosemite {
 
         stats_table.modify(tstats, 0, [&](auto &s) {
             s.supply += quantity.amount;
-            eosio_assert(static_cast<uint32_t>(s.supply <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+            eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
         });
 
         add_token_balance(quantity.issuer, quantity);
@@ -132,7 +132,7 @@ namespace yosemite {
         } else {
             sym_index.modify(balance_holder, 0, [&](auto &holder) {
                 holder.amount += quantity.amount;
-                eosio_assert(static_cast<uint32_t>(holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
             });
         }
     }

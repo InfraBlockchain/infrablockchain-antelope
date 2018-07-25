@@ -41,7 +41,7 @@ namespace yosemite {
 
         stats.modify(tstats, 0, [&](auto &s) {
             s.supply += quantity.amount;
-            eosio_assert(static_cast<uint32_t>(s.supply <= asset::max_amount), "cannot issue token more than 2^62 - 1");
+            eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount), "cannot issue token more than 2^62 - 1");
         });
 
         add_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
@@ -156,7 +156,7 @@ namespace yosemite {
         } else {
             accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
                 holder.amount += quantity;
-                eosio_assert(static_cast<uint32_t>(holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
             });
         }
 
@@ -169,7 +169,7 @@ namespace yosemite {
         } else {
             accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
                 tot_holder.amount += quantity;
-                eosio_assert(static_cast<uint32_t>(tot_holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+                eosio_assert(static_cast<uint32_t>(tot_holder.amount > 0 && tot_holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
             });
         }
     }
