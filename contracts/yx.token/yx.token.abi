@@ -59,21 +59,6 @@
       ]
     },
     {
-      "name": "printsupply",
-      "base": "",
-      "fields": [
-        {"name":"symbol", "type":"yx_symbol"}
-      ]
-    },
-    {
-      "name": "printbalance",
-      "base": "",
-      "fields": [
-        {"name":"owner", "type":"account_name"},
-        {"name":"symbol", "type":"yx_symbol"}
-      ]
-    },
-    {
       "name": "setfee",
       "base": "",
       "fields": [
@@ -107,9 +92,7 @@
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
-    { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
-    { "name": "printsupply", "type": "printsupply", "ricardian_contract": "" },
-    { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" }
+    { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "taccounts",

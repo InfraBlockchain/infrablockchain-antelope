@@ -2,8 +2,6 @@
 #include <yx.ntoken/yx.ntoken.hpp>
 #include <yx.kyc/yx.kyc.hpp>
 
-//TODO:1. freeze by account/token
-
 namespace yosemite {
 
     void token::create(const yx_symbol &symbol, uint32_t kycvector) {
@@ -153,25 +151,6 @@ namespace yosemite {
         });
     }
 
-    void token::printsupply(const yx_symbol &symbol) {
-        require_auth(get_self());
-
-        print(get_supply(symbol));
-    }
-
-    void token::printbalance(account_name owner, yx_symbol symbol) {
-        require_auth(get_self());
-
-        accounts accounts_table(get_self(), owner);
-        const auto &sym_index = accounts_table.get_index<N(yxsymbol)>();
-        const uint128_t &yx_symbol_s = symbol.to_uint128();
-        const auto &balance_holder = sym_index.get(yx_symbol_s);
-
-        print(balance_holder.amount, "\n");
-        print(balance_holder.yx_symbol_s, "\n");
-        print(symbol.value, ", issuer=", symbol.issuer);
-    }
-
     bool token::check_fee_operation(const uint64_t &operation_name) {
         return operation_name == N(create) ||
                operation_name == N(issue) ||
@@ -193,4 +172,4 @@ namespace yosemite {
 }
 
 EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(setfee)
-                           (printsupply)(printbalance))
+)

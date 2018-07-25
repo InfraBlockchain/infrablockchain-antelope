@@ -69,21 +69,6 @@
       ]
     },
     {
-      "name": "printsupplyn",
-      "base": "",
-      "fields": [
-        {"name":"depository", "type":"account_name"}
-      ]
-    },
-    {
-      "name": "printbalance",
-      "base": "",
-      "fields": [
-        {"name":"owner", "type":"account_name"},
-        {"name":"symbol", "type":"yx_symbol"}
-      ]
-    },
-    {
       "name": "setfee",
       "base": "",
       "fields": [
@@ -121,9 +106,7 @@
     { "name": "redeemn", "type": "redeemn", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
     { "name": "transfern", "type": "transfern", "ricardian_contract": "" },
-    { "name": "setfee", "type": "setfee", "ricardian_contract": "" },
-    { "name": "printsupplyn", "type": "printsupplyn", "ricardian_contract": "" },
-    { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" }
+    { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "ntaccounts",

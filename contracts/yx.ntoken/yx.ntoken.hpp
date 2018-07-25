@@ -33,9 +33,6 @@ namespace yosemite {
 
         static inline int64_t get_total_native_token_balance(const account_name &owner);
 
-        void printsupplyn(const account_name &depository);
-        void printbalance(account_name owner, yx_symbol symbol);
-
     protected:
         bool check_fee_operation(const uint64_t &operation_name) override;
         void charge_fee(const account_name &payer, uint64_t operation) override;

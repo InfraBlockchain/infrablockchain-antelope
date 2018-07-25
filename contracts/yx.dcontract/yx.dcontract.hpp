@@ -43,7 +43,6 @@ namespace yosemite {
         void sign(dcid dc_id, account_name signer, const string &signerinfo);
         void upadddochash(dcid dc_id, const string &adddochash);
         void remove(dcid dc_id);
-        void dump(dcid dc_id);
 
     protected:
         bool check_fee_operation(const uint64_t &operation_name) override;

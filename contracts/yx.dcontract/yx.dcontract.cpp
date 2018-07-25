@@ -126,41 +126,10 @@ namespace yosemite {
         dcontract_idx.erase(info);
     }
 
-    void digital_contract::dump(dcid dc_id) {
-        require_auth(get_self());
-
-        dcontract_index dcontract_idx{get_self(), dc_id.creator};
-        auto info = dcontract_idx.find(dc_id.sequence);
-        eosio_assert(static_cast<uint32_t>(info != dcontract_idx.end()), "digital contract does not exist");
-
-        for (auto c : info->dochash) {
-            print(c);
-        }
-        print("\n");
-        for (auto c : info->adddochash) {
-            print(c);
-        }
-        print("\n");
-        print("[signers]\n");
-/*        for (auto signer : info->signers) {
-            printn(signer);
-            print(", ");
-            auto itr = info->signatures.find(signer);
-            if (itr == info->signatures.end()) {
-                print("not signed");
-            } else {
-                for (auto c : itr->second) {
-                    print(c);
-                }
-            }
-            print("\n");
-        }*/
-    }
-
     bool digital_contract::check_fee_operation(const uint64_t &operation_name) {
         return operation_name == N(create) ||
-                operation_name == N(addsigners) ||
-                operation_name == N(sign) ||
+               operation_name == N(addsigners) ||
+               operation_name == N(sign) ||
                operation_name == N(upadddochash) ||
                operation_name == N(remove);
     }
@@ -178,4 +147,4 @@ namespace yosemite {
 }
 
 EOSIO_ABI(yosemite::digital_contract, (create)(addsigners)(sign)(upadddochash)(remove)(setfee)
-                                      (dump))
+)

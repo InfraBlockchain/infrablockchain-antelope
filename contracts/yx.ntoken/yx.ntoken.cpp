@@ -125,31 +125,6 @@ namespace yosemite {
         }
     }
 
-    void ntoken::printsupplyn(const account_name &depository) {
-        require_auth(get_self());
-
-        stats_native stats(get_self(), depository);
-        const auto &holder = stats.get(NTOKEN_STATS_KEY, "createn for system depository is not called");
-        print(holder.supply);
-    }
-
-    void ntoken::printbalance(account_name owner, yx_symbol symbol) {
-        require_auth(get_self());
-
-        eosio_assert(static_cast<uint32_t>(symbol.value == NATIVE_TOKEN), "cannot print non-native token balance with this operation");
-
-        accounts_native_total accounts_table_total(get_self(), owner);
-        const auto &total_holder = accounts_table_total.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
-        print("total native : ", total_holder.amount, "\n");
-
-        accounts_native accounts_table(get_self(), owner);
-        for (auto &balance : accounts_table) {
-            print("depository=");
-            printn(balance.depository);
-            print(", balance=", balance.amount, "\n");
-        }
-    }
-
     bool ntoken::check_fee_operation(const uint64_t &operation_name) {
         return operation_name == N(createn) ||
                operation_name == N(issuen) ||
@@ -260,4 +235,4 @@ namespace yosemite {
 }
 
 EOSIO_ABI(yosemite::ntoken, (createn)(issuen)(redeemn)(transfer)(transfern)(setfee)
-                            (printsupplyn)(printbalance))
+)

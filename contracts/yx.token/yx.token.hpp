@@ -22,9 +22,6 @@ namespace yosemite {
         void redeem(const yx_asset &quantity, const string &memo);
         void transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo);
 
-        void printsupply(const yx_symbol &symbol);
-        void printbalance(account_name owner, yx_symbol symbol);
-
     protected:
         bool check_fee_operation(const uint64_t &operation_name) override;
         void charge_fee(const account_name &payer, uint64_t operation) override;
