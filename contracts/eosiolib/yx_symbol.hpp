@@ -17,7 +17,9 @@ namespace yosemite {
         }
 
         uint128_t to_uint128() const {
-            return (uint128_t(value) << 64) | issuer;
+            uint128_t result(value);
+            result <<= 64;
+            return result | issuer;
         }
 
         friend bool operator==(const yx_symbol &a, const yx_symbol &b) {

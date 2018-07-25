@@ -87,25 +87,37 @@ cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000
 ```
 cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","issuer":"d2"}, "servprovider", "memo" ]' -p user1 servprovider
 ```
+## get the token statistics
+```
+cleos get table yx.token 4,BTC tstats
+```
+
+## get all the token balances of the user
+```
+cleos get table yx.token user1 taccounts
+```
 
 # Example
 * At first, you must execute yx.ntoken example and must set fee for all operations.
 * d2 wants to create and issue BTC with precision 4 token to user1.
 
-## 1. With KYC
+## 1. Without KYC
 ```
 cleos push action yx.token create '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d2
-cleos push action yx.token printbalance '{"owner":"d2", "symbol":{"symbol":"4,DKRW","issuer":"system"}}' -p yx.token
-cleos push action yx.token printbalance '{"owner":"yx.feedist", "symbol":{"symbol":"4,DKRW","issuer":"system"}}' -p yx.token
+cleos get table yx.token 4,BTC tstats
 cleos push action yx.token issue '[ "user2", {"quantity":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
-cleos push action yx.token printbalance '{"owner":"user2", "symbol":{"symbol":"4,BTC","issuer":"d2"}}' -p yx.token
+cleos get table yx.token d2 taccounts
+cleos get table yx.token user2 taccounts
 cleos push action yx.token transfer '[ "user2", "user1", {"quantity":"10000.0000 BTC","issuer":"d2"}, "user2", "memo" ]' -p user2
+cleos get table yx.token user1 taccounts
+cleos get table yx.token user2 taccounts
 ```
 
-## 1. Without KYC like KYC_VECTOR_REAL_NAME_AUTH
+## 1. With KYC like KYC_VECTOR_REAL_NAME_AUTH
 * Creates user3 and don't set any user3's KYC information.
 ```
 cleos push action yx.token create '[ {"symbol":"8,ETH","issuer":"d2"}, 4 ]' -p d2
+cleos get table yx.token 8,ETH stats
 
 # KYC error!
 cleos push action yx.token issue '[ "user3", {"quantity":"100.00000000 ETH","issuer":"d2"}, "memo" ]' -p d2

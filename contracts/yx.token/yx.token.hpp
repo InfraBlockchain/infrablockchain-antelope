@@ -24,42 +24,38 @@ namespace yosemite {
 
         void printsupply(const yx_symbol &symbol);
         void printbalance(account_name owner, yx_symbol symbol);
-        void clear(const yx_symbol &symbol);
 
     protected:
         bool check_fee_operation(const uint64_t &operation_name) override;
         void charge_fee(const account_name &payer, uint64_t operation) override;
 
     private:
-        //TODO: make the specific account as frozen
-        struct token_balance {
-            int64_t amount{};
-            bool frozen = false;
-        };
-
+        /* scope = owner */
         struct balance_holder {
-            account_name owner{};
-            bool frozen = false;
-            flat_map<yx_symbol, token_balance> balance_map{};
-
-            uint64_t primary_key() const { return owner; }
-        };
-
-        struct token_stats {
-            uint64_t id{};
-            uint128_t yx_symbol_s{};
-            uint32_t required_kycvector;
-            int64_t supply = 0;
-            bool frozen = false;
+            uint64_t id = 0;
+            uint128_t yx_symbol_s{}; // yx_symbol which is serialized to 128 bit;
+                                     // eosio::symbol_type::value is higher 64 bit and issuer account is lower 64 bit.
+            int64_t amount = 0;
+            uint8_t options = 0;
 
             uint64_t primary_key() const { return id; }
             uint128_t by_yx_symbol_s() const { return yx_symbol_s; }
         };
 
-        typedef eosio::multi_index<N(stats), token_stats,
-                indexed_by<N(extendedsym), const_mem_fun<token_stats, uint128_t, &token_stats::by_yx_symbol_s> >
-        > stats;
-        typedef eosio::multi_index<N(accounts), balance_holder> accounts;
+        /* scope = token symbol */
+        struct token_stats {
+            uint64_t issuer = 0;
+            int64_t supply = 0;
+            uint32_t required_kycvector = 0;
+            uint8_t options = 0;
+
+            uint64_t primary_key() const { return issuer; }
+        };
+
+        typedef eosio::multi_index<N(tstats), token_stats> stats;
+        typedef eosio::multi_index<N(taccounts), balance_holder,
+                indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol_s> >
+        > accounts;
 
         void transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required, account_name payer);
 
