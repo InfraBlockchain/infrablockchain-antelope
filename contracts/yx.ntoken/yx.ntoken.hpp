@@ -59,7 +59,7 @@ namespace yosemite {
         /* native token stats per depository, scope = depository */
         struct native_token_stats {
             int64_t supply = 0;
-            bool frozen = false;
+            uint8_t options = 0; // frozen, ...
 
             uint64_t primary_key() const { return NTOKEN_STATS_KEY; }
         };

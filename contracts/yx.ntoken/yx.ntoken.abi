@@ -111,7 +111,7 @@
       "base": "",
       "fields": [
         {"name":"supply", "type":"int64"},
-        {"name":"is_frozen", "type":"uint8"}
+        {"name":"options", "type":"uint8"}
       ]
     }
   ],
