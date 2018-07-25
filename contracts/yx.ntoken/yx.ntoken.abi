@@ -126,19 +126,19 @@
     { "name": "printbalance", "type": "printbalance", "ricardian_contract": "" }
   ],
   "tables": [{
-      "name": "account",
+      "name": "ntaccounts",
       "type": "account_type",
       "index_type": "i64",
       "key_names" : ["owner"],
       "key_types" : ["uint64"]
     },{
-      "name": "accounttotal",
+      "name": "ntaccountstt",
       "type": "account_total_type",
       "index_type": "i64",
       "key_names" : [],
       "key_types" : []
     },{
-      "name": "stats",
+      "name": "ntstats",
       "type": "stats_type",
       "index_type": "i64",
       "key_names" : [],

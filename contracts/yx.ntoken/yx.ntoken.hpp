@@ -64,9 +64,9 @@ namespace yosemite {
             uint64_t primary_key() const { return NTOKEN_STATS_KEY; }
         };
 
-        typedef eosio::multi_index<N(stats), native_token_stats> stats_native;
-        typedef eosio::multi_index<N(account), native_balance_holder> accounts_native;
-        typedef eosio::multi_index<N(accounttotal), total_balance> accounts_native_total;
+        typedef eosio::multi_index<N(ntstats), native_token_stats> stats_native;
+        typedef eosio::multi_index<N(ntaccounts), native_balance_holder> accounts_native;
+        typedef eosio::multi_index<N(ntaccountstt), total_balance> accounts_native_total;
 
         void transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required, account_name payer);
         void transfern_internal(const account_name &from, const account_name &to, const yx_asset &quantity, bool fee_required,
