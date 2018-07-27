@@ -9,49 +9,44 @@ namespace yosemite {
                ((kycvector & KYC_VECTOR_BANK_ACCOUNT_AUTH) == KYC_VECTOR_BANK_ACCOUNT_AUTH);
     }
 
-    void ntoken::createn(const account_name &issuer) {
-        eosio_assert(static_cast<uint32_t>(yosemitesys::system_contract::is_authorized_sys_depository(issuer)),
-                     "issuer for native token must be authorized as system depository");
-        require_auth(issuer);
-
-        stats_native stats(get_self(), issuer);
-        const auto &holder = stats.find(NTOKEN_STATS_KEY);
-        eosio_assert(static_cast<uint32_t>(holder == stats.end()), "already created");
-
-        stats.emplace(get_self(), [&](auto &s) {
-            s.supply = 0;
-        });
-    }
-
-    void ntoken::issuen(const account_name &to, const yx_asset &quantity, const string &memo) {
+    void ntoken::nissue(const account_name &to, const yx_asset &quantity, const string &memo) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
         eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot issue non-native token with this operation or wrong precision is specified");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(quantity.issuer);
+        eosio_assert(static_cast<uint32_t>(yosemitesys::system_contract::is_authorized_sys_depository(quantity.issuer)),
+                     "issuer account is not system depository");
 
         stats_native stats(get_self(), quantity.issuer);
-        const auto &tstats = stats.get(NTOKEN_STATS_KEY, "createn for the issuer is not called");
+        const auto &tstats = stats.find(NTOKEN_BASIC_STATS_KEY);
 
-        if (to != quantity.issuer) {
-            charge_fee(quantity.issuer, N(issuen));
+        if (tstats == stats.end()) {
+            stats.emplace(get_self(), [&](auto &s) {
+                s.key = NTOKEN_BASIC_STATS_KEY;
+                s.supply = quantity.amount;
+            });
+        } else {
+            charge_fee(quantity.issuer, N(nissue));
+
+            stats.modify(tstats, 0, [&](auto &s) {
+                s.supply += quantity.amount;
+                eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount),
+                             "cannot issue token more than 2^62 - 1");
+            });
         }
-        //TODO:how to limit self-issuance properly?
-
-        stats.modify(tstats, 0, [&](auto &s) {
-            s.supply += quantity.amount;
-            eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount), "cannot issue token more than 2^62 - 1");
-        });
 
         add_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
 
         if (to != quantity.issuer) {
-            transfern_internal(quantity.issuer, to, quantity, false, 0);
+            INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
+                    (get_self(), {{quantity.issuer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                     { quantity.issuer, to, quantity, quantity.issuer, memo });
         }
     }
 
-    void ntoken::redeemn(const yx_asset &quantity, const string &memo) {
+    void ntoken::nredeem(const yx_asset &quantity, const string &memo) {
         eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
         eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must be positive quantity");
         eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot redeem non-native token with this operation or wrong precision is specified");
@@ -60,10 +55,10 @@ namespace yosemite {
         require_auth(quantity.issuer);
 
         stats_native stats(get_self(), quantity.issuer);
-        const auto &tstats = stats.get(NTOKEN_STATS_KEY, "createn for the issuer is not called");
+        const auto &tstats = stats.get(NTOKEN_BASIC_STATS_KEY, "createn for the issuer is not called");
         eosio_assert(static_cast<uint32_t>(tstats.supply >= quantity.amount), "insufficient supply of the native token of the specified depository");
 
-        charge_fee(quantity.issuer, N(redeemn));
+        charge_fee(quantity.issuer, N(nredeem));
 
         stats.modify(tstats, 0, [&](auto &s) {
             s.supply -= quantity.amount;
@@ -73,29 +68,68 @@ namespace yosemite {
     }
 
     void ntoken::transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo) {
-        eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "only native token is supported; use yx.token::transfer instead");
-        eosio_assert(static_cast<uint32_t>(quantity.issuer == 0), "invalid issuer : empty string is only allowed");
-        eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
-        eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+        if (!has_auth(yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME)) {
+            eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
+            eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
+            eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN),
+                         "only native token is supported; use yx.token::transfer instead");
+            eosio_assert(static_cast<uint32_t>(quantity.issuer == 0), "invalid issuer : empty string is only allowed");
+            eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
+            eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
-                     "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
-                     "authentication for to account is not enough");
+            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
+                         "authentication for from account is not enough");
+            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
+                         "authentication for to account is not enough");
 
-        transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME && to != FEEDIST_ACCOUNT_NAME, payer);
+            require_auth(from);
+            eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+
+            if (from != payer) {
+                require_auth(payer);
+                eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
+                             "authentication for fee payer account is not enough");
+            }
+            charge_fee(payer, N(transfer));
+        }
+
+        require_recipient(from);
+        require_recipient(to);
+
+        transfer_native_token(from, to, quantity);
     }
 
-    void ntoken::transfern(account_name from, account_name to, const yx_asset &quantity, account_name payer, const string &memo) {
-        eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN), "cannot transfer non-native token with this operation or wrong precision is specified");
-        eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+    void ntoken::ntransfer(account_name from, account_name to, const yx_asset &quantity, account_name payer,
+                           const string &memo) {
+        if (!has_auth(yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME)) {
+            eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
+            eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
+            eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN),
+                         "cannot transfer non-native token with this operation or wrong precision is specified");
+            eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
+            eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
-        transfern_internal(from, to, quantity, true, payer);
+            require_auth(from);
+            eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+
+            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
+                         "authentication for from account is not enough");
+            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
+                         "authentication for to account is not enough");
+
+            if (from != payer) {
+                require_auth(payer);
+                eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
+                             "authentication for fee payer account is not enough");
+            }
+            charge_fee(payer, N(ntransfer));
+        }
+
+        require_recipient(from);
+        require_recipient(to);
+
+        sub_native_token_balance(from, quantity.amount, quantity.issuer);
+        add_native_token_balance(to, quantity.amount, quantity.issuer);
     }
 
     void ntoken::transfer_native_token(const account_name &from, const account_name &to, yx_asset quantity) {
@@ -127,11 +161,10 @@ namespace yosemite {
     }
 
     bool ntoken::check_fee_operation(const uint64_t &operation_name) {
-        return operation_name == N(createn) ||
-               operation_name == N(issuen) ||
-               operation_name == N(redeemn) ||
+        return operation_name == N(nissue) ||
+                operation_name == N(nredeem) ||
                operation_name == N(transfer) ||
-               operation_name == N(transfern)
+                operation_name == N(ntransfer)
                ;
     }
 
@@ -140,7 +173,9 @@ namespace yosemite {
         const auto &fee_holder = fee_table.get(operation, "fee is not set or unknown operation");
 
         if (fee_holder.fee.amount > 0) {
-            transfer_internal(payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, false, 0);
+            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+                    (get_self(), {{payer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                     { payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, payer, "" });
         }
     }
 
@@ -190,52 +225,7 @@ namespace yosemite {
         });
     }
 
-    void ntoken::transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required,
-                                   account_name payer) {
-        require_auth(from);
-        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-
-        if (fee_required) {
-            if (from != payer) {
-                require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
-                             "authentication for fee payer account is not enough");
-            }
-            charge_fee(payer, N(transfer));
-        }
-
-        require_recipient(from);
-        require_recipient(to);
-
-        transfer_native_token(from, to, quantity);
-    }
-
-    void ntoken::transfern_internal(const account_name &from, const account_name &to, const yx_asset &quantity,
-                                    bool fee_required, const account_name &payer) {
-        require_auth(from);
-        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
-                     "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
-                     "authentication for to account is not enough");
-
-        if (fee_required) {
-            if (from != payer) {
-                require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
-                             "authentication for fee payer account is not enough");
-            }
-            charge_fee(payer, N(transfern));
-        }
-
-        require_recipient(from);
-        require_recipient(to);
-
-        sub_native_token_balance(from, quantity.amount, quantity.issuer);
-        add_native_token_balance(to, quantity.amount, quantity.issuer);
-    }
 }
 
-EOSIO_ABI(yosemite::ntoken, (createn)(issuen)(redeemn)(transfer)(transfern)(setfee)
+EOSIO_ABI(yosemite::ntoken, (nissue)(nredeem)(transfer)(ntransfer)(setfee)
 )

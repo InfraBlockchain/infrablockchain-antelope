@@ -1,6 +1,7 @@
 #include "yx.token.hpp"
 #include <yx.ntoken/yx.ntoken.hpp>
 #include <yx.kyc/yx.kyc.hpp>
+#include <yx.system/yx.system.hpp>
 
 namespace yosemite {
 
@@ -46,7 +47,9 @@ namespace yosemite {
         add_token_balance(quantity.issuer, quantity);
 
         if (to != quantity.issuer) {
-            transfer_internal(quantity.issuer, to, quantity, false, 0);
+            INLINE_ACTION_SENDER(yosemite::token, transfer)
+                    (get_self(), {{quantity.issuer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                     { quantity.issuer, to, quantity, quantity.issuer, memo });
         }
     }
 
@@ -73,21 +76,16 @@ namespace yosemite {
     }
 
     void token::transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo) {
-        eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
-        eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
-        eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-        eosio_assert(static_cast<uint32_t>(quantity.symbol.name() != NATIVE_TOKEN_NAME), "cannot transfer native token with this contract; use yx.ntoken");
+        if (!has_auth(yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME)) {
+            eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
+            eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
+            eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
+            eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+            eosio_assert(static_cast<uint32_t>(quantity.symbol.name() != NATIVE_TOKEN_NAME), "cannot transfer native token with this contract; use yx.ntoken");
 
-        transfer_internal(from, to, quantity, from != FEEDIST_ACCOUNT_NAME, payer);
-    }
+            require_auth(from);
+            eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
-    void token::transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required,
-                                  account_name payer) {
-        require_auth(from);
-        eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-
-        if (fee_required) {
             if (from != payer) {
                 require_auth(payer);
             }
@@ -109,12 +107,6 @@ namespace yosemite {
 
         sub_token_balance(from, quantity);
         add_token_balance(to, quantity);
-    }
-
-    int64_t token::get_supply(yx_symbol symbol) const {
-        stats stats_table(get_self(), symbol.value);
-        const auto &tstats = stats_table.get(symbol.issuer);
-        return tstats.supply;
     }
 
     void token::add_token_balance(const account_name &owner, const yx_asset &quantity) {
@@ -167,8 +159,8 @@ namespace yosemite {
 
         if (fee_holder.fee.amount > 0) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {payer, N(active)},
-                     { payer, FEEDIST_ACCOUNT_NAME, yx_asset{fee_holder.fee, 0}, payer, "" });
+                    (N(yx.ntoken), {{payer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                     { payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, payer, "" });
         }
     }
 }

@@ -54,10 +54,7 @@ namespace yosemite {
                 indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol_s> >
         > accounts;
 
-        void transfer_internal(account_name from, account_name to, yx_asset quantity, bool fee_required, account_name payer);
-
         void add_token_balance(const account_name &owner, const yx_asset &quantity);
         void sub_token_balance(const account_name &owner, const yx_asset &quantity);
-        int64_t get_supply(yx_symbol symbol) const;
     };
 }

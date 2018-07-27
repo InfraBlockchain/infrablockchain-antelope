@@ -7,7 +7,7 @@
 namespace yosemite {
     static const uint64_t NATIVE_TOKEN_NAME = S(0, DKRW) >> 8;
     static const uint64_t NATIVE_TOKEN = S(4, DKRW);
-    static const account_name FEEDIST_ACCOUNT_NAME = N(eosio); //N(yx.feedist);
+    static const account_name FEEDIST_ACCOUNT_NAME = N(eosio); //== yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME
 
     class fee_contract : public eosio::contract {
     public:

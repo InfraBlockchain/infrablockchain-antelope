@@ -104,8 +104,8 @@ namespace yosemitesys {
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {producer, N(active)},
-                     { producer, YOSEMITE_SYSTEM_ACCOUNT_NAME, yx_asset{YOSEMITE_REG_PRODUCER_TX_FEE, 0}, producer, "" });
+                    (N(yx.ntoken), {{producer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                     { producer, YOSEMITE_SYSTEM_ACCOUNT_NAME, {YOSEMITE_REG_PRODUCER_TX_FEE, 0}, producer, "" });
         }
     }
 
@@ -171,7 +171,7 @@ namespace yosemitesys {
         if( producer_per_block_pay > 0 ) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
                     (N(yx.ntoken), {YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)},
-                     { YOSEMITE_SYSTEM_ACCOUNT_NAME, owner, yx_asset{asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN), 0}, YOSEMITE_SYSTEM_ACCOUNT_NAME, "producer pay" });
+                     { YOSEMITE_SYSTEM_ACCOUNT_NAME, owner, {asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN), 0}, YOSEMITE_SYSTEM_ACCOUNT_NAME, "producer pay" });
         }
     }
 

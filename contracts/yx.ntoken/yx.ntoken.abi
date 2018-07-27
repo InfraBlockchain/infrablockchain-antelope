@@ -23,14 +23,7 @@
       ]
     },
     {
-      "name": "createn",
-      "base": "",
-      "fields": [
-        {"name":"depository", "type":"account_name"}
-      ]
-    },
-    {
-      "name": "issuen",
+      "name": "nissue",
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
@@ -39,7 +32,7 @@
       ]
     },
     {
-      "name": "redeemn",
+      "name": "nredeem",
       "base": "",
       "fields": [
         {"name":"quantity", "type":"yx_asset"},
@@ -58,7 +51,7 @@
       ]
     },
     {
-      "name": "transfern",
+      "name": "ntransfer",
       "base": "",
       "fields": [
         {"name":"from", "type":"account_name"},
@@ -95,17 +88,17 @@
       "name": "stats_type",
       "base": "",
       "fields": [
+        {"name":"key", "type":"name"},
         {"name":"supply", "type":"int64"},
         {"name":"options", "type":"uint8"}
       ]
     }
   ],
   "actions": [
-    { "name": "createn", "type": "createn", "ricardian_contract": "" },
-    { "name": "issuen", "type": "issuen", "ricardian_contract": "" },
-    { "name": "redeemn", "type": "redeemn", "ricardian_contract": "" },
+    { "name": "nissue", "type": "nissue", "ricardian_contract": "" },
+    { "name": "nredeem", "type": "nredeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
-    { "name": "transfern", "type": "transfern", "ricardian_contract": "" },
+    { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
   ],
   "tables": [{
@@ -124,8 +117,8 @@
       "name": "ntstats",
       "type": "stats_type",
       "index_type": "i64",
-      "key_names" : [],
-      "key_types" : []
+      "key_names" : ["key"],
+      "key_types" : ["uint64"]
     }
   ],
   "ricardian_clauses": []
