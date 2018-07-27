@@ -1,4 +1,5 @@
 #include "yx.system.hpp"
+#include <yosemitelib/system_accounts.hpp>
 #include <eosiolib/dispatcher.hpp>
 #include "../yx.ntoken/yx.ntoken.hpp"
 #include "yx.block_producer.cpp"
@@ -40,7 +41,7 @@ namespace yosemitesys {
     }
 
     void system_contract::setparams( const eosio::blockchain_parameters& params ) {
-        require_auth( YOSEMITE_SYSTEM_ACCOUNT_NAME );
+        require_auth( YOSEMITE_SYSTEM_ACCOUNT );
         (eosio::blockchain_parameters&)(_gstate) = params;
         eosio_assert( 3 <= _gstate.max_authority_depth, "max_authority_depth should be at least 3" );
         set_blockchain_parameters( params );
@@ -84,8 +85,8 @@ namespace yosemitesys {
                 // system depositories are exempted for new account transaction fee
 
                 INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                        (N(yx.ntoken), {{creator, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
-                         { creator, YOSEMITE_SYSTEM_ACCOUNT_NAME, {YOSEMITE_NEW_ACCOUNT_TX_FEE, 0}, creator, "" });
+                        (N(yx.ntoken), {{creator, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                         { creator, YOSEMITE_SYSTEM_ACCOUNT, {YOSEMITE_NEW_ACCOUNT_TX_FEE, 0}, creator, "" });
 
             }
         }

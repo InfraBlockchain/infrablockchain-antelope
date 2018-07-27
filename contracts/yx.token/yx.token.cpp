@@ -1,4 +1,5 @@
 #include "yx.token.hpp"
+#include <yosemitelib/system_accounts.hpp>
 #include <yx.ntoken/yx.ntoken.hpp>
 #include <yx.kyc/yx.kyc.hpp>
 #include <yx.system/yx.system.hpp>
@@ -48,7 +49,7 @@ namespace yosemite {
 
         if (to != quantity.issuer) {
             INLINE_ACTION_SENDER(yosemite::token, transfer)
-                    (get_self(), {{quantity.issuer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                    (get_self(), {{quantity.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { quantity.issuer, to, quantity, quantity.issuer, memo });
         }
     }
@@ -76,7 +77,7 @@ namespace yosemite {
     }
 
     void token::transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo) {
-        if (!has_auth(yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME)) {
+        if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
             eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
             eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
@@ -159,7 +160,7 @@ namespace yosemite {
 
         if (fee_holder.fee.amount > 0) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {{payer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                    (N(yx.ntoken), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, payer, "" });
         }
     }

@@ -1,6 +1,7 @@
 #include "yx.system.hpp"
 
-//#include <eosio.token/eosio.token.hpp>
+#include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/native_token_symbol.hpp>
 #include <eosiolib/dispatcher.hpp>
 #include "../yx.ntoken/yx.ntoken.hpp"
 
@@ -19,7 +20,7 @@ namespace yosemitesys {
     void system_contract::onblock( block_timestamp timestamp, account_name producer ) {
         using namespace eosio;
 
-        require_auth(YOSEMITE_SYSTEM_ACCOUNT_NAME);
+        require_auth(YOSEMITE_SYSTEM_ACCOUNT);
 
         /**
          * At startup the initial producer may not be one that is registered / elected
@@ -104,8 +105,8 @@ namespace yosemitesys {
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {{producer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
-                     { producer, YOSEMITE_SYSTEM_ACCOUNT_NAME, {YOSEMITE_REG_PRODUCER_TX_FEE, 0}, producer, "txfee regproducer" });
+                    (N(yx.ntoken), {{producer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                     { producer, YOSEMITE_SYSTEM_ACCOUNT, {YOSEMITE_REG_PRODUCER_TX_FEE, 0}, producer, "txfee regproducer" });
         }
     }
 
@@ -149,7 +150,7 @@ namespace yosemitesys {
         eosio_assert( prod.active(), "producer does not have an active key" );
         eosio_assert( prod.is_trusted_seed, "producer is not trusted seed producer" );
 
-        int64_t tx_fee_accumulated = yosemite::ntoken::get_total_native_token_balance(YOSEMITE_SYSTEM_ACCOUNT_NAME);
+        int64_t tx_fee_accumulated = yosemite::ntoken::get_total_native_token_balance(YOSEMITE_SYSTEM_ACCOUNT);
         eosio_assert( tx_fee_accumulated > 0, "no tx fee accumulated");
 
         auto ct = current_time();
@@ -170,8 +171,8 @@ namespace yosemitesys {
 
         if( producer_per_block_pay > 0 ) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)},
-                     { YOSEMITE_SYSTEM_ACCOUNT_NAME, owner, {asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN), 0}, YOSEMITE_SYSTEM_ACCOUNT_NAME, "producer pay" });
+                    (N(yx.ntoken), {YOSEMITE_SYSTEM_ACCOUNT, N(active)},
+                     { YOSEMITE_SYSTEM_ACCOUNT, owner, {asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), 0}, YOSEMITE_SYSTEM_ACCOUNT, "producer pay" });
         }
     }
 

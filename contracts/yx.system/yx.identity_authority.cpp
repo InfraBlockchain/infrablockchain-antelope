@@ -1,4 +1,5 @@
 #include "yx.system.hpp"
+#include <yosemitelib/system_accounts.hpp>
 #include <eosiolib/dispatcher.hpp>
 #include "../yx.ntoken/yx.ntoken.hpp"
 
@@ -31,8 +32,8 @@ namespace yosemitesys {
         // charge transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {{identity_authority, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
-                     { identity_authority, YOSEMITE_SYSTEM_ACCOUNT_NAME, yx_asset{YOSEMITE_REG_ID_AUTH_DEPO_TX_FEE, 0}, identity_authority, "txfee regidauth" });
+                    (N(yx.ntoken), {{identity_authority, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                     { identity_authority, YOSEMITE_SYSTEM_ACCOUNT, yx_asset{YOSEMITE_REG_ID_AUTH_DEPO_TX_FEE, 0}, identity_authority, "txfee regidauth" });
         }
     }
 

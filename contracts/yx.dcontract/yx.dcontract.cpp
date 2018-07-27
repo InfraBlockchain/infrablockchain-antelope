@@ -140,7 +140,7 @@ namespace yosemite {
 
         if (fee_holder.fee.amount > 0) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {{payer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                    (N(yx.ntoken), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, payer, "" });
         }
     }

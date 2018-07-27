@@ -5,6 +5,8 @@
 #pragma once
 
 #include "yx.native.hpp"
+#include <yosemitelib/native_token_symbol.hpp>
+#include <yosemitelib/system_accounts.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/time.hpp>
 #include <eosiolib/privileged.hpp>
@@ -20,12 +22,10 @@ namespace yosemitesys {
     using eosio::const_mem_fun;
     using eosio::block_timestamp;
 
-    static const uint64_t YOSEMITE_SYSTEM_ACCOUNT_NAME = N(eosio);
-    static const uint64_t YOSEMITE_NATIVE_TOKEN = S(4, DKRW);
-    static const asset YOSEMITE_NEW_ACCOUNT_TX_FEE = asset(500'0000, YOSEMITE_NATIVE_TOKEN);
-    static const asset YOSEMITE_REG_PRODUCER_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN);
-    static const asset YOSEMITE_REG_SYS_DEPO_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN);
-    static const asset YOSEMITE_REG_ID_AUTH_DEPO_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN);
+    static const asset YOSEMITE_NEW_ACCOUNT_TX_FEE = asset(500'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
+    static const asset YOSEMITE_REG_PRODUCER_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
+    static const asset YOSEMITE_REG_SYS_DEPO_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
+    static const asset YOSEMITE_REG_ID_AUTH_DEPO_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
     static const uint32_t YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT = 15;
 
     struct yosemite_global_state : eosio::blockchain_parameters {
@@ -152,7 +152,7 @@ namespace yosemitesys {
         void rmvsysdepo( const account_name depository );
 
         static bool is_authorized_sys_depository( const account_name depository ) {
-            sys_depository_table depositories(YOSEMITE_SYSTEM_ACCOUNT_NAME, YOSEMITE_SYSTEM_ACCOUNT_NAME);
+            sys_depository_table depositories(YOSEMITE_SYSTEM_ACCOUNT, YOSEMITE_SYSTEM_ACCOUNT);
             auto depo = depositories.find( depository );
             return depo != depositories.end() && (*depo).is_authorized;
         }
@@ -167,7 +167,7 @@ namespace yosemitesys {
         void rmvidauth( const account_name identity_authority );
 
         static bool is_authorized_identity_authority( const account_name identity_authority ) {
-            identity_authority_table idauthorities(YOSEMITE_SYSTEM_ACCOUNT_NAME, YOSEMITE_SYSTEM_ACCOUNT_NAME);
+            identity_authority_table idauthorities(YOSEMITE_SYSTEM_ACCOUNT, YOSEMITE_SYSTEM_ACCOUNT);
             auto idauth = idauthorities.find( identity_authority );
             return idauth != idauthorities.end() && (*idauth).is_authorized;
         }

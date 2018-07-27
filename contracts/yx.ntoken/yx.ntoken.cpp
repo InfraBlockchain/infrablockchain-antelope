@@ -1,6 +1,8 @@
 #include "yx.ntoken.hpp"
+#include <yosemitelib/system_accounts.hpp>
 #include <yx.kyc/yx.kyc.hpp>
 #include <yx.system/yx.system.hpp>
+
 
 namespace yosemite {
 
@@ -41,7 +43,7 @@ namespace yosemite {
 
         if (to != quantity.issuer) {
             INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
-                    (get_self(), {{quantity.issuer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                    (get_self(), {{quantity.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { quantity.issuer, to, quantity, quantity.issuer, memo });
         }
     }
@@ -68,7 +70,7 @@ namespace yosemite {
     }
 
     void ntoken::transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo) {
-        if (!has_auth(yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME)) {
+        if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
             eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
             eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
             eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN),
@@ -101,7 +103,7 @@ namespace yosemite {
 
     void ntoken::ntransfer(account_name from, account_name to, const yx_asset &quantity, account_name payer,
                            const string &memo) {
-        if (!has_auth(yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME)) {
+        if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
             eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
             eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
             eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN),
@@ -174,7 +176,7 @@ namespace yosemite {
 
         if (fee_holder.fee.amount > 0) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (get_self(), {{payer, N(active)}, {yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
+                    (get_self(), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, payer, "" });
         }
     }

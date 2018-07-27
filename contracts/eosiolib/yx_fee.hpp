@@ -1,13 +1,15 @@
 #ifndef YX_FEE_HPP
 #define YX_FEE_HPP
 
+#include <yosemitelib/native_token_symbol.hpp>
+#include <yosemitelib/system_accounts.hpp>
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
 
 namespace yosemite {
-    static const uint64_t NATIVE_TOKEN_NAME = S(0, DKRW) >> 8;
-    static const uint64_t NATIVE_TOKEN = S(4, DKRW);
-    static const account_name FEEDIST_ACCOUNT_NAME = N(eosio); //== yosemitesys::YOSEMITE_SYSTEM_ACCOUNT_NAME
+    static const uint64_t NATIVE_TOKEN_NAME = YOSEMITE_NATIVE_TOKEN_SYMBOL >> 8; //S(0, DKRW) >> 8;
+    static const uint64_t NATIVE_TOKEN = YOSEMITE_NATIVE_TOKEN_SYMBOL; //S(4, DKRW);
+    static const account_name FEEDIST_ACCOUNT_NAME = YOSEMITE_SYSTEM_ACCOUNT;
 
     class fee_contract : public eosio::contract {
     public:
