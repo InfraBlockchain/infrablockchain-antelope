@@ -3,6 +3,7 @@
 #include "../yx.ntoken/yx.ntoken.hpp"
 #include "yx.block_producer.cpp"
 #include "yx.sys_depository.cpp"
+#include "yx.identity_authority.cpp"
 
 namespace yosemitesys {
     using yosemite::yx_asset;
@@ -11,9 +12,9 @@ namespace yosemitesys {
             :native(s),
              _producers(_self,_self),
              _sys_depositories(_self,_self),
+             _identity_authorities(_self,_self),
              _global(_self,_self)
     {
-        //print( "construct system\n" );
         _gstate = _global.exists() ? _global.get() : get_default_parameters();
     }
 
@@ -39,7 +40,7 @@ namespace yosemitesys {
     }
 
     void system_contract::setparams( const eosio::blockchain_parameters& params ) {
-        require_auth( N(eosio) );
+        require_auth( YOSEMITE_SYSTEM_ACCOUNT_NAME );
         (eosio::blockchain_parameters&)(_gstate) = params;
         eosio_assert( 3 <= _gstate.max_authority_depth, "max_authority_depth should be at least 3" );
         set_blockchain_parameters( params );
@@ -105,4 +106,6 @@ EOSIO_ABI( yosemitesys::system_contract,
            (onblock)(regproducer)(authproducer)(unregprod)(rmvproducer)(claimrewards)
            // yx.sys_depository.cpp
            (regsysdepo)(authsysdepo)(rmvsysdepo)
+           // yx.identity_authority.cpp
+           (regidauth)(authidauth)(rmvidauth)
 )

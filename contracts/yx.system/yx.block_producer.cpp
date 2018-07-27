@@ -116,7 +116,7 @@ namespace yosemitesys {
 
         eosio_assert( prod != _producers.end(), "not found registered block producer" );
 
-        _producers.modify( prod, _self, [&]( producer_info& info ){
+        _producers.modify( prod, 0, [&]( producer_info& info ){
             info.is_trusted_seed = true;
         });
     }
@@ -126,7 +126,7 @@ namespace yosemitesys {
 
         const auto& prod = _producers.get( producer, "producer not found" );
 
-        _producers.modify( prod, producer, [&]( producer_info& info ){
+        _producers.modify( prod, 0, [&]( producer_info& info ){
             info.deactivate();
         });
     }
@@ -135,7 +135,7 @@ namespace yosemitesys {
         require_auth( _self );
         auto prod = _producers.find( producer );
         eosio_assert( prod != _producers.end(), "producer not found" );
-        _producers.modify( prod, _self, [&](producer_info& info) {
+        _producers.modify( prod, 0, [&](producer_info& info) {
             info.deactivate();
             info.is_trusted_seed = false;
         });
@@ -163,7 +163,7 @@ namespace yosemitesys {
 
         _gstate.total_unpaid_blocks -= prod.unpaid_blocks;
 
-        _producers.modify( prod, owner, [&](auto& p) {
+        _producers.modify( prod, 0, [&](auto& p) {
             p.last_claim_time = ct;
             p.unpaid_blocks = 0;
         });
