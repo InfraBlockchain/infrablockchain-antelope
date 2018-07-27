@@ -20,7 +20,7 @@ namespace yosemitesys {
                 info.location      = location;
             });
         } else {
-            _sys_depositories.emplace( _self, [&]( sys_depository_info& info ){
+            _sys_depositories.emplace( depository, [&]( sys_depository_info& info ){
                 info.owner         = depository;
                 info.is_authorized = false;
                 info.url           = url;
@@ -43,7 +43,7 @@ namespace yosemitesys {
 
         eosio_assert( depo != _sys_depositories.end(), "not found registered system depository" );
 
-        _sys_depositories.modify( depo, _self, [&]( sys_depository_info& info ){
+        _sys_depositories.modify( depo, 0, [&]( sys_depository_info& info ){
             info.is_authorized = true;
         });
     }
@@ -55,7 +55,7 @@ namespace yosemitesys {
 
        eosio_assert( depo != _sys_depositories.end(), "not found registered system depository" );
 
-       _sys_depositories.modify( depo, _self, [&]( sys_depository_info& info ){
+       _sys_depositories.modify( depo, 0, [&]( sys_depository_info& info ){
            info.is_authorized = false;
        });
     }
