@@ -105,7 +105,7 @@ namespace yosemitesys {
         if (!has_auth(_self)) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
                     (N(yx.ntoken), {{producer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT_NAME, N(active)}},
-                     { producer, YOSEMITE_SYSTEM_ACCOUNT_NAME, {YOSEMITE_REG_PRODUCER_TX_FEE, 0}, producer, "" });
+                     { producer, YOSEMITE_SYSTEM_ACCOUNT_NAME, {YOSEMITE_REG_PRODUCER_TX_FEE, 0}, producer, "txfee regproducer" });
         }
     }
 
