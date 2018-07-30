@@ -204,6 +204,15 @@
          {"name":"location",        "type":"uint16"}
       ]
     },{
+      "name": "identity_authority_info",
+      "base": "",
+      "fields": [
+         {"name":"owner",           "type":"account_name"},
+         {"name":"is_authorized",   "type":"bool"},
+         {"name":"url",             "type":"string"},
+         {"name":"location",        "type":"uint16"}
+      ]
+    },{
       "name": "setram",
       "base": "",
       "fields": [
@@ -261,6 +270,26 @@
       "base": "",
       "fields": [
         {"name":"depository",   "type":"account_name"}
+      ]
+    },{
+      "name": "regidauth",
+      "base": "",
+      "fields": [
+        {"name":"identity_authority",   "type":"account_name"},
+        {"name":"url",          "type":"string"},
+        {"name":"location",     "type":"uint16"}
+      ]
+    },{
+      "name": "authidauth",
+      "base": "",
+      "fields": [
+        {"name":"identity_authority",   "type":"account_name"}
+      ]
+    },{
+      "name": "rmvidauth",
+      "base": "",
+      "fields": [
+        {"name":"identity_authority",   "type":"account_name"}
       ]
     },{
       "name": "setpriv",
@@ -407,6 +436,18 @@
       "name": "rmvsysdepo",
       "type": "rmvsysdepo",
       "ricardian_contract": ""
+   },{
+      "name": "regidauth",
+      "type": "regidauth",
+      "ricardian_contract": ""
+   },{
+      "name": "authidauth",
+      "type": "authidauth",
+      "ricardian_contract": ""
+   },{
+      "name": "rmvidauth",
+      "type": "rmvidauth",
+      "ricardian_contract": ""
    }],
    "tables": [{
       "name": "producers",
@@ -417,6 +458,12 @@
     },{
       "name": "sysdepos",
       "type": "sys_depository_info",
+      "index_type": "i64",
+      "key_names" : ["owner"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "idauthority",
+      "type": "identity_authority_info",
       "index_type": "i64",
       "key_names" : ["owner"],
       "key_types" : ["uint64"]
