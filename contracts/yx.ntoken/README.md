@@ -62,7 +62,7 @@ cleos push action yx.ntoken setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.ntoken
 * d1 must be the system depository.
 * In this example, DKRW/system is the native token.
 ```
-cleos push action yx.ntoken nissue '[ "user1", {"quantity":"100000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
+cleos push action yx.ntoken nissue '[ "user1", {"asset":"100000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
 ```
 
 ## redeem native token from user1 by d1
@@ -72,7 +72,7 @@ cleos push action yx.ntoken transfer '[ "user1", "d1", "10000.0000 DKRW", "memo"
 ```
 1. d1 checks the transfer operation is done and calls nredeem operation.
 ```
-cleos push action yx.ntoken nredeem '[ {"quantity":"10000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
+cleos push action yx.ntoken nredeem '[ {"asset":"10000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
 ```
 
 ## transfer native token from user1 to user2
@@ -84,14 +84,14 @@ cleos push action yx.ntoken transfer '[ "user1", "user2", "10000.0000 DKRW", "me
 ### use ntransfer operation
 * would be used by depository only
 ```
-cleos push action yx.ntoken ntransfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "memo" ]' -p user1
+cleos push action yx.ntoken ntransfer '[ "user1", "user2", {"asset":"10000.0000 DKRW","issuer":"d1"}, "memo" ]' -p user1
 ```
 
 ### parameters of transfer and ntransfer operations
 * Parameters
    1. `from` : account name to transfer from
    1. `to` : account name to transfer to
-   1. `quantity` : token amount and symbol with issuer account; in case of native token, issuer is the empty string
+   1. `asset` : token amount and symbol with issuer account; in case of native token, issuer is the empty string
    1. `fee payer` : account name which pays fee; usually the same as `from` account name
    1. `memo` : string less than or equal to 256 bytes
 
@@ -131,13 +131,13 @@ cleos get table yx.ntoken user1 ntaccountstt
 cleos push action eosio regsysdepo '["d1","http://sysdepo.org",1]' -p d1 eosio
 cleos push action eosio authsysdepo '["d1"]' -p eosio
 
-cleos push action yx.ntoken nissue '[ "d1", {"quantity":"1000000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
-cleos push action yx.ntoken nissue '[ "d2", {"quantity":"100000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
+cleos push action yx.ntoken nissue '[ "d1", {"asset":"1000000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
+cleos push action yx.ntoken nissue '[ "d2", {"asset":"100000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
 cleos get table yx.ntoken d1 ntstats
 cleos get table yx.ntoken d1 ntaccounts
 cleos get table yx.ntoken d2 ntaccounts
 cleos push action yx.ntoken transfer '[ "d1", "user1", "10000.0000 DKRW", "memo"]' -p d1
-cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p d1
+cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"asset":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p d1
 cleos get table yx.ntoken user1 ntaccounts
 cleos get table yx.ntoken user1 ntaccountstt
 cleos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "d2", "memo" ]' -p user1 d2
@@ -145,7 +145,7 @@ cleos get table yx.ntoken user1 ntaccounts
 cleos get table yx.ntoken d2 ntaccounts
 cleos get table yx.ntoken user2 ntaccounts
 # error transactions
-cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"quantity":"100000000.0000 DKRW","issuer":"d1"}, "d1", m"]' -p d1
-cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"quantity":"10000.0000 DKRW","issuer":"d2"}, "d1", "m" ]' -p d1
+cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"asset":"100000000.0000 DKRW","issuer":"d1"}, "d1", m"]' -p d1
+cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"asset":"10000.0000 DKRW","issuer":"d2"}, "d1", "m" ]' -p d1
 cleos push action yx.ntoken transfer '[ "user1", "user2", "10000.0000 DKRW", "d2", "m" ]' -p user1
 ```

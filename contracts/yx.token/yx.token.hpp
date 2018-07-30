@@ -18,10 +18,10 @@ namespace yosemite {
         }
 
         void create(const yx_symbol &symbol, uint32_t kycvector);
-        void issue(const account_name &to, const yx_asset &quantity, const string &memo);
-        void redeem(const yx_asset &quantity, const string &memo);
-        void transfer(account_name from, account_name to, yx_asset quantity, const string &memo);
-        void wptransfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo);
+        void issue(const account_name &to, const yx_asset &asset, const string &memo);
+        void redeem(const yx_asset &asset, const string &memo);
+        void transfer(account_name from, account_name to, yx_asset asset, const string &memo);
+        void wptransfer(account_name from, account_name to, yx_asset asset, account_name payer, const string &memo);
 
     protected:
         bool check_fee_operation(const uint64_t &operation_name) override;
@@ -55,7 +55,7 @@ namespace yosemite {
                 indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol_s> >
         > accounts;
 
-        void add_token_balance(const account_name &owner, const yx_asset &quantity);
-        void sub_token_balance(const account_name &owner, const yx_asset &quantity);
+        void add_token_balance(const account_name &owner, const yx_asset &asset);
+        void sub_token_balance(const account_name &owner, const yx_asset &asset);
     };
 }

@@ -24,14 +24,14 @@ namespace yosemite {
         explicit ntoken(account_name self) : fee_contract(self) {
         }
 
-        void nissue(const account_name &to, const yx_asset &quantity, const string &memo);
-        void nredeem(const yx_asset &quantity, const string &memo);
-        void transfer(account_name from, account_name to, eosio::asset quantity, const string &memo);
-        void wptransfer(account_name from, account_name to, eosio::asset quantity, account_name payer, const string &memo);
-        void ntransfer(account_name from, account_name to, const yx_asset &quantity, const string &memo);
-        void wpntransfer(account_name from, account_name to, const yx_asset &quantity, account_name payer, const string &memo);
-        void payfee(account_name payer, asset quantity);
-        void feetransfer(account_name payer, const yx_asset &quantity);
+        void nissue(const account_name &to, const yx_asset &asset, const string &memo);
+        void nredeem(const yx_asset &asset, const string &memo);
+        void transfer(account_name from, account_name to, eosio::asset asset, const string &memo);
+        void wptransfer(account_name from, account_name to, eosio::asset asset, account_name payer, const string &memo);
+        void ntransfer(account_name from, account_name to, const yx_asset &asset, const string &memo);
+        void wpntransfer(account_name from, account_name to, const yx_asset &asset, account_name payer, const string &memo);
+        void payfee(account_name payer, asset asset);
+        void feetransfer(account_name payer, const yx_asset &asset);
 
         static inline int64_t get_total_native_token_balance(const account_name &owner);
 
@@ -68,8 +68,8 @@ namespace yosemite {
         typedef eosio::multi_index<N(ntaccounts), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(ntaccountstt), total_balance> accounts_native_total;
 
-        void add_native_token_balance(const account_name &owner, const yx_asset &quantity);
-        void sub_native_token_balance(const account_name &owner, const yx_asset &quantity);
+        void add_native_token_balance(const account_name &owner, const yx_asset &asset);
+        void sub_native_token_balance(const account_name &owner, const yx_asset &asset);
 
         bool is_auth_enough_for_transfer(uint32_t kycvector);
     };
