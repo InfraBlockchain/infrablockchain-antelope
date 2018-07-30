@@ -1,11 +1,11 @@
 #include "yx.system.hpp"
 
-#include <yosemitelib/native_token_symbol.hpp>
+#include <yosemitelib/native_token.hpp>
+#include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 
 #include <eosiolib/dispatcher.hpp>
-#include "../yx.ntoken/yx.ntoken.hpp"
 
 namespace yosemitesys {
 
@@ -153,7 +153,7 @@ namespace yosemitesys {
         eosio_assert( prod.active(), "producer does not have an active key" );
         eosio_assert( prod.is_trusted_seed, "producer is not trusted seed producer" );
 
-        int64_t tx_fee_accumulated = yosemite::ntoken::get_total_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT);
+        int64_t tx_fee_accumulated = yosemite::get_total_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT);
         eosio_assert( tx_fee_accumulated > 0, "no tx fee accumulated");
 
         auto ct = current_time();

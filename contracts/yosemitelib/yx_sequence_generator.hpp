@@ -17,8 +17,7 @@ namespace yosemite {
 
     typedef eosio::multi_index<N(seqholders), sequence_holder> seqholders;
 
-    class sequence_generator {
-    public:
+    struct sequence_generator {
         static uint64_t new_sequence(uint64_t contract, uint64_t scope) {
             seqholders _sequences(contract, scope);
             auto itr = _sequences.find(sequence_holder::PRIMARY_KEY);

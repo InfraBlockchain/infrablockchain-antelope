@@ -5,7 +5,7 @@
 #pragma once
 
 #include "yx.native.hpp"
-#include <yosemitelib/native_token_symbol.hpp>
+#include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/time.hpp>
