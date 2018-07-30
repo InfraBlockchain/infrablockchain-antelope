@@ -192,10 +192,10 @@ namespace yosemite {
         require_auth(YOSEMITE_SYSTEM_ACCOUNT);
 
         require_recipient(payer);
-        require_recipient(FEEDIST_ACCOUNT_NAME);
+        require_recipient(YOSEMITE_TX_FEE_ACCOUNT);
 
         sub_native_token_balance(payer, quantity);
-        add_native_token_balance(FEEDIST_ACCOUNT_NAME, quantity);
+        add_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT, quantity);
     }
 
     bool ntoken::check_fee_operation(const uint64_t &operation_name) {

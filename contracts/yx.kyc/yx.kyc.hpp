@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/yx_kyc.hpp>
 #include <yosemitelib/yx_fee.hpp>
 #include <string>
@@ -40,7 +41,7 @@ namespace yosemite {
 
     uint32_t kyc::get_kyc_vector(const account_name &account, bool assert) {
         // for all system accounts
-        if (account == FEEDIST_ACCOUNT_NAME) {
+        if (account == YOSEMITE_SYSTEM_ACCOUNT || account == YOSEMITE_TX_FEE_ACCOUNT) {
             return KYC_VECTOR_MAX_VALUE;
         }
 
