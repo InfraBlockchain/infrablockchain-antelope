@@ -76,7 +76,11 @@ namespace yosemite {
     }
 
     void ntoken::wptransfer(account_name from, account_name to, eosio::asset asset, account_name payer, const string &memo) {
-        if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
+        eosio::asset txfee_amount;
+
+        if (has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
+            txfee_amount = eosio::asset{0, YOSEMITE_NATIVE_TOKEN_SYMBOL};
+        } else {
             eosio_assert(static_cast<uint32_t>(asset.is_valid()), "invalid asset");
             eosio_assert(static_cast<uint32_t>(asset.amount > 0), "must transfer positive asset");
             eosio_assert(static_cast<uint32_t>(asset.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
@@ -92,7 +96,7 @@ namespace yosemite {
                 eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
                              "authentication for fee payer account is not enough");
             }
-            charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER);
+            txfee_amount = charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER);
         }
 
         // NOTE:We don't need notification to from and to account here. It's done by several ntrasfer operation.
@@ -112,10 +116,27 @@ namespace yosemite {
                 break;
             }
 
-            int64_t to_balance = 0;
+            // consider transaction fee by calculation because fee transaction is inline transaction
+            // (not reflected at this time)
+            int64_t from_balance = 0;
+            if (txfee_amount.amount > 0) {
+                if (from_balance_holder.amount <= txfee_amount.amount) {
+                    from_balance = 0;
+                    txfee_amount.amount -= from_balance_holder.amount;
+                } else {
+                    from_balance = from_balance_holder.amount - txfee_amount.amount;
+                    txfee_amount.amount = 0;
+                }
+            } else {
+                from_balance = from_balance_holder.amount;
+            }
+            if (from_balance <= 0) {
+                continue;
+            }
 
-            if (from_balance_holder.amount <= asset.amount) {
-                to_balance = from_balance_holder.amount;
+            int64_t to_balance = 0;
+            if (from_balance <= asset.amount) {
+                to_balance = from_balance;
                 asset.amount -= to_balance;
             } else {
                 to_balance = asset.amount;
@@ -218,7 +239,7 @@ namespace yosemite {
         add_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT, asset);
     }
 
-    void ntoken::charge_fee(const account_name &payer, uint64_t operation) {
+    asset ntoken::charge_fee(const account_name &payer, uint64_t operation) {
         auto tx_fee = yosemite::get_transaction_fee(operation);
 
         if (tx_fee.amount > 0) {
@@ -226,6 +247,8 @@ namespace yosemite {
                     (get_self(), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      {payer, tx_fee});
         }
+
+        return tx_fee;
     }
 
     void ntoken::add_native_token_balance(const account_name &owner, const yx_asset &asset) {

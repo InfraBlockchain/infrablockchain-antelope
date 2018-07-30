@@ -35,7 +35,7 @@ namespace yosemite {
         static inline int64_t get_total_native_token_balance(const account_name &owner);
 
     private:
-        void charge_fee(const account_name &payer, uint64_t operation);
+        asset charge_fee(const account_name &payer, uint64_t operation);
 
         /* scope = owner */
         struct total_balance {
