@@ -5,7 +5,7 @@
 #include "yx.dcontract.hpp"
 #include <yx.system/yx.system.hpp>
 #include <yx.ntoken/yx.ntoken.hpp>
-#include <eosiolib/yx_sequence_generator.hpp>
+#include <yosemitelib/yx_sequence_generator.hpp>
 
 namespace yosemite {
 

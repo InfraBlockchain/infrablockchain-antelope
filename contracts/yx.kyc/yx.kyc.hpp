@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <eosiolib/yx_kyc.hpp>
-#include <eosiolib/yx_fee.hpp>
+#include <yosemitelib/yx_kyc.hpp>
+#include <yosemitelib/yx_fee.hpp>
 #include <string>
 
 namespace yosemite {

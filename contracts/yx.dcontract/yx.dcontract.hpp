@@ -5,7 +5,7 @@
 #pragma once
 
 #include <eosiolib/time.hpp>
-#include <eosiolib/yx_fee.hpp>
+#include <yosemitelib/yx_fee.hpp>
 #include <string>
 
 namespace yosemite {

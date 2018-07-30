@@ -5,10 +5,10 @@
 #pragma once
 
 #include <eosiolib/eosio.hpp>
-#include "../eosiolib/yx_asset.hpp"
+#include "../yosemitelib/yx_asset.hpp"
 
 #include <string>
-#include "../eosiolib/yx_fee.hpp"
+#include "../yosemitelib/yx_fee.hpp"
 
 namespace yosemite {
 
