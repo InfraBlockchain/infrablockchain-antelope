@@ -72,7 +72,7 @@ cleos push action yx.token redeem '[ {"quantity":"10000.0000 BTC","issuer":"d2"}
 
 ## transfer non-native token from user1 to user2
 ```
-cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","issuer":"d2"}, "user1", "memo" ]' -p user1
+cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user1
 ```
 ### parameters of transfer operation
 * Parameters
@@ -85,7 +85,7 @@ cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000
 ### if the fee payer account is different from 'from' account
 * It requires the signature of the fee payer account.
 ```
-cleos push action yx.token transfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","issuer":"d2"}, "servprovider", "memo" ]' -p user1 servprovider
+cleos push action yx.token wptransfer '[ "user1", "user2", {"quantity":"10000.0000 BTC","issuer":"d2"}, "servprovider", "memo" ]' -p user1 servprovider
 ```
 ## get the token statistics
 ```
@@ -108,7 +108,7 @@ cleos get table yx.token 4,BTC tstats
 cleos push action yx.token issue '[ "user2", {"quantity":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
 cleos get table yx.token d2 taccounts
 cleos get table yx.token user2 taccounts
-cleos push action yx.token transfer '[ "user2", "user1", {"quantity":"10000.0000 BTC","issuer":"d2"}, "user2", "memo" ]' -p user2
+cleos push action yx.token transfer '[ "user2", "user1", {"quantity":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user2
 cleos get table yx.token user1 taccounts
 cleos get table yx.token user2 taccounts
 ```

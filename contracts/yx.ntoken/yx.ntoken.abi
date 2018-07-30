@@ -46,12 +46,32 @@
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
         {"name":"quantity", "type":"asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "wptransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"asset"},
         {"name":"payer", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
     },
     {
       "name": "ntransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "wpntransfer",
       "base": "",
       "fields": [
         {"name":"from", "type":"account_name"},
@@ -114,7 +134,9 @@
     { "name": "nissue", "type": "nissue", "ricardian_contract": "" },
     { "name": "nredeem", "type": "nredeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
+    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
     { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
+    { "name": "wpntransfer", "type": "ntransfer", "ricardian_contract": "" },
     { "name": "payfee", "type": "payfee", "ricardian_contract": "" },
     { "name": "feetransfer", "type": "feetransfer", "ricardian_contract": "" },
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" }

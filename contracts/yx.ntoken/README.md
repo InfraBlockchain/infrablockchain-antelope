@@ -68,7 +68,7 @@ cleos push action yx.ntoken nissue '[ "user1", {"quantity":"100000.0000 DKRW","i
 ## redeem native token from user1 by d1
 1. user1 transfers the native token to d1.
 ```
-cleos push action yx.ntoken transfer '[ "user1", "d1", "10000.0000 DKRW", "user1", "memo" ]' -p user1
+cleos push action yx.ntoken transfer '[ "user1", "d1", "10000.0000 DKRW", "memo" ]' -p user1
 ```
 1. d1 checks the transfer operation is done and calls nredeem operation.
 ```
@@ -79,13 +79,14 @@ cleos push action yx.ntoken nredeem '[ {"quantity":"10000.0000 DKRW","issuer":"d
 ### use normal transfer operation
 * DKRW tokens issued by any depositories can be transferred.
 ```
-cleos push action yx.ntoken transfer '[ "user1", "user2", "10000.0000 DKRW", "user1", "memo" ]' -p user1
+cleos push action yx.ntoken transfer '[ "user1", "user2", "10000.0000 DKRW", "memo" ]' -p user1
 ```
 ### use ntransfer operation
 * would be used by depository only
 ```
-cleos push action yx.ntoken ntransfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "user1", "memo" ]' -p user1
+cleos push action yx.ntoken ntransfer '[ "user1", "user2", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "memo" ]' -p user1
 ```
+
 ### parameters of transfer and ntransfer operations
 * Parameters
    1. `from` : account name to transfer from
@@ -97,8 +98,10 @@ cleos push action yx.ntoken ntransfer '[ "user1", "user2", {"quantity":"10000.00
 ### if the fee payer account is different from 'from' account
 * It requires the signature of the fee payer account.
 ```
-cleos push action yx.ntoken transfer '[ "user1", "user2", "10000.0000 DKRW", "servprovider", "memo" ]' -p user1 servprovider
+cleos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "servprovider", "memo" ]' -p user1 servprovider
 ```
+* For ntrasfer, wpntransfer operation is provided for the payer.
+* 'wp' means 'with payer'.
 
 ## get the stats of native token per depository
 * d1 is the name of system depository account.
@@ -133,11 +136,11 @@ cleos push action yx.ntoken nissue '[ "d2", {"quantity":"100000.0000 DKRW","issu
 cleos get table yx.ntoken d1 ntstats
 cleos get table yx.ntoken d1 ntaccounts
 cleos get table yx.ntoken d2 ntaccounts
-cleos push action yx.ntoken transfer '[ "d1", "user1", "10000.0000 DKRW", "d1", "memo"]' -p d1
+cleos push action yx.ntoken transfer '[ "d1", "user1", "10000.0000 DKRW", "memo"]' -p d1
 cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"quantity":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p d1
 cleos get table yx.ntoken user1 ntaccounts
 cleos get table yx.ntoken user1 ntaccountstt
-cleos push action yx.ntoken transfer '[ "user1", "user2", "10000.0000 DKRW", "d2", "memo" ]' -p user1 d2
+cleos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "d2", "memo" ]' -p user1 d2
 cleos get table yx.ntoken user1 ntaccounts
 cleos get table yx.ntoken d2 ntaccounts
 cleos get table yx.ntoken user2 ntaccounts

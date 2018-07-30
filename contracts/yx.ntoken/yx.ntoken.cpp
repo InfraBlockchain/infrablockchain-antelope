@@ -44,7 +44,7 @@ namespace yosemite {
         if (to != quantity.issuer) {
             INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
                     (get_self(), {{quantity.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     { quantity.issuer, to, quantity, quantity.issuer, memo });
+                     { quantity.issuer, to, quantity, memo });
         }
     }
 
@@ -69,7 +69,11 @@ namespace yosemite {
         sub_native_token_balance(quantity.issuer, quantity);
     }
 
-    void ntoken::transfer(account_name from, account_name to, eosio::asset quantity, account_name payer, const string &memo) {
+    void ntoken::transfer(account_name from, account_name to, eosio::asset quantity, const string &memo) {
+        wptransfer(from, to, quantity, from, memo);
+    }
+
+    void ntoken::wptransfer(account_name from, account_name to, eosio::asset quantity, account_name payer, const string &memo) {
         if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
             eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
             eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
@@ -77,11 +81,6 @@ namespace yosemite {
                          "only native token is supported; use yx.token::transfer instead");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-
-            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
-                         "authentication for from account is not enough");
-            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
-                         "authentication for to account is not enough");
 
             require_auth(from);
             eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
@@ -95,6 +94,11 @@ namespace yosemite {
         }
 
         // NOTE:We don't need notification to from and to account here. It's done by several ntrasfer operation.
+
+        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
+                     "authentication for from account is not enough");
+        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
+                     "authentication for to account is not enough");
 
         accounts_native_total from_total(get_self(), from);
         const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
@@ -117,13 +121,17 @@ namespace yosemite {
             }
 
             yx_symbol native_token_symbol{NATIVE_TOKEN, from_balance_holder.depository};
-            INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
+            INLINE_ACTION_SENDER(yosemite::ntoken, wpntransfer)
                     (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { from, to, {to_balance, native_token_symbol}, payer, memo });
         }
     }
 
-    void ntoken::ntransfer(account_name from, account_name to, const yx_asset &quantity, account_name payer,
+    void ntoken::ntransfer(account_name from, account_name to, const yx_asset &quantity, const string &memo) {
+        wpntransfer(from, to, quantity, from, memo);
+    }
+
+    void ntoken::wpntransfer(account_name from, account_name to, const yx_asset &quantity, account_name payer,
                            const string &memo) {
         if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
             eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
@@ -136,11 +144,6 @@ namespace yosemite {
             require_auth(from);
             eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
-            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
-                         "authentication for from account is not enough");
-            eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
-                         "authentication for to account is not enough");
-
             if (from != payer) {
                 require_auth(payer);
                 eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
@@ -148,6 +151,11 @@ namespace yosemite {
             }
             charge_fee(payer, N(ntransfer));
         }
+
+        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
+                     "authentication for from account is not enough");
+        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
+                     "authentication for to account is not enough");
 
         require_recipient(from);
         require_recipient(to);
@@ -265,6 +273,6 @@ namespace yosemite {
 
 }
 
-EOSIO_ABI(yosemite::ntoken, (nissue)(nredeem)(transfer)(ntransfer)(setfee)
+EOSIO_ABI(yosemite::ntoken, (nissue)(nredeem)(transfer)(wptransfer)(ntransfer)(wpntransfer)(setfee)
                             (payfee)(feetransfer)
 )

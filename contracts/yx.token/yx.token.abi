@@ -54,6 +54,16 @@
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
         {"name":"quantity", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "wptransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"yx_asset"},
         {"name":"payer", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
@@ -92,6 +102,7 @@
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
+    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
   ],
   "tables": [{

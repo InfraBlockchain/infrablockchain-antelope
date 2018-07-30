@@ -174,8 +174,8 @@ namespace yosemitesys {
 
         if( producer_per_block_pay > 0 ) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
-                    (N(yx.ntoken), {YOSEMITE_SYSTEM_ACCOUNT, N(active)},
-                     { YOSEMITE_TX_FEE_ACCOUNT, owner, asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), YOSEMITE_TX_FEE_ACCOUNT, "producer pay" });
+                    (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {YOSEMITE_SYSTEM_ACCOUNT, N(active)},
+                     { YOSEMITE_TX_FEE_ACCOUNT, owner, asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), "producer pay" });
         }
     }
 
