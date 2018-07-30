@@ -22,10 +22,6 @@ namespace yosemitesys {
     using eosio::const_mem_fun;
     using eosio::block_timestamp;
 
-    static const asset YOSEMITE_NEW_ACCOUNT_TX_FEE = asset(500'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
-    static const asset YOSEMITE_REG_PRODUCER_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
-    static const asset YOSEMITE_REG_SYS_DEPO_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
-    static const asset YOSEMITE_REG_ID_AUTH_DEPO_TX_FEE = asset(500000'0000, YOSEMITE_NATIVE_TOKEN_SYMBOL);
     static const uint32_t YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT = 15;
 
     struct yosemite_global_state : eosio::blockchain_parameters {

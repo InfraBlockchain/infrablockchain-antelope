@@ -1,5 +1,6 @@
 #include "yx.system.hpp"
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/transaction_fee.hpp>
 #include <eosiolib/dispatcher.hpp>
 #include "../yx.ntoken/yx.ntoken.hpp"
 #include "yx.block_producer.cpp"
@@ -84,9 +85,10 @@ namespace yosemitesys {
             if (!system_contract::is_authorized_sys_depository(creator)) {
                 // system depositories are exempted for new account transaction fee
 
+                const asset& tx_fee = yosemite::get_transaction_fee(YOSEMITE_TX_FEE_OP_NAME_NEW_ACCOUNT);
                 INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
                         (N(yx.ntoken), {{creator, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         {creator, YOSEMITE_NEW_ACCOUNT_TX_FEE});
+                         {creator, tx_fee});
             }
         }
 
