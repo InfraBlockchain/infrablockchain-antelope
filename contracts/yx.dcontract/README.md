@@ -13,11 +13,11 @@
 * The majority of the current depositories must agree using multisig feature.
 * [Temporary] For test convenience, this operation is not yet multisig.
 ```
-cleos push action yx.dcontract setfee '[ "create", "500.0000 DKRW" ]' -p yx.dcontract
-cleos push action yx.dcontract setfee '[ "addsigners", "100.0000 DKRW" ]' -p yx.dcontract
-cleos push action yx.dcontract setfee '[ "sign", "100.0000 DKRW" ]' -p yx.dcontract
-cleos push action yx.dcontract setfee '[ "upadddochash", "5.0000 DKRW" ]' -p yx.dcontract
-cleos push action yx.dcontract setfee '[ "remove", "0.0000 DKRW" ]' -p yx.dcontract
+cleos push action yx.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.dcsign", "fee":"30.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.dcupadd", "fee":"5.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.0000 DKRW"}}' -p eosio
 ```
 
 

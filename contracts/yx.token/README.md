@@ -39,10 +39,10 @@ cleos push action eosio setpriv '["yx.token", 1]' -p eosio
 * The majority of the current depositories must agree using multisig feature.
 * [Temporary] For test convenience, this operation is not yet multisig.
 ```
-cleos push action yx.token setfee '[ "create", "10000.0000 DKRW" ]' -p yx.token
-cleos push action yx.token setfee '[ "issue", "0.0000 DKRW" ]' -p yx.token
-cleos push action yx.token setfee '[ "redeem", "1000.0000 DKRW" ]' -p yx.token
-cleos push action yx.token setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.token
+cleos push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.0000 DKRW"}}' -p eosio
 ```
 
 # Operations
