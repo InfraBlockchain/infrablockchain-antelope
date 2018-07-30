@@ -91,11 +91,6 @@ namespace yosemite {
             require_auth(from);
             eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
-            if (from != payer) {
-                require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
-                             "authentication for fee payer account is not enough");
-            }
             txfee_amount = charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER);
         }
 
@@ -108,7 +103,11 @@ namespace yosemite {
 
         accounts_native_total from_total(get_self(), from);
         const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
-        eosio_assert(static_cast<uint32_t>(total_holder.amount >= asset.amount), "insufficient native token balance");
+        if (txfee_amount.amount > 0) {
+            int64_t sum = asset.amount + txfee_amount.amount;
+            eosio_assert(static_cast<uint32_t>(sum > 0 && sum <= asset::max_amount), "sum with asset and fee amount cannot be more than 2^62 - 1");
+            eosio_assert(static_cast<uint32_t>(total_holder.amount >= sum), "insufficient native token balance");
+        }
 
         accounts_native accounts_table_native(get_self(), from);
         for (auto &from_balance_holder : accounts_table_native) {
@@ -174,11 +173,6 @@ namespace yosemite {
             require_auth(from);
             eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
 
-            if (from != payer) {
-                require_auth(payer);
-                eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
-                             "authentication for fee payer account is not enough");
-            }
             charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_NTRANSFER);
         }
 
@@ -203,6 +197,9 @@ namespace yosemite {
         accounts_native_total from_total(get_self(), payer);
         const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "payer doesn't have native token balance");
         eosio_assert(static_cast<uint32_t>(total_holder.amount >= asset.amount), "insufficient native token balance");
+
+        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
+                     "authentication for fee payer account is not enough");
 
         accounts_native accounts_table_native(get_self(), payer);
         for (auto &from_balance_holder : accounts_table_native) {
@@ -292,6 +289,8 @@ namespace yosemite {
 
         accounts_native_total accounts_table_total(get_self(), owner);
         const auto &total_holder = accounts_table_total.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
+        eosio_assert(static_cast<uint32_t>(total_holder.amount >= asset.amount), "insufficient total native token");
+
         accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
             tot_holder.amount -= asset.amount;
         });
