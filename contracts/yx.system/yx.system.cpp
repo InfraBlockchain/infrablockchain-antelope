@@ -1,5 +1,6 @@
 #include "yx.system.hpp"
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/system_depository.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <eosiolib/dispatcher.hpp>
 #include "../yx.ntoken/yx.ntoken.hpp"
@@ -82,7 +83,7 @@ namespace yosemitesys {
                 // new account whose size is less than 12 characters can only be created by system account
             }
 
-            if (!system_contract::is_authorized_sys_depository(creator)) {
+            if (!yosemite::is_authorized_sys_depository(creator)) {
                 // system depositories are exempted for new account transaction fee
 
                 const asset& tx_fee = yosemite::get_transaction_fee(YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT);

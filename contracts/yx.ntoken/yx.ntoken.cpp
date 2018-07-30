@@ -1,8 +1,8 @@
 #include "yx.ntoken.hpp"
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
+#include <yosemitelib/system_depository.hpp>
 #include <yx.kyc/yx.kyc.hpp>
-#include <yx.system/yx.system.hpp>
 
 
 namespace yosemite {
@@ -20,7 +20,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(asset.issuer);
-        eosio_assert(static_cast<uint32_t>(yosemitesys::system_contract::is_authorized_sys_depository(asset.issuer)),
+        eosio_assert(static_cast<uint32_t>(is_authorized_sys_depository(asset.issuer)),
                      "issuer account is not system depository");
 
         stats_native stats(get_self(), asset.issuer);

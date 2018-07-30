@@ -3,7 +3,7 @@
  */
 
 #include "yx.kyc.hpp"
-#include <yx.system/yx.system.hpp>
+#include <yosemitelib/system_depository.hpp>
 
 namespace yosemite {
     void kyc::setinfo(account_name account, account_name depository, uint32_t kycvector, const string &addendum) {
@@ -12,7 +12,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(kycvector <= KYC_VECTOR_MAX_VALUE), "invalid kycvector value");
 
         //TODO:call yx.system contract
-        eosio_assert(static_cast<uint32_t>(yosemitesys::system_contract::is_authorized_sys_depository(depository)),
+        eosio_assert(static_cast<uint32_t>(is_authorized_sys_depository(depository)),
                      "account is not registered as the depository");
 
         require_auth(depository);

@@ -5,8 +5,9 @@
 #include "yx.identity.hpp"
 
 #include <eosiolib/action.h>
-#include <yosemitelib/identity.hpp>
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/identity.hpp>
+#include <yosemitelib/identity_authority.hpp>
 #include <yx.system/yx.system.hpp>
 
 namespace yosemite {
@@ -14,7 +15,7 @@ namespace yosemite {
     void identity_contract::setidinfo(const account_name account, const account_name identity_authority, uint16_t type, uint16_t kyc, uint32_t state, const std::string& data) {
 
         eosio_assert( is_account(account), "account does not exist");
-        eosio_assert( yosemitesys::system_contract::is_authorized_identity_authority(identity_authority),
+        eosio_assert( is_authorized_identity_authority(identity_authority),
                       "identity_authority is not authorized identity authority");
         eosio_assert( is_valid_account_type(type), "invalid account type value");
         eosio_assert( is_valid_kyc_status(kyc), "invalid kyc status value");
@@ -56,7 +57,7 @@ namespace yosemite {
         eosio_assert( id_it != identity_table.end(), "not found identity_info" );
 
         const account_name &existing_id_auth = id_it->identity_authority;
-        eosio_assert( yosemitesys::system_contract::is_authorized_identity_authority(existing_id_auth),
+        eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
         require_auth( existing_id_auth );
 
@@ -73,7 +74,7 @@ namespace yosemite {
         eosio_assert( id_it != identity_table.end(), "not found identity_info" );
 
         const account_name &existing_id_auth = id_it->identity_authority;
-        eosio_assert( yosemitesys::system_contract::is_authorized_identity_authority(existing_id_auth),
+        eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
         require_auth( existing_id_auth );
 
@@ -94,7 +95,7 @@ namespace yosemite {
         eosio_assert( id_it != identity_table.end(), "not found identity_info" );
 
         const account_name &existing_id_auth = id_it->identity_authority;
-        eosio_assert( yosemitesys::system_contract::is_authorized_identity_authority(existing_id_auth),
+        eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
         require_auth( existing_id_auth );
 
@@ -115,7 +116,7 @@ namespace yosemite {
         eosio_assert( id_it != identity_table.end(), "not found identity_info" );
 
         const account_name &existing_id_auth = id_it->identity_authority;
-        eosio_assert( yosemitesys::system_contract::is_authorized_identity_authority(existing_id_auth),
+        eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
         require_auth( existing_id_auth );
 
@@ -136,7 +137,7 @@ namespace yosemite {
         eosio_assert( id_it != identity_table.end(), "not found identity_info" );
 
         const account_name &existing_id_auth = id_it->identity_authority;
-        eosio_assert( yosemitesys::system_contract::is_authorized_identity_authority(existing_id_auth),
+        eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
         require_auth( existing_id_auth );
 

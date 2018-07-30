@@ -1,6 +1,7 @@
 #include "yx.system.hpp"
 
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/system_depository.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 
 #include <eosiolib/dispatcher.hpp>
@@ -8,6 +9,7 @@
 
 namespace yosemitesys {
 
+    using yosemite::sys_depository_info;
     using yosemite::yx_asset;
 
     void system_contract::regsysdepo( const account_name depository, const std::string& url, uint16_t location ) {

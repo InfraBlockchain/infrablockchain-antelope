@@ -7,6 +7,8 @@
 #include "yx.native.hpp"
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/system_depository.hpp>
+#include <yosemitelib/identity_authority.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/time.hpp>
 #include <eosiolib/privileged.hpp>
@@ -21,6 +23,8 @@ namespace yosemitesys {
     using eosio::indexed_by;
     using eosio::const_mem_fun;
     using eosio::block_timestamp;
+    using yosemite::sys_depository_table;
+    using yosemite::identity_authority_table;
 
     static const uint32_t YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT = 15;
 
@@ -70,39 +74,6 @@ namespace yosemitesys {
 
     typedef eosio::singleton<N(global), yosemite_global_state> global_state_singleton;
 
-    // system depository issuing native stable token
-    struct sys_depository_info {
-        account_name          owner;
-        bool                  is_authorized = false;
-        std::string           url;
-        uint16_t              location = 0;
-
-        uint64_t primary_key() const { return owner; }
-
-        // explicit serialization macro is not necessary, used here only to improve compilation time
-        EOSLIB_SERIALIZE( sys_depository_info, (owner)(is_authorized)
-                (url)(location) )
-    };
-
-    typedef eosio::multi_index< N(sysdepos), sys_depository_info > sys_depository_table;
-
-    // The authorized Identity Authorities have the right for managing user info and KYC info on blockchain.
-    struct identity_authority_info {
-        account_name          owner;
-        bool                  is_authorized = false;
-        std::string           url;
-        uint16_t              location = 0;
-
-        uint64_t primary_key() const { return owner; }
-
-        // explicit serialization macro is not necessary, used here only to improve compilation time
-        EOSLIB_SERIALIZE( identity_authority_info, (owner)(is_authorized)
-                (url)(location) )
-    };
-
-    typedef eosio::multi_index< N(idauthority), identity_authority_info > identity_authority_table;
-
-
     class system_contract : public native {
     private:
         producers_table          _producers;
@@ -147,12 +118,6 @@ namespace yosemitesys {
 
         void rmvsysdepo( const account_name depository );
 
-        static bool is_authorized_sys_depository( const account_name depository ) {
-            sys_depository_table depositories(YOSEMITE_SYSTEM_ACCOUNT, YOSEMITE_SYSTEM_ACCOUNT);
-            auto depo = depositories.find( depository );
-            return depo != depositories.end() && (*depo).is_authorized;
-        }
-
 
         // Identity Authorities (yx.identity_authority.cpp)
 
@@ -162,11 +127,6 @@ namespace yosemitesys {
 
         void rmvidauth( const account_name identity_authority );
 
-        static bool is_authorized_identity_authority( const account_name identity_authority ) {
-            identity_authority_table idauthorities(YOSEMITE_SYSTEM_ACCOUNT, YOSEMITE_SYSTEM_ACCOUNT);
-            auto idauth = idauthorities.find( identity_authority );
-            return idauth != idauthorities.end() && (*idauth).is_authorized;
-        }
 
     private:
         void update_elected_producers( block_timestamp timestamp );

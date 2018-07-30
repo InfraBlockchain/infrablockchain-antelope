@@ -1,6 +1,7 @@
 #include "yx.system.hpp"
 
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/identity_authority.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 
 #include <eosiolib/dispatcher.hpp>
@@ -8,6 +9,7 @@
 
 namespace yosemitesys {
 
+    using yosemite::identity_authority_info;
     using yosemite::yx_asset;
 
     void system_contract::regidauth( const account_name identity_authority, const std::string& url, uint16_t location ) {
