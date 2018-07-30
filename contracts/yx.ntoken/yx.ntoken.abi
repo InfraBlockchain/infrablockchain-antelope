@@ -82,14 +82,6 @@
       ]
     },
     {
-      "name": "setfee",
-      "base": "",
-      "fields": [
-        {"name":"operation", "type":"name"},
-        {"name":"fee", "type":"asset"}
-      ]
-    },
-    {
       "name": "payfee",
       "base": "",
       "fields": [
@@ -138,8 +130,7 @@
     { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
     { "name": "wpntransfer", "type": "ntransfer", "ricardian_contract": "" },
     { "name": "payfee", "type": "payfee", "ricardian_contract": "" },
-    { "name": "feetransfer", "type": "feetransfer", "ricardian_contract": "" },
-    { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
+    { "name": "feetransfer", "type": "feetransfer", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "ntaccounts",

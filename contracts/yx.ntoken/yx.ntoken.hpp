@@ -5,10 +5,9 @@
 #pragma once
 
 #include <eosiolib/eosio.hpp>
-#include "../yosemitelib/yx_asset.hpp"
-
+#include <yosemitelib/yx_asset.hpp>
+#include <yosemitelib/system_accounts.hpp>
 #include <string>
-#include "../yosemitelib/yx_fee.hpp"
 
 namespace yosemite {
 
@@ -19,9 +18,9 @@ namespace yosemite {
     static const uint64_t NTOKEN_TOTAL_BALANCE_KEY = N(totalbal);
     static const uint64_t NTOKEN_BASIC_STATS_KEY = N(basicstats);
 
-    class ntoken : public fee_contract {
+    class ntoken : public contract {
     public:
-        explicit ntoken(account_name self) : fee_contract(self) {
+        explicit ntoken(account_name self) : contract(self) {
         }
 
         void nissue(const account_name &to, const yx_asset &asset, const string &memo);
@@ -35,11 +34,9 @@ namespace yosemite {
 
         static inline int64_t get_total_native_token_balance(const account_name &owner);
 
-    protected:
-        bool check_fee_operation(const uint64_t &operation_name) override;
-        void charge_fee(const account_name &payer, uint64_t operation) override;
-
     private:
+        void charge_fee(const account_name &payer, uint64_t operation);
+
         /* scope = owner */
         struct total_balance {
             int64_t amount = 0;
@@ -75,7 +72,7 @@ namespace yosemite {
     };
 
     int64_t ntoken::get_total_native_token_balance(const account_name &owner) {
-        accounts_native_total accounts_total_table(N(yx.ntoken), owner);
+        accounts_native_total accounts_total_table(YOSEMITE_NATIVE_TOKEN_ACCOUNT, owner);
         const auto &balance_holder = accounts_total_table.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
         return balance_holder.amount;
     }

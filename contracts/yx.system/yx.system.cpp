@@ -85,9 +85,9 @@ namespace yosemitesys {
             if (!system_contract::is_authorized_sys_depository(creator)) {
                 // system depositories are exempted for new account transaction fee
 
-                const asset& tx_fee = yosemite::get_transaction_fee(YOSEMITE_TX_FEE_OP_NAME_NEW_ACCOUNT);
+                const asset& tx_fee = yosemite::get_transaction_fee(YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT);
                 INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
-                        (N(yx.ntoken), {{creator, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                        (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{creator, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                          {creator, tx_fee});
             }
         }

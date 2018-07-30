@@ -44,12 +44,11 @@ cleos create account eosio yx.ntoken EOS5NQoKnxzmkrTRHydYyicYYQQ59hGFLe1qj6vWnJk
 ## setting fee for operations
 * Fee for operations is set by `setfee` operation.
 * The majority of the current depositories must agree using multisig feature.
-* [Temporary] For test convenience, this operation is not yet multisig.
 ```
-cleos push action yx.ntoken setfee '[ "nissue", "0.0000 DKRW" ]' -p yx.ntoken
-cleos push action yx.ntoken setfee '[ "nredeem", "1000.0000 DKRW" ]' -p yx.ntoken
-cleos push action yx.ntoken setfee '[ "ntransfer", "10.0000 DKRW" ]' -p yx.ntoken
-cleos push action yx.ntoken setfee '[ "transfer", "5.0000 DKRW" ]' -p yx.ntoken
+cleos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.0000 DKRW"}}' -p eosio
 ```
 
 ## setting account's KYC vector to yx.kyc contract

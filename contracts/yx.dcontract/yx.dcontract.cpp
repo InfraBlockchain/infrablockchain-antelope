@@ -6,6 +6,7 @@
 #include <yx.system/yx.system.hpp>
 #include <yx.ntoken/yx.ntoken.hpp>
 #include <yosemitelib/yx_sequence_generator.hpp>
+#include <yosemitelib/transaction_fee.hpp>
 
 namespace yosemite {
 
@@ -32,7 +33,7 @@ namespace yosemite {
 
         require_auth(creator);
 
-        charge_fee(creator, N(create));
+        charge_fee(creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE);
 
         dcontract_index dcontract{get_self(), creator};
         uint64_t dcontract_seq = sequence_generator::new_sequence(get_self(), creator);
@@ -59,7 +60,7 @@ namespace yosemite {
         flat_set<account_name> duplicates{info->signers.begin(), info->signers.end()};
         check_signers_param(signers, duplicates);
 
-        charge_fee(dc_id.creator, N(addsigners));
+        charge_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS);
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
@@ -83,7 +84,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(std::find(info->done_signers.begin(), info->done_signers.end(), index) == info->done_signers.end()),
                      "digital contract is already signed by the signer");
 
-        charge_fee(dc_id.creator, N(sign));
+        charge_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             i.done_signers.push_back(static_cast<uint8_t>(index));
@@ -106,7 +107,7 @@ namespace yosemite {
         auto info = dcontract_idx.find(dc_id.sequence);
         eosio_assert(static_cast<uint32_t>(info != dcontract_idx.end()), "digital contract does not exist");
 
-        charge_fee(dc_id.creator, N(upadddochash));
+        charge_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH);
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             i.adddochash.clear();
@@ -121,30 +122,21 @@ namespace yosemite {
         auto info = dcontract_idx.find(dc_id.sequence);
         eosio_assert(static_cast<uint32_t>(info != dcontract_idx.end()), "digital contract does not exist");
 
-        charge_fee(dc_id.creator, N(remove));
+        charge_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE);
 
         dcontract_idx.erase(info);
     }
 
-    bool digital_contract::check_fee_operation(const uint64_t &operation_name) {
-        return operation_name == N(create) ||
-               operation_name == N(addsigners) ||
-               operation_name == N(sign) ||
-               operation_name == N(upadddochash) ||
-               operation_name == N(remove);
-    }
-
     void digital_contract::charge_fee(const account_name &payer, uint64_t operation) {
-        fees fee_table(get_self(), get_self());
-        const auto &fee_holder = fee_table.get(operation, "fee is not set or unknown operation");
+        auto tx_fee = yosemite::get_transaction_fee(operation);
 
-        if (fee_holder.fee.amount > 0) {
+        if (tx_fee.amount > 0) {
             INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
-                    (N(yx.ntoken), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     {payer, fee_holder.fee});
+                    (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                     {payer, tx_fee});
         }
     }
 }
 
-EOSIO_ABI(yosemite::digital_contract, (create)(addsigners)(sign)(upadddochash)(remove)(setfee)
+EOSIO_ABI(yosemite::digital_contract, (create)(addsigners)(sign)(upadddochash)(remove)
 )

@@ -59,14 +59,6 @@
       ]
     },
     {
-      "name": "setfee",
-      "base": "",
-      "fields": [
-        {"name":"operation", "type":"name"},
-        {"name":"fee", "type":"asset"}
-      ]
-    },
-    {
       "name": "dcontracts_type",
       "base": "",
       "fields": [
@@ -94,8 +86,7 @@
     { "name": "addsigners", "type": "addsigners", "ricardian_contract": "" },
     { "name": "sign", "type": "sign", "ricardian_contract": "" },
     { "name": "upadddochash", "type": "upadddochash", "ricardian_contract": "" },
-    { "name": "remove", "type": "remove", "ricardian_contract": "" },
-    { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
+    { "name": "remove", "type": "remove", "ricardian_contract": "" }
   ],
   "tables": [
     {

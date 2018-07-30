@@ -69,14 +69,6 @@
       ]
     },
     {
-      "name": "setfee",
-      "base": "",
-      "fields": [
-        {"name":"operation", "type":"name"},
-        {"name":"fee", "type":"asset"}
-      ]
-    },
-    {
       "name": "accounts_type",
       "base": "",
       "fields": [
@@ -102,8 +94,7 @@
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
-    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
-    { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
+    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "taccounts",

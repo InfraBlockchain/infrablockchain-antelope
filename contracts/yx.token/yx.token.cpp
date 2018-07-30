@@ -1,5 +1,6 @@
 #include "yx.token.hpp"
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/transaction_fee.hpp>
 #include <yx.ntoken/yx.ntoken.hpp>
 #include <yx.kyc/yx.kyc.hpp>
 #include <yx.system/yx.system.hpp>
@@ -9,7 +10,7 @@ namespace yosemite {
     void token::create(const yx_symbol &symbol, uint32_t kycvector) {
         eosio_assert(static_cast<uint32_t>(symbol.is_valid()), "invalid symbol name");
         eosio_assert(static_cast<uint32_t>(symbol.precision() >= 4), "token precision must be equal or larger than 4");
-        eosio_assert(static_cast<uint32_t>(symbol.name() != NATIVE_TOKEN_NAME), "cannot create the native token with this operation");
+        eosio_assert(static_cast<uint32_t>(symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot create the native token with this operation");
         eosio_assert(static_cast<uint32_t>(kycvector <= KYC_VECTOR_MAX_VALUE), "invalid kycvector value");
 
         require_auth(symbol.issuer);
@@ -18,7 +19,7 @@ namespace yosemite {
         const auto &tstats = stats_table.find(symbol.issuer);
         eosio_assert(static_cast<uint32_t>(tstats == stats_table.end()), "already created");
 
-        charge_fee(symbol.issuer, N(create));
+        charge_fee(symbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);
 
         stats_table.emplace(get_self(), [&](auto &s) {
             s.issuer = symbol.issuer;
@@ -29,7 +30,7 @@ namespace yosemite {
     void token::issue(const account_name &to, const yx_asset &asset, const string &memo) {
         eosio_assert(static_cast<uint32_t>(asset.is_valid()), "invalid asset");
         eosio_assert(static_cast<uint32_t>(asset.amount > 0), "must be positive asset");
-        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != NATIVE_TOKEN_NAME), "cannot issue native token with this operation");
+        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot issue native token with this operation");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(asset.issuer);
@@ -38,7 +39,7 @@ namespace yosemite {
         const auto &tstats = stats_table.find(asset.issuer);
         eosio_assert(static_cast<uint32_t>(tstats != stats_table.end()), "not yet created token");
 
-        charge_fee(asset.issuer, N(issue));
+        charge_fee(asset.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
 
         stats_table.modify(tstats, 0, [&](auto &s) {
             s.supply += asset.amount;
@@ -57,7 +58,7 @@ namespace yosemite {
     void token::redeem(const yx_asset &asset, const string &memo) {
         eosio_assert(static_cast<uint32_t>(asset.is_valid()), "invalid asset");
         eosio_assert(static_cast<uint32_t>(asset.amount > 0), "must be positive asset");
-        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != NATIVE_TOKEN_NAME), "cannot redeem native token with this operation");
+        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot redeem native token with this operation");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(asset.issuer);
@@ -67,7 +68,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(tstats != stats_table.end()), "not yet created token");
         eosio_assert(static_cast<uint32_t>(asset.amount <= tstats->supply), "redeem asset exceeds supply amount");
 
-        charge_fee(asset.issuer, N(redeem));
+        charge_fee(asset.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
 
         stats_table.modify(tstats, 0, [&](auto &s) {
             s.supply -= asset.amount;
@@ -86,7 +87,7 @@ namespace yosemite {
             eosio_assert(static_cast<uint32_t>(asset.amount > 0), "must transfer positive asset");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-            eosio_assert(static_cast<uint32_t>(asset.symbol.name() != NATIVE_TOKEN_NAME), "cannot transfer native token with this contract; use yx.ntoken");
+            eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot transfer native token with this contract; use yx.ntoken");
 
             require_auth(from);
             eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
@@ -94,7 +95,7 @@ namespace yosemite {
             if (from != payer) {
                 require_auth(payer);
             }
-            charge_fee(payer, N(transfer));
+            charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
         }
 
         stats stats_table(get_self(), asset.symbol.value);
@@ -150,25 +151,16 @@ namespace yosemite {
         });
     }
 
-    bool token::check_fee_operation(const uint64_t &operation_name) {
-        return operation_name == N(create) ||
-               operation_name == N(issue) ||
-               operation_name == N(redeem) ||
-               operation_name == N(transfer)
-               ;
-    }
-
     void token::charge_fee(const account_name &payer, uint64_t operation) {
-        fees fee_table(get_self(), get_self());
-        const auto &fee_holder = fee_table.get(operation, "fee is not set or unknown operation");
+        auto tx_fee = yosemite::get_transaction_fee(operation);
 
-        if (fee_holder.fee.amount > 0) {
+        if (tx_fee.amount > 0) {
             INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
                     (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     {payer, fee_holder.fee});
+                     {payer, tx_fee});
         }
     }
 }
 
-EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)(setfee)
+EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)
 )

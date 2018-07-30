@@ -2,8 +2,6 @@
 
 #include <eosiolib/eosio.hpp>
 #include <yosemitelib/yx_asset.hpp>
-#include <yosemitelib/yx_fee.hpp>
-
 #include <string>
 
 namespace yosemite {
@@ -12,9 +10,9 @@ namespace yosemite {
     using std::string;
     using boost::container::flat_map;
 
-    class token : public fee_contract {
+    class token : public contract {
     public:
-        explicit token(account_name self) : fee_contract(self) {
+        explicit token(account_name self) : contract(self) {
         }
 
         void create(const yx_symbol &symbol, uint32_t kycvector);
@@ -23,11 +21,9 @@ namespace yosemite {
         void transfer(account_name from, account_name to, yx_asset asset, const string &memo);
         void wptransfer(account_name from, account_name to, yx_asset asset, account_name payer, const string &memo);
 
-    protected:
-        bool check_fee_operation(const uint64_t &operation_name) override;
-        void charge_fee(const account_name &payer, uint64_t operation) override;
-
     private:
+        void charge_fee(const account_name &payer, uint64_t operation);
+
         /* scope = owner */
         struct balance_holder {
             uint64_t id = 0;

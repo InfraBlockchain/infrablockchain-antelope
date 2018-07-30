@@ -6,7 +6,6 @@
 
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/yx_kyc.hpp>
-#include <yosemitelib/yx_fee.hpp>
 #include <string>
 
 namespace yosemite {
