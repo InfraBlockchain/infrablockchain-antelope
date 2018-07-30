@@ -14,7 +14,7 @@ namespace yosemite {
 
     /***
      * System contract managing the transaction fee amount for each charged system transaction.
-     * Transaction fee amounts should be agreed by the active block producers by signing txfee_contract::setfee transaction
+     * Transaction fee amounts should be agreed by the active block producers by signing txfee_contract::settxfee transaction
      * This contract is deployed on the system transaction fee account (YOSEMITE_TX_FEE_ACCOUNT)
      * on which transaction fees generated on the blockchain will be saved
      */

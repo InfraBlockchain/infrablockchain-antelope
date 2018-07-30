@@ -16,7 +16,7 @@ namespace yosemite {
 
         eosio_assert(fee.is_valid(), "wrong fee format");
         eosio_assert(fee.amount >= 0, "negative fee is not allowed");
-        eosio_assert(fee.symbol.name() == YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME && fee.symbol.precision() == YOSEMITE_NATIVE_TOKEN_PRECISION, "only the native token is allowed for fee");
+        eosio_assert(fee.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL, "only the native token is allowed for fee");
 
         // self == YOSEMITE_TX_FEE_ACCOUNT
         tx_fee_idx fee_table(get_self(), get_self());

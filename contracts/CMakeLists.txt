@@ -41,6 +41,7 @@ add_subdirectory(yx.ntoken)
 add_subdirectory(yx.token)
 add_subdirectory(yx.kyc)
 add_subdirectory(yx.dcontract)
+add_subdirectory(yx.txfee)
 
 
 

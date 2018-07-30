@@ -1,17 +1,13 @@
 {
   "version": "eosio::abi/1.0",
   "types": [
-   {
-      "new_type_name": "account_name",
-      "type": "operation_name"
-   }
   ],
   "structs": [
     {
       "name": "settxfee",
       "base": "",
       "fields": [
-        {"name":"operation", "type":"operation_name"},
+        {"name":"operation", "type":"name"},
         {"name":"fee", "type":"asset"}
       ]
     },
@@ -19,7 +15,7 @@
       "name": "tx_fee_info",
       "base": "",
       "fields": [
-        {"name":"operation", "type":"operation_name"},
+        {"name":"operation", "type":"name"},
         {"name":"fee", "type":"int64"}
       ]
     }
