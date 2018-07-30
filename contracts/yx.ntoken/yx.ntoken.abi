@@ -45,7 +45,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"quantity", "type":"yx_asset"},
+        {"name":"quantity", "type":"asset"},
         {"name":"payer", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
@@ -67,6 +67,22 @@
       "fields": [
         {"name":"operation", "type":"name"},
         {"name":"fee", "type":"asset"}
+      ]
+    },
+    {
+      "name": "payfee",
+      "base": "",
+      "fields": [
+        {"name":"payer", "type":"account_name"},
+        {"name":"quantity", "type":"asset"}
+      ]
+    },
+    {
+      "name": "feetransfer",
+      "base": "",
+      "fields": [
+        {"name":"payer", "type":"account_name"},
+        {"name":"quantity", "type":"yx_asset"}
       ]
     },
     {
@@ -99,6 +115,8 @@
     { "name": "nredeem", "type": "nredeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
     { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
+    { "name": "payfee", "type": "payfee", "ricardian_contract": "" },
+    { "name": "feetransfer", "type": "feetransfer", "ricardian_contract": "" },
     { "name": "setfee", "type": "setfee", "ricardian_contract": "" }
   ],
   "tables": [{

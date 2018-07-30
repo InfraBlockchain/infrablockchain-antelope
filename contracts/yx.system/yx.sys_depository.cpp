@@ -31,9 +31,9 @@ namespace yosemitesys {
 
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+            INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
                     (N(yx.ntoken), {{depository, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     { depository, YOSEMITE_SYSTEM_ACCOUNT, yx_asset{YOSEMITE_REG_SYS_DEPO_TX_FEE, 0}, depository, "txfee regsysdepo" });
+                     {depository, YOSEMITE_REG_SYS_DEPO_TX_FEE});
         }
     }
 

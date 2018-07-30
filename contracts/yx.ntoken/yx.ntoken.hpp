@@ -26,9 +26,11 @@ namespace yosemite {
 
         void nissue(const account_name &to, const yx_asset &quantity, const string &memo);
         void nredeem(const yx_asset &quantity, const string &memo);
-        void transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo);
+        void transfer(account_name from, account_name to, eosio::asset quantity, account_name payer, const string &memo);
         void ntransfer(account_name from, account_name to, const yx_asset &quantity, account_name payer,
                        const string &memo);
+        void payfee(account_name payer, asset quantity);
+        void feetransfer(account_name payer, const yx_asset &quantity);
 
         static inline int64_t get_total_native_token_balance(const account_name &owner);
 
@@ -65,10 +67,9 @@ namespace yosemite {
         typedef eosio::multi_index<N(ntaccounts), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(ntaccountstt), total_balance> accounts_native_total;
 
-        void add_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
-        void sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository);
+        void add_native_token_balance(const account_name &owner, const yx_asset &quantity);
+        void sub_native_token_balance(const account_name &owner, const yx_asset &quantity);
 
-        void transfer_native_token(const account_name &from, const account_name &to, yx_asset quantity);
         bool is_auth_enough_for_transfer(uint32_t kycvector);
     };
 

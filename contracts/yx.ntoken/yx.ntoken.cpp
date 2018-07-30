@@ -39,7 +39,7 @@ namespace yosemite {
             });
         }
 
-        add_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
+        add_native_token_balance(quantity.issuer, quantity);
 
         if (to != quantity.issuer) {
             INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
@@ -66,16 +66,15 @@ namespace yosemite {
             s.supply -= quantity.amount;
         });
 
-        sub_native_token_balance(quantity.issuer, quantity.amount, quantity.issuer);
+        sub_native_token_balance(quantity.issuer, quantity);
     }
 
-    void ntoken::transfer(account_name from, account_name to, yx_asset quantity, account_name payer, const string &memo) {
+    void ntoken::transfer(account_name from, account_name to, eosio::asset quantity, account_name payer, const string &memo) {
         if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
             eosio_assert(static_cast<uint32_t>(quantity.is_valid()), "invalid quantity");
             eosio_assert(static_cast<uint32_t>(quantity.amount > 0), "must transfer positive quantity");
             eosio_assert(static_cast<uint32_t>(quantity.symbol.value == NATIVE_TOKEN),
                          "only native token is supported; use yx.token::transfer instead");
-            eosio_assert(static_cast<uint32_t>(quantity.issuer == 0), "invalid issuer : empty string is only allowed");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
@@ -95,10 +94,33 @@ namespace yosemite {
             charge_fee(payer, N(transfer));
         }
 
-        require_recipient(from);
-        require_recipient(to);
+        // NOTE:We don't need notification to from and to account here. It's done by several ntrasfer operation.
 
-        transfer_native_token(from, to, quantity);
+        accounts_native_total from_total(get_self(), from);
+        const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
+        eosio_assert(static_cast<uint32_t>(total_holder.amount >= quantity.amount), "insufficient native token balance");
+
+        accounts_native accounts_table_native(get_self(), from);
+        for (auto &from_balance_holder : accounts_table_native) {
+            if (quantity.amount == 0) {
+                break;
+            }
+
+            int64_t to_balance = 0;
+
+            if (from_balance_holder.amount <= quantity.amount) {
+                to_balance = from_balance_holder.amount;
+                quantity.amount -= to_balance;
+            } else {
+                to_balance = quantity.amount;
+                quantity.amount = 0;
+            }
+
+            yx_symbol native_token_symbol{NATIVE_TOKEN, from_balance_holder.depository};
+            INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
+                    (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                     { from, to, {to_balance, native_token_symbol}, payer, memo });
+        }
     }
 
     void ntoken::ntransfer(account_name from, account_name to, const yx_asset &quantity, account_name payer,
@@ -130,22 +152,23 @@ namespace yosemite {
         require_recipient(from);
         require_recipient(to);
 
-        sub_native_token_balance(from, quantity.amount, quantity.issuer);
-        add_native_token_balance(to, quantity.amount, quantity.issuer);
+        sub_native_token_balance(from, quantity);
+        add_native_token_balance(to, quantity);
     }
 
-    void ntoken::transfer_native_token(const account_name &from, const account_name &to, yx_asset quantity) {
-        accounts_native_total from_total(get_self(), from);
-        const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
+    void ntoken::payfee(account_name payer, asset quantity) {
+        require_auth(payer);
+        require_auth(YOSEMITE_SYSTEM_ACCOUNT);
+
+        accounts_native_total from_total(get_self(), payer);
+        const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "payer doesn't have native token balance");
         eosio_assert(static_cast<uint32_t>(total_holder.amount >= quantity.amount), "insufficient native token balance");
 
-        accounts_native accounts_table_native(get_self(), from);
+        accounts_native accounts_table_native(get_self(), payer);
         for (auto &from_balance_holder : accounts_table_native) {
             if (quantity.amount == 0) {
                 break;
             }
-
-            //TODO: add freeze functionality and check
 
             int64_t to_balance = 0;
 
@@ -157,16 +180,29 @@ namespace yosemite {
                 quantity.amount = 0;
             }
 
-            sub_native_token_balance(from, to_balance, from_balance_holder.depository);
-            add_native_token_balance(to, to_balance, from_balance_holder.depository);
+            yx_symbol native_token_symbol{NATIVE_TOKEN, from_balance_holder.depository};
+            INLINE_ACTION_SENDER(yosemite::ntoken, feetransfer)
+                    (get_self(), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                     { payer, {to_balance, native_token_symbol} });
         }
+    }
+
+    void ntoken::feetransfer(account_name payer, const yx_asset &quantity) {
+        require_auth(payer);
+        require_auth(YOSEMITE_SYSTEM_ACCOUNT);
+
+        require_recipient(payer);
+        require_recipient(FEEDIST_ACCOUNT_NAME);
+
+        sub_native_token_balance(payer, quantity);
+        add_native_token_balance(FEEDIST_ACCOUNT_NAME, quantity);
     }
 
     bool ntoken::check_fee_operation(const uint64_t &operation_name) {
         return operation_name == N(nissue) ||
-                operation_name == N(nredeem) ||
+               operation_name == N(nredeem) ||
                operation_name == N(transfer) ||
-                operation_name == N(ntransfer)
+               operation_name == N(ntransfer)
                ;
     }
 
@@ -175,24 +211,24 @@ namespace yosemite {
         const auto &fee_holder = fee_table.get(operation, "fee is not set or unknown operation");
 
         if (fee_holder.fee.amount > 0) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+            INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
                     (get_self(), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     { payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, payer, "" });
+                     {payer, fee_holder.fee});
         }
     }
 
-    void ntoken::add_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository) {
+    void ntoken::add_native_token_balance(const account_name &owner, const yx_asset &quantity) {
         accounts_native accounts_table_native(get_self(), owner);
-        const auto &native_holder = accounts_table_native.find(depository);
+        const auto &native_holder = accounts_table_native.find(quantity.issuer);
 
         if (native_holder == accounts_table_native.end()) {
             accounts_table_native.emplace(get_self(), [&](auto &holder) {
-                holder.depository = depository;
-                holder.amount = quantity;
+                holder.depository = quantity.issuer;
+                holder.amount = quantity.amount;
             });
         } else {
             accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-                holder.amount += quantity;
+                holder.amount += quantity.amount;
                 eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
             });
         }
@@ -201,33 +237,34 @@ namespace yosemite {
         const auto &total_holder = accounts_table_total.find(NTOKEN_TOTAL_BALANCE_KEY);
         if (total_holder == accounts_table_total.end()) {
             accounts_table_total.emplace(get_self(), [&](auto &tot_holder) {
-                tot_holder.amount = quantity;
+                tot_holder.amount = quantity.amount;
             });
         } else {
             accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
-                tot_holder.amount += quantity;
+                tot_holder.amount += quantity.amount;
                 eosio_assert(static_cast<uint32_t>(tot_holder.amount > 0 && tot_holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
             });
         }
     }
 
-    void ntoken::sub_native_token_balance(const account_name &owner, const int64_t &quantity, const account_name &depository) {
+    void ntoken::sub_native_token_balance(const account_name &owner, const yx_asset &quantity) {
         accounts_native accounts_table_native(get_self(), owner);
-        const auto &native_holder = accounts_table_native.get(depository, "account doesn't have native token of the specified depository");
-        eosio_assert(static_cast<uint32_t>(native_holder.amount >= quantity), "insufficient native token of the specified depository");
+        const auto &native_holder = accounts_table_native.get(quantity.issuer, "account doesn't have native token of the specified depository");
+        eosio_assert(static_cast<uint32_t>(native_holder.amount >= quantity.amount), "insufficient native token of the specified depository");
 
         accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-            holder.amount -= quantity;
+            holder.amount -= quantity.amount;
         });
 
         accounts_native_total accounts_table_total(get_self(), owner);
         const auto &total_holder = accounts_table_total.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
         accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
-            tot_holder.amount -= quantity;
+            tot_holder.amount -= quantity.amount;
         });
     }
 
 }
 
 EOSIO_ABI(yosemite::ntoken, (nissue)(nredeem)(transfer)(ntransfer)(setfee)
+                            (payfee)(feetransfer)
 )

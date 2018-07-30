@@ -84,10 +84,9 @@ namespace yosemitesys {
             if (!system_contract::is_authorized_sys_depository(creator)) {
                 // system depositories are exempted for new account transaction fee
 
-                INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+                INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
                         (N(yx.ntoken), {{creator, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         { creator, YOSEMITE_SYSTEM_ACCOUNT, {YOSEMITE_NEW_ACCOUNT_TX_FEE, 0}, creator, "" });
-
+                         {creator, YOSEMITE_NEW_ACCOUNT_TX_FEE});
             }
         }
 

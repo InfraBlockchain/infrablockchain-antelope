@@ -56,7 +56,7 @@ namespace yosemitesys {
 //          return;
 //       }
 
-        if (top_producers.size() < 1) {
+        if (top_producers.empty()) {
             return;
         }
 
@@ -104,9 +104,9 @@ namespace yosemitesys {
 
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+            INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
                     (N(yx.ntoken), {{producer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     { producer, YOSEMITE_SYSTEM_ACCOUNT, {YOSEMITE_REG_PRODUCER_TX_FEE, 0}, producer, "txfee regproducer" });
+                     {producer, YOSEMITE_REG_PRODUCER_TX_FEE});
         }
     }
 
@@ -172,7 +172,7 @@ namespace yosemitesys {
         if( producer_per_block_pay > 0 ) {
             INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
                     (N(yx.ntoken), {YOSEMITE_SYSTEM_ACCOUNT, N(active)},
-                     { YOSEMITE_SYSTEM_ACCOUNT, owner, {asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), 0}, YOSEMITE_SYSTEM_ACCOUNT, "producer pay" });
+                     { YOSEMITE_SYSTEM_ACCOUNT, owner, asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), YOSEMITE_SYSTEM_ACCOUNT, "producer pay" });
         }
     }
 

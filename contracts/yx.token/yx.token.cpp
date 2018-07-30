@@ -159,9 +159,9 @@ namespace yosemite {
         const auto &fee_holder = fee_table.get(operation, "fee is not set or unknown operation");
 
         if (fee_holder.fee.amount > 0) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+            INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
                     (N(yx.ntoken), {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     { payer, FEEDIST_ACCOUNT_NAME, {fee_holder.fee, 0}, payer, "" });
+                     {payer, fee_holder.fee});
         }
     }
 }
