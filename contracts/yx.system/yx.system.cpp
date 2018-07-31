@@ -77,13 +77,14 @@ namespace yosemitesys {
             }
             if( has_dot ) { // or is less than 12 characters
                 auto suffix = eosio::name_suffix(newact);
-                if( suffix != newact ) {
+                if( suffix == newact ) {
+                    eosio_assert( false, "only system account can create accounts having less than 12 characters" );
+                } else {
                     eosio_assert( creator == suffix, "only suffix may create this account" );
                 }
-                // new account whose size is less than 12 characters can only be created by system account
             }
 
-            if (!yosemite::is_authorized_sys_depository(creator)) {
+            if (!yosemite::is_authorized_identity_authority(creator)) {
                 // system depositories are exempted for new account transaction fee
 
                 const asset& tx_fee = yosemite::get_transaction_fee(YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT);
@@ -98,7 +99,6 @@ namespace yosemitesys {
     }
 
 } /// yosemitesys
-
 
 EOSIO_ABI( yosemitesys::system_contract,
            // native.hpp (newaccount definition is actually in yx.system.cpp)
