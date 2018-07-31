@@ -149,10 +149,14 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(balance_holder != sym_index.end()), "account doesn't have token");
         eosio_assert(static_cast<uint32_t>(balance_holder->amount >= token.amount), "insufficient token balance");
 
-        // subtract the balance from the 'owner' account
+        bool erase;
         sym_index.modify(balance_holder, 0, [&](auto &holder) {
             holder.amount -= token.amount;
+            erase = holder.amount == 0;
         });
+        if (erase) {
+            sym_index.erase(balance_holder);
+        }
     }
 
     void token::charge_fee(const account_name &payer, uint64_t operation) {
