@@ -164,7 +164,7 @@ namespace yosemite {
 
     void token::setkycrule(const yx_symbol &symbol, uint8_t type, uint16_t kyc) {
         eosio_assert(static_cast<uint32_t>(type < TOKEN_KYC_RULE_TYPE_MAX), "invalid type");
-        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
+//        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
         require_auth(symbol.issuer);
 
         stats stats_table(get_self(), symbol.value);

@@ -318,7 +318,7 @@ namespace yosemite {
 
     void ntoken::setkycrule(uint8_t type, uint16_t kyc) {
         eosio_assert(static_cast<uint32_t>(type < NTOKEN_KYC_RULE_TYPE_MAX), "invalid type");
-        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
+//        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
         require_auth(YOSEMITE_SYSTEM_ACCOUNT);
 
         kyc_rule_index kyc_rule(get_self(), get_self());
