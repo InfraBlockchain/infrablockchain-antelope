@@ -1,14 +1,14 @@
 # Abtract
 * This contract is for native token.
-* The contract for non-native tokens is [`yx.token`](../../contracts/yx.token/README.md). It's recommended to read about native token first.
+* The contract for non-native tokens is [`yx.token`](../../contracts/yx.token/). It's recommended to read about the native token first.
 
 # Types of Tokens
 * There are two types of tokens in Yosemite Public Blockchain.
   1. native token
   1. non-native tokens
-* The native token supports only one type of dFIAT token. First of all, it is used as the fee of operations.
-* The non-native tokens are created by any depositories and individuals. It is made of the symbol and the issuer. e.g. BTC/d1
-  * They are all different for each token issuer. For example, BTC/d1 and BTC/d2 are both different.
+* The native token supports only one type of FIAT token. First of all, it is used as the transaction fee.
+* The non-native tokens are created by anyone who owns his or her account. It is made of the symbol and the issuer account. e.g. 4,BTC@d1
+  * They are all different for each token issuer. For example, 4,BTC/d1 and 4,BTC/d2 are both different.
 
 # Types of Token Operations
 * There are two types of operations.
@@ -16,30 +16,16 @@
   1. for any users
 
 # What You Can Do With This Contract
-* Depositories can issue and redeem the native token.
-  * For example, if the native token is DKRW, the depository account d1(depository 1) and d2 can issue and redeem DKRW separately.
-  * If a new depository wants to issue the native token, it must call the 'createn' operation with multisig to propose that it wants to join in.
-     * The majority of the current depositories must agree using multisig feature.
-* Through the contract, blockchain users can transfer the native token regardless of depositories. There would be two general cases.
+* Only system depositories can issue and redeem the native token.
+  * For example, if the native token is DKRW, the system depository account d1(depository 1) and d2 can issue and redeem DKRW separately.
+  * If a new depository wants to issue the native token, it must call [yx.system](../../contracts/yx.system/)::regsysdepo operation first to become the system depository.
+  * The active block producers must authrorize it as the system depository.
+* Blockchain users can transfer the native token regardless of depositories. There would be two general cases.
   1. When user1 has 1000 DKRW/d1 and 1000 DKRW/d2, total 2000 DKRW, and transfers 2000 DKRW to user2, user2 will have 1000 DKRW/d1 and 1000 DKRW/d2.
   1. When user1 has 1000 DKRW/d1 and 1000 DKRW/d2, total 2000 DKRW, and transfers 1500 DKRW to user2, user2 will have 1000 DKRW/d1 and 500 DKRW/d2 or 500 DKRW/d1 and 1000 DKRW/d2 randomly but 1500 DKRW in total.
+* * Blockchain users can transfer the native token designating the depository.
 
-# Before testing the contract
-* Assume that the eosio.bios contract is prepared.
-   * https://github.com/EOSIO/eos/wiki/Tutorial-Getting-Started-With-Contracts
-
-## Unlock wallet
-cleos wallet unlock --password \<your-wallet-password\>
-
-## Create the contract account
-```
-cleos wallet import 5JBt64r7caPQTkFmLReckxLS28n9TEmGhs43hUqPh7DXpomjhfc
-cleos wallet import 5KSmCCSkBz84feSzzg5Bk9A1dsyTg6N72bwcoS48sg638Q8g12s
-cleos create account eosio yx.ntoken EOS5NQoKnxzmkrTRHydYyicYYQQ59hGFLe1qj6vWnJk291tghgbhx EOS7fXnHFBpHLpQevKzdrfKffnAyK8vydPbmA6grXb6gFrezsELKa
-```
-
-## deploy the contract
-`cleos set contract yx.ntoken build/contracts/yx.ntoken -p yx.ntoken`
+# Before Using This Contract
 
 ## setting fee for operations
 * Fee for operations is set by `setfee` operation.
