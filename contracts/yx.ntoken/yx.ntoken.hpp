@@ -23,14 +23,14 @@ namespace yosemite {
         explicit ntoken(account_name self) : contract(self) {
         }
 
-        void nissue(const account_name &to, const yx_asset &asset, const string &memo);
-        void nredeem(const yx_asset &asset, const string &memo);
-        void transfer(account_name from, account_name to, eosio::asset asset, const string &memo);
-        void wptransfer(account_name from, account_name to, eosio::asset asset, account_name payer, const string &memo);
-        void ntransfer(account_name from, account_name to, const yx_asset &asset, const string &memo);
-        void wpntransfer(account_name from, account_name to, const yx_asset &asset, account_name payer, const string &memo);
-        void payfee(account_name payer, asset asset);
-        void feetransfer(account_name payer, const yx_asset &asset);
+        void nissue(const account_name &to, const yx_asset &token, const string &memo);
+        void nredeem(const yx_asset &token, const string &memo);
+        void transfer(account_name from, account_name to, eosio::asset token, const string &memo);
+        void wptransfer(account_name from, account_name to, eosio::asset token, account_name payer, const string &memo);
+        void ntransfer(account_name from, account_name to, const yx_asset &token, const string &memo);
+        void wpntransfer(account_name from, account_name to, const yx_asset &token, account_name payer, const string &memo);
+        void payfee(account_name payer, asset token);
+        void feetransfer(account_name payer, const yx_asset &token);
         void setkycrule(uint8_t type, uint16_t kyc);
 
     private:
@@ -72,8 +72,8 @@ namespace yosemite {
         typedef eosio::multi_index<N(ntaccounts), native_balance_holder> accounts_native;
         typedef eosio::multi_index<N(kycrule), kyc_rule> kyc_rule_index;
 
-        void add_native_token_balance(const account_name &owner, const yx_asset &asset);
-        void sub_native_token_balance(const account_name &owner, const yx_asset &asset);
+        void add_native_token_balance(const account_name &owner, const yx_asset &token);
+        void sub_native_token_balance(const account_name &owner, const yx_asset &token);
 
         bool check_identity_auth_for_transfer(account_name account, const ntoken_kyc_rule_type &kycrule_type);
     };

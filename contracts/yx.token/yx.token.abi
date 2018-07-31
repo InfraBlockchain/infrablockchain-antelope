@@ -18,7 +18,7 @@
       "name": "yx_asset",
       "base": "",
       "fields": [
-        {"name":"asset", "type":"asset"},
+        {"name":"amount", "type":"asset"},
         {"name":"issuer", "type":"account_name"}
       ]
     },
@@ -26,7 +26,7 @@
       "name": "create",
       "base": "",
       "fields": [
-        {"name":"token", "type":"yx_symbol"}
+        {"name":"ysymbol", "type":"yx_symbol"}
       ]
     },
     {
@@ -34,7 +34,7 @@
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -42,7 +42,7 @@
       "name": "redeem",
       "base": "",
       "fields": [
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -52,7 +52,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -62,7 +62,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"payer", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
@@ -71,7 +71,7 @@
       "name": "setkycrule",
       "base": "",
       "fields": [
-        {"name":"token", "type":"yx_symbol"},
+        {"name":"ysymbol", "type":"yx_symbol"},
         {"name":"type", "type":"uint8"},
         {"name":"kyc", "type":"uint16"}
       ]
@@ -80,7 +80,7 @@
       "name": "setoptions",
       "base": "",
       "fields": [
-        {"name":"token", "type":"yx_symbol"},
+        {"name":"ysymbol", "type":"yx_symbol"},
         {"name":"options", "type":"uint16"},
         {"name":"overwrite", "type":"uint8"}
       ]

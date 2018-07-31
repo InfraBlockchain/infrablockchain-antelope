@@ -16,13 +16,13 @@ namespace yosemite {
         explicit token(account_name self) : contract(self) {
         }
 
-        void create(const yx_symbol &symbol);
-        void issue(const account_name &to, const yx_asset &asset, const string &memo);
-        void redeem(const yx_asset &asset, const string &memo);
+        void create(const yx_symbol &ysymbol);
+        void issue(const account_name &to, const yx_asset &token, const string &memo);
+        void redeem(const yx_asset &token, const string &memo);
         void transfer(account_name from, account_name to, yx_asset asset, const string &memo);
-        void wptransfer(account_name from, account_name to, yx_asset asset, account_name payer, const string &memo);
-        void setkycrule(const yx_symbol &symbol, uint8_t type, uint16_t kyc);
-        void setoptions(const yx_symbol &symbol, uint16_t options, bool overwrite);
+        void wptransfer(account_name from, account_name to, yx_asset token, account_name payer, const string &memo);
+        void setkycrule(const yx_symbol &ysymbol, uint8_t type, uint16_t kyc);
+        void setoptions(const yx_symbol &ysymbol, uint16_t options, bool overwrite);
 
     private:
         void charge_fee(const account_name &payer, uint64_t operation);
@@ -68,8 +68,8 @@ namespace yosemite {
                 indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol_s> >
         > accounts;
 
-        void add_token_balance(const account_name &owner, const yx_asset &asset);
-        void sub_token_balance(const account_name &owner, const yx_asset &asset);
+        void add_token_balance(const account_name &owner, const yx_asset &token);
+        void sub_token_balance(const account_name &owner, const yx_asset &token);
         bool check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
                                               const token_stats &tstats);
     };

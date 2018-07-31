@@ -59,22 +59,22 @@ cleos push action yx.token create '[ {"symbol":"4,BTC","issuer":"d2"}, 0 ]' -p d
 
 ## issue non-native token to user2 by d2
 ```
-cleos push action yx.token issue '[ "user2", {"asset":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
+cleos push action yx.token issue '[ "user2", {"amount":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
 ```
 
 ## redeem non-native token from user2 by d2
 1. user2 transfers the native token to d2.
 ```
-cleos push action yx.token transfer '[ "user2", "d2", {"asset":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user2
+cleos push action yx.token transfer '[ "user2", "d2", {"amount":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user2
 ```
 1. d2 checks the transfer operation is done and calls redeem operation.
 ```
-cleos push action yx.token redeem '[ {"asset":"10000.0000 BTC","issuer":"d2"}, "redeem for user2" ]' -p d2
+cleos push action yx.token redeem '[ {"amount":"10000.0000 BTC","issuer":"d2"}, "redeem for user2" ]' -p d2
 ```
 
 ## transfer non-native token from user1 to user2
 ```
-cleos push action yx.token transfer '[ "user1", "user2", {"asset":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user1
+cleos push action yx.token transfer '[ "user1", "user2", {"amount":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user1
 ```
 ### parameters of transfer operation
 * Parameters
@@ -87,7 +87,7 @@ cleos push action yx.token transfer '[ "user1", "user2", {"asset":"10000.0000 BT
 ### if the fee payer account is different from 'from' account
 * It requires the signature of the fee payer account.
 ```
-cleos push action yx.token wptransfer '[ "user1", "user2", {"asset":"10000.0000 BTC","issuer":"d2"}, "servprovider", "memo" ]' -p user1 servprovider
+cleos push action yx.token wptransfer '[ "user1", "user2", {"amount":"10000.0000 BTC","issuer":"d2"}, "servprovider", "memo" ]' -p user1 servprovider
 ```
 
 ## setting KYC vector
@@ -95,14 +95,14 @@ cleos push action yx.token wptransfer '[ "user1", "user2", {"asset":"10000.0000 
    * 0 : transfer send (from account)
    * 1 : transfer receive (to account)
 ```
-cleos push action yx.token setkycrule '{"token":{"symbol":"4,ETH","issuer":"d2"}, "type":0, "kyc":4}' -p d2
-cleos push action yx.token setkycrule '{"token":{"symbol":"4,ETH","issuer":"d2"}, "type":1, "kyc":4}' -p d2
+cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,ETH","issuer":"d2"}, "type":0, "kyc":4}' -p d2
+cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,ETH","issuer":"d2"}, "type":1, "kyc":4}' -p d2
 ```
 
 ## setting token options
 1. freeze token transfer
 ```
-cleos push action yx.token setoptions '{"token":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "overwrite":1}' -p d2
+cleos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "overwrite":1}' -p d2
 ```
 
 ## get the token statistics
@@ -123,10 +123,10 @@ cleos get table yx.token user1 taccounts
 ```
 cleos push action yx.token create '[ {"symbol":"4,BTC","issuer":"d2"} ]' -p d2
 cleos get table yx.token 4,BTC tstats
-cleos push action yx.token issue '[ "user2", {"asset":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
+cleos push action yx.token issue '[ "user2", {"amount":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
 cleos get table yx.token d2 taccounts
 cleos get table yx.token user2 taccounts
-cleos push action yx.token transfer '[ "user2", "user1", {"asset":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user2
+cleos push action yx.token transfer '[ "user2", "user1", {"amount":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user2
 cleos get table yx.token user1 taccounts
 cleos get table yx.token user2 taccounts
 ```
@@ -135,7 +135,7 @@ cleos get table yx.token user2 taccounts
 ```
 cleos push action yx.token create '[ {"symbol":"8,ETH","issuer":"d2"} ]' -p d2
 cleos get table yx.token 8,ETH tstats
-cleos push action yx.token setkycrule '{"token":{"symbol":"8,ETH","issuer":"d2"}, "type":0, "kyc":4}' -p d2
-cleos push action yx.token setkycrule '{"token":{"symbol":"8,ETH","issuer":"d2"}, "type":1, "kyc":4}' -p d2
+cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"8,ETH","issuer":"d2"}, "type":0, "kyc":4}' -p d2
+cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"8,ETH","issuer":"d2"}, "type":1, "kyc":4}' -p d2
 cleos get table yx.token 8,ETH tstats
 ```

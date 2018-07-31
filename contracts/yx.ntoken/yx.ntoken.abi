@@ -10,7 +10,7 @@
       "name": "yx_asset",
       "base": "",
       "fields": [
-        {"name":"asset", "type":"asset"},
+        {"name":"amount", "type":"asset"},
         {"name":"issuer", "type":"account_name"}
       ]
     },
@@ -19,7 +19,7 @@
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -27,7 +27,7 @@
       "name": "nredeem",
       "base": "",
       "fields": [
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -37,7 +37,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"asset"},
+        {"name":"token", "type":"asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -47,7 +47,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"asset"},
+        {"name":"token", "type":"asset"},
         {"name":"payer", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
@@ -58,7 +58,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -68,7 +68,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"asset", "type":"yx_asset"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"payer", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
@@ -78,7 +78,7 @@
       "base": "",
       "fields": [
         {"name":"payer", "type":"account_name"},
-        {"name":"asset", "type":"asset"}
+        {"name":"token", "type":"asset"}
       ]
     },
     {
@@ -86,7 +86,7 @@
       "base": "",
       "fields": [
         {"name":"payer", "type":"account_name"},
-        {"name":"asset", "type":"yx_asset"}
+        {"name":"token", "type":"yx_asset"}
       ]
     },
     {
