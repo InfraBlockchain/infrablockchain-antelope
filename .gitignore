@@ -82,3 +82,6 @@ var/lib/node_*
 .idea/
 *.iws
 .DS_Store
+
+yosemite_config/config_yosemite_testnet_boot_local.ini
+config_yosemite_testnet_boot_bezalel_local.ini
