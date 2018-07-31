@@ -34,7 +34,7 @@ namespace yosemite {
         void setkycrule(uint8_t type, uint16_t kyc);
 
     private:
-        asset charge_fee(const account_name &payer, uint64_t operation);
+        eosio::asset charge_fee(const account_name &payer, uint64_t operation);
 
         /* scope = owner */
         struct native_balance_holder {
