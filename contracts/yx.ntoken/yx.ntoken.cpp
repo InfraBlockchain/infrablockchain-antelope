@@ -91,19 +91,19 @@ namespace yosemite {
         sub_native_token_balance(token.issuer, token);
     }
 
-    void ntoken::transfer(account_name from, account_name to, eosio::asset token, const string &memo) {
-        wptransfer(from, to, token, from, memo);
+    void ntoken::transfer(account_name from, account_name to, eosio::asset amount, const string &memo) {
+        wptransfer(from, to, amount, from, memo);
     }
 
-    void ntoken::wptransfer(account_name from, account_name to, eosio::asset token, account_name payer, const string &memo) {
+    void ntoken::wptransfer(account_name from, account_name to, eosio::asset amount, account_name payer, const string &memo) {
         eosio::asset txfee_amount;
 
         if (has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
             txfee_amount = eosio::asset{0, YOSEMITE_NATIVE_TOKEN_SYMBOL};
         } else {
-            eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
-            eosio_assert(static_cast<uint32_t>(token.amount > 0), "must transfer positive token");
-            eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
+            eosio_assert(static_cast<uint32_t>(amount.is_valid()), "invalid amount");
+            eosio_assert(static_cast<uint32_t>(amount.amount > 0), "must transfer positive amount");
+            eosio_assert(static_cast<uint32_t>(amount.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
                          "only native token is supported; use yx.token::transfer instead");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
@@ -124,14 +124,14 @@ namespace yosemite {
         accounts_native_total from_total(get_self(), from);
         const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
         if (txfee_amount.amount > 0 && from == payer) {
-            int64_t sum = token.amount + txfee_amount.amount;
+            int64_t sum = amount.amount + txfee_amount.amount;
             eosio_assert(static_cast<uint32_t>(sum > 0 && sum <= asset::max_amount), "sum with token and fee amount cannot be more than 2^62 - 1");
             eosio_assert(static_cast<uint32_t>(total_holder.amount >= sum), "insufficient native token balance");
         }
 
         accounts_native accounts_table_native(get_self(), from);
         for (auto &from_balance_holder : accounts_table_native) {
-            if (token.amount == 0) {
+            if (amount.amount == 0) {
                 break;
             }
 
@@ -154,12 +154,12 @@ namespace yosemite {
             }
 
             int64_t to_balance = 0;
-            if (from_balance <= token.amount) {
+            if (from_balance <= amount.amount) {
                 to_balance = from_balance;
-                token.amount -= to_balance;
+                amount.amount -= to_balance;
             } else {
-                to_balance = token.amount;
-                token.amount = 0;
+                to_balance = amount.amount;
+                amount.amount = 0;
             }
 
             yx_symbol native_token_symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL, from_balance_holder.depository};

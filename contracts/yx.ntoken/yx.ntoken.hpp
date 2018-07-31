@@ -25,8 +25,8 @@ namespace yosemite {
 
         void nissue(const account_name &to, const yx_asset &token, const string &memo);
         void nredeem(const yx_asset &token, const string &memo);
-        void transfer(account_name from, account_name to, eosio::asset token, const string &memo);
-        void wptransfer(account_name from, account_name to, eosio::asset token, account_name payer, const string &memo);
+        void transfer(account_name from, account_name to, eosio::asset amount, const string &memo);
+        void wptransfer(account_name from, account_name to, eosio::asset amount, account_name payer, const string &memo);
         void ntransfer(account_name from, account_name to, const yx_asset &token, const string &memo);
         void wpntransfer(account_name from, account_name to, const yx_asset &token, account_name payer, const string &memo);
         void payfee(account_name payer, asset token);

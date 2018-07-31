@@ -85,27 +85,53 @@ cleos push action yx.ntoken nredeem '[ {"amount":"10000.0000 DKRW","issuer":"d1"
 ```
 cleos push action yx.ntoken transfer '[ "user1", "user2", "10000.0000 DKRW", "memo" ]' -p user1
 ```
+### parameters of transfer
+* Parameters
+   1. `from` : account name to transfer from
+   1. `to` : account name to transfer to
+   1. `amount` : token amount and symbol
+   1. `memo` : string less than or equal to 256 bytes
+
 ### use ntransfer operation
 * would be used by depository only
 ```
 cleos push action yx.ntoken ntransfer '[ "user1", "user2", {"amount":"10000.0000 DKRW","issuer":"d1"}, "memo" ]' -p user1
 ```
 
-### parameters of transfer and ntransfer operations
+### parameters of ntransfer
 * Parameters
    1. `from` : account name to transfer from
    1. `to` : account name to transfer to
-   1. `asset` : token amount and symbol with issuer account; in case of native token, issuer is the empty string
-   1. `fee payer` : account name which pays fee; usually the same as `from` account name
+   1. `token` : token amount and symbol with issuer account
    1. `memo` : string less than or equal to 256 bytes
 
-### if the fee payer account is different from 'from' account
+### use wptransfer operation if the fee payer account is different from 'from' account for `transfer` operation
 * It requires the signature of the fee payer account.
+* 'wp' means 'with payer'.
 ```
 cleos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "servprovider", "memo" ]' -p user1 servprovider
 ```
-* For ntrasfer, wpntransfer operation is provided for the payer.
-* 'wp' means 'with payer'.
+
+### parameters of wptransfer
+* Parameters
+   1. `from` : account name to transfer from
+   1. `to` : account name to transfer to
+   1. `amount` : token amount and symbol
+   1. `fee payer` : account name which pays transaction fee
+   1. `memo` : string less than or equal to 256 bytes
+
+### use wpntransfer operation if the fee payer account is different from 'from' account for `ntransfer` operation
+```
+cleos push action yx.ntoken wpntransfer '[ "user1", "user2", {"amount":"10000.0000 DKRW","issuer":"d1"}, "servprovider", "memo" ]' -p user1 servprovider
+```
+
+### parameters of wpntransfer
+* Parameters
+   1. `from` : account name to transfer from
+   1. `to` : account name to transfer to
+   1. `token` : token amount and symbol with issuer account
+   1. `fee payer` : account name which pays transaction fee
+   1. `memo` : string less than or equal to 256 bytes
 
 ## get the stats of native token per depository
 * d1 is the name of system depository account.
@@ -148,6 +174,11 @@ cleos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "
 cleos get table yx.ntoken user1 ntaccounts
 cleos get table yx.ntoken d2 ntaccounts
 cleos get table yx.ntoken user2 ntaccounts
+cleos push action yx.ntoken wpntransfer '[ "user1", "user2", {"amount":"10000.0000 DKRW","issuer":"d1"}, "d2", "memo" ]' -p user1 d2
+cleos get table yx.ntoken user1 ntaccounts
+cleos get table yx.ntoken d2 ntaccounts
+cleos get table yx.ntoken user2 ntaccounts
+
 # error transactions
 cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"amount":"100000000.0000 DKRW","issuer":"d1"}, "d1", m"]' -p d1
 cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"amount":"10000.0000 DKRW","issuer":"d2"}, "d1", "m" ]' -p d1

@@ -37,7 +37,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"token", "type":"asset"},
+        {"name":"amount", "type":"asset"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -47,7 +47,7 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"token", "type":"asset"},
+        {"name":"amount", "type":"asset"},
         {"name":"payer", "type":"account_name"},
         {"name":"memo", "type":"string"}
       ]
