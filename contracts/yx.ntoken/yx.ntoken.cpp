@@ -123,7 +123,7 @@ namespace yosemite {
 
         accounts_native_total from_total(get_self(), from);
         const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
-        if (txfee_amount.amount > 0) {
+        if (txfee_amount.amount > 0 && from == payer) {
             int64_t sum = token.amount + txfee_amount.amount;
             eosio_assert(static_cast<uint32_t>(sum > 0 && sum <= asset::max_amount), "sum with token and fee amount cannot be more than 2^62 - 1");
             eosio_assert(static_cast<uint32_t>(total_holder.amount >= sum), "insufficient native token balance");
@@ -138,7 +138,7 @@ namespace yosemite {
             // consider transaction fee by calculation because fee transaction is inline transaction
             // (not reflected at this time)
             int64_t from_balance = 0;
-            if (txfee_amount.amount > 0) {
+            if (txfee_amount.amount > 0 && from == payer) {
                 if (from_balance_holder.amount <= txfee_amount.amount) {
                     from_balance = 0;
                     txfee_amount.amount -= from_balance_holder.amount;
@@ -303,9 +303,14 @@ namespace yosemite {
         const auto &native_holder = accounts_table_native.get(token.issuer, "account doesn't have native token of the specified depository");
         eosio_assert(static_cast<uint32_t>(native_holder.amount >= token.amount), "insufficient native token of the specified depository");
 
+        bool erase;
         accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
             holder.amount -= token.amount;
+            erase = holder.amount == 0;
         });
+        if (erase) {
+            accounts_table_native.erase(native_holder);
+        }
 
         accounts_native_total accounts_table_total(get_self(), owner);
         const auto &total_holder = accounts_table_total.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
@@ -313,7 +318,11 @@ namespace yosemite {
 
         accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
             tot_holder.amount -= token.amount;
+            erase = tot_holder.amount == 0;
         });
+        if (erase) {
+            accounts_table_total.erase(total_holder);
+        }
     }
 
     void ntoken::setkycrule(uint8_t type, uint16_t kyc) {
