@@ -100,7 +100,8 @@ namespace yosemite {
     }
 
     bool has_kyc_status(const account_name account, uint16_t kyc_flags) {
-        return get_identity_kyc_status(account) & kyc_flags;
+        if (kyc_flags == 0) return true;
+        return (get_identity_kyc_status(account) & kyc_flags) != 0;
     }
 
     bool has_all_kyc_status(const account_name account, uint16_t kyc_flags) {
@@ -125,7 +126,8 @@ namespace yosemite {
     }
 
     bool has_account_state(const account_name account, uint32_t state_flag) {
-        return get_identity_account_state(account) & state_flag;
+        if (state_flag == 0) return true;
+        return (get_identity_account_state(account) & state_flag) != 0;
     }
 
     bool has_all_account_state(const account_name account, uint32_t state_flags) {
