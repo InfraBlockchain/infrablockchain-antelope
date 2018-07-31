@@ -3,6 +3,7 @@
 #include <eosiolib/eosio.hpp>
 #include <yosemitelib/yx_asset.hpp>
 #include <string>
+#include <musl/upstream/include/bits/stdint.h>
 
 namespace yosemite {
 
@@ -15,11 +16,12 @@ namespace yosemite {
         explicit token(account_name self) : contract(self) {
         }
 
-        void create(const yx_symbol &symbol, uint32_t kycvector);
+        void create(const yx_symbol &symbol);
         void issue(const account_name &to, const yx_asset &asset, const string &memo);
         void redeem(const yx_asset &asset, const string &memo);
         void transfer(account_name from, account_name to, yx_asset asset, const string &memo);
         void wptransfer(account_name from, account_name to, yx_asset asset, account_name payer, const string &memo);
+        void setkycrule(const yx_symbol &symbol, uint8_t type, uint16_t kyc);
 
     private:
         void charge_fee(const account_name &payer, uint64_t operation);
@@ -40,10 +42,19 @@ namespace yosemite {
         struct token_stats {
             uint64_t issuer = 0;
             int64_t supply = 0;
-            uint32_t required_kycvector = 0;
             uint8_t options = 0;
+            vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type
+            vector<uint16_t> kyc_rule_flags; // from yosemitelib/identity.hpp
 
             uint64_t primary_key() const { return issuer; }
+        };
+
+        /* KYC rule for token, scope = get_self() */
+        enum token_kyc_rule_type {
+            TOKEN_KYC_RULE_TYPE_TRANSFER_SEND    = 0,
+            TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE = 1,
+
+            TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
         };
 
         typedef eosio::multi_index<N(tstats), token_stats> stats;
@@ -53,5 +64,7 @@ namespace yosemite {
 
         void add_token_balance(const account_name &owner, const yx_asset &asset);
         void sub_token_balance(const account_name &owner, const yx_asset &asset);
+        bool check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
+                                              const token_stats &tstats);
     };
 }

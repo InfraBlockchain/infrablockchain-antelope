@@ -26,6 +26,7 @@
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE            N(tf.tissue)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM           N(tf.tredeem)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER         N(tf.ttransfer)  // = wptransfer
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE       N(tf.tsetkyc)
 
 // yx.dcontract
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE       N(tf.dccreate)

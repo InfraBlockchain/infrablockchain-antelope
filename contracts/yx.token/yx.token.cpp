@@ -1,17 +1,17 @@
 #include "yx.token.hpp"
+#include <yosemitelib/identity.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yx.ntoken/yx.ntoken.hpp>
-#include <yx.kyc/yx.kyc.hpp>
 #include <yx.system/yx.system.hpp>
 
 namespace yosemite {
 
-    void token::create(const yx_symbol &symbol, uint32_t kycvector) {
+    void token::create(const yx_symbol &symbol) {
         eosio_assert(static_cast<uint32_t>(symbol.is_valid()), "invalid symbol name");
         eosio_assert(static_cast<uint32_t>(symbol.precision() >= 4), "token precision must be equal or larger than 4");
-        eosio_assert(static_cast<uint32_t>(symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot create the native token with this operation");
-        eosio_assert(static_cast<uint32_t>(kycvector <= KYC_VECTOR_MAX_VALUE), "invalid kycvector value");
+        eosio_assert(static_cast<uint32_t>(symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+                     "cannot create the native token with this operation");
 
         require_auth(symbol.issuer);
 
@@ -23,27 +23,27 @@ namespace yosemite {
 
         stats_table.emplace(get_self(), [&](auto &s) {
             s.issuer = symbol.issuer;
-            s.required_kycvector = kycvector;
         });
     }
 
     void token::issue(const account_name &to, const yx_asset &asset, const string &memo) {
         eosio_assert(static_cast<uint32_t>(asset.is_valid()), "invalid asset");
         eosio_assert(static_cast<uint32_t>(asset.amount > 0), "must be positive asset");
-        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot issue native token with this operation");
+        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+                     "cannot issue native token with this operation");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(asset.issuer);
 
         stats stats_table(get_self(), asset.symbol.value);
-        const auto &tstats = stats_table.find(asset.issuer);
-        eosio_assert(static_cast<uint32_t>(tstats != stats_table.end()), "not yet created token");
+        const auto &tstats = stats_table.get(asset.issuer, "not yet created token");
 
         charge_fee(asset.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
 
         stats_table.modify(tstats, 0, [&](auto &s) {
             s.supply += asset.amount;
-            eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+            eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount),
+                         "token amount cannot be more than 2^62 - 1");
         });
 
         add_token_balance(asset.issuer, asset);
@@ -58,15 +58,15 @@ namespace yosemite {
     void token::redeem(const yx_asset &asset, const string &memo) {
         eosio_assert(static_cast<uint32_t>(asset.is_valid()), "invalid asset");
         eosio_assert(static_cast<uint32_t>(asset.amount > 0), "must be positive asset");
-        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot redeem native token with this operation");
+        eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+                     "cannot redeem native token with this operation");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(asset.issuer);
 
         stats stats_table(get_self(), asset.symbol.value);
-        const auto &tstats = stats_table.find(asset.issuer);
-        eosio_assert(static_cast<uint32_t>(tstats != stats_table.end()), "not yet created token");
-        eosio_assert(static_cast<uint32_t>(asset.amount <= tstats->supply), "redeem asset exceeds supply amount");
+        const auto &tstats = stats_table.get(asset.issuer, "not yet created token");
+        eosio_assert(static_cast<uint32_t>(asset.amount <= tstats.supply), "redeem asset exceeds supply amount");
 
         charge_fee(asset.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
 
@@ -87,7 +87,8 @@ namespace yosemite {
             eosio_assert(static_cast<uint32_t>(asset.amount > 0), "must transfer positive asset");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-            eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME), "cannot transfer native token with this contract; use yx.ntoken");
+            eosio_assert(static_cast<uint32_t>(asset.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+                         "cannot transfer native token with this contract; use yx.ntoken");
 
             require_auth(from);
             eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
@@ -99,14 +100,13 @@ namespace yosemite {
         }
 
         stats stats_table(get_self(), asset.symbol.value);
-        const auto &tstats = stats_table.find(asset.issuer);
-        eosio_assert(static_cast<uint32_t>(tstats != stats_table.end()), "not yet created token");
+        const auto &tstats = stats_table.get(asset.issuer, "not yet created token");
         //TODO:add freeze functionality
 
-        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_vector(from, false) & tstats->required_kycvector) == tstats->required_kycvector),
-                     "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>((kyc::get_kyc_vector(to, false) & tstats->required_kycvector) == tstats->required_kycvector),
-                     "authentication for to account is not enough");
+        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(from, TOKEN_KYC_RULE_TYPE_TRANSFER_SEND, tstats)),
+                     "KYC authentication for from account is failed");
+        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE, tstats)),
+                     "KYC authentication for to account is failed");
 
         require_recipient(from);
         require_recipient(to);
@@ -130,7 +130,8 @@ namespace yosemite {
         } else {
             sym_index.modify(balance_holder, 0, [&](auto &holder) {
                 holder.amount += asset.amount;
-                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount),
+                             "token amount cannot be more than 2^62 - 1");
             });
         }
     }
@@ -160,7 +161,45 @@ namespace yosemite {
                      {payer, tx_fee});
         }
     }
+
+    void token::setkycrule(const yx_symbol &symbol, uint8_t type, uint16_t kyc) {
+        eosio_assert(static_cast<uint32_t>(type < TOKEN_KYC_RULE_TYPE_MAX), "invalid type");
+        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
+        require_auth(symbol.issuer);
+
+        stats stats_table(get_self(), symbol.value);
+        const auto &tstats = stats_table.get(symbol.issuer, "not yet created token");
+
+        charge_fee(symbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
+
+        auto itr = std::find(tstats.kyc_rule_types.begin(), tstats.kyc_rule_types.end(), type);
+        if (itr == tstats.kyc_rule_types.end()) {
+            stats_table.modify(tstats, 0, [&](auto &s) {
+                s.kyc_rule_types.push_back(type);
+                s.kyc_rule_flags.push_back(kyc);
+            });
+        } else {
+            auto index = std::distance(tstats.kyc_rule_types.begin(), itr);
+            stats_table.modify(tstats, 0, [&](auto &s) {
+                s.kyc_rule_types[static_cast<size_t>(index)] = type;
+                s.kyc_rule_flags[static_cast<size_t>(index)] = kyc;
+            });
+        }
+    }
+
+    bool token::check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
+                                                 const token_stats &tstats) {
+        eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+                     "account is blacklisted by identity authority");
+
+        auto itr = std::find(tstats.kyc_rule_types.begin(), tstats.kyc_rule_types.end(), kycrule_type);
+        if (itr == tstats.kyc_rule_types.end()) return true;
+
+        auto index = std::distance(tstats.kyc_rule_types.begin(), itr);
+        auto kyc_flags = tstats.kyc_rule_flags[static_cast<size_t>(index)];
+        return has_all_kyc_status(account, kyc_flags);
+    }
 }
 
-EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)
+EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)
 )

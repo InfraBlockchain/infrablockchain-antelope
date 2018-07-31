@@ -1,15 +1,33 @@
 #include "yx.ntoken.hpp"
+#include <yosemitelib/identity.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/system_depository.hpp>
-#include <yx.kyc/yx.kyc.hpp>
 
 
 namespace yosemite {
 
-    bool ntoken::is_auth_enough_for_transfer(uint32_t kycvector) {
-        return ((kycvector & KYC_VECTOR_REAL_NAME_AUTH) == KYC_VECTOR_REAL_NAME_AUTH) &&
-               ((kycvector & KYC_VECTOR_BANK_ACCOUNT_AUTH) == KYC_VECTOR_BANK_ACCOUNT_AUTH);
+    bool ntoken::check_identity_auth_for_transfer(account_name account, const ntoken_kyc_rule_type &kycrule_type) {
+        eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+                     "account is blacklisted by identity authority");
+        switch (kycrule_type) {
+            case NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND:
+                eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND)),
+                             "account is send-blacklisted by identity authority");
+                break;
+            case NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE:
+                eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE)),
+                             "account is receive-blacklisted by identity authority");
+                break;
+            case NTOKEN_KYC_RULE_TYPE_MAX:
+                // ignored
+                break;
+        }
+
+        kyc_rule_index kyc_rule(get_self(), get_self());
+        const auto &rule = kyc_rule.get(kycrule_type, "KYC rule is not set; use setkycrule operation to set");
+
+        return has_all_kyc_status(account, rule.kyc_flags);
     }
 
     void ntoken::nissue(const account_name &to, const yx_asset &asset, const string &memo) {
@@ -57,6 +75,8 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(asset.issuer);
+        eosio_assert(static_cast<uint32_t>(is_authorized_sys_depository(asset.issuer)),
+                     "issuer account is not system depository");
 
         stats_native stats(get_self(), asset.issuer);
         const auto &tstats = stats.get(NTOKEN_BASIC_STATS_KEY, "createn for the issuer is not called");
@@ -96,10 +116,10 @@ namespace yosemite {
 
         // NOTE:We don't need notification to from and to account here. It's done by several ntrasfer operation.
 
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
-                     "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
-                     "authentication for to account is not enough");
+        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(from, NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND)),
+                     "KYC authentication for from account is failed");
+        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE)),
+                     "KYC authentication for to account is failed");
 
         accounts_native_total from_total(get_self(), from);
         const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "from account doesn't have native token balance");
@@ -176,10 +196,10 @@ namespace yosemite {
             charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_NTRANSFER);
         }
 
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(from))),
-                     "authentication for from account is not enough");
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(to))),
-                     "authentication for to account is not enough");
+        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(from, NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND)),
+                     "KYC authentication for from account is failed");
+        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE)),
+                     "KYC authentication for to account is failed");
 
         require_recipient(from);
         require_recipient(to);
@@ -198,8 +218,8 @@ namespace yosemite {
         const auto &total_holder = from_total.get(NTOKEN_TOTAL_BALANCE_KEY, "payer doesn't have native token balance");
         eosio_assert(static_cast<uint32_t>(total_holder.amount >= asset.amount), "insufficient native token balance");
 
-        eosio_assert(static_cast<uint32_t>(is_auth_enough_for_transfer(kyc::get_kyc_vector(payer))),
-                     "authentication for fee payer account is not enough");
+        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(payer, NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND)),
+                     "KYC authentication for fee payer account is failed");
 
         accounts_native accounts_table_native(get_self(), payer);
         for (auto &from_balance_holder : accounts_table_native) {
@@ -296,8 +316,28 @@ namespace yosemite {
         });
     }
 
+    void ntoken::setkycrule(uint8_t type, uint16_t kyc) {
+        eosio_assert(static_cast<uint32_t>(type < NTOKEN_KYC_RULE_TYPE_MAX), "invalid type");
+        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
+        require_auth(YOSEMITE_SYSTEM_ACCOUNT);
+
+        kyc_rule_index kyc_rule(get_self(), get_self());
+        auto itr = kyc_rule.find(type);
+
+        if (itr == kyc_rule.end()) {
+            kyc_rule.emplace(get_self(), [&](auto &holder) {
+                holder.type = type;
+                holder.kyc_flags = kyc;
+            });
+        } else {
+            kyc_rule.modify(itr, 0, [&](auto &holder) {
+                holder.kyc_flags = kyc;
+            });
+        }
+    }
+
 }
 
 EOSIO_ABI(yosemite::ntoken, (nissue)(nredeem)(transfer)(wptransfer)(ntransfer)(wpntransfer)
-                            (payfee)(feetransfer)
+                            (payfee)(feetransfer)(setkycrule)
 )

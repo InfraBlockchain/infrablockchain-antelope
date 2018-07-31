@@ -98,6 +98,14 @@
       ]
     },
     {
+      "name": "setkycrule",
+      "base": "",
+      "fields": [
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
+      ]
+    },
+    {
       "name": "account_total_type",
       "base": "",
       "fields": [
@@ -120,6 +128,14 @@
         {"name":"supply", "type":"int64"},
         {"name":"options", "type":"uint8"}
       ]
+    },
+    {
+      "name": "kycrule_type",
+      "base": "",
+      "fields": [
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
+      ]
     }
   ],
   "actions": [
@@ -130,7 +146,8 @@
     { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
     { "name": "wpntransfer", "type": "ntransfer", "ricardian_contract": "" },
     { "name": "payfee", "type": "payfee", "ricardian_contract": "" },
-    { "name": "feetransfer", "type": "feetransfer", "ricardian_contract": "" }
+    { "name": "feetransfer", "type": "feetransfer", "ricardian_contract": "" },
+    { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "ntaccounts",
@@ -150,6 +167,12 @@
       "index_type": "i64",
       "key_names" : ["key"],
       "key_types" : ["uint64"]
+    },{
+      "name": "kycrule",
+      "type": "kycrule_type",
+      "index_type": "i64",
+      "key_names" : ["type"],
+      "key_types" : ["uint8"]
     }
   ],
   "ricardian_clauses": []

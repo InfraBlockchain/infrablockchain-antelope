@@ -26,8 +26,7 @@
       "name": "create",
       "base": "",
       "fields": [
-        {"name":"token", "type":"yx_symbol"},
-        {"name":"kycvector", "type":"uint32"}
+        {"name":"token", "type":"yx_symbol"}
       ]
     },
     {
@@ -69,6 +68,15 @@
       ]
     },
     {
+      "name": "setkycrule",
+      "base": "",
+      "fields": [
+        {"name":"token", "type":"yx_symbol"},
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
+      ]
+    },
+    {
       "name": "accounts_type",
       "base": "",
       "fields": [
@@ -84,8 +92,9 @@
       "fields": [
         {"name":"issuer", "type":"account_name"},
         {"name":"supply", "type":"uint64"},
-        {"name":"required_kycvector", "type":"uint32"},
-        {"name":"options", "type":"uint8"}
+        {"name":"options", "type":"uint8"},
+        {"name":"kyc_rule_types", "type":"uint8[]"},
+        {"name":"kyc_rule_flags", "type":"uint16[]"}
       ]
     }
   ],
@@ -94,7 +103,8 @@
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
-    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" }
+    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
+    { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "taccounts",
@@ -106,7 +116,7 @@
       "name": "tstats",
       "type": "stats_type",
       "index_type": "i64",
-      "key_names" : ["id"],
+      "key_names" : ["issuer"],
       "key_types" : ["uint64"]
     }
   ],

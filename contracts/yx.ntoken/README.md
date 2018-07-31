@@ -51,9 +51,14 @@ cleos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.0000
 cleos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.0000 DKRW"}}' -p eosio
 ```
 
-## setting account's KYC vector to yx.kyc contract
-* Transferring the native token with transfer and ntransfer operations requires KYC_VECTOR_REAL_NAME_AUTH and KYC_VECTOR_BANK_ACCOUNT_AUTH.
-* You must set d1, d2, user1 and user2's KYC vector as above. Refer to [`yx.kyc README`](../../contracts/yx.kyc/README.md).
+## setting KYC vector
+* Rule type
+   * 0 : transfer send (from account)
+   * 1 : transfer receive (to account)
+```
+cleos push action yx.ntoken setkycrule '{"type":0, "kyc":15}' -p eosio
+cleos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p eosio
+```
 
 # Operations
 
