@@ -10,7 +10,7 @@ For each blockchain account, Identity Authority can manage below information
 * account state (e.g. blacklisted account, ...)
 * Identity-Authority specific data (arbitrary string data)
 
-Once an Identity Authority sets identity info. for an account, only the Identity Authority account can modified the identity info for the account.
+Once an Identity Authority sets identity info. for an account, only the Identity Authority account can modify the identity info for the account.
 
 
 Environment Var.
