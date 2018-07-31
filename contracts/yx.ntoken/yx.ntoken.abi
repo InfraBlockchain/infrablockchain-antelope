@@ -7,14 +7,6 @@
   ],
   "structs": [
     {
-      "name": "yx_symbol",
-      "base": "",
-      "fields": [
-        {"name":"symbol",   "type":"symbol"},
-        {"name":"issuer", "type":"account_name"}
-      ]
-    },
-    {
       "name": "yx_asset",
       "base": "",
       "fields": [

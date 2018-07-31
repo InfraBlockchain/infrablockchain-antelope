@@ -44,6 +44,7 @@ cleos push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.0000 D
 cleos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.0000 DKRW"}}' -p eosio
 cleos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.0000 DKRW"}}' -p eosio
 cleos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.0000 DKRW"}}' -p eosio
 ```
 
 # Operations
@@ -96,6 +97,12 @@ cleos push action yx.token wptransfer '[ "user1", "user2", {"asset":"10000.0000 
 ```
 cleos push action yx.token setkycrule '{"token":{"symbol":"4,ETH","issuer":"d2"}, "type":0, "kyc":4}' -p d2
 cleos push action yx.token setkycrule '{"token":{"symbol":"4,ETH","issuer":"d2"}, "type":1, "kyc":4}' -p d2
+```
+
+## setting token options
+1. freeze token transfer
+```
+cleos push action yx.token setoptions '{"token":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "overwrite":1}' -p d2
 ```
 
 ## get the token statistics

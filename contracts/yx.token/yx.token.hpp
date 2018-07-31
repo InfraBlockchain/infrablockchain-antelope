@@ -22,6 +22,7 @@ namespace yosemite {
         void transfer(account_name from, account_name to, yx_asset asset, const string &memo);
         void wptransfer(account_name from, account_name to, yx_asset asset, account_name payer, const string &memo);
         void setkycrule(const yx_symbol &symbol, uint8_t type, uint16_t kyc);
+        void setoptions(const yx_symbol &symbol, uint16_t options, bool overwrite);
 
     private:
         void charge_fee(const account_name &payer, uint64_t operation);
@@ -32,29 +33,34 @@ namespace yosemite {
             uint128_t yx_symbol_s{}; // yx_symbol which is serialized to 128 bit;
                                      // eosio::symbol_type::value is higher 64 bit and issuer account is lower 64 bit.
             int64_t amount = 0;
-            uint8_t options = 0;
+            uint16_t options = 0;
 
             uint64_t primary_key() const { return id; }
             uint128_t by_yx_symbol_s() const { return yx_symbol_s; }
         };
 
-        /* scope = token symbol */
-        struct token_stats {
-            uint64_t issuer = 0;
-            int64_t supply = 0;
-            uint8_t options = 0;
-            vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type
-            vector<uint16_t> kyc_rule_flags; // from yosemitelib/identity.hpp
-
-            uint64_t primary_key() const { return issuer; }
-        };
-
-        /* KYC rule for token, scope = get_self() */
+        /* KYC rule for token */
         enum token_kyc_rule_type {
             TOKEN_KYC_RULE_TYPE_TRANSFER_SEND    = 0,
             TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE = 1,
 
             TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
+        };
+
+        /* Option flags for token stats */
+        #define TOKEN_OPTIONS_NONE                      0b00000000
+        #define TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER     0b00000001
+        #define TOKEN_OPTIONS_MAX                       0b00000001
+
+        /* scope = token symbol */
+        struct token_stats {
+            uint64_t issuer = 0;
+            int64_t supply = 0;
+            uint16_t options = TOKEN_OPTIONS_NONE;
+            vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type
+            vector<uint16_t> kyc_rule_flags; // from yosemitelib/identity.hpp
+
+            uint64_t primary_key() const { return issuer; }
         };
 
         typedef eosio::multi_index<N(tstats), token_stats> stats;

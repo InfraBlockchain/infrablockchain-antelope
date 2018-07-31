@@ -3,7 +3,6 @@
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yx.ntoken/yx.ntoken.hpp>
-#include <yx.system/yx.system.hpp>
 
 namespace yosemite {
 
@@ -36,7 +35,7 @@ namespace yosemite {
         require_auth(asset.issuer);
 
         stats stats_table(get_self(), asset.symbol.value);
-        const auto &tstats = stats_table.get(asset.issuer, "not yet created token");
+        const auto &tstats = stats_table.get(asset.issuer, "token is not yet created");
 
         charge_fee(asset.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
 
@@ -101,12 +100,17 @@ namespace yosemite {
 
         stats stats_table(get_self(), asset.symbol.value);
         const auto &tstats = stats_table.get(asset.issuer, "not yet created token");
-        //TODO:add freeze functionality
 
-        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(from, TOKEN_KYC_RULE_TYPE_TRANSFER_SEND, tstats)),
-                     "KYC authentication for from account is failed");
-        eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE, tstats)),
-                     "KYC authentication for to account is failed");
+        if (tstats.options > 0) {
+            eosio_assert(static_cast<uint32_t>((tstats.options & TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER) != TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER),
+                         "token transfer is frozen");
+        }
+        if (!tstats.kyc_rule_types.empty()) {
+            eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(from, TOKEN_KYC_RULE_TYPE_TRANSFER_SEND, tstats)),
+                         "KYC authentication for from account is failed");
+            eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE, tstats)),
+                         "KYC authentication for to account is failed");
+        }
 
         require_recipient(from);
         require_recipient(to);
@@ -144,7 +148,6 @@ namespace yosemite {
 
         eosio_assert(static_cast<uint32_t>(balance_holder != sym_index.end()), "account doesn't have token");
         eosio_assert(static_cast<uint32_t>(balance_holder->amount >= asset.amount), "insufficient token balance");
-        //TODO:add freeze functionality
 
         // subtract the balance from the 'owner' account
         sym_index.modify(balance_holder, 0, [&](auto &holder) {
@@ -199,7 +202,25 @@ namespace yosemite {
         auto kyc_flags = tstats.kyc_rule_flags[static_cast<size_t>(index)];
         return has_all_kyc_status(account, kyc_flags);
     }
+
+    void token::setoptions(const yx_symbol &symbol, uint16_t options, bool overwrite) {
+        eosio_assert(static_cast<uint32_t>(options <= TOKEN_OPTIONS_MAX), "invalid options");
+        require_auth(symbol.issuer);
+
+        stats stats_table(get_self(), symbol.value);
+        const auto &tstats = stats_table.get(symbol.issuer, "not yet created token");
+
+        charge_fee(symbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS);
+
+        stats_table.modify(tstats, 0, [&](auto &s) {
+            if (overwrite) {
+                s.options = options;
+            } else {
+                s.options |= options;
+            }
+        });
+    }
 }
 
-EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)
+EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)(setoptions)
 )
