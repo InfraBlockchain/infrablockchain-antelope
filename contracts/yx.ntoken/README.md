@@ -1,27 +1,48 @@
 # Abtract
-* This contract is for native token.
-* The contract for non-native tokens is [`yx.token`](../../contracts/yx.token/). It's recommended to read about the native token first.
+* This system contract is for native token.
+* The system contract for non-native tokens is [`yx.token`](../../contracts/yx.token/). It's recommended to read about the native token first.
 
-# Types of Tokens
-* There are two types of tokens in Yosemite Public Blockchain.
+# Yosemite Tokens
+## Types of Token
+* There are two types of tokens in Yosemite Public Blockchain(YosemiteChain or Yosemite).
   1. native token
   1. non-native tokens
-* The native token supports only one type of FIAT token. First of all, it is used as the transaction fee.
-* The non-native tokens are created by anyone who owns his or her account. It is made of the symbol and the issuer account. e.g. 4,BTC@d1
-  * They are all different for each token issuer. For example, 4,BTC/d1 and 4,BTC/d2 are both different.
+* The native token supports only one type of FIAT token 1:1 pegged to real money. First of all, it is used as the transaction fee.
+   * Only the system depositories issue and redeem the native token. For more information, refer to [yx.system](../../contracts/yx.system/).
+   * Blockchain users who have done the KYC process through identity authority can transfer the native token. For more information, refer to [yx.identity](../../contracts/yx.identity/).
+* The non-native tokens are created by anyone who owns his or her blockchain account. For more information, refer to [`yx.token`](../../contracts/yx.token/).
 
-# Types of Token Operations
-* There are two types of operations.
-  1. for depositories
-  1. for any users
+## Format of Token
+* It is made of precision, symbol and the issuer.
+* 4,DKRW@d1   
+   * 4 : precision (the number of bits used to hold the fractional part in the concept of floating-point numbers, .0000) 
+   * DKRW : symbol
+   * d1 : account name of the issuer
+* Tokens are all different for precision. For example, 4,BTC@d3 and 8,BTC@d3 are both different.
+* They are all different for each issuer. For example, 4,DKRW@d1 and 4,DKRW@d2 are both different.
+## Amount Format
+* 1234.5678 DKRW
+   * If symbol and precision is 4,DKRW, then precision must be presented exactly. e.g. .0000
+* The maximum amount is 2^62 - 1. 
 
-# What You Can Do With This Contract
+# Yosemite Native Token
+* From the perspective of real money, people just think DKRW is DKRW, not 4,DKRW@d1, 4,DRKW@d2 or 8,DKRW@d1.
+* For the native token, YosemiteChain defines its symbol and precision at the Yosemite software release level.
+   * In the specific YosemiteChain network for the Korea market, 4,DKRW is the native token. There can't be 8,DKRW.
+   * It also means there would be the Yosemite software with 8,DKRW and the specific network with it. But it's the totally different network.
+   * **Note that only this system contract, `yx.ntoken`, manages the native token.**
+      * YosemiteChain has a plan to provide the general smart contract platform in the near future. At that time, one of the Yostemite accounts would make the smart contract which is named to `xx.ntoken` and it would manage 4,DKRW. But 4,DKRW managed by `xx.token` is not the native token but the non-native token.
+* Other than symbol and precision, multiple issuers exist. Multiple native token issuers or system depositories are registered by [yx.system](../../contracts/yx.system/).
+* This system contract manages the native token issued by multiple issuers to be viewed as the same token, which are actually different each other at the software level.
+   * For example, when the account user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2
+
+# What You Can Do With This System Contract
 * Only system depositories can issue and redeem the native token.
   * For example, if the native token is DKRW, the system depository account d1(depository 1) and d2 can issue and redeem DKRW separately.
-  * If a new depository wants to issue the native token, it must call [yx.system](../../contracts/yx.system/)::regsysdepo operation first to become the system depository.
+  * If a new depository wants to issue the native token, it must call [yx.system](../../contracts/yx.system/)::regsysdepo action first to become the system depository.
   * The active block producers must authrorize it as the system depository.
 * Blockchain users can transfer the native token regardless of depositories. There would be two general cases.
-  1. When user1 has 1000 DKRW/d1 and 1000 DKRW/d2, total 2000 DKRW, and transfers 2000 DKRW to user2, user2 will have 1000 DKRW/d1 and 1000 DKRW/d2.
+  1. When user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2, total 2000 DKRW, and transfers 2000 DKRW to user2, user2 will have 1000 DKRW/d1 and 1000 DKRW/d2.
   1. When user1 has 1000 DKRW/d1 and 1000 DKRW/d2, total 2000 DKRW, and transfers 1500 DKRW to user2, user2 will have 1000 DKRW/d1 and 500 DKRW/d2 or 500 DKRW/d1 and 1000 DKRW/d2 randomly but 1500 DKRW in total.
 * Blockchain users can transfer the native token designating the depository.
 
