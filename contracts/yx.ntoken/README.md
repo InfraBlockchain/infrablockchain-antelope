@@ -68,6 +68,7 @@ $ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0
 ### inline actions and notifications of nissue
 * Case 1. If the to account is different from the issuer, nissue does the inline action for `ntransfer`.
    * Note that in this example the transaction fee of nissue is set to 0.0000 DKRW, so the inline action for `payfee` is now shown.
+   * In the example below, the `yx.ntoken <= yx.ntoken::ntransfer` part is the `ntrasfer` inline action. `d1 <= yx.ntoken::ntransfer` and `user1 <= yx.ntoken::ntransfer` parts are notifications of the inline action.
 ```
 #     yx.ntoken <= yx.ntoken::nissue            {"to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
 #     yx.ntoken <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
