@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.5 )
 
-project( EOSIO )
+project( YOSEMITE )
 
 enable_testing()
 
@@ -13,7 +13,7 @@ include( SetupTargetMacros )
 include( InstallDirectoryPermissions )
 include( MASSigning )
 
-set( BLOCKCHAIN_NAME "EOSIO" )
+set( BLOCKCHAIN_NAME "YOSEMITE" )
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_EXTENSIONS ON )
 set( CXX_STANDARD_REQUIRED ON)
