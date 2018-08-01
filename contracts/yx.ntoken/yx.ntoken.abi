@@ -78,14 +78,6 @@
       "base": "",
       "fields": [
         {"name":"payer", "type":"account_name"},
-        {"name":"token", "type":"asset"}
-      ]
-    },
-    {
-      "name": "feetransfer",
-      "base": "",
-      "fields": [
-        {"name":"payer", "type":"account_name"},
         {"name":"token", "type":"yx_asset"}
       ]
     },
@@ -138,7 +130,6 @@
     { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
     { "name": "wpntransfer", "type": "wpntransfer", "ricardian_contract": "" },
     { "name": "payfee", "type": "payfee", "ricardian_contract": "" },
-    { "name": "feetransfer", "type": "feetransfer", "ricardian_contract": "" },
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" }
   ],
   "tables": [{

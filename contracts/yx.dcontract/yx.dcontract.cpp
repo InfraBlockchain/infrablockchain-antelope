@@ -4,7 +4,7 @@
 
 #include "yx.dcontract.hpp"
 #include <yx.system/yx.system.hpp>
-#include <yx.ntoken/yx.ntoken.hpp>
+#include <yosemitelib/native_token.hpp>
 #include <yosemitelib/yx_sequence_generator.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 
@@ -128,13 +128,7 @@ namespace yosemite {
     }
 
     void digital_contract::charge_fee(const account_name &payer, uint64_t operation) {
-        auto tx_fee = yosemite::get_transaction_fee(operation);
-
-        if (tx_fee.amount > 0) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
-                    (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     {payer, tx_fee});
-        }
+        charge_transaction_fee(payer, operation);
     }
 }
 

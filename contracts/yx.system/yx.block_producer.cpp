@@ -106,10 +106,7 @@ namespace yosemitesys {
 
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            const asset& tx_fee = yosemite::get_transaction_fee(YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER);
-            INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
-                    (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{producer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     {producer, tx_fee});
+            yosemite::charge_transaction_fee(producer, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER);
         }
     }
 

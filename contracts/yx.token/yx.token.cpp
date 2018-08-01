@@ -2,7 +2,7 @@
 #include <yosemitelib/identity.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
-#include <yx.ntoken/yx.ntoken.hpp>
+#include <yosemitelib/native_token.hpp>
 
 namespace yosemite {
 
@@ -160,13 +160,7 @@ namespace yosemite {
     }
 
     void token::charge_fee(const account_name &payer, uint64_t operation) {
-        auto tx_fee = yosemite::get_transaction_fee(operation);
-
-        if (tx_fee.amount > 0) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
-                    (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     {payer, tx_fee});
-        }
+        charge_transaction_fee(payer, operation);
     }
 
     void token::setkycrule(const yx_symbol &ysymbol, uint8_t type, uint16_t kyc) {
