@@ -1,17 +1,20 @@
-# Roles of the contract
-* To provide the infrastructure for the digital contract & signing services on the legal business
+# Abtract
+* To provide the infrastructure for the digital contracts and the digital signing service for them on the legal business field
 
-# Before Testing The Contract
-* Assume that yx.dcontract contract is prepared.
-* Assume that accounts legal1, user1, user2 and user3 are created.
+# Digital Signing
+* The features related to digital signing are governed by Public key cryptography which has long been developed by computer cryptography.
+* In most cases, an account of Yosemite Public Blockchain(YosemiteChain or Yosemite) has its private key and the public key, which are the key pair that can never be changed after it is created.
+* Digital signing is only done by the private key who owns it and the result of signing, digital signature, can be checked by anyone who knows the paired public key.
+   * For more information, refer to https://en.wikipedia.org/wiki/Digital_signature and https://en.wikipedia.org/wiki/Public-key_cryptography
+* In the view of YosemiteChain, digital signing has two meanings.
+1. When an action is delivered to YosemiteChain, it can confirm that the action is sent by the real action sender.
+   * YosemiteChain has all the public keys of accounts.
 
-## deploy the contract
-`cleos set contract yx.dcontract build/contracts/yx.dcontract -p yx.dcontract`
 
-## setting fee for operations
-* Fee for operations is set by `setfee` operation.
-* The majority of the current depositories must agree using multisig feature.
-* [Temporary] For test convenience, this operation is not yet multisig.
+# Management Actions
+
+## setting fee for actions
+* Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
 cleos push action yx.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.0000 DKRW"}}' -p eosio
 cleos push action yx.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.0000 DKRW"}}' -p eosio
@@ -21,14 +24,14 @@ cleos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.0000 D
 ```
 
 
-# Operations
+# Actions
 
 ## create a digital contract
 ```
 cleos push action yx.dcontract create '{"creator":"legal1", "dochash":"123456", "adddochash":"", "signers":["user1", "user2"], "expiration":"2018-08-31T02:49:57", "options":0}' -p legal1
 ```
 * expiration : ISO8601 format, combined date and time to seconds e.g. 2018-08-31T02:49:57
-* After the transaction is done, dapp can get the contract id, which is the sequenced 64bit integer. The id is used with the creator account for other operations.
+* After the transaction is done, dapp can get the contract id, which is the sequenced 64bit integer. The id is used with the creator account for other actions.
 
 ## add additional signers
 ```
