@@ -1,6 +1,6 @@
 # Abtract
-* This system contract provides the infrastructure for creation of digital contracts and digital signing service for them.
-* The name of the system contract is `yx.dcontract`.
+* This Yosemite contract provides the infrastructure for creation of digital contracts and digital signing service for them.
+* The name is `yx.dcontract`.
 
 # Digital Signing
 * The features related to digital signing are part of public key cryptography.
@@ -11,7 +11,7 @@
 * YosemiteChain can check the integrity of the digital signature with all accounts because it has all the public keys of accounts.
 
 ## digital signing of the action of digital contract creation
-* When a creation action is delivered to this system contract, it checks that the action is sent by the service provider who wants to create the digital contract.
+* When a creation action is delivered to this Yosemite contract, it checks that the action is sent by the service provider who wants to create the digital contract.
 * The creation action includes the list of accounts who are contract signers for `sign` action.
 
 ## digital signing of the digital contract
