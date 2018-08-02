@@ -37,7 +37,7 @@
 * In spite of importance of alignment with the usage perspective, it would be undesirable if there were only one issuer of the native token. Above all, it might not be what blockchain users want that the native token is controlled by one entity, which it's definitely centralized.
 * YosemiteChain allows multiple issuers for the native token. Native token issuer, which is named to the system depository, is registered by [yx.system](../../contracts/yx.system/).
 * This Yosemite contract manages the native token issued by multiple issuers to be viewed as the same token, which are actually different each other at the software level.
-   * For example, even though the account user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2 at the software level, this Yosemite contract shows the person or the DApp provider who owns the account user1 2000 DRKW.
+   * For example, even though the account user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2 at the software level, this Yosemite contract shows the person or the DApp provider who owns the account user1 2000.0000 DRKW.
 
 # What You Can Do With This Yosemite Contract
 * Only system depositories can issue and redeem the native token.
@@ -46,8 +46,8 @@
      * The active block producers must authrorize it as the system depository.
 * One system depository can allow redemption of other system depositories. Fore more information, refer to `nredeem` action.
 * Blockchain users can transfer the native token regardless of depositories. There would be two general cases.
-  1. When user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2, total 2000 DKRW, and transfers 2000 DKRW to user2, user2 will have 1000 DKRW/d1 and 1000 DKRW/d2.
-  1. When user1 has 1000 DKRW/d1 and 1000 DKRW/d2, total 2000 DKRW, and transfers 1500 DKRW to user2, user2 will have 1000 DKRW/d1 and 500 DKRW/d2 or 500 DKRW/d1 and 1000 DKRW/d2 randomly but 1500 DKRW in total.
+  1. When user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2, total 2000.0000 DKRW, and transfers 2000.0000 DKRW to user2, user2 will have 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2.
+  1. When user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2, total 2000.0000 DKRW, and transfers 1500.0000 DKRW to user2, user2 will have 1000.0000 DKRW@d1 and 500.0000 DKRW@d2 or 500.0000 DKRW@d1 and 1000.0000 DKRW@d2 randomly but 1500.0000 DKRW in total.
 * Blockchain users can transfer the native token designating the specific depository.
 
 # Management Actions
