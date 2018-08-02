@@ -7,28 +7,28 @@
 * There are two types of tokens in Yosemite Public Blockchain(YosemiteChain or Yosemite).
   1. native token
   1. non-native tokens
-* The native token supports only one type of FIAT token 1:1 pegged to real money. First of all, it is used as the transaction fee.
+* The native token must be a FIAT-token, pegged to 1:1 exchange rate. This is designed to be used as the network's transaction fee.
    * Only the system depositories issue and redeem the native token. For more information, refer to [yx.system](../../contracts/yx.system/).
-   * Blockchain users who have done the KYC process through identity authority can transfer the native token. For more information, refer to [yx.identity](../../contracts/yx.identity/).
+   * Only the blockchain users who have successfully verified their identity by completing the KYC process can transfer the native token. For more information, refer to [yx.identity](../../contracts/yx.identity/).
 * The non-native tokens are created by anyone who owns his or her blockchain account. For more information, refer to [`yx.token`](../../contracts/yx.token/).
 
 ## Format of Token
-* It is made of precision, symbol and the issuer.
+* The structure of token includes precision, symbol, and the issuer.
 * 4,DKRW@d1   
    * 4 : precision (the number of bits used to hold the fractional part in the concept of floating-point numbers, .0000) 
    * DKRW : symbol
    * d1 : account name of the issuer
-* Tokens are all different for precision. For example, 4,BTC@d3 and 8,BTC@d3 are both different.
-* They are all different for each issuer. For example, 4,DKRW@d1 and 4,DKRW@d2 are both different.
+* Different issuer results in different tokens. For example, 4,DKRW@d1 and 4,DKRW@d2 are different.
+* Different precision results in different tokens. For example, 4,BTC@d3 and 8,BTC@d3 are different.
 ## Amount Format
 * 1234.5678 DKRW
-   * If symbol and precision is 4,DKRW, then precision must be presented exactly. e.g. 1.0000 DKRW
+   * If token's symbol and precision is 4,DKRW, then the amount should be written to reflect token's precision. e.g. 1.0000 DKRW
 * In the Yosemite software, the amount 1234.5678 is saved in 64-bit integer as 12345678.
-* The maximum amount defined by the software is 2^62 - 1(= 4611686018427387903). In this case, till 461168601842738.7903 DKRW is usuable.
+* The maximum amount defined by the software is 2^62-1(=4611686018427387903). In such case, up to 461168601842738.7903 DKRW is usuable.
 
 # Yosemite Native Token
-* From the perspective of real money, people just think DKRW is DKRW, not 4,DKRW@d1, 4,DRKW@d2 or 8,DKRW@d1.
-* For the native token, YosemiteChain defines its symbol and precision at the Yosemite software release level to provide Yosemite users such real money concept.
+* From the usage perspective, DKRW is DKRW regardless of whether it's 4,DKRW@d1 or 4,DKRW@d2.
+* For the native token, YosemiteChain defines its symbol and precision at the Yosemite software release to conform to such perspective.
    * In the specific YosemiteChain network for the Korea market, 4,DKRW is the native token. There can't be 8,DKRW.
    * It also means there would be the Yosemite software with 8,DKRW and the specific network with it. But it's the totally different network.
    * Plus there would be the Yosemite software with 4,DUSD or 4,EUR for each FIAT money. These softwares can be made with CMake build options, YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME and YOSEMITE_NATIVE_TOKEN_PRECISION. Refer to [root CMakeLists.txt](../CMakeLists.txt) file.
@@ -43,7 +43,8 @@
 * Only system depositories can issue and redeem the native token.
   * For example, if the native token is DKRW, the system depository account d1(depository 1) and d2 can issue and redeem DKRW separately.
   * If a new depository wants to issue the native token, it must call [yx.system](../../contracts/yx.system/)::regsysdepo action first to become the system depository.
-  * The active block producers must authrorize it as the system depository.
+     * The active block producers must authrorize it as the system depository.
+* One system depository can allow redemption of other system depositories. Fore more information, refer to `nredeem` action.
 * Blockchain users can transfer the native token regardless of depositories. There would be two general cases.
   1. When user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2, total 2000 DKRW, and transfers 2000 DKRW to user2, user2 will have 1000 DKRW/d1 and 1000 DKRW/d2.
   1. When user1 has 1000 DKRW/d1 and 1000 DKRW/d2, total 2000 DKRW, and transfers 1500 DKRW to user2, user2 will have 1000 DKRW/d1 and 500 DKRW/d2 or 500 DKRW/d1 and 1000 DKRW/d2 randomly but 1500 DKRW in total.
@@ -109,7 +110,8 @@ $ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0
 ```
 cleos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
 ```
-* Then the system depository checks the transfer action is done and calls nredeem action.
+   * The account user1 can send the native token issued by other system depositories like d2 to the system depository d1. In such case, d1 calls the transfer action to d2 to redeem the native token from d2.
+* Then the system depository checks the transfer action is irreversible and calls nredeem action.
 ```
 cleos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
 ```
