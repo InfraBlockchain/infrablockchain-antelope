@@ -1,6 +1,6 @@
 # Abtract
-* This system contract is for native token.
-* The system contract for non-native tokens is [`yx.token`](../../contracts/yx.token/). It's recommended to read about the native token first.
+* This Yosemite contract is for native token.
+* The Yosemite contract for non-native tokens is [`yx.token`](../../contracts/yx.token/). It's recommended to read about the native token first.
 
 # Yosemite Tokens
 ## Types of Token
@@ -32,14 +32,14 @@
    * In the specific YosemiteChain network for the Korea market, 4,DKRW is the native token. There can't be 8,DKRW.
    * It also means there would be the Yosemite software with 8,DKRW and the specific network with it. But it's the totally different network.
    * Plus there would be the Yosemite software with 4,DUSD or 4,EUR for each FIAT money. These softwares can be made with CMake build options, YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME and YOSEMITE_NATIVE_TOKEN_PRECISION. Refer to [root CMakeLists.txt](../CMakeLists.txt) file.
-   * **Note that only this system contract, `yx.ntoken`, manages the native token.**
+   * **Note that only this Yosemite contract, `yx.ntoken`, manages the native token.**
       * YosemiteChain has a plan to provide the general smart contract platform in the near future. At that time, one of the Yostemite accounts would make the smart contract which is named to `xx.ntoken` and it would manage 4,DKRW. But 4,DKRW managed by `xx.token` is not the native token but the non-native token.
 * In spite of importance of alignment with real money concept, it would be undesirable if there were only one issuer of the native token. Above all, it might not be what blockchain users want that the native token is controlled by one entity, which it's definitely centralized.
 * YosemiteChain allows multiple issuers for the native token. Native token issuer, which is named to the system depository, is registered by [yx.system](../../contracts/yx.system/).
-* This system contract manages the native token issued by multiple issuers to be viewed as the same token, which are actually different each other at the software level.
-   * For example, even though the account user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2 at the software level, this system contract shows the person or the DApp provider who owns the account user1 2000 DRKW.
+* This Yosemite contract manages the native token issued by multiple issuers to be viewed as the same token, which are actually different each other at the software level.
+   * For example, even though the account user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2 at the software level, this Yosemite contract shows the person or the DApp provider who owns the account user1 2000 DRKW.
 
-# What You Can Do With This System Contract
+# What You Can Do With This Yosemite Contract
 * Only system depositories can issue and redeem the native token.
   * For example, if the native token is DKRW, the system depository account d1(depository 1) and d2 can issue and redeem DKRW separately.
   * If a new depository wants to issue the native token, it must call [yx.system](../../contracts/yx.system/)::regsysdepo action first to become the system depository.
