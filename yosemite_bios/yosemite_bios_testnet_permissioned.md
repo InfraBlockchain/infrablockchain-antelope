@@ -163,30 +163,6 @@ $YOSEMITE_CLEOS create account eosio yx.dcontract EOS6HrSCEbKTgZLe8stDgFB3Pip2tK
 
 ```
 
-Create initial System Depository Account
----
-
-* sysdepo1
-```bash
-$YOSEMITE_CLEOS create key
-Private key: 5KCqedPhHjbaBRi4ujhFsS3aGCcNuXwVGrMaxRW3DvB5Wo3beax
-Public key: EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtxKUhxKh5HfSSM1dHeQo
-$YOSEMITE_CLEOS wallet import --private-key 5KCqedPhHjbaBRi4ujhFsS3aGCcNuXwVGrMaxRW3DvB5Wo3beax
-
-$YOSEMITE_CLEOS create account eosio sysdepo1 EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtxKUhxKh5HfSSM1dHeQo
-
-```
-
-* sysdepo2
-```bash
-$YOSEMITE_CLEOS create key
-Private key: 5HyRsRWBi4bUXjmnmaskw9BU8a2sdqn3Jfqt21Few9xUyYR5tXr
-Public key: EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxmPgk7C8fEi4FnQKhHLwM
-$YOSEMITE_CLEOS wallet import --private-key 5HyRsRWBi4bUXjmnmaskw9BU8a2sdqn3Jfqt21Few9xUyYR5tXr
-
-$YOSEMITE_CLEOS create account eosio sysdepo2 EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxmPgk7C8fEi4FnQKhHLwM
-```
-
 Create initial Identity Authority Account
 ---
 
@@ -209,6 +185,31 @@ Public key: EOS68JZEkVt4Z3dkrSmQ4SkH8XyVJVKTmnvawZyWcrxzhoH1WMp4Q
 $YOSEMITE_CLEOS wallet import --private-key 5K25HU8a7qgkfb9o2skiNupEs9H3wE6CWSd9qjako2gnFioekaX
 
 $YOSEMITE_CLEOS create account eosio idauth2 EOS68JZEkVt4Z3dkrSmQ4SkH8XyVJVKTmnvawZyWcrxzhoH1WMp4Q
+```
+
+
+Create initial System Depository Account
+---
+
+* sysdepo1
+```bash
+$YOSEMITE_CLEOS create key
+Private key: 5KCqedPhHjbaBRi4ujhFsS3aGCcNuXwVGrMaxRW3DvB5Wo3beax
+Public key: EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtxKUhxKh5HfSSM1dHeQo
+$YOSEMITE_CLEOS wallet import --private-key 5KCqedPhHjbaBRi4ujhFsS3aGCcNuXwVGrMaxRW3DvB5Wo3beax
+
+$YOSEMITE_CLEOS create account eosio sysdepo1 EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtxKUhxKh5HfSSM1dHeQo
+
+```
+
+* sysdepo2
+```bash
+$YOSEMITE_CLEOS create key
+Private key: 5HyRsRWBi4bUXjmnmaskw9BU8a2sdqn3Jfqt21Few9xUyYR5tXr
+Public key: EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxmPgk7C8fEi4FnQKhHLwM
+$YOSEMITE_CLEOS wallet import --private-key 5HyRsRWBi4bUXjmnmaskw9BU8a2sdqn3Jfqt21Few9xUyYR5tXr
+
+$YOSEMITE_CLEOS create account eosio sysdepo2 EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxmPgk7C8fEi4FnQKhHLwM
 ```
 
 Install Yosemite System Contract
@@ -406,6 +407,7 @@ $YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.dcupadd", "50.0000 DKRW" ]'
 $YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.dcremove", "0.0000 DKRW" ]' -p eosio@active
 
 $YOSEMITE_CLEOS get table -l 100 yx.txfee yx.txfee txfees
+$YOSEMITE_CLEOS get table -L tf.transfer -l 1 yx.txfee yx.txfee txfees
 ```
 
 Resign "eosio" delegating authority to "eosio.prods"
