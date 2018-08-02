@@ -18,8 +18,8 @@
       "name": "create",
       "base": "",
       "fields": [
-        {"name":"creator", "type":"account_name"},
-        {"name":"dochash", "type":"string"},
+        {"name":"dcid", "type":"dcid"},
+        {"name":"conhash", "type":"string"},
         {"name":"adddochash", "type":"string"},
         {"name":"signers", "type":"account_name[]"},
         {"name":"expiration", "type":"time_point_sec"},
@@ -63,7 +63,7 @@
       "base": "",
       "fields": [
         {"name":"sequence", "type":"uint64"},
-        {"name":"dochash", "type":"bytes"},
+        {"name":"conhash", "type":"bytes"},
         {"name":"adddochash", "type":"bytes"},
         {"name":"expiration", "type":"time_point_sec"},
         {"name":"options", "type":"uint8"},

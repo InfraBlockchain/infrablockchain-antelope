@@ -36,23 +36,22 @@ namespace yosemite {
         explicit digital_contract(account_name self) : contract(self) {
         }
 
-        void create(account_name creator, const string &dochash, const string &adddochash,
+        void create(const dcid &dc_id, const string &conhash, const string &adddochash,
                     const vector<account_name> &signers, const time_point_sec &expiration, uint8_t options);
-        void addsigners(dcid dc_id, const vector <account_name> &signers);
-        void sign(dcid dc_id, account_name signer, const string &signerinfo);
+        void addsigners(const dcid &dc_id, const vector <account_name> &signers);
+        void sign(const dcid &dc_id, account_name signer, const string &signerinfo);
         /** Updates the additional document hash */
-        void upadddochash(dcid dc_id, const string &adddochash);
-        void remove(dcid dc_id);
+        void upadddochash(const dcid &dc_id, const string &adddochash);
+        void remove(const dcid &dc_id);
 
     private:
-        void charge_fee(const account_name &payer, uint64_t operation);
         void check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates);
     };
 
     /* scope = creator */
     struct dcontract_info {
-        uint64_t sequence = 0; /* generated sequence for each creator */
-        vector<char> dochash{};
+        uint64_t sequence = 0; /* provided sequence by the creator */
+        vector<char> conhash{};
         vector<char> adddochash{};
         time_point_sec expiration{};
         uint8_t options = 0;
