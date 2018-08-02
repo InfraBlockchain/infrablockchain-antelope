@@ -1,14 +1,21 @@
 # Abtract
-* To provide the infrastructure for the digital contracts and the digital signing service for them on the legal business field
+* This system contract provides the infrastructure for creation of digital contracts and digital signing service for them.
+* The name of the system contract is `yx.dcontract`.
 
 # Digital Signing
-* The features related to digital signing are governed by Public key cryptography which has long been developed by computer cryptography.
-* In most cases, an account of Yosemite Public Blockchain(YosemiteChain or Yosemite) has its private key and the public key, which are the key pair that can never be changed after it is created.
-* Digital signing is only done by the private key who owns it and the result of signing, digital signature, can be checked by anyone who knows the paired public key.
+* The features related to digital signing are governed by public key cryptography which has long been developed by computer cryptography.
+   * Most blockchains including Yosemite Public Blockchain(YosemiteChain or Yosemite) have their account system based on public key cryptography. So digital signing is natural to YosemiteChain.
+* In most cases, an account of YosemiteChain has its own private key and the public key, which are the key pair that can never be changed after created.
+* Digital signature is made by the private key who owns the key(=knows the password) and its integrity can be checked by anyone who knows its paired public key.
    * For more information, refer to https://en.wikipedia.org/wiki/Digital_signature and https://en.wikipedia.org/wiki/Public-key_cryptography
-* In the view of YosemiteChain, digital signing has two meanings.
-1. When an action is delivered to YosemiteChain, it can confirm that the action is sent by the real action sender.
-   * YosemiteChain has all the public keys of accounts.
+* YosemiteChain can check the integrity of digital signature with all accounts because it knows all the public keys of accounts.
+
+## digital signing of the action of digital contract creation
+* When the creation action is delivered to this system contract, it checks that the action is sent by the service provider who wants to create the digital contract.
+* The creation action includes the list of accounts who are contract signers.
+
+## digital signing of the digital contract
+* The action for digital contract signing is signed by one of the contract signers, not the service provider.
 
 
 # Management Actions
