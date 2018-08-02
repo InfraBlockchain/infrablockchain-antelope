@@ -28,12 +28,13 @@
 
 # Yosemite Native Token
 * From the perspective of real money, people just think DKRW is DKRW, not 4,DKRW@d1, 4,DRKW@d2 or 8,DKRW@d1.
-* For the native token, YosemiteChain defines its symbol and precision at the Yosemite software release level.
+* For the native token, YosemiteChain defines its symbol and precision at the Yosemite software release level to provide Yosemite users such real money concept.
    * In the specific YosemiteChain network for the Korea market, 4,DKRW is the native token. There can't be 8,DKRW.
    * It also means there would be the Yosemite software with 8,DKRW and the specific network with it. But it's the totally different network.
    * **Note that only this system contract, `yx.ntoken`, manages the native token.**
       * YosemiteChain has a plan to provide the general smart contract platform in the near future. At that time, one of the Yostemite accounts would make the smart contract which is named to `xx.ntoken` and it would manage 4,DKRW. But 4,DKRW managed by `xx.token` is not the native token but the non-native token.
-* Other than symbol and precision, multiple issuers exist. Multiple native token issuers or system depositories are registered by [yx.system](../../contracts/yx.system/).
+* In spite of importance of alignment with real money concept, it would be undesirable if there were only one issuer of the native token. Above all, it might not be what blockchain users want that the native token is controlled by one entity, which it's definitely centralized.
+* YosemiteChain allows multiple issuers for the native token. Native token issuer, which is named to the system depository, is registered by [yx.system](../../contracts/yx.system/).
 * This system contract manages the native token issued by multiple issuers to be viewed as the same token, which are actually different each other at the software level.
    * For example, even though the account user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2 at the software level, this system contract shows the person or the DApp provider who owns the account user1 2000 DRKW.
 
