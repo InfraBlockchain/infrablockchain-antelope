@@ -110,7 +110,7 @@ $ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0
 ```
 cleos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
 ```
-   * The account user1 can send the native token issued by other system depositories like d2 to the system depository d1. In such case, d1 calls the transfer action to d2 to redeem the native token from d2.
+   * The account user1 can send the native token issued by other system depositories like d2 to the system depository d1. In such case, d1 will call the transfer action to d2 to redeem the native token from d2 at any time. It's natural to request redemption between system depositories.
 * Then the system depository checks the transfer action is irreversible and calls nredeem action.
 ```
 cleos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
