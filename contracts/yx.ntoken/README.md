@@ -31,6 +31,7 @@
 * For the native token, YosemiteChain defines its symbol and precision at the Yosemite software release level to provide Yosemite users such real money concept.
    * In the specific YosemiteChain network for the Korea market, 4,DKRW is the native token. There can't be 8,DKRW.
    * It also means there would be the Yosemite software with 8,DKRW and the specific network with it. But it's the totally different network.
+   * Plus there would be the Yosemite software with 4,DUSD or 4,EUR for each FIAT money. These softwares can be made with CMake build options, YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME and YOSEMITE_NATIVE_TOKEN_PRECISION. Refer to [root CMakeLists.txt](../CMakeLists.txt) file.
    * **Note that only this system contract, `yx.ntoken`, manages the native token.**
       * YosemiteChain has a plan to provide the general smart contract platform in the near future. At that time, one of the Yostemite accounts would make the smart contract which is named to `xx.ntoken` and it would manage 4,DKRW. But 4,DKRW managed by `xx.token` is not the native token but the non-native token.
 * In spite of importance of alignment with real money concept, it would be undesirable if there were only one issuer of the native token. Above all, it might not be what blockchain users want that the native token is controlled by one entity, which it's definitely centralized.
