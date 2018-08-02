@@ -77,7 +77,8 @@ cleos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p eosio
 
 # Actions
 
-## nissue : issue native token to an account by the system depository
+## nissue
+Issue native token to an account by the system depository
 * d1 must be the system depository registered and authroized by [yx.system](../../contracts/yx.system/).
 * In this example, 4,DKRW is the native token.
 ```
@@ -105,7 +106,8 @@ $ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0
 #     yx.ntoken <= yx.ntoken::nissue            {"to":"d1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
 ```
 
-## nredeem : redeem native token from an account by the system depository
+## nredeem
+Redeem native token from an account by the system depository
 * At first, the account transfers the native token to the system depository.
 ```
 cleos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
@@ -130,9 +132,8 @@ cleos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issue
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"d1","token":{"amount":"1000.0000 DKRW","issuer":"d1"}}
 ```
 
-## transfer, wptransfer : transfer the native token regardless of the system depository
-
-### transfer action
+## transfer
+Transfer the native token regardless of the system depository
 * The native token issued by any system depositories can be transferred.
 ```
 cleos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
@@ -172,8 +173,9 @@ cleos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"100
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.0000 DKRW","issuer":"d2"}}
 ```
 
-### wptransfer action
-* If the fee payer account is different from 'from' account, you can do it with this action.
+## wptransfer
+Transfer the native token regardless of the system depository with designated fee payer
+* If the fee payer account is different from 'from' account, you should use this action.
 * 'wp' means 'with payer'.
 * It requires the signature of the fee payer account.
 ```
@@ -200,8 +202,7 @@ cleos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"1
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
 ```
 
-## ntransfer, wpntransfer : transfer the native token designating the specific system depository
-
+## ntrans
 ### ntransfer action
 ```
 cleos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
