@@ -7,7 +7,7 @@
 * There are two types of tokens in Yosemite Public Blockchain(YosemiteChain or Yosemite).
   1. native token
   1. non-native tokens
-* The native token must be a FIAT-token, pegged to 1:1 exchange rate. This is designed to be used as the network's transaction fee.
+* The native token must be a FIAT-token, pegged to 1:1 exchange rate. This is designed to be used as the network's transaction fee and the incentive for the block producers.
    * Only the system depositories issue and redeem the native token. For more information, refer to [yx.system](../../contracts/yx.system/).
    * Only the blockchain users who have successfully verified their identity by completing the KYC process can transfer the native token. For more information, refer to [yx.identity](../../contracts/yx.identity/).
 * The non-native tokens are created by anyone who owns his or her blockchain account. For more information, refer to [`yx.token`](../../contracts/yx.token/).
