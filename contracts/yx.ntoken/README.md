@@ -72,8 +72,7 @@ cleos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p eosio
 1. type
    * 0 : transfer send
    * 1 : transfer receive
-1. kyc
-   * flags from [yx.identity](../../contracts/yx.identity/)
+1. kyc : 16-bit flags from [yx.identity](../../contracts/yx.identity/)
 
 # Actions
 
@@ -89,7 +88,8 @@ $ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0
 ### parameters of nissue
 1. to : the account who is transferred the token
 1. token : the amount of native token with the issuer(=system depository)
-   * The `amount` must be formatted to the number with the exact precision plus the symbol name.
+   * amount
+   * issuer
 1. memo : the additional data set by the action caller
 
 ### inline actions and notifications of nissue
@@ -102,13 +102,13 @@ $ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0
 #            d1 <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
 #         user1 <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
 ```
-* Case 2. If the to account is the system depository itself, there is no `ntransfer` action.
+* Case 2. If the to account is the system depository itself, there is no `ntransfer` inline action.
 ```
 #     yx.ntoken <= yx.ntoken::nissue            {"to":"d1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
 ```
 
 ## nredeem
-Redeem native token from an account by the system depository
+Redeem(burn) native token from an account by the system depository
 
 * At first, the account transfers the native token to the system depository.
 ```
@@ -122,6 +122,8 @@ cleos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issue
 
 ### parameters of nredeem
 1. token : the amount of native token with the issuer(=system depository)
+   * amount
+   * issuer
 1. memo : the additional data set by the action caller
 
 ### inline actions and notifications of nredeem
@@ -142,11 +144,10 @@ Transfer the native token regardless of the system depository
 cleos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
 ```
 ### parameters of transfer
-* Parameters
-   1. `from` : account name to transfer from
-   1. `to` : account name to transfer to
-   1. `amount` : token amount and symbol
-   1. `memo` : string less than or equal to 256 bytes
+1. from : account name to transfer from
+1. to : account name to transfer to
+1. amount : token amount and symbol
+1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of transfer
 * Case 1. If the `from` account has the enough amount for the specific depository, only one inline action for `ntransfer` is executed.
@@ -187,12 +188,11 @@ cleos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"1
 ```
 
 ### parameters of wptransfer
-* Parameters
-   1. `from` : account name to transfer from
-   1. `to` : account name to transfer to
-   1. `amount` : token amount and symbol
-   1. `payer` : account name which pays transaction fee
-   1. `memo` : string less than or equal to 256 bytes
+1. from : account name to transfer from
+1. to : account name to transfer to
+1. amount : token amount and symbol
+1. payer : account name which pays transaction fee
+1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of wptransfer
 * You can see that `payer` of `payfee` inline action is the servprovider account.
@@ -214,11 +214,12 @@ cleos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"am
 ```
 
 ### parameters of ntransfer
-* Parameters
-   1. `from` : account name to transfer from
-   1. `to` : account name to transfer to
-   1. `token` : token amount and symbol with issuer account
-   1. `memo` : string less than or equal to 256 bytes
+1. from : account name to transfer from
+1. to : account name to transfer to
+1. token : token amount and symbol with issuer account
+   * amount
+   * issuer
+1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of ntransfer
 * There would be no inline action other than `payfee` inline action when the fee is set to more than 0.0000 DKRW.
@@ -241,12 +242,13 @@ cleos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"
 ```
 
 ### parameters of wpntransfer
-* Parameters
-   1. `from` : account name to transfer from
-   1. `to` : account name to transfer to
-   1. `token` : token amount and symbol with issuer account
-   1. `payer` : account name which pays transaction fee
-   1. `memo` : string less than or equal to 256 bytes
+1. from : account name to transfer from
+1. to : account name to transfer to
+1. token : token amount and symbol with issuer account
+   * amount
+   * issuer
+1. payer : account name which pays transaction fee
+1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of wpntransfer
 * There would be no inline action other than `payfee` inline action when the fee is set to more than 0.0000 DKRW.

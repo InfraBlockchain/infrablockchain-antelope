@@ -18,11 +18,11 @@ namespace yosemite {
         const auto &tstats = stats_table.find(ysymbol.issuer);
         eosio_assert(static_cast<uint32_t>(tstats == stats_table.end()), "already created");
 
-        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);
-
         stats_table.emplace(get_self(), [&](auto &s) {
             s.issuer = ysymbol.issuer;
         });
+
+        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);
     }
 
     void token::issue(const account_name &to, const yx_asset &token, const string &memo) {
@@ -37,8 +37,6 @@ namespace yosemite {
         stats stats_table(get_self(), token.symbol.value);
         const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
 
-        charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
-
         stats_table.modify(tstats, 0, [&](auto &s) {
             s.supply += token.amount;
             eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount),
@@ -52,6 +50,8 @@ namespace yosemite {
                     (get_self(), {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { token.issuer, to, token, memo });
         }
+
+        charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
     }
 
     void token::redeem(const yx_asset &token, const string &memo) {
@@ -67,13 +67,13 @@ namespace yosemite {
         const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
         eosio_assert(static_cast<uint32_t>(token.amount <= tstats.supply), "redeem token exceeds supply amount");
 
-        charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
-
         stats_table.modify(tstats, 0, [&](auto &s) {
             s.supply -= token.amount;
         });
 
         sub_token_balance(token.issuer, token);
+
+        charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
     }
 
     void token::transfer(account_name from, account_name to, yx_asset asset, const string &memo) {
@@ -81,7 +81,8 @@ namespace yosemite {
     }
 
     void token::wptransfer(account_name from, account_name to, yx_asset token, account_name payer, const string &memo) {
-        if (!has_auth(YOSEMITE_SYSTEM_ACCOUNT)) {
+        bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+        if (!is_auth_by_sysaccount) {
             eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
             eosio_assert(static_cast<uint32_t>(token.amount > 0), "must transfer positive token");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
@@ -91,11 +92,6 @@ namespace yosemite {
 
             require_auth(from);
             eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-
-            if (from != payer) {
-                require_auth(payer);
-            }
-            charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
         }
 
         stats stats_table(get_self(), token.symbol.value);
@@ -117,6 +113,10 @@ namespace yosemite {
 
         sub_token_balance(from, token);
         add_token_balance(to, token);
+
+        if (!is_auth_by_sysaccount) {
+            charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
+        }
     }
 
     void token::add_token_balance(const account_name &owner, const yx_asset &token) {
@@ -171,8 +171,6 @@ namespace yosemite {
         stats stats_table(get_self(), ysymbol.value);
         const auto &tstats = stats_table.get(ysymbol.issuer, "token is not yet created");
 
-        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
-
         auto itr = std::find(tstats.kyc_rule_types.begin(), tstats.kyc_rule_types.end(), type);
         if (itr == tstats.kyc_rule_types.end()) {
             stats_table.modify(tstats, 0, [&](auto &s) {
@@ -186,6 +184,8 @@ namespace yosemite {
                 s.kyc_rule_flags[static_cast<size_t>(index)] = kyc;
             });
         }
+
+        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
     }
 
     bool token::check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
@@ -208,8 +208,6 @@ namespace yosemite {
         stats stats_table(get_self(), ysymbol.value);
         const auto &tstats = stats_table.get(ysymbol.issuer, "token is not yet created");
 
-        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS);
-
         stats_table.modify(tstats, 0, [&](auto &s) {
             if (overwrite) {
                 s.options = options;
@@ -217,7 +215,10 @@ namespace yosemite {
                 s.options |= options;
             }
         });
+
+        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS);
     }
+
 }
 
 EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)(setoptions)

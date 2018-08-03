@@ -48,9 +48,9 @@ namespace yosemite {
         };
 
         /* Option flags for token stats */
-        #define TOKEN_OPTIONS_NONE                      0b00000000
-        #define TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER     0b00000001
-        #define TOKEN_OPTIONS_MAX                       0b00000001
+        #define TOKEN_OPTIONS_NONE                      0b0000000000000000
+        #define TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER     0b0000000000000001
+        #define TOKEN_OPTIONS_MAX                       0b0000000000000001
 
         /* scope = token symbol */
         struct token_stats {
