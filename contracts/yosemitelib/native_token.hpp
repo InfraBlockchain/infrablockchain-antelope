@@ -90,13 +90,13 @@ namespace yosemite {
     }
 
     void charge_transaction_fee(account_name payer, uint64_t operation,
-                                const std::vector<account_name> &avoid_depositories = {},
+                                const std::vector<account_name> &zeroedout_depos = {},
                                 const yx_asset &remained_ntoken = {}) {
         auto tx_fee = yosemite::get_transaction_fee(operation);
         if (tx_fee.amount > 0) {
             accounts_native accounts_table_native(YOSEMITE_NATIVE_TOKEN_ACCOUNT, payer);
             for (auto &balance_holder : accounts_table_native) {
-                if (std::find(avoid_depositories.begin(), avoid_depositories.end(), balance_holder.depository) != avoid_depositories.end()) {
+                if (std::find(zeroedout_depos.begin(), zeroedout_depos.end(), balance_holder.depository) != zeroedout_depos.end()) {
                     continue;
                 }
 

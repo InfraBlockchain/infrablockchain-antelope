@@ -115,8 +115,8 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE)),
                      "KYC authentication for to account is failed");
 
-        vector<account_name> avoid_depositories{};
-        yx_asset remained{};
+        vector<account_name> zeroedout_depos{};
+        yx_asset remained_ntoken{};
 
         accounts_native accounts_table_native(get_self(), from);
         for (auto &balance_holder : accounts_table_native) {
@@ -126,11 +126,11 @@ namespace yosemite {
             if (balance_holder.amount <= amount.amount) {
                 to_balance = balance_holder.amount;
                 amount.amount -= to_balance;
-                avoid_depositories.push_back(balance_holder.depository);
+                zeroedout_depos.push_back(balance_holder.depository);
             } else {
                 to_balance = amount.amount;
                 amount.amount = 0;
-                remained = yx_asset{balance_holder.amount - to_balance, native_token_symbol};
+                remained_ntoken = yx_asset{balance_holder.amount - to_balance, native_token_symbol};
             }
 
             if (from == payer) {
@@ -145,7 +145,7 @@ namespace yosemite {
 
             if (amount.amount == 0) {
                 if (!called_by_system_contract) {
-                    charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER, avoid_depositories, remained);
+                    charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER, zeroedout_depos, remained_ntoken);
                 }
                 break;
             }
