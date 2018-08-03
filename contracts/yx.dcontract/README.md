@@ -33,7 +33,9 @@ cleos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.0000 D
 
 # Actions
 
-## create : create a digital contract
+## create
+Create a digital contract
+
 ```
 cleos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequence":1},"conhash":"123456","adddochash":"","signers":["user1", "user2"],"expiration":"2018-08-31T02:49:57","options":0}' -p servprovider
 ```
@@ -52,7 +54,9 @@ cleos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequen
 1. expiration : expiration time in the ISO8601 format, combined date and time to seconds e.g. 2018-08-31T02:49:57
 1. options : reserved
 
-## sign : sign the digital contract by the signer
+## sign
+Sign the digital contract by the signer
+
 ```
 cleos push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signer":"user1", "signerinfo":""}' -p user1
 cleos push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signer":"user2", "signerinfo":"foo"}' -p user2
@@ -64,7 +68,9 @@ cleos push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequenc
 1. signerinfo : additional information string for the signer
    * It cannot be longer than 256 and can be empty.
 
-## addsigners : add additional signers
+## addsigners
+Add additional signers to the created digital contract
+
 * The action fails if one of the signers has already signed the contract.
 ```
 cleos push action yx.dcontract addsigners '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signers":["user3"]}' -p servprovider
@@ -76,7 +82,9 @@ cleos push action yx.dcontract addsigners '{"dcid":{"creator":"servprovider", "s
    * The size of the list cannot be larger than 32.
 
 
-## upadddochash : update the additional document hash string
+## upadddochash
+Update the additional document hash string
+
 * This action succeeds even if the signing has all done or the contract has been expired.
 ```
 cleos push action yx.dcontract upadddochash '{"dcid":{"creator":"servprovider", "sequence":"1"}, "adddochash":"updated"}' -p servprovider
@@ -88,8 +96,9 @@ cleos push action yx.dcontract upadddochash '{"dcid":{"creator":"servprovider", 
    * It cannot be longer than 256 and can be empty.
 
 
-## remove : remove the digital contract
-* Removes the digital contract from the YosemiteChain RAM database
+## remove
+Remove the digital contract from the YosemiteChain RAM database
+
 * It is recommended to use this action regularly to save the storage of YosemiteChain RAM database.
 ```
 cleos push action yx.dcontract remove '{"dcid":{"creator":"servprovider", "sequence":"1"}}' -p servprovider
@@ -100,7 +109,9 @@ cleos push action yx.dcontract remove '{"dcid":{"creator":"servprovider", "seque
 
 # Tables
 
-## get digital contract information
+## dcontracts
+Get digital contract information
+
 ```
 cleos get table yx.dcontract servprovider dcontracts
 ```
@@ -139,7 +150,9 @@ cleos get table yx.dcontract servprovider dcontracts
 }
 ```
 
-## get the signer information
+## signers
+Get the signer information
+
 ```
 cleos get table yx.dcontract user1 signers
 cleos get table yx.dcontract user2 signers
