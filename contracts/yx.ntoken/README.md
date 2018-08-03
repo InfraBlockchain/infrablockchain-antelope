@@ -79,6 +79,7 @@ cleos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p eosio
 
 ## nissue
 Issue native token to an account by the system depository
+
 * d1 must be the system depository registered and authroized by [yx.system](../../contracts/yx.system/).
 * In this example, 4,DKRW is the native token.
 ```
@@ -108,6 +109,7 @@ $ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0
 
 ## nredeem
 Redeem native token from an account by the system depository
+
 * At first, the account transfers the native token to the system depository.
 ```
 cleos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
@@ -134,6 +136,7 @@ cleos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issue
 
 ## transfer
 Transfer the native token regardless of the system depository
+
 * The native token issued by any system depositories can be transferred.
 ```
 cleos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
@@ -174,7 +177,8 @@ cleos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"100
 ```
 
 ## wptransfer
-Transfer the native token regardless of the system depository with designated fee payer
+Transfer the native token regardless of the system depository with the designated fee payer
+
 * If the fee payer account is different from 'from' account, you should use this action.
 * 'wp' means 'with payer'.
 * It requires the signature of the fee payer account.
@@ -202,8 +206,9 @@ cleos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"1
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
 ```
 
-## ntrans
-### ntransfer action
+## ntransfer
+Transfer the native token designating the system depository
+
 ```
 cleos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
 ```
@@ -227,7 +232,9 @@ cleos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"am
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.0000 DKRW","issuer":"d1"}}
 ```
 
-### use wpntransfer action
+### wpntransfer
+Transfer the native token designating the system depository with the designated fee payer
+
 * The purpose and requirement of this action is the same with `wptransfer` action.
 ```
 cleos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovider","memo":"my memo"}' -p user1 servprovider
@@ -256,7 +263,9 @@ cleos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"
 
 # Tables
 
-## get the stats of native token for the system depository
+## ntstats 
+Get the stats of native token for the system depository
+
 * If d1 is the name of system depository, its current supply information is shown.
 ```
 cleos get table yx.ntoken d1 ntstats
@@ -274,7 +283,9 @@ cleos get table yx.ntoken d1 ntstats
 }
 ```
 
-## get the native token balance of the user for all system depositories
+## ntaccounts
+Get the native token balance of the user for all system depositories
+
 ```
 cleos get table yx.ntoken user1 ntaccounts
 ```
@@ -294,7 +305,9 @@ cleos get table yx.ntoken user1 ntaccounts
 }
 ```
 
-## get the sum of native token balance for all system depositories of the user
+## ntaccountstt
+Get the sum of native token balance for all system depositories of the user
+
 ```
 cleos get table yx.ntoken user1 ntaccountstt
 ```
