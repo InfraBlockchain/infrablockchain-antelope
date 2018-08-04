@@ -53,8 +53,8 @@ cleos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequen
    * The size of the list cannot be larger than 32 and cannot be 0.
 1. expiration : expiration time in the ISO8601 format, combined date and time to seconds in UTC e.g. 2018-08-31T02:49:57
    * YosemiteChain assumes that the time-zone of the expiration time is UTC. Other time-zones are not considered.
-   * Based on the time the action is executed at the YosemiteChain node, more than 1 minute must be specified.  
-1. options : reserved
+   * The minimum expiration is 1 minute from now.
+1. options : reserved; must be 0
 
 ## sign
 Sign the digital contract by the signer
