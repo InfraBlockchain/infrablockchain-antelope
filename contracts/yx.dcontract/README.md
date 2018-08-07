@@ -118,6 +118,9 @@ Get digital contract information
 cleos get table yx.dcontract servprovider dcontracts
 ```
 ### result of dcontracts
+* Other than done_signers, the meaning of paramters are the same as the create action.
+* `done_signers` are the array of indices to `signers` array. The order of indices means the time order of digital signing by signers.
+   * If the size is the same as `signers` array, all signers signed the digital contract. In other words, it is the completed digital contract.
 ```
 {
   "rows": [{
@@ -160,6 +163,10 @@ cleos get table yx.dcontract user1 signers
 cleos get table yx.dcontract user2 signers
 ```
 ### result of signers
+1. id : This is just for internal managing purpose. 
+1. dcid_serialized : 128-bit integers which is combined with the creator of the digital contract and the sequence
+   * | the creator(64-bit integer) | sequence (64-bit integer) |
+1. signerinfo : additional information string for the signer saved by the sign action
 ```
 $ cleos get table yx.dcontract user1 signers
 {

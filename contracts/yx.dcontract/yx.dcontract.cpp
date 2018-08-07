@@ -8,11 +8,12 @@
 #include <yosemitelib/transaction_fee.hpp>
 
 namespace yosemite {
+    static const int MAX_SIGNERS = 32;
 
     void digital_contract::check_signers_param(const vector <account_name> &signers,
                                                flat_set <account_name> &duplicates) {
         eosio_assert(static_cast<uint32_t>(!signers.empty()), "signers cannot be empty");
-        eosio_assert(static_cast<uint32_t>(signers.size() <= 32), "too many signers");
+        eosio_assert(static_cast<uint32_t>(signers.size() <= MAX_SIGNERS), "too many signers");
 
         for (auto signer : signers) {
             eosio_assert(static_cast<uint32_t>(is_account(signer)), "signer account does not exist");
@@ -56,6 +57,7 @@ namespace yosemite {
         const auto &info = dcontract_idx.get(dc_id.sequence, "digital contract does not exist");
         eosio_assert(static_cast<uint32_t>(!info.is_signed()), "digital contract is already signed by at least one signer");
         eosio_assert(static_cast<uint32_t>(info.expiration > time_point_sec(now())), "digital contract is expired");
+        eosio_assert(static_cast<uint32_t>(info.signers.size() + signers.size() <= MAX_SIGNERS), "too many signers in total");
         // check duplicated signer
         flat_set<account_name> duplicates{info.signers.begin(), info.signers.end()};
         check_signers_param(signers, duplicates);
