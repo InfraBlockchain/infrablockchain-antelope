@@ -152,37 +152,47 @@ cleos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2
 
 # Tables
 
-## get the token statistics
+## tstats
+Get the token statistics
 ```
 cleos get table yx.token 4,BTC tstats
 ```
 
-## get all the token balances of the user
+### results of tstats
+```
+{
+  "rows": [{
+      "issuer": "d2",
+      "supply": "8000000000",
+      "options": 0,
+      "kyc_rule_types": [],
+      "kyc_rule_flags": []
+    }
+  ],
+  "more": false
+}
+```
+
+## taccounts
+Get all the token balances of the user
 ```
 cleos get table yx.token user1 taccounts
 ```
 
-# Execution Example
-* At first, you must execute yx.ntoken example and must set fee for all operations.
-* d2 wants to create and issue BTC with precision 4 token to user1.
-
-## 1. Without KYC
+### results of taccounts
+1. id : This is just for internal managing purpose. 
+1. yx_symbol_serialized : 128-bit integers which is combined with the EOS.IO symbol value and the issuer
+   * | eosio::symbol value(64-bit integer) | issuer (64-bit integer) |
+1. amount : balance of the account
 ```
-cleos push action yx.token create '[ {"symbol":"4,BTC","issuer":"d2"} ]' -p d2
-cleos get table yx.token 4,BTC tstats
-cleos push action yx.token issue '[ "user2", {"amount":"100000.0000 BTC","issuer":"d2"}, "memo" ]' -p d2
-cleos get table yx.token d2 taccounts
-cleos get table yx.token user2 taccounts
-cleos push action yx.token transfer '[ "user2", "user1", {"amount":"10000.0000 BTC","issuer":"d2"}, "memo" ]' -p user2
-cleos get table yx.token user1 taccounts
-cleos get table yx.token user2 taccounts
-```
-
-## 1. With KYC
-```
-cleos push action yx.token create '[ {"symbol":"8,ETH","issuer":"d2"} ]' -p d2
-cleos get table yx.token 8,ETH tstats
-cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"8,ETH","issuer":"d2"}, "type":0, "kyc":4}' -p d2
-cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"8,ETH","issuer":"d2"}, "type":1, "kyc":4}' -p d2
-cleos get table yx.token 8,ETH tstats
+{
+  "rows": [{
+      "id": 0,
+      "yx_symbol_serialized": "0x00000000000080480654455354000000",
+      "amount": "1000000000",
+      "options": 0
+    }
+  ],
+  "more": false
+}
 ```
