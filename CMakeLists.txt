@@ -200,10 +200,6 @@ endif()
 
 message( STATUS "Using '${CORE_SYMBOL_NAME}' as CORE symbol name" )
 
-if ("${EOSIO_ROOT_KEY}" STREQUAL "")
-   set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
-endif()
-
 
 if ("${YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME}" STREQUAL "")
     set( YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME "DKRW" )
@@ -221,6 +217,10 @@ endif()
 
 message( STATUS "Using S(${YOSEMITE_NATIVE_TOKEN_PRECISION},${YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME}) as YOSEMITE Native Token Symbol" )
 
+
+if ("${EOSIO_ROOT_KEY}" STREQUAL "")
+    set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
+endif()
 
 message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'eosio' account" )
 
