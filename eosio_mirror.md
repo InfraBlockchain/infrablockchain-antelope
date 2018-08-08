@@ -18,6 +18,12 @@ git show-ref | cut -d' ' -f2 | grep 'pull' | xargs -L1 git update-ref -d
 git push --mirror
 ```
 
+* Note that the message below is not the problem.
+```
+ ! [remote rejected]     yosemite-master (refusing to delete the current branch: refs/heads/yosemite-master)
+error: failed to push some refs to 'https://github.com/YosemiteLabs/yosemite-public-blockchain'
+```
+
 #### Tagging EOSIO/eos Release Version After Mirroring
 * **CAUTION : DO NOT EXECUTE THIS OPERATION ON THE yosemite-public-blockchain-git-mirror.**
 * You must do this on your clone of yosemite-public-blockchain. Pull and rebase yosemite-master branch to the latest.
