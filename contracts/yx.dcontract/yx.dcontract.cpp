@@ -10,8 +10,8 @@
 namespace yosemite {
     static const int MAX_SIGNERS = 32;
 
-    void digital_contract::check_signers_param(const vector <account_name> &signers,
-                                               flat_set <account_name> &duplicates) {
+    void digital_contract::check_signers_param(const vector<account_name> &signers,
+                                               flat_set<account_name> &duplicates) {
         eosio_assert(static_cast<uint32_t>(!signers.empty()), "signers cannot be empty");
         eosio_assert(static_cast<uint32_t>(signers.size() <= MAX_SIGNERS), "too many signers");
 
@@ -50,7 +50,7 @@ namespace yosemite {
         charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE);
     }
 
-    void digital_contract::addsigners(const dcid &dc_id, const vector <account_name> &signers) {
+    void digital_contract::addsigners(const dcid &dc_id, const vector<account_name> &signers) {
         require_auth(dc_id.creator);
 
         dcontract_index dcontract_idx{get_self(), dc_id.creator};

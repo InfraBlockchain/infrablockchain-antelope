@@ -38,14 +38,14 @@ namespace yosemite {
 
         void create(const dcid &dc_id, const string &conhash, const string &adddochash,
                     const vector<account_name> &signers, const time_point_sec &expiration, uint8_t options);
-        void addsigners(const dcid &dc_id, const vector <account_name> &signers);
+        void addsigners(const dcid &dc_id, const vector<account_name> &signers);
         void sign(const dcid &dc_id, account_name signer, const string &signerinfo);
         /** Updates the additional document hash */
         void upadddochash(const dcid &dc_id, const string &adddochash);
         void remove(const dcid &dc_id);
 
     private:
-        void check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates);
+        void check_signers_param(const vector<account_name> &signers, flat_set<account_name> &duplicates);
     };
 
     /* scope = creator */
