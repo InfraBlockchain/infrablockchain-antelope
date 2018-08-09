@@ -3,7 +3,8 @@
 * The Yosemite contract for the native token is [`yx.ntoken`](../../contracts/yx.ntoken/README.md), which the specification of the Yosemite token is explained.
 
 # What You Can Do With This Contract
-* An entity who owns the Yosemite account can create the token with `create` operation. YosemiteChain calls the entity token depository.
+* An entity who owns the Yosemite account can create a token with `create` operation. YosemiteChain calls the entity the token issuer or the token depository.
+   * When creating the token, the issuer can enable the setting of some options like account freezing or token freezing.
 * The token depository issues and redeems the token.
 * The token depository can freeze the token transfer.
 * Any Yosemite accounts who own the token can transfer it each other.
@@ -28,13 +29,14 @@ cleos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.0000 
 Create a (non-native) token with its symbol and precision
 
 * The token creator naturally becomes the token depository.
+* Enabling the setting of options cannot be done any more after creation, because the owners of the token should know about what options can be set and it must not be changed after they own.
 ```
 cleos push action yx.token create '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
 ```
 
 ### parameters of create
 1. ysymbol : token symbol and its issuer
-1. can_set_options : 16-bit flags
+1. can_set_options : 16-bit flags of options
    * NONE : 0b0000000000000000 (0)
    * FREEZE_TOKEN_TRANSFER : 0b0000000000000001 (1)
    * FREEZE_ACCOUNT : 0b0000000000000010 (2)
