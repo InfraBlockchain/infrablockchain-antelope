@@ -28,6 +28,10 @@
 # https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/master/LICENSE
 ############################################################################################
 
+txtbld=$(tput bold)
+bldred=${txtbld}$(tput setaf 6)
+txtrst=$(tput sgr0)
+
 TIME_BEGIN=$( date -u +%s )
 
 ${PWD}/eosio_build.sh
