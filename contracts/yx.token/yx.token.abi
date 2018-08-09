@@ -10,7 +10,7 @@
       "name": "yx_symbol",
       "base": "",
       "fields": [
-        {"name":"symbol",   "type":"symbol"},
+        {"name":"symbol", "type":"symbol"},
         {"name":"issuer", "type":"account_name"}
       ]
     },
@@ -26,7 +26,8 @@
       "name": "create",
       "base": "",
       "fields": [
-        {"name":"ysymbol", "type":"yx_symbol"}
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"can_set_options", "type":"uint16"}
       ]
     },
     {
@@ -86,6 +87,15 @@
       ]
     },
     {
+      "name": "freezeacc",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"accs", "type":"account_name[]"},
+        {"name":"freeze", "type":"uint8"}
+      ]
+    },
+    {
       "name": "accounts_type",
       "base": "",
       "fields": [
@@ -101,6 +111,7 @@
       "fields": [
         {"name":"issuer", "type":"account_name"},
         {"name":"supply", "type":"uint64"},
+        {"name":"can_set_options", "type":"uint16"},
         {"name":"options", "type":"uint16"},
         {"name":"kyc_rule_types", "type":"uint8[]"},
         {"name":"kyc_rule_flags", "type":"uint16[]"}
@@ -114,7 +125,8 @@
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
     { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
-    { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" }
+    { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
+    { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "taccounts",

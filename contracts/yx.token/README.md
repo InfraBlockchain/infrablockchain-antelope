@@ -19,6 +19,7 @@ cleos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.0000 
 cleos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.0000 DKRW"}}' -p eosio
 cleos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.0000 DKRW"}}' -p eosio
 cleos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.0000 DKRW"}}' -p eosio
 ```
 
 # Actions
@@ -28,8 +29,16 @@ Create a (non-native) token with its symbol and precision
 
 * The token creator naturally becomes the token depository.
 ```
-cleos push action yx.token create '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}}' -p d2
+cleos push action yx.token create '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
 ```
+
+### parameters of create
+1. ysymbol : token symbol and its issuer
+1. can_set_options : 16-bit flags
+   * NONE : 0b0000000000000000 (0)
+   * FREEZE_TOKEN_TRANSFER : 0b0000000000000001 (1)
+   * FREEZE_ACCOUNT : 0b0000000000000010 (2)
+   * SET_KYC_RULE : 0b0000000000000100 (4)
 
 ## issue
 Issue the token to an account by the token depository
@@ -119,9 +128,10 @@ cleos push action yx.token wptransfer '{"from":"user2","to":"user3","token":{"am
 ## setkycrule
 Set the KYC vector for send or receive
 
+* SET_KYC_RULE flag of can_set_options must be set at token creation time.
 ```
-cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,ETH","issuer":"d2"}, "type":0, "kyc":4}' -p d2
-cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,ETH","issuer":"d2"}, "type":1, "kyc":4}' -p d2
+cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "type":0, "kyc":4}' -p d2
+cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "type":1, "kyc":4}' -p d2
 ```
 
 ### parameters of setkycrule
@@ -135,6 +145,7 @@ cleos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,ETH","issuer":"d2
 overwrite or add token options
 
 * The token depository can freeze token transfer or unfreeze it with TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER flag.
+   * FREEZE_TOKEN_TRANSFER flag of can_set_options must be set at token creation time.
 
 ```
 cleos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "overwrite":1}' -p d2
@@ -148,6 +159,20 @@ cleos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2
 1. overwrite
    * 1 : overwrite
    * 0 : add (don't overwrite)
+
+## freezeacc
+Freeze an account which has the token by its issuer
+
+* FREEZE_ACCOUNT flag of can_set_options must be set at token creation time.
+```
+cleos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "accs":["user1","user2"], "freeze":1}' -p d2
+cleos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "accs":["user2"], "freeze":0}' -p d2
+```
+
+### parameters of freezeacc
+1. ysymbol : token symbol and its issuer
+1. accs : this list of account names
+1. freeze : freeze or unfreeze
 
 
 # Tables

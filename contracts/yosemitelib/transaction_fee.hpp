@@ -28,6 +28,7 @@
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER         N(tf.ttransfer)  // = wptransfer
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE       N(tf.tsetkyc)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS       N(tf.tsetopts)
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_FREEZEACC        N(tf.tfreezeac)
 
 // yx.dcontract
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE       N(tf.dccreate)
