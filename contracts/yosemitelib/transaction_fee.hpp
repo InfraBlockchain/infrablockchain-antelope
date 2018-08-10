@@ -37,6 +37,10 @@
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH N(tf.dcupadd)
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE       N(tf.dcremove)
 
+// yx.auction
+#define YOSEMITE_TX_FEE_OP_NAME_AUCTION_CREATE         N(tf.axcreate)
+#define YOSEMITE_TX_FEE_OP_NAME_AUCTION_BID            N(tf.axbid)
+#define YOSEMITE_TX_FEE_OP_NAME_AUCTION_REMOVE         N(tf.axremove)
 
 namespace yosemite {
 

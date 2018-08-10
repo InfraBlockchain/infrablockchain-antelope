@@ -96,6 +96,8 @@ namespace eosio { namespace chain {
       built_in_types.emplace("symbol_code",               pack_unpack<symbol_code>());
       built_in_types.emplace("asset",                     pack_unpack<asset>());
       built_in_types.emplace("extended_asset",            pack_unpack<extended_asset>());
+      built_in_types.emplace("yx_symbol",                 pack_unpack<yx_symbol>());
+      built_in_types.emplace("yx_asset",                  pack_unpack<yx_asset>());
    }
 
    void abi_serializer::set_abi(const abi_def& abi, const fc::microseconds& max_serialization_time) {

@@ -1,0 +1,113 @@
+{
+  "types": [
+   {
+      "new_type_name": "account_name",
+      "type": "name"
+   }
+  ],
+  "structs": [
+    {
+      "name": "yx_asset",
+      "base": "",
+      "fields": [
+        {"name":"amount", "type":"asset"},
+        {"name":"issuer", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "itemid",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"sequence", "type":"uint64"}
+      ]
+    },
+    {
+      "name": "create",
+      "base": "",
+      "fields": [
+        {"name":"itemid", "type":"itemid"},
+        {"name":"start_price", "type":"yx_asset"},
+        {"name":"end_price", "type":"asset"},
+        {"name":"min_inc_price", "type":"asset"},
+        {"name":"confirm_wait_duration", "type":"uint16"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"iteminfo", "type":"string"},
+        {"name":"options", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "wpcreate",
+      "base": "create",
+      "fields": [
+        {"name":"payer", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "bid",
+      "base": "",
+      "fields": [
+        {"name":"itemid", "type":"itemid"},
+        {"name":"bidder", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"}
+      ]
+    },
+    {
+      "name": "wpbid",
+      "base": "bid",
+      "fields": [
+        {"name":"payer", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "complete",
+      "base": "",
+      "fields": [
+        {"name":"itemid", "type":"itemid"}
+      ]
+    },
+    {
+      "name": "remove",
+      "base": "",
+      "fields": [
+        {"name":"itemid", "type":"itemid"}
+      ]
+    },
+    {
+      "name": "aucitems_type",
+      "base": "",
+      "fields": [
+        {"name":"sequence", "type":"uint64"},
+        {"name":"start_price", "type":"yx_asset"},
+        {"name":"end_amount", "type":"int64"},
+        {"name":"min_inc_amount", "type":"int64"},
+        {"name":"confirm_wait_duration", "type":"uint16"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"iteminfo", "type":"string"},
+        {"name":"options", "type":"uint8"},
+        {"name":"last_bidder", "type":"account_name"},
+        {"name":"last_bid_amount", "type":"int64"},
+        {"name":"last_bid_time", "type":"time_point_sec"},
+        {"name":"completed", "type":"uint8"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "create", "type": "create", "ricardian_contract": "" },
+    { "name": "wpcreate", "type": "wpcreate", "ricardian_contract": "" },
+    { "name": "bid", "type": "bid", "ricardian_contract": "" },
+    { "name": "wpbid", "type": "wpbid", "ricardian_contract": "" },
+    { "name": "complete", "type": "complete", "ricardian_contract": "" },
+    { "name": "remove", "type": "remove", "ricardian_contract": "" }
+  ],
+  "tables": [
+    {
+      "name": "aucitems",
+      "type": "aucitems_type",
+      "index_type": "i64",
+      "key_names" : ["sequence"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "ricardian_clauses": []
+}
