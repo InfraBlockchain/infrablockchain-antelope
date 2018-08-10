@@ -1,5 +1,5 @@
 /**
- *  @copyright defined in LICENSE.txt
+ *  @copyright defined in LICENSE
  */
 
 #pragma once
