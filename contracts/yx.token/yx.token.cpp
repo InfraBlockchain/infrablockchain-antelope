@@ -9,7 +9,7 @@ namespace yosemite {
     void token::create(const yx_symbol &ysymbol, uint16_t can_set_options) {
         eosio_assert(static_cast<uint32_t>(ysymbol.is_valid()), "invalid ysymbol name");
         eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 4), "token precision must be equal or larger than 4");
-        eosio_assert(static_cast<uint32_t>(ysymbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+        eosio_assert(static_cast<uint32_t>(ysymbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE),
                      "cannot create the native token with this operation");
         eosio_assert(static_cast<uint32_t>(can_set_options <= TOKEN_CAN_SET_OPTIONS_MAX), "invalid can_set_options");
 
@@ -30,7 +30,7 @@ namespace yosemite {
     void token::issue(const account_name &to, const yx_asset &token, const string &memo) {
         eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
         eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
-        eosio_assert(static_cast<uint32_t>(token.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+        eosio_assert(static_cast<uint32_t>(token.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE),
                      "cannot issue native token with this operation");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
@@ -59,7 +59,7 @@ namespace yosemite {
     void token::redeem(const yx_asset &token, const string &memo) {
         eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
         eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
-        eosio_assert(static_cast<uint32_t>(token.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+        eosio_assert(static_cast<uint32_t>(token.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE),
                      "cannot redeem native token with this operation");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
@@ -89,7 +89,7 @@ namespace yosemite {
             eosio_assert(static_cast<uint32_t>(token.amount > 0), "must transfer positive token");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-            eosio_assert(static_cast<uint32_t>(token.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME),
+            eosio_assert(static_cast<uint32_t>(token.symbol.name() != YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE),
                          "cannot transfer native token with this contract; use yx.ntoken");
 
             require_auth(from);
