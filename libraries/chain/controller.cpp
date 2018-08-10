@@ -756,6 +756,12 @@ struct controller_impl {
                trace->receipt = r;
             }
 
+            // YOSEMITE
+            // accumulate transaction votes in current block
+            if (trx_context.transaction_vote.has_vote()) {
+               pending->_pending_block_state->trx_votes.add_transaction_vote(trx_context.transaction_vote);
+            }
+
             fc::move_append(pending->_actions, move(trx_context.executed));
 
             // call the accept signal but only once for this transaction
