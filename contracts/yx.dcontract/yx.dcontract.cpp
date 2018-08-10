@@ -3,7 +3,6 @@
  */
 
 #include "yx.dcontract.hpp"
-#include <yx.system/yx.system.hpp>
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 
