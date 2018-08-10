@@ -1,27 +1,53 @@
+/**
+ *  @file
+ *  @copyright defined in yosemite/LICENSE
+ */
 #pragma once
 
-#include <eosiolib/eosio.hpp>
 #include <yosemitelib/yx_asset.hpp>
+#include <yosemitelib/system_accounts.hpp>
+#include <eosiolib/eosio.hpp>
 #include <string>
-#include <musl/upstream/include/bits/stdint.h>
 
 namespace yosemite {
 
     using namespace eosio;
     using std::string;
-    using boost::container::flat_map;
+
+    /* Option flags for can_set_options */
+    #define TOKEN_CAN_SET_OPTIONS_NONE                      0b0000000000000000
+    #define TOKEN_CAN_SET_OPTIONS_FREEZE_TOKEN_TRANSFER     0b0000000000000001
+    #define TOKEN_CAN_SET_OPTIONS_FREEZE_ACCOUNT            0b0000000000000010
+    #define TOKEN_CAN_SET_OPTIONS_SET_KYC_RULE              0b0000000000000100
+    #define TOKEN_CAN_SET_OPTIONS_MAX                       0b0000000000000111
+
+    /* Option flags for account management */
+    #define TOKEN_ACCOUNT_OPTIONS_NONE                      0b0000000000000000
+    #define TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT            0b0000000000000001
+
+    /* Option flags for token management */
+    #define TOKEN_OPTIONS_NONE                              0b0000000000000000
+    #define TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER             0b0000000000000001
+    #define TOKEN_OPTIONS_MAX                               0b0000000000000001
+
+    /* scope = token symbol */
+    struct token_stats {
+        uint64_t issuer = 0;
+        int64_t supply = 0;
+        uint16_t can_set_options = TOKEN_CAN_SET_OPTIONS_NONE; // can set only at token creation time
+        uint16_t options = TOKEN_OPTIONS_NONE;
+        std::vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type
+        std::vector<uint16_t> kyc_rule_flags; // from yosemitelib/identity.hpp
+
+        uint64_t primary_key() const { return issuer; }
+    };
+
+    typedef eosio::multi_index<N(tstats), token_stats> stats;
 
     class token : public contract {
     public:
         explicit token(account_name self) : contract(self) {
         }
-
-        /* Option flags for can_set_options */
-        #define TOKEN_CAN_SET_OPTIONS_NONE                      0b0000000000000000
-        #define TOKEN_CAN_SET_OPTIONS_FREEZE_TOKEN_TRANSFER     0b0000000000000001
-        #define TOKEN_CAN_SET_OPTIONS_FREEZE_ACCOUNT            0b0000000000000010
-        #define TOKEN_CAN_SET_OPTIONS_SET_KYC_RULE              0b0000000000000100
-        #define TOKEN_CAN_SET_OPTIONS_MAX                       0b0000000000000111
 
         void create(const yx_symbol &ysymbol, uint16_t can_set_options);
         void issue(const account_name &to, const yx_asset &token, const string &memo);
@@ -35,15 +61,11 @@ namespace yosemite {
     private:
         void charge_fee(const account_name &payer, uint64_t operation);
 
-        /* Option flags for account management */
-        #define TOKEN_ACCOUNT_OPTIONS_NONE                      0b0000000000000000
-        #define TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT            0b0000000000000001
-
         /* scope = owner */
         struct balance_holder {
             uint64_t id = 0;
             uint128_t yx_symbol_s{}; // yx_symbol which is serialized to 128 bit;
-                                     // eosio::symbol_type::value is higher 64 bit and issuer account is lower 64 bit.
+            // eosio::symbol_type::value is higher 64 bit and issuer account is lower 64 bit.
             int64_t amount = 0;
             uint16_t options = TOKEN_ACCOUNT_OPTIONS_NONE;
 
@@ -59,24 +81,6 @@ namespace yosemite {
             TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
         };
 
-        /* Option flags for token management */
-        #define TOKEN_OPTIONS_NONE                      0b0000000000000000
-        #define TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER     0b0000000000000001
-        #define TOKEN_OPTIONS_MAX                       0b0000000000000001
-
-        /* scope = token symbol */
-        struct token_stats {
-            uint64_t issuer = 0;
-            int64_t supply = 0;
-            uint16_t can_set_options = TOKEN_CAN_SET_OPTIONS_NONE; // can set only at token creation time
-            uint16_t options = TOKEN_OPTIONS_NONE;
-            vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type
-            vector<uint16_t> kyc_rule_flags; // from yosemitelib/identity.hpp
-
-            uint64_t primary_key() const { return issuer; }
-        };
-
-        typedef eosio::multi_index<N(tstats), token_stats> stats;
         typedef eosio::multi_index<N(taccounts), balance_holder,
                 indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol_s> >
         > accounts;
@@ -86,4 +90,16 @@ namespace yosemite {
         bool check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
                                               const token_stats &tstats);
     };
+
+    namespace ytoken {
+
+    bool does_token_exist(const yx_symbol &ysymbol) {
+        eosio_assert(static_cast<uint32_t>(!ysymbol.is_native()), "native token is not allowed for this API");
+
+        stats stats_table(YOSEMITE_USER_TOKEN_ACCOUNT, ysymbol.value);
+        const auto &tstats = stats_table.find(ysymbol.issuer);
+        return tstats != stats_table.end();
+    }
+
+    } //namespace ytoken
 }

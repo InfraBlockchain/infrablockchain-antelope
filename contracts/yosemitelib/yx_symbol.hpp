@@ -2,6 +2,7 @@
 #define YX_SYMBOL_HPP
 
 #include <eosiolib/symbol.hpp>
+#include <yosemitelib/native_token_symbol.hpp>
 
 namespace yosemite {
 
@@ -9,6 +10,26 @@ namespace yosemite {
         account_name issuer;
 
         explicit yx_symbol(eosio::symbol_name s = 0, account_name c = 0) : symbol_type{s}, issuer{c} {}
+
+        bool is_native(bool assert = true) const {
+            if (assert) {
+                assert_valid_native_symbol();
+            }
+            return value == YOSEMITE_NATIVE_TOKEN_SYMBOL;
+        }
+
+        void assert_valid_native_symbol() const {
+            if (name() == YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE) {
+                eosio_assert(static_cast<uint32_t>(precision() == YOSEMITE_NATIVE_TOKEN_PRECISION), "invalid native token");
+            }
+        }
+
+        bool is_valid(bool assert = true) const {
+            if (assert) {
+                assert_valid_native_symbol();
+            }
+            return eosio::symbol_type::is_valid();
+        }
 
         void print() const {
             eosio::symbol_type::print();

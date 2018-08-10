@@ -17,6 +17,26 @@ namespace yosemite {
 
         yx_symbol get_yx_symbol() const { return yx_symbol(symbol, issuer); }
 
+        bool is_native(bool assert = true) const {
+            if (assert) {
+                assert_valid_native_asset();
+            }
+            return symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL;
+        }
+
+        void assert_valid_native_asset() const {
+            if (symbol.name() == YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE) {
+                eosio_assert(static_cast<uint32_t>(symbol.precision() == YOSEMITE_NATIVE_TOKEN_PRECISION), "invalid native token");
+            }
+        }
+
+        bool is_valid(bool assert = true) const {
+            if (assert) {
+                assert_valid_native_asset();
+            }
+            return eosio::asset::is_valid();
+        }
+
         void print() const {
             asset::print();
             prints("@");
