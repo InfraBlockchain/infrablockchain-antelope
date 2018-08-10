@@ -39,7 +39,7 @@ namespace yosemite {
 
         dcontract_idx.emplace(get_self(), [&](auto &i) {
             i.sequence = dc_id.sequence;
-            std::copy(conhash.begin(), conhash.end(), std::back_inserter(i.conhash));
+            i.conhash = conhash;
             std::copy(adddochash.begin(), adddochash.end(), std::back_inserter(i.adddochash));
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
             i.expiration = expiration;

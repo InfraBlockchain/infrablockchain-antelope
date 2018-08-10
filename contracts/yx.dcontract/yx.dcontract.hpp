@@ -51,7 +51,7 @@ namespace yosemite {
     /* scope = creator */
     struct dcontract_info {
         uint64_t sequence = 0; /* provided sequence by the creator */
-        vector<char> conhash{};
+        string conhash{};
         vector<char> adddochash{};
         time_point_sec expiration{};
         uint8_t options = 0;
