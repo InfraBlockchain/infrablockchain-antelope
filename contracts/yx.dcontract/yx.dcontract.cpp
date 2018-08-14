@@ -56,10 +56,10 @@ namespace yosemite {
         const auto &info = dcontract_idx.get(dc_id.sequence, "digital contract does not exist");
         eosio_assert(static_cast<uint32_t>(!info.is_signed()), "digital contract is already signed by at least one signer");
         eosio_assert(static_cast<uint32_t>(info.expiration > time_point_sec(now())), "digital contract is expired");
-        eosio_assert(static_cast<uint32_t>(info.signers.size() + signers.size() <= MAX_SIGNERS), "too many signers in total");
         // check duplicated signer
         flat_set<account_name> duplicates{info.signers.begin(), info.signers.end()};
         check_signers_param(signers, duplicates);
+        eosio_assert(static_cast<uint32_t>(info.signers.size() + signers.size() <= MAX_SIGNERS), "too many signers in total");
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
