@@ -64,7 +64,7 @@
       "fields": [
         {"name":"sequence", "type":"uint64"},
         {"name":"conhash", "type":"string"},
-        {"name":"adddochash", "type":"bytes"},
+        {"name":"adddochash", "type":"string"},
         {"name":"expiration", "type":"time_point_sec"},
         {"name":"options", "type":"uint8"},
         {"name":"signers", "type":"account_name[]"},
@@ -77,7 +77,7 @@
       "fields": [
         {"name":"id", "type":"uint64"},
         {"name":"dcid_serialized", "type":"uint128"},
-        {"name":"signerinfo", "type":"bytes"}
+        {"name":"signerinfo", "type":"string"}
       ]
     }
   ],

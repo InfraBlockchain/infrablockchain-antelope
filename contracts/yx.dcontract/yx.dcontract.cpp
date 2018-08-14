@@ -40,7 +40,7 @@ namespace yosemite {
         dcontract_idx.emplace(get_self(), [&](auto &i) {
             i.sequence = dc_id.sequence;
             i.conhash = conhash;
-            std::copy(adddochash.begin(), adddochash.end(), std::back_inserter(i.adddochash));
+            i.adddochash = adddochash;
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
             i.expiration = expiration;
             i.options = options;
@@ -92,7 +92,7 @@ namespace yosemite {
         dc_signer_index.emplace(get_self(), [&](auto &i) {
             i.id = dc_signer_index.available_primary_key();
             i.dc_id_s = dc_id.to_uint128();
-            std::copy(signerinfo.begin(), signerinfo.end(), std::back_inserter(i.signerinfo));
+            i.signerinfo = signerinfo;
         });
 
         charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
@@ -108,7 +108,7 @@ namespace yosemite {
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             i.adddochash.clear();
-            std::copy(adddochash.begin(), adddochash.end(), std::back_inserter(i.adddochash));
+            i.adddochash = adddochash;
         });
 
         charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH);

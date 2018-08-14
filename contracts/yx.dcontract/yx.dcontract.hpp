@@ -52,7 +52,7 @@ namespace yosemite {
     struct dcontract_info {
         uint64_t sequence = 0; /* provided sequence by the creator */
         string conhash{};
-        vector<char> adddochash{};
+        string adddochash{};
         time_point_sec expiration{};
         uint8_t options = 0;
         vector<account_name> signers{};
@@ -66,7 +66,7 @@ namespace yosemite {
     struct dcontract_signer_info {
         uint64_t id = 0; // just primary key
         uint128_t dc_id_s{}; // dc_id which is serialized to 128 bit
-        vector<char> signerinfo{};
+        string signerinfo{};
 
         uint64_t primary_key() const { return id; }
         uint128_t by_dc_id_s() const { return dc_id_s; }
