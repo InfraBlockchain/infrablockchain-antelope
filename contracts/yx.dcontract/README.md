@@ -4,9 +4,10 @@
 
 # Digital Signing
 * The features related to digital signing are part of public key cryptography.
-   * Most blockchains including Yosemite Public Blockchain(YosemiteChain or Yosemite) have their account system based on public key cryptography. Digital signing is natural to YosemiteChain.
+   * Most blockchains including Yosemite Public Blockchain(YosemiteChain or Yosemite) have their account system based on public key cryptography.
+   * In such reason, digital signing is natural to YosemiteChain.
 * In most cases, an account of YosemiteChain has its own private key and the public key, which are the key pair that can never be changed after created.
-* The integrity of the digital signature created by the private key can be checked by anyone who knows its paired public key.
+* The integrity of the digital signature created by the private key can be checked by anyone who knows its public key.
    * For more information, refer to https://en.wikipedia.org/wiki/Digital_signature and https://en.wikipedia.org/wiki/Public-key_cryptography
 * YosemiteChain can check the integrity of the digital signature with all accounts because it has all the public keys of accounts.
 
@@ -17,6 +18,7 @@
 ## digital signing of the digital contract
 * An action for digital contract signing must be signed by one of the contract signers, not the service provider.
 * Digital signature embedded in the action cryptographically proves that one of the contract signers actually signs the digital contract.
+* It also proves that the signing action is sent under the approval of the contract signer.
 
 # Management Actions
 
