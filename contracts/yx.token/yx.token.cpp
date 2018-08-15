@@ -131,7 +131,7 @@ namespace yosemite {
             });
         } else {
             eosio_assert(static_cast<uint32_t>((balance_holder->options & TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT) != TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT),
-                    "account is fronzen by token issuer");
+                    "account is frozen by token issuer");
 
             sym_index.modify(balance_holder, 0, [&](auto &holder) {
                 holder.amount += token.amount;
@@ -150,7 +150,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(balance_holder != sym_index.end()), "account doesn't have token");
         eosio_assert(static_cast<uint32_t>(balance_holder->amount >= token.amount), "insufficient token balance");
         eosio_assert(static_cast<uint32_t>((balance_holder->options & TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT) != TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT),
-                "account is fronzen by token issuer");
+                "account is frozen by token issuer");
 
         bool erase;
         sym_index.modify(balance_holder, 0, [&](auto &holder) {
