@@ -34,7 +34,10 @@ namespace eosio { namespace chain {
       if (tx_ext.size() > 0) {
          auto tx_ext_item = *tx_ext.begin();
          EOS_ASSERT( tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD, unsupported_feature, "support only transaction-as-a-vote transaction extension" );
-         transaction_vote.candidate = fc::raw::unpack<yosemite_core::transaction_vote_candidate_name_type>(tx_ext_item.second);
+
+         try {
+            transaction_vote.candidate = fc::raw::unpack<yosemite_core::transaction_vote_candidate_name_type>(tx_ext_item.second);
+         } EOS_RETHROW_EXCEPTIONS(invalid_trx_vote_target_account, "Invalid transaction vote candidate account name");
       }
    }
 

@@ -51,3 +51,8 @@ extern "C" {
 
 ///@ } trxvoteapi
 }
+
+struct yosemite_transaction_vote {
+    uint64_t candidate_name;
+    uint32_t vote_amount;
+};

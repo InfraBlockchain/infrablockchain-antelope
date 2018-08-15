@@ -1347,7 +1347,7 @@ class transaction_api : public context_aware_api {
       int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
          auto trx_votes = context.get_transaction_votes_in_head_block();
 
-         auto s = trx_votes.size() * sizeof(yosemite_core::transaction_vote);
+         auto s = trx_votes.size() * sizeof(struct yosemite_core::transaction_vote);
          if (buffer_size == 0) return s;
 
          auto copy_size = std::min( buffer_size, s );
