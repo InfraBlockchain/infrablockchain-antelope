@@ -3,6 +3,7 @@
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/system_depository.hpp>
+#include <yosemitelib/transaction_vote.h>
 
 namespace yosemite {
 
@@ -203,6 +204,8 @@ namespace yosemite {
 
         sub_native_token_balance(payer, token);
         add_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT, token);
+
+        cast_transaction_vote(static_cast<uint32_t>(token.amount));
     }
 
     void ntoken::add_native_token_balance(const account_name &owner, const yx_asset &token) {
