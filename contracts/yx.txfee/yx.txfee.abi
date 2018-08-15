@@ -1,0 +1,40 @@
+{
+  "version": "eosio::abi/1.0",
+  "types": [
+   {
+      "new_type_name": "operation_name",
+      "type": "name"
+   }
+  ],
+  "structs": [
+    {
+      "name": "settxfee",
+      "base": "",
+      "fields": [
+        {"name":"operation", "type":"operation_name"},
+        {"name":"fee", "type":"asset"}
+      ]
+    },
+    {
+      "name": "tx_fee_info",
+      "base": "",
+      "fields": [
+        {"name":"operation", "type":"operation_name"},
+        {"name":"fee", "type":"int64"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "settxfee", "type": "settxfee", "ricardian_contract": "" }
+  ],
+  "tables": [
+    {
+      "name": "txfees",
+      "type": "tx_fee_info",
+      "index_type": "i64",
+      "key_names" : ["operation"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "ricardian_clauses": []
+}

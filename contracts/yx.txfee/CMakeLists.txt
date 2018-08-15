@@ -1,12 +1,14 @@
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/core_symbol.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/core_symbol.hpp)
+file(GLOB ABI_FILES "*.abi")
+configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
 
-add_wast_library(TARGET eosiolib
-  INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}" ${CMAKE_SOURCE_DIR}/externals/magic_get/include
+add_wast_executable(TARGET yx.txfee
+  INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}"
+  LIBRARIES libc++ libc eosiolib
   DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 if ($ENV{CLION_IDE})
-    set(CONTRACT_MODULE_NAME "eosiolib")
+    set(CONTRACT_MODULE_NAME "yx.txfee")
     message( STATUS "CLION - contracts/${CONTRACT_MODULE_NAME}" )
     file(GLOB HEADERS "*.hpp" "*.h")
     file(GLOB SOURCES "*.cpp")

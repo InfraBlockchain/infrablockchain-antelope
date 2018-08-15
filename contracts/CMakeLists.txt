@@ -7,44 +7,25 @@ set(STANDARD_INCLUDE_FOLDERS ${CMAKE_SOURCE_DIR}/contracts ${CMAKE_BINARY_DIR}/c
 add_subdirectory(eosiolib)
 add_subdirectory(musl)
 add_subdirectory(libc++)
-add_subdirectory(simple.token)
-add_subdirectory(eosio.token)
+
+add_subdirectory(eosio.bios) # For internal test
+add_subdirectory(eosio.token) # For internal test
 add_subdirectory(eosio.msig)
 add_subdirectory(eosio.sudo)
-add_subdirectory(multi_index_test)
-add_subdirectory(eosio.system)
-add_subdirectory(identity)
-add_subdirectory(stltest)
-add_subdirectory(exchange)
-add_subdirectory(test.inline)
 
-#add_subdirectory(bancor)
-add_subdirectory(hello)
-add_subdirectory(asserter)
-add_subdirectory(infinite)
-add_subdirectory(proxy)
+add_subdirectory(multi_index_test)
+add_subdirectory(stltest)
+add_subdirectory(test.inline)
 add_subdirectory(test_api)
 add_subdirectory(test_api_mem)
 add_subdirectory(test_api_db)
 add_subdirectory(test_api_multi_index)
 add_subdirectory(test_ram_limit)
-#add_subdirectory(social)
-add_subdirectory(eosio.bios)
-add_subdirectory(noop)
-add_subdirectory(dice)
-add_subdirectory(tic_tac_toe)
-add_subdirectory(payloadless)
-add_subdirectory(integration_test)
 
-
-file(GLOB SKELETONS RELATIVE ${CMAKE_SOURCE_DIR}/contracts "skeleton/*")
-
-# Documented multiple output support is broken, so properly setting up the multiple
-# dependencies in the custom target is not possible.  (CMake 3.5)
-add_custom_command(OUTPUT share/eosio/skeleton/skeleton.cpp
-                   COMMAND ${CMAKE_COMMAND} -E make_directory ../share/eosio/skeleton
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/skeleton ../share/eosio/skeleton
-                   DEPENDS ${SKELETONS}
-                   COMMENT Copying skeleton contract...
-                   VERBATIM)
-add_custom_target(copy_skeleton_contract ALL DEPENDS share/eosio/skeleton/skeleton.cpp)
+add_subdirectory(yosemitelib)
+add_subdirectory(yx.system)
+add_subdirectory(yx.txfee)
+add_subdirectory(yx.identity)
+add_subdirectory(yx.ntoken)
+add_subdirectory(yx.token)
+add_subdirectory(yx.dcontract)

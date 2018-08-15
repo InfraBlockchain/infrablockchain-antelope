@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.5 )
 
-project( EOSIO )
+project( YOSEMITE )
 
 enable_testing()
 
@@ -20,7 +20,7 @@ include( SetupTargetMacros )
 include( InstallDirectoryPermissions )
 include( MASSigning )
 
-set( BLOCKCHAIN_NAME "EOSIO" )
+set( BLOCKCHAIN_NAME "YOSEMITE" )
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_EXTENSIONS ON )
 set( CXX_STANDARD_REQUIRED ON)
@@ -202,8 +202,26 @@ endif()
 
 message( STATUS "Using '${CORE_SYMBOL_NAME}' as CORE symbol name" )
 
+
+if ("${YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME}" STREQUAL "")
+    set( YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME "DKRW" )
+endif()
+string(TOUPPER ${YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME} YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME)
+
+string(LENGTH ${YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME} YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_LENGTH)
+if (YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_LENGTH GREATER 7)
+    message(FATAL_ERROR "YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME length must be between 1 and 7 characters")
+endif()
+
+if ("${YOSEMITE_NATIVE_TOKEN_PRECISION}" STREQUAL "")
+    set( YOSEMITE_NATIVE_TOKEN_PRECISION "4" )
+endif()
+
+message( STATUS "Using S(${YOSEMITE_NATIVE_TOKEN_PRECISION},${YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME}) as YOSEMITE Native Token Symbol" )
+
+
 if ("${EOSIO_ROOT_KEY}" STREQUAL "")
-   set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
+    set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
 endif()
 
 message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'eosio' account" )

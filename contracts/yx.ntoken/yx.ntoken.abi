@@ -1,0 +1,162 @@
+{
+  "types": [
+    {
+      "new_type_name": "account_name",
+      "type": "name"
+    }
+  ],
+  "structs": [
+    {
+      "name": "yx_asset",
+      "base": "",
+      "fields": [
+        {"name":"amount", "type":"asset"},
+        {"name":"issuer", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "nissue",
+      "base": "",
+      "fields": [
+        {"name":"to", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "nredeem",
+      "base": "",
+      "fields": [
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "transfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"amount", "type":"asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "wptransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"amount", "type":"asset"},
+        {"name":"payer", "type":"account_name"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "ntransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "wpntransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"payer", "type":"account_name"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "payfee",
+      "base": "",
+      "fields": [
+        {"name":"payer", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"}
+      ]
+    },
+    {
+      "name": "setkycrule",
+      "base": "",
+      "fields": [
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
+      ]
+    },
+    {
+      "name": "account_total_type",
+      "base": "",
+      "fields": [
+        {"name":"amount", "type":"int64"}
+      ]
+    },
+    {
+      "name": "account_type",
+      "base": "",
+      "fields": [
+        {"name":"depository", "type":"account_name"},
+        {"name":"amount", "type":"int64"},
+      ]
+    },
+    {
+      "name": "stats_type",
+      "base": "",
+      "fields": [
+        {"name":"key", "type":"name"},
+        {"name":"supply", "type":"int64"},
+        {"name":"options", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "kycrule_type",
+      "base": "",
+      "fields": [
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "nissue", "type": "nissue", "ricardian_contract": "" },
+    { "name": "nredeem", "type": "nredeem", "ricardian_contract": "" },
+    { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
+    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
+    { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
+    { "name": "wpntransfer", "type": "wpntransfer", "ricardian_contract": "" },
+    { "name": "payfee", "type": "payfee", "ricardian_contract": "" },
+    { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" }
+  ],
+  "tables": [{
+      "name": "ntaccounts",
+      "type": "account_type",
+      "index_type": "i64",
+      "key_names" : ["owner"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "ntaccountstt",
+      "type": "account_total_type",
+      "index_type": "i64",
+      "key_names" : [],
+      "key_types" : []
+    },{
+      "name": "ntstats",
+      "type": "stats_type",
+      "index_type": "i64",
+      "key_names" : ["key"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "kycrule",
+      "type": "kycrule_type",
+      "index_type": "i64",
+      "key_names" : ["type"],
+      "key_types" : ["uint8"]
+    }
+  ],
+  "ricardian_clauses": []
+}

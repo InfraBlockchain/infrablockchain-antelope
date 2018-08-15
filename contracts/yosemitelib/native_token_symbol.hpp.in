@@ -1,0 +1,10 @@
+/**
+ * @file
+ * @copyright defined in yosemite/LICENSE.txt
+ *
+ * \warning This file is machine generated. DO NOT EDIT. See native_token_symbol.hpp.in for changes.
+ */
+
+#define YOSEMITE_NATIVE_TOKEN_PRECISION ${YOSEMITE_NATIVE_TOKEN_PRECISION}
+#define YOSEMITE_NATIVE_TOKEN_SYMBOL S(YOSEMITE_NATIVE_TOKEN_PRECISION,${YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME})
+#define YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE (YOSEMITE_NATIVE_TOKEN_SYMBOL >> 8)
