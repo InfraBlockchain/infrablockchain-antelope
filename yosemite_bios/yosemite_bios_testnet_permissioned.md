@@ -678,6 +678,23 @@ $YOSEMITE_CLEOS get table yx.ntoken producer.c ntaccounts
 
 ```
 
+Transaction Vote 
+---
+
+```bash
+$YOSEMITE_CLEOS push action --help
+Push a transaction with a single action
+Usage: cleos push action [OPTIONS] account action data
+
+Options:
+...
+  -v,--trx-vote TEXT          transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)
+...
+  
+$YOSEMITE_CLEOS push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "10000.0000 DKRW", "memo" ]' -p useraccount3 -v producer.f
+$YOSEMITE_CLEOS get table eosio eosio producers
+```
+
 Synchronize action data 
 ---
 ```bash
