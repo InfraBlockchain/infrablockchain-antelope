@@ -26,7 +26,7 @@ namespace yosemitesys {
     using yosemite::sys_depository_table;
     using yosemite::identity_authority_table;
 
-    static const uint32_t YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT = 15;
+    static const uint32_t YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT = 5;
 
     struct yosemite_global_state : eosio::blockchain_parameters {
         uint64_t free_ram()const { return max_ram_size - total_ram_bytes_reserved; }

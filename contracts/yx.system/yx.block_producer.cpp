@@ -4,8 +4,13 @@
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
+#include <yosemitelib/transaction_vote.h>
 
+#include <eosiolib/system.h>
+#include <eosiolib/memory.hpp>
 #include <eosiolib/dispatcher.hpp>
+
+#include <cmath>
 
 namespace yosemitesys {
 
@@ -18,6 +23,14 @@ namespace yosemitesys {
     const uint64_t useconds_per_day      = 24 * 3600 * uint64_t(1000000);
 //    const uint64_t useconds_per_year     = seconds_per_year*1000000ll;
 
+    const int64_t    vote_weight_timestamp_epoch = 1514764800ll;  // 01/01/2018 @ 12:00am (UTC)
+    const uint32_t   seconds_per_week = 24 * 3600 * 7;
+
+
+    double weighted_vote( uint32_t vote ) {
+        double weight = int64_t( now() - vote_weight_timestamp_epoch ) / double( seconds_per_week * 52 );
+        return double(vote) * std::pow( 2, weight );
+    }
 
     void system_contract::onblock( block_timestamp timestamp, account_name producer ) {
         using namespace eosio;
@@ -34,6 +47,36 @@ namespace yosemitesys {
             _producers.modify( prod, 0, [&](auto& p ) {
                 p.unpaid_blocks++;
             });
+        }
+
+        /// read tran transaction votes sum data for each vote-candidate account,
+        /// accumulated from the transactions in the previous block right before current pending block
+        uint32_t tx_votes_packed_size = read_head_block_trx_votes_data(nullptr, 0);
+
+        if (tx_votes_packed_size > 0) {
+
+            int cnt = tx_votes_packed_size / sizeof(struct yosemite_transaction_vote);
+
+            /// allocate buffer memory through memory manager
+            char* buf_tx_votes_data_packed = static_cast<char*>(malloc(tx_votes_packed_size));
+            eosio_assert( buf_tx_votes_data_packed != nullptr, "malloc failed for tx votes packed data" );
+
+            read_head_block_trx_votes_data(buf_tx_votes_data_packed, tx_votes_packed_size);
+            yosemite_transaction_vote* votes_arr = reinterpret_cast<struct yosemite_transaction_vote *>(buf_tx_votes_data_packed);
+
+            for (int i = 0; i < cnt; i++) {
+                yosemite_transaction_vote &trx_vote = votes_arr[i];
+
+                auto prod_vote = _producers.find( trx_vote.candidate_name );
+
+                if (prod_vote != _producers.end()) {
+                    _producers.modify( prod_vote, 0, [&]( producer_info& info ){
+                        info.total_votes += weighted_vote(trx_vote.vote_amount);
+                    });
+                }
+            }
+
+            free(buf_tx_votes_data_packed);
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds

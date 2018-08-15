@@ -91,6 +91,7 @@ Options:
 #include <eosio/chain/trace.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/chain/contract_types.hpp>
+#include <eosio/chain/transaction_as_a_vote.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -168,6 +169,8 @@ uint32_t tx_max_net_usage = 0;
 
 vector<string> tx_permission;
 
+string trx_vote_target_account;
+
 eosio::client::http::http_context context;
 
 void add_standard_transaction_options(CLI::App* cmd, string default_permission = "") {
@@ -192,6 +195,9 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    if(!default_permission.empty())
       msg += " (defaults to '" + default_permission + "')";
    cmd->add_option("-p,--permission", tx_permission, localized(msg.c_str()));
+
+   // YOSEMITE Transaction-as-a-Vote for Proof-of-Transaction
+   cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
 
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
    cmd->add_option("--max-net-usage", tx_max_net_usage, localized("set an upper limit on the net usage budget, in bytes, for the transaction (defaults to 0 which means no limit)"));
@@ -295,6 +301,16 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
 
    trx.max_cpu_usage_ms = tx_max_cpu_usage;
    trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
+
+   try {
+      if (!trx_vote_target_account.empty()) {
+          eosio::chain::name tx_vote_account_name(trx_vote_target_account);
+
+          trx.transaction_extensions.push_back(
+                  std::make_pair(YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD,
+                          fc::raw::pack(tx_vote_account_name)));
+      }
+   } EOS_RETHROW_EXCEPTIONS(invalid_trx_vote_target_account, "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
 
    if (!tx_skip_sign) {
       auto required_keys = determine_required_keys(trx);
