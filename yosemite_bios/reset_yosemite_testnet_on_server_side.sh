@@ -261,6 +261,11 @@ $YOSEMITE_CLEOS wallet import --private-key 5JbXQdi7vzRXtxnyBi9PSTzaxACJagDKUFQk
 $YOSEMITE_CLEOS wallet import --private-key 5JEJrZMbDSZmFfRUbt1JVC3wrBv9cJG7QaiP58f8Mr9K1Wf9Cnn
 $YOSEMITE_CLEOS wallet import --private-key 5HsDW4pNKWDA91WcBuNNXT8sL5soVhXLHqZU7ZZqJzJC1YghXjT
 $YOSEMITE_CLEOS wallet import --private-key 5JFbKCZray6WGQZtkkxqQ9mencwQn5qynjJ1tXJRtaUH7oNRGnP
+$YOSEMITE_CLEOS wallet import --private-key 5KQmxBJPcM6dtgkPCnbZxDxR7fYufyAXmQpowtccDosSHCMnvzD
+$YOSEMITE_CLEOS wallet import --private-key 5J3stfy2eL19D99A9BH6rWdNyBJN52KGBLgGzPcd2i1H2E2c8RE
+$YOSEMITE_CLEOS wallet import --private-key 5JWtg8FYV8vsTLtVKyFKFDDWgHnxC8K8HrJBqPhp7EAT9NAC8CR
+$YOSEMITE_CLEOS wallet import --private-key 5J5L2x6E23sMykwirFJMHpWrHn9oypowdFcTs5ThFFNCBRpSZCJ
+$YOSEMITE_CLEOS wallet import --private-key 5Jj8nMEZiL4fZSxDf8xMHmVs94JrPiwwH66EE3b3pM9YpUyQdAv
 
 sleep 1
 $YOSEMITE_CLEOS create account eosio producer.a EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y -p eosio@active
@@ -268,6 +273,11 @@ $YOSEMITE_CLEOS create account eosio producer.b EOS79oucvH1iBTh5RrMgm6vRe9ERNSPQ
 $YOSEMITE_CLEOS create account eosio producer.c EOS6FTViN9RtWd7B7RbERxcdhWSh2jmqiLkhMck315uSUwCsjeNHe -p eosio@active
 $YOSEMITE_CLEOS create account eosio producer.d EOS66ABHVyT25wYUd2suW6JtbrwLrUdPFVDA1vjU8ttU289d2DPvJ -p eosio@active
 $YOSEMITE_CLEOS create account eosio producer.e EOS8Ab5kDP22ta5FRmShTsZ4SZ3ubwptxzKWSBw7FtZLsew12SfrW -p eosio@active
+$YOSEMITE_CLEOS create account eosio producer.f EOS6mUfvfWUJFVyQi23YwNtXMUHfSuExkr7WwWYr4RVzVD5TyASYh
+$YOSEMITE_CLEOS create account eosio producer.g EOS4xWpwU957GRJzXBjRRFWKegp772Z636xDXMyNopT4eR7pAq7cn
+$YOSEMITE_CLEOS create account eosio producer.h EOS8JjyHbTYw2uzqC14h48HwHKZFrBjJUfcKDo4hbPPui1ftBRktx
+$YOSEMITE_CLEOS create account eosio producer.i EOS8mRvKmUuiSVwxvL9R4wg1z9Tkjs7STuaNZZAivUxkWtFUxBW4H
+$YOSEMITE_CLEOS create account eosio producer.j EOS7wwywnEFqM2fjWTvTuF5E8ELu9hpbWke3aCUYqEkfw9aP1G2ph
 sleep 1
 
 $YOSEMITE_CLEOS push action eosio regproducer '["producer.a","EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y","http://producera.io",1]' -p producer.a@active -p eosio@active
@@ -283,6 +293,18 @@ $YOSEMITE_CLEOS push action eosio regproducer '["producer.e","EOS8Ab5kDP22ta5FRm
 $YOSEMITE_CLEOS push action eosio authproducer '["producer.c"]' -p eosio@active
 $YOSEMITE_CLEOS push action eosio authproducer '["producer.d"]' -p eosio@active
 $YOSEMITE_CLEOS push action eosio authproducer '["producer.e"]' -p eosio@active
+
+$YOSEMITE_CLEOS push action eosio regproducer '["producer.f","EOS6mUfvfWUJFVyQi23YwNtXMUHfSuExkr7WwWYr4RVzVD5TyASYh","http://producerf.io",1]' -p producer.f@active -p eosio@active
+$YOSEMITE_CLEOS push action eosio regproducer '["producer.g","EOS4xWpwU957GRJzXBjRRFWKegp772Z636xDXMyNopT4eR7pAq7cn","http://producerg.io",1]' -p producer.g@active -p eosio@active
+$YOSEMITE_CLEOS push action eosio regproducer '["producer.h","EOS8JjyHbTYw2uzqC14h48HwHKZFrBjJUfcKDo4hbPPui1ftBRktx","http://producerh.io",1]' -p producer.h@active -p eosio@active
+$YOSEMITE_CLEOS push action eosio regproducer '["producer.i","EOS8mRvKmUuiSVwxvL9R4wg1z9Tkjs7STuaNZZAivUxkWtFUxBW4H","http://produceri.io",1]' -p producer.i@active -p eosio@active
+$YOSEMITE_CLEOS push action eosio regproducer '["producer.j","EOS7wwywnEFqM2fjWTvTuF5E8ELu9hpbWke3aCUYqEkfw9aP1G2ph","http://producerj.io",1]' -p producer.j@active -p eosio@active
+
+$YOSEMITE_CLEOS push action eosio authproducer '["producer.f"]' -p eosio@active
+$YOSEMITE_CLEOS push action eosio authproducer '["producer.g"]' -p eosio@active
+$YOSEMITE_CLEOS push action eosio authproducer '["producer.h"]' -p eosio@active
+$YOSEMITE_CLEOS push action eosio authproducer '["producer.i"]' -p eosio@active
+$YOSEMITE_CLEOS push action eosio authproducer '["producer.j"]' -p eosio@active
 
 sleep 180
 tail $YOSEMITE_NODEOS_LOG_FILE -n 300
