@@ -37,8 +37,8 @@ int main(int argc, char** argv)
 {
    try {
       bfs::path home = determine_home_directory();
-      app().set_default_data_dir(home / "eosio-wallet");
-      app().set_default_config_dir(home / "eosio-wallet");
+      app().set_default_data_dir(home / "yosemite-wallet");
+      app().set_default_config_dir(home / "yosemite-wallet");
       app().register_plugin<wallet_api_plugin>();
       if(!app().initialize<wallet_plugin, wallet_api_plugin, http_plugin>(argc, argv))
          return -1;
