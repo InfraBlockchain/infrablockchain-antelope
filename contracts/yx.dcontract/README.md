@@ -2,6 +2,7 @@
 * This Yosemite contract provides the infrastructure for creation of digital contracts and digital signing service for them.
 * The name is `yx.dcontract`.
 
+
 # Digital Signing
 * The features related to digital signing are part of public key cryptography.
    * Most blockchains including Yosemite Public Blockchain(YosemiteChain or Yosemite) have their account system based on public key cryptography.
@@ -11,6 +12,9 @@
    * For more information, refer to https://en.wikipedia.org/wiki/Digital_signature and https://en.wikipedia.org/wiki/Public-key_cryptography
 * YosemiteChain can check the integrity of the digital signature with all accounts because it has all the public keys of accounts.
 
+
+# Digital Signing With Digital Contracts
+
 ## digital signing of the action of digital contract creation
 * When a creation action is delivered to this Yosemite contract, it checks that the action is sent by the service provider who wants to create the digital contract.
 * The creation action includes the list of accounts who are contract signers for `sign` action.
@@ -19,6 +23,7 @@
 * An action for digital contract signing must be signed by one of the contract signers, not the service provider.
 * Digital signature embedded in the action cryptographically proves that one of the contract signers actually signs the digital contract.
 * It also proves that the signing action is sent under the approval of the contract signer.
+
 
 # Management Actions
 
@@ -75,7 +80,7 @@ cleos push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequenc
 ## addsigners
 Add additional signers to the created digital contract
 
-* The action fails if one of the signers has already signed the contract.
+* The action only succeeds when none of the signers has signed the contract.
 ```
 cleos push action yx.dcontract addsigners '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signers":["user3"]}' -p servprovider
 ```
@@ -127,7 +132,7 @@ cleos get table yx.dcontract servprovider dcontracts
 {
   "rows": [{
       "sequence": 1,
-      "conhash": "313233343536",
+      "conhash": "abcdef",
       "adddochash": "",
       "expiration": "2018-08-31T02:49:57",
       "options": 0,
@@ -142,7 +147,7 @@ cleos get table yx.dcontract servprovider dcontracts
       ]
     },{
       "sequence": 2,
-      "conhash": "313233343536",
+      "conhash": "abcd1234",
       "adddochash": "",
       "expiration": "2018-08-31T02:49:57",
       "options": 0,
@@ -186,7 +191,7 @@ $ cleos get table yx.dcontract user2 signers
   "rows": [{
       "id": 0,
       "dcid_serialized": "0x01000000000000007055729bdebaafc2",
-      "signerinfo": "666f6f"
+      "signerinfo": "I am user2"
     }
   ],
   "more": false
@@ -194,3 +199,7 @@ $ cleos get table yx.dcontract user2 signers
 ```
 
 ## get the signer information by dcid
+
+```
+cleos get table yx.dcontract user2 signers --index 2 --key-type i128 -L 0x01000000000000007055729bdebaafc2 -l 1
+```
