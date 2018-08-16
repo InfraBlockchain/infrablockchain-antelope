@@ -36,6 +36,62 @@ namespace yosemite_core {
      * means the entity generating the transaction on blockchain wants the blockchain core node
      * having the voted address to be a block producer.
      *
+     *
+     *
+     * ### Transaction-as-a-Vote message protocol
+     *
+     * struct transaction_header {
+     *    time_point_sec         expiration;   ///< the time at which a transaction expires
+     *    uint16_t               ref_block_num       = 0U; ///< specifies a block num in the last 2^16 blocks.
+     *    uint32_t               ref_block_prefix    = 0UL; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
+     *    fc::unsigned_int       max_net_usage_words = 0UL; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
+     *    uint8_t                max_cpu_usage_ms    = 0; /// upper limit on the total CPU time billed for this transaction
+     *    fc::unsigned_int       delay_sec           = 0UL; /// number of seconds to delay this transaction for during which it may be canceled.
+     * };
+     *
+     * typedef vector<std::pair<uint16_t,vector<char>>> extensions_type;
+     *
+     * struct transaction : public transaction_header {
+     *    vector<action>         context_free_actions;
+     *    vector<action>         actions;
+     *    extensions_type        transaction_extensions;
+     * }
+     *
+     * YOSEMITE Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOS transaction binary data format.
+     * The transaction-extension field code for YOSEMITE TaaV is 1001,
+     * and the field value should be encoded as the binary representation of 64bit base-32 encoding for blockchain account name of transaction-vote target(candidate)
+     *
+     * Example of json representation blockchain transaction with YOSEMITE TaaV
+     * {
+     *   "expiration": "2018-08-16T06:17:11",
+     *   "ref_block_num": 30369,
+     *   "ref_block_prefix": 1005358512,
+     *   "max_net_usage_words": 0,
+     *   "max_cpu_usage_ms": 0,
+     *   "delay_sec": 0,
+     *   "context_free_actions": [],
+     *   "actions": [{
+     *       "account": "yx.ntoken",
+     *       "name": "transfer",
+     *       "authorization": [{
+     *           "actor": "useraccount3",
+     *           "permission": "active"
+     *         }
+     *       ],
+     *       "data": "30f2d414217315d620f2d414217315d600e1f5050000000004444b5257000000046d656d6f"
+     *     }
+     *   ],
+     *   "transaction_extensions": [[
+     *       1001,
+     *       "00c00257219de8ad"
+     *     ]
+     *   ],
+     *   "signatures": [
+     *     "SIG_K1_K24Pe1TVtdCzY2s4NvfvPd28NL1jHoFUEsugxPCXqonoSJDZ4XD9S7CMBP8WyTbhkBFweWT9GLBDDJgQCv9qSaL8SLbR2s"
+     *   ],
+     *   "context_free_data": []
+     * }
+     *
      */
 
     using transaction_vote_candidate_name_type = eosio::chain::name;
