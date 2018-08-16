@@ -661,6 +661,13 @@ struct controller_impl {
                                         trx_context.billed_cpu_time_us,
                                         trace->net_usage );
 
+         // YOSEMITE Proof-of-Transaction
+         // accumulate transaction vote of this transaction to current block data,
+         // in a block, there can be multiple transaction-vote to multiple candidate accounts
+         if (trx_context.transaction_vote.has_vote()) {
+            pending->_pending_block_state->trx_votes.add_transaction_vote(trx_context.transaction_vote);
+         }
+
          fc::move_append( pending->_actions, move(trx_context.executed) );
 
          emit( self.accepted_transaction, trx );
@@ -827,8 +834,9 @@ struct controller_impl {
                trace->receipt = r;
             }
 
-            // YOSEMITE
-            // accumulate transaction votes in current block
+            // YOSEMITE Proof-of-Transaction
+            // accumulate transaction vote of this transaction to current block data,
+            // in a block, there can be multiple transaction-vote to multiple candidate accounts
             if (trx_context.transaction_vote.has_vote()) {
                pending->_pending_block_state->trx_votes.add_transaction_vote(trx_context.transaction_vote);
             }
