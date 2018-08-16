@@ -159,22 +159,22 @@ struct controller_impl {
    {
 
 #define SET_APP_HANDLER( receiver, contract, action) \
-   set_apply_handler( #receiver, #contract, #action, &BOOST_PP_CAT(apply_, BOOST_PP_CAT(contract, BOOST_PP_CAT(_,action) ) ) )
+   set_apply_handler( #receiver, #contract, #action, &BOOST_PP_CAT(apply_, BOOST_PP_CAT(eosio, BOOST_PP_CAT(_,action) ) ) )
 
-   SET_APP_HANDLER( eosio, eosio, newaccount );
-   SET_APP_HANDLER( eosio, eosio, setcode );
-   SET_APP_HANDLER( eosio, eosio, setabi );
-   SET_APP_HANDLER( eosio, eosio, updateauth );
-   SET_APP_HANDLER( eosio, eosio, deleteauth );
-   SET_APP_HANDLER( eosio, eosio, linkauth );
-   SET_APP_HANDLER( eosio, eosio, unlinkauth );
+   SET_APP_HANDLER( yosemite, yosemite, newaccount );
+   SET_APP_HANDLER( yosemite, yosemite, setcode );
+   SET_APP_HANDLER( yosemite, yosemite, setabi );
+   SET_APP_HANDLER( yosemite, yosemite, updateauth );
+   SET_APP_HANDLER( yosemite, yosemite, deleteauth );
+   SET_APP_HANDLER( yosemite, yosemite, linkauth );
+   SET_APP_HANDLER( yosemite, yosemite, unlinkauth );
 /*
-   SET_APP_HANDLER( eosio, eosio, postrecovery );
-   SET_APP_HANDLER( eosio, eosio, passrecovery );
-   SET_APP_HANDLER( eosio, eosio, vetorecovery );
+   SET_APP_HANDLER( yosemite, yosemite, postrecovery );
+   SET_APP_HANDLER( yosemite, yosemite, passrecovery );
+   SET_APP_HANDLER( yosemite, yosemite, vetorecovery );
 */
 
-   SET_APP_HANDLER( eosio, eosio, canceldelay );
+   SET_APP_HANDLER( yosemite, yosemite, canceldelay );
 
    fork_db.irreversible.connect( [&]( auto b ) {
                                  on_irreversible(b);
