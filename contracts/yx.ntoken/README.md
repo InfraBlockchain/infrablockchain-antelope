@@ -55,17 +55,17 @@
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-cleos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.0000 DKRW"}}' -p eosio
-cleos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.0000 DKRW"}}' -p eosio
-cleos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.0000 DKRW"}}' -p eosio
-cleos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.0000 DKRW"}}' -p yosemite
+cleos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.0000 DKRW"}}' -p yosemite
+cleos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.0000 DKRW"}}' -p yosemite
+cleos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.0000 DKRW"}}' -p yosemite
 ```
 
 ## setkycrule : setting KYC vector
 * Active block producers sets KYC vector to determine who can send, receive, or do both the native token with `setkycrule` operation.
 ```
-cleos push action yx.ntoken setkycrule '{"type":0, "kyc":15}' -p eosio
-cleos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p eosio
+cleos push action yx.ntoken setkycrule '{"type":0, "kyc":15}' -p yosemite
+cleos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p yosemite
 ```
 
 ### parameters of setkycrule
@@ -327,8 +327,8 @@ cleos get table yx.ntoken user1 ntaccountstt
 # Execution Example
 * Let's say d1 is the system depository for DKRW with precision 4, the native token of the blockchain.
 ```
-cleos push action eosio regsysdepo '["d1","http://sysdepo.org",1]' -p d1 eosio
-cleos push action eosio authsysdepo '["d1"]' -p eosio
+cleos push action yosemite regsysdepo '["d1","http://sysdepo.org",1]' -p d1 yosemite
+cleos push action yosemite authsysdepo '["d1"]' -p yosemite
 ```
 * First of all, you must set transaction fee for all actions and d1, d2, user1 and user2 accounts are KYC'ed.
 * Here's the example:

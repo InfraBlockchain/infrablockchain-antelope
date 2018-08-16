@@ -30,11 +30,11 @@
 ## setting fee for actions
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-cleos push action yx.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.0000 DKRW"}}' -p eosio
-cleos push action yx.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.0000 DKRW"}}' -p eosio
-cleos push action yx.txfee settxfee '{"operation":"tf.dcsign", "fee":"30.0000 DKRW"}}' -p eosio
-cleos push action yx.txfee settxfee '{"operation":"tf.dcupadd", "fee":"5.0000 DKRW"}}' -p eosio
-cleos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.0000 DKRW"}}' -p eosio
+cleos push action yx.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.0000 DKRW"}}' -p yosemite
+cleos push action yx.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.0000 DKRW"}}' -p yosemite
+cleos push action yx.txfee settxfee '{"operation":"tf.dcsign", "fee":"30.0000 DKRW"}}' -p yosemite
+cleos push action yx.txfee settxfee '{"operation":"tf.dcupadd", "fee":"5.0000 DKRW"}}' -p yosemite
+cleos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.0000 DKRW"}}' -p yosemite
 ```
 
 

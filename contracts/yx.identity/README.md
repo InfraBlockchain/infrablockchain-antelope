@@ -24,7 +24,7 @@ YOSEMITE_CONTRACTS_DIR=$YOSEMITE_HOME/build/contracts
 Install Identity System Contract
 ---
 ```bash
-$YOSEMITE_CLEOS create account eosio yx.identity EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
+$YOSEMITE_CLEOS create account yosemite yx.identity EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
 $YOSEMITE_CLEOS set contract yx.identity $YOSEMITE_CONTRACTS_DIR/yx.identity/ -p yx.identity@active
 ```
 
