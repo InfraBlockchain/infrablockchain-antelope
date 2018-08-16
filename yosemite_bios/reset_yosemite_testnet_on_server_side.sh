@@ -462,6 +462,16 @@ $YOSEMITE_CLEOS get table yx.ntoken producer.c ntaccounts
 
 sleep 1
 
+{ print_section_title "Transaction Votes"; } 2>/dev/null
+
+$YOSEMITE_CLEOS push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.0000 DKRW", "memo1" ]' -p useraccount3 -v producer.f
+$YOSEMITE_CLEOS push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.0000 DKRW", "memo2" ]' -p useraccount3 -v producer.g
+$YOSEMITE_CLEOS push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.0000 DKRW", "memo3" ]' -p useraccount3 -v producer.g
+sleep 2
+
+$YOSEMITE_CLEOS get table eosio eosio producers
+sleep 1
+
 { print_section_title "Querying action data"; } 2>/dev/null
 
 $YOSEMITE_CLEOS get actions yx.ntoken 0 9

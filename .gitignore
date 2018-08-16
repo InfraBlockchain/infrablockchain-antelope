@@ -87,3 +87,4 @@ var/lib/node_*
 
 yosemite_config/config_yosemite_testnet_boot_local.ini
 yosemite_bios/reset_yosemite_testnet_on_local.sh
+yosemite_bios/stop_yosemite_testnet_node_local.sh
