@@ -20,7 +20,7 @@
    * d1 : account name of the issuer
 * Different issuer results in different tokens. For example, 4,DKRW@d1 and 4,DKRW@d2 are different.
 * Different precision results in different tokens. For example, 4,BTC@d3 and 8,BTC@d3 are different.
-## Amount Format
+### Format of Token Amount
 * 1234.5678 DKRW
    * If token's symbol and precision is 4,DKRW, then the amount should be written to reflect token's precision. e.g. 1.0000 DKRW
 * In the Yosemite software, the amount 1234.5678 is saved in 64-bit integer as 12345678.
