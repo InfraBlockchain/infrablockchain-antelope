@@ -31,7 +31,7 @@ YOSEMITE is released under the open source MIT license and is offered â€œAS ISâ€
 1. [Native Token](contracts/yx.ntoken/README.md)
 1. [Non-native or User Tokens](contracts/yx.token/README.md)
 1. [Account Management and KYC](contracts/yx.identity/README.md)
-1. [Digital Contract Signining Service](contracts/yx.dcontract/README.md)
+1. [Digital Contract Signing Service](contracts/yx.dcontract/README.md)
 
 ## Resources
 1. [Website](https://yosemitex.com)
