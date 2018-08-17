@@ -17,15 +17,15 @@ Environment Var.
 ---
 
 ```bash
-YOSEMITE_CLEOS=$YOSEMITE_HOME/build/programs/cleos/cleos
+YOSEMITE_CLYOS=$YOSEMITE_HOME/build/programs/clyos/clyos
 YOSEMITE_CONTRACTS_DIR=$YOSEMITE_HOME/build/contracts
 ```
 
 Install Identity System Contract
 ---
 ```bash
-$YOSEMITE_CLEOS create account yosemite yx.identity EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
-$YOSEMITE_CLEOS set contract yx.identity $YOSEMITE_CONTRACTS_DIR/yx.identity/ -p yx.identity@active
+$YOSEMITE_CLYOS create account yosemite yx.identity EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
+$YOSEMITE_CLYOS set contract yx.identity $YOSEMITE_CONTRACTS_DIR/yx.identity/ -p yx.identity@active
 ```
 
 YOSEMITE Identity Codes
@@ -56,15 +56,15 @@ Managing Account Identity Info (including KYC)
 #### setting identity Information for an account by an authorized Identity Authority
 
 ```bash
-$YOSEMITE_CLEOS push action yx.identity setidinfo "{\"account\":\"useraccount1\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 0111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p idauth1@active
-$YOSEMITE_CLEOS push action yx.identity setidinfo "{\"account\":\"useraccount2\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"23uyiuye\"}" -p idauth1@active
-$YOSEMITE_CLEOS push action yx.identity setidinfo "{\"account\":\"useraccount3\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"vewv23r3\"}" -p idauth1@active
+$YOSEMITE_CLYOS push action yx.identity setidinfo "{\"account\":\"useraccount1\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 0111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p idauth1@active
+$YOSEMITE_CLYOS push action yx.identity setidinfo "{\"account\":\"useraccount2\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"23uyiuye\"}" -p idauth1@active
+$YOSEMITE_CLYOS push action yx.identity setidinfo "{\"account\":\"useraccount3\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"vewv23r3\"}" -p idauth1@active
 ```
 
 #### Querying identity information for an account
 
 ```bash
-$YOSEMITE_CLEOS get table -L useraccount1 -l 1 yx.identity yx.identity identity
+$YOSEMITE_CLYOS get table -L useraccount1 -l 1 yx.identity yx.identity identity
 {
   "rows": [{
       "account": "useraccount1",
@@ -83,25 +83,25 @@ $YOSEMITE_CLEOS get table -L useraccount1 -l 1 yx.identity yx.identity identity
 #### update user account type
 
 ```bash
-$YOSEMITE_CLEOS push action yx.identity settype "{\"account\":\"useraccount1\", \"type\":$(echo 'ibase=2; 11111111' | bc)}" -p idauth1@active
+$YOSEMITE_CLYOS push action yx.identity settype "{\"account\":\"useraccount1\", \"type\":$(echo 'ibase=2; 11111111' | bc)}" -p idauth1@active
 ```
 
 #### update kyc status
 
 ```bash
-$YOSEMITE_CLEOS push action yx.identity setkyc "{\"account\":\"useraccount1\", \"kyc\":$(echo 'ibase=2; 1111' | bc)}" -p idauth1@active
+$YOSEMITE_CLYOS push action yx.identity setkyc "{\"account\":\"useraccount1\", \"kyc\":$(echo 'ibase=2; 1111' | bc)}" -p idauth1@active
 ```
 
 #### update account state (e.g. blacklist account)
 
 ```bash
-$YOSEMITE_CLEOS push action yx.identity setstate "{\"account\":\"useraccount1\", \"state\":$(echo 'ibase=2; 0001' | bc)}" -p idauth1@active
+$YOSEMITE_CLYOS push action yx.identity setstate "{\"account\":\"useraccount1\", \"state\":$(echo 'ibase=2; 0001' | bc)}" -p idauth1@active
 ```
 
 #### update identity-authority specific data
 
 ```bash
-$YOSEMITE_CLEOS push action yx.identity setdata "{\"account\":\"useraccount1\", \"data\":\"23fiuygy3\"}" -p idauth1@active
+$YOSEMITE_CLYOS push action yx.identity setdata "{\"account\":\"useraccount1\", \"data\":\"23fiuygy3\"}" -p idauth1@active
 ```
 
 Checking Identity Information in Smart Contract Code

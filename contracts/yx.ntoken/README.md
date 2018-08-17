@@ -55,17 +55,17 @@
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-cleos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.0000 DKRW"}}' -p yosemite
-cleos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.0000 DKRW"}}' -p yosemite
-cleos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.0000 DKRW"}}' -p yosemite
-cleos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.0000 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.0000 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.0000 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.0000 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.0000 DKRW"}}' -p yosemite
 ```
 
 ## setkycrule : setting KYC vector
 * Active block producers sets KYC vector to determine who can send, receive, or do both the native token with `setkycrule` operation.
 ```
-cleos push action yx.ntoken setkycrule '{"type":0, "kyc":15}' -p yosemite
-cleos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p yosemite
+clyos push action yx.ntoken setkycrule '{"type":0, "kyc":15}' -p yosemite
+clyos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p yosemite
 ```
 
 ### parameters of setkycrule
@@ -82,7 +82,7 @@ Issue native token to an account by the system depository
 * d1 must be the system depository registered and authroized by [yx.system](../../contracts/yx.system/).
 * In this example, 4,DKRW is the native token.
 ```
-$ cleos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0000 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
+$ clyos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0000 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
 ```
 
 ### parameters of nissue
@@ -112,12 +112,12 @@ Redeem(burn) native token from an account by the system depository
 
 * At first, the account transfers the native token to the system depository.
 ```
-cleos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
+clyos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
 ```
    * The account user1 can send the native token issued by other system depositories like d2 to the system depository d1. In such case, d1 will call the transfer action to d2 to redeem the native token from d2 at any time. It's natural to request redemption between system depositories.
 * Then the system depository checks the transfer action is irreversible and calls nredeem action.
 ```
-cleos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
+clyos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
 ```
 
 ### parameters of nredeem
@@ -141,7 +141,7 @@ Transfer the native token regardless of the system depository
 
 * The native token issued by any system depositories can be transferred.
 ```
-cleos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
+clyos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
 ```
 ### parameters of transfer
 1. from : account name to transfer from
@@ -184,7 +184,7 @@ Transfer the native token regardless of the system depository with the designate
 * 'wp' means 'with payer'.
 * It requires the signature of the fee payer account.
 ```
-cleos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","payer":"servprovider","memo":"my memo"}' -p user1 servprovider
+clyos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","payer":"servprovider","memo":"my memo"}' -p user1 servprovider
 ```
 
 ### parameters of wptransfer
@@ -210,7 +210,7 @@ cleos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"1
 Transfer the native token designating the system depository
 
 ```
-cleos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
+clyos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
 ```
 
 ### parameters of ntransfer
@@ -238,7 +238,7 @@ Transfer the native token designating the system depository with the designated 
 
 * The purpose and requirement of this action is the same with `wptransfer` action.
 ```
-cleos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovider","memo":"my memo"}' -p user1 servprovider
+clyos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovider","memo":"my memo"}' -p user1 servprovider
 ```
 
 ### parameters of wpntransfer
@@ -270,7 +270,7 @@ Get the stats of native token for the system depository
 
 * If d1 is the name of system depository, its current supply information is shown.
 ```
-cleos get table yx.ntoken d1 ntstats
+clyos get table yx.ntoken d1 ntstats
 ```
 ### Result of ntstats
 ```
@@ -289,7 +289,7 @@ cleos get table yx.ntoken d1 ntstats
 Get the native token balance of the user for all system depositories
 
 ```
-cleos get table yx.ntoken user1 ntaccounts
+clyos get table yx.ntoken user1 ntaccounts
 ```
 ### Result of ntaccounts
 * The user1 account has 50000.0000 DKRW@d1 and 1000.0000 DKRW@d2.
@@ -311,7 +311,7 @@ cleos get table yx.ntoken user1 ntaccounts
 Get the sum of native token balance for all system depositories of the user
 
 ```
-cleos get table yx.ntoken user1 ntaccountstt
+clyos get table yx.ntoken user1 ntaccountstt
 ```
 ### Result of ntaccounts
 ```
@@ -327,25 +327,25 @@ cleos get table yx.ntoken user1 ntaccountstt
 # Execution Example
 * Let's say d1 is the system depository for DKRW with precision 4, the native token of the blockchain.
 ```
-cleos push action yosemite regsysdepo '["d1","http://sysdepo.org",1]' -p d1 yosemite
-cleos push action yosemite authsysdepo '["d1"]' -p yosemite
+clyos push action yosemite regsysdepo '["d1","http://sysdepo.org",1]' -p d1 yosemite
+clyos push action yosemite authsysdepo '["d1"]' -p yosemite
 ```
 * First of all, you must set transaction fee for all actions and d1, d2, user1 and user2 accounts are KYC'ed.
 * Here's the example:
 ```
-cleos push action yx.ntoken nissue '[ "d1", {"amount":"1000000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
-cleos get table yx.ntoken d1 ntstats
-cleos get table yx.ntoken d1 ntaccounts
-cleos push action yx.ntoken transfer '[ "d1", "user1", "10000.0000 DKRW", "memo"]' -p d1
-cleos push action yx.ntoken ntransfer '[ "d1", "user1", {"amount":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p d1
-cleos get table yx.ntoken user1 ntaccounts
-cleos get table yx.ntoken user1 ntaccountstt
-cleos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "d1", "memo" ]' -p user1 d1
-cleos get table yx.ntoken user1 ntaccounts
-cleos get table yx.ntoken d1 ntaccounts
-cleos get table yx.ntoken user2 ntaccounts
-cleos push action yx.ntoken wpntransfer '[ "user1", "user2", {"amount":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p user1 d1
-cleos get table yx.ntoken user1 ntaccounts
-cleos get table yx.ntoken d1 ntaccounts
-cleos get table yx.ntoken user2 ntaccounts
+clyos push action yx.ntoken nissue '[ "d1", {"amount":"1000000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
+clyos get table yx.ntoken d1 ntstats
+clyos get table yx.ntoken d1 ntaccounts
+clyos push action yx.ntoken transfer '[ "d1", "user1", "10000.0000 DKRW", "memo"]' -p d1
+clyos push action yx.ntoken ntransfer '[ "d1", "user1", {"amount":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p d1
+clyos get table yx.ntoken user1 ntaccounts
+clyos get table yx.ntoken user1 ntaccountstt
+clyos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "d1", "memo" ]' -p user1 d1
+clyos get table yx.ntoken user1 ntaccounts
+clyos get table yx.ntoken d1 ntaccounts
+clyos get table yx.ntoken user2 ntaccounts
+clyos push action yx.ntoken wpntransfer '[ "user1", "user2", {"amount":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p user1 d1
+clyos get table yx.ntoken user1 ntaccounts
+clyos get table yx.ntoken d1 ntaccounts
+clyos get table yx.ntoken user2 ntaccounts
 ```
