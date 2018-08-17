@@ -19,9 +19,9 @@ namespace eosio { namespace chain {
    ,undo_session()
    ,trace(std::make_shared<transaction_trace>())
    ,start(s)
+   ,transaction_vote(0,0)
    ,net_usage(trace->net_usage)
    ,pseudo_start(s)
-   ,transaction_vote(0,0)
    {
       if (!c.skip_db_sessions()) {
          undo_session = c.db().start_undo_session(true);
