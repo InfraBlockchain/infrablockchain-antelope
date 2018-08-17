@@ -76,7 +76,7 @@ print_section_title() {
 pgrep $YOSEMITE_NODE_BIN_NAME
 pkill -SIGINT $YOSEMITE_NODE_BIN_NAME
 sleep 2
-tail $YOSEMITE_NODEOS_LOG_FILE
+tail $YOSEMITE_NODE_LOG_FILE
 
 { print_section_title "Stop mongodb"; } 2>/dev/null
 
@@ -89,7 +89,7 @@ sleep 2
 pgrep $YOSEMITE_KEYD_BIN_NAME
 pkill -SIGINT $YOSEMITE_KEYD_BIN_NAME
 sleep 5
-tail $YOSEMITE_KEOSD_LOG_FILE
+tail $YOSEMITE_KEYD_LOG_FILE
 
 
 { set +x; } 2>/dev/null
