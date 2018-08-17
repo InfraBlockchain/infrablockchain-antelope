@@ -4,7 +4,7 @@
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/non_native_token.hpp>
 
-namespace yosemite {
+namespace yosemite { namespace non_native_token {
 
     void token::create(const yx_symbol &ysymbol, uint16_t can_set_options) {
         eosio_assert(static_cast<uint32_t>(ysymbol.is_valid()), "invalid ysymbol name");
@@ -46,7 +46,7 @@ namespace yosemite {
         add_token_balance(token.issuer, token);
 
         if (to != token.issuer) {
-            INLINE_ACTION_SENDER(yosemite::token, transfer)
+            INLINE_ACTION_SENDER(token, transfer)
                     (get_self(), {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      { token.issuer, to, token, memo });
         }
@@ -163,7 +163,7 @@ namespace yosemite {
     }
 
     void token::charge_fee(const account_name &payer, uint64_t operation) {
-        charge_transaction_fee(payer, operation);
+        native_token::charge_transaction_fee(payer, operation);
     }
 
     void token::setkycrule(const yx_symbol &ysymbol, uint8_t type, uint16_t kyc) {
@@ -195,7 +195,7 @@ namespace yosemite {
 
     bool token::check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
                                                  const token_stats &tstats) {
-        eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+        eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
                      "account is blacklisted by identity authority");
 
         auto itr = std::find(tstats.kyc_rule_types.begin(), tstats.kyc_rule_types.end(), kycrule_type);
@@ -203,7 +203,7 @@ namespace yosemite {
 
         auto index = std::distance(tstats.kyc_rule_types.begin(), itr);
         auto kyc_flags = tstats.kyc_rule_flags[static_cast<size_t>(index)];
-        return has_all_kyc_status(account, kyc_flags);
+        return identity::has_all_kyc_status(account, kyc_flags);
     }
 
     void token::setoptions(const yx_symbol &ysymbol, uint16_t options, bool overwrite) {
@@ -256,7 +256,7 @@ namespace yosemite {
         charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_FREEZEACC);
     }
 
-}
+}}
 
-EOSIO_ABI(yosemite::token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)(setoptions)(freezeacc)
+EOSIO_ABI(yosemite::non_native_token::token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)(setoptions)(freezeacc)
 )

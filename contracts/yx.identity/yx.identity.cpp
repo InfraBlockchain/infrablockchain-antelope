@@ -10,7 +10,7 @@
 #include <yosemitelib/identity_authority.hpp>
 #include <yx.system/yx.system.hpp>
 
-namespace yosemite {
+namespace yosemite { namespace identity {
 
     void identity_contract::setidinfo(const account_name account, const account_name identity_authority, uint16_t type, uint16_t kyc, uint32_t state, const std::string& data) {
 
@@ -147,9 +147,9 @@ namespace yosemite {
             info.data  = data;
         });
     }
-}
+}}
 
-EOSIO_ABI(yosemite::identity_contract,
+EOSIO_ABI(yosemite::identity::identity_contract,
         (setidinfo)(delidinfo)
         (settype)(setkyc)(setstate)(setdata)
 )

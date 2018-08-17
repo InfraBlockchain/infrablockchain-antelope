@@ -149,7 +149,7 @@ namespace yosemitesys {
 
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            yosemite::charge_transaction_fee(producer, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER);
+            yosemite::native_token::charge_transaction_fee(producer, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER);
         }
     }
 
@@ -186,6 +186,7 @@ namespace yosemitesys {
     }
 
     using namespace eosio;
+    using namespace yosemite;
     void system_contract::claimrewards( const account_name& owner ) {
         require_auth(owner);
 
@@ -193,7 +194,7 @@ namespace yosemitesys {
         eosio_assert( prod.active(), "producer does not have an active key" );
         eosio_assert( prod.is_trusted_seed, "producer is not trusted seed producer" );
 
-        int64_t tx_fee_accumulated = yosemite::get_total_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT);
+        int64_t tx_fee_accumulated = native_token::get_total_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT);
         eosio_assert( tx_fee_accumulated > 0, "no tx fee accumulated");
 
         auto ct = current_time();
@@ -213,7 +214,7 @@ namespace yosemitesys {
         });
 
         if( producer_per_block_pay > 0 ) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+            INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
                     (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {YOSEMITE_SYSTEM_ACCOUNT, N(active)},
                      { YOSEMITE_TX_FEE_ACCOUNT, owner, asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), "producer pay" });
         }

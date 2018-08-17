@@ -24,7 +24,7 @@
 #define YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE  0x00000004
 #define YOSEMITE_ID_ACC_STATE_MAX                         0x00000007
 
-namespace yosemite {
+namespace yosemite { namespace identity {
 
     struct identity_info {
         account_name account;
@@ -147,4 +147,4 @@ namespace yosemite {
         }
     }
 
-}
+}}

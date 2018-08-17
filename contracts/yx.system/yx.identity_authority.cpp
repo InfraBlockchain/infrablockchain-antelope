@@ -36,7 +36,7 @@ namespace yosemitesys {
 
         // charge transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            yosemite::charge_transaction_fee(identity_authority, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_ID_AUTH);
+            yosemite::native_token::charge_transaction_fee(identity_authority, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_ID_AUTH);
         }
     }
 

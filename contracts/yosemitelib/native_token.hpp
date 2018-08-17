@@ -9,7 +9,7 @@
 
 /* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
 
-namespace yosemite {
+namespace yosemite { namespace native_token {
     static const uint64_t NTOKEN_TOTAL_BALANCE_KEY = N(totalbal);
 
     using namespace eosio;
@@ -120,7 +120,7 @@ namespace yosemite {
                     }
                 }
 
-                INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
+                INLINE_ACTION_SENDER(ntoken, payfee)
                         (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                          {payer, yx_asset(to_send, balance_holder.depository)});
 
@@ -132,6 +132,6 @@ namespace yosemite {
             eosio_assert(static_cast<uint32_t>(tx_fee.amount == 0), "payer account cannot afford transaction fee");
         }
     }
-}
+}}
 
 #endif // YX_NATIVE_TOKEN_HPP

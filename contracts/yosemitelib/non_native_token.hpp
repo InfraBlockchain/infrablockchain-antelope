@@ -9,7 +9,7 @@
 #include <eosiolib/eosio.hpp>
 #include <string>
 
-namespace yosemite {
+namespace yosemite { namespace non_native_token {
 
     using namespace eosio;
     using std::string;
@@ -102,4 +102,4 @@ namespace yosemite {
     }
 
     } //namespace ytoken
-}
+}}

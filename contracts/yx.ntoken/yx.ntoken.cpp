@@ -5,18 +5,18 @@
 #include <yosemitelib/system_depository.hpp>
 #include <yosemitelib/transaction_vote.h>
 
-namespace yosemite {
+namespace yosemite { namespace native_token {
 
     bool ntoken::check_identity_auth_for_transfer(account_name account, const ntoken_kyc_rule_type &kycrule_type) {
-        eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+        eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
                      "account is blacklisted by identity authority");
         switch (kycrule_type) {
             case NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND:
-                eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND)),
+                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND)),
                              "account is send-blacklisted by identity authority");
                 break;
             case NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE:
-                eosio_assert(static_cast<uint32_t>(!has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE)),
+                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE)),
                              "account is receive-blacklisted by identity authority");
                 break;
             case NTOKEN_KYC_RULE_TYPE_MAX:
@@ -27,7 +27,7 @@ namespace yosemite {
         kyc_rule_index kyc_rule(get_self(), get_self());
         const auto &rule = kyc_rule.get(kycrule_type, "KYC rule is not set; use setkycrule operation to set");
 
-        return has_all_kyc_status(account, rule.kyc_flags);
+        return identity::has_all_kyc_status(account, rule.kyc_flags);
     }
 
     void ntoken::nissue(const account_name &to, const yx_asset &token, const string &memo) {
@@ -60,9 +60,9 @@ namespace yosemite {
         add_native_token_balance(token.issuer, token);
 
         if (to != token.issuer) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
+            INLINE_ACTION_SENDER(ntoken, ntransfer)
                     (get_self(), {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     { token.issuer, to, token, memo });
+                     {token.issuer, to, token, memo});
         }
 
         charge_transaction_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_ISSUE);
@@ -71,7 +71,8 @@ namespace yosemite {
     void ntoken::nredeem(const yx_asset &token, const string &memo) {
         eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
         eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
-        eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL), "cannot redeem non-native token with this operation or wrong precision is specified");
+        eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
+                     "cannot redeem non-native token with this operation or wrong precision is specified");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(token.issuer);
@@ -80,7 +81,8 @@ namespace yosemite {
 
         stats_native stats(get_self(), token.issuer);
         const auto &tstats = stats.get(NTOKEN_BASIC_STATS_KEY, "createn for the issuer is not called");
-        eosio_assert(static_cast<uint32_t>(tstats.supply >= token.amount), "insufficient supply of the native token of the specified depository");
+        eosio_assert(static_cast<uint32_t>(tstats.supply >= token.amount),
+                     "insufficient supply of the native token of the specified depository");
 
         stats.modify(tstats, 0, [&](auto &s) {
             s.supply -= token.amount;
@@ -135,13 +137,13 @@ namespace yosemite {
             }
 
             if (from == payer) {
-                INLINE_ACTION_SENDER(yosemite::ntoken, ntransfer)
+                INLINE_ACTION_SENDER(ntoken, ntransfer)
                         (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         { from, to, {to_balance, native_token_symbol}, memo });
+                         {from, to, {to_balance, native_token_symbol}, memo});
             } else {
-                INLINE_ACTION_SENDER(yosemite::ntoken, wpntransfer)
+                INLINE_ACTION_SENDER(ntoken, wpntransfer)
                         (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         { from, to, {to_balance, native_token_symbol}, payer, memo });
+                         {from, to, {to_balance, native_token_symbol}, payer, memo});
             }
 
             if (amount.amount == 0) {
@@ -220,7 +222,8 @@ namespace yosemite {
         } else {
             accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
                 holder.amount += token.amount;
-                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount),
+                             "token amount cannot be more than 2^62 - 1");
             });
         }
 
@@ -233,7 +236,8 @@ namespace yosemite {
         } else {
             accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
                 tot_holder.amount += token.amount;
-                eosio_assert(static_cast<uint32_t>(tot_holder.amount > 0 && tot_holder.amount <= asset::max_amount), "token amount cannot be more than 2^62 - 1");
+                eosio_assert(static_cast<uint32_t>(tot_holder.amount > 0 && tot_holder.amount <= asset::max_amount),
+                             "token amount cannot be more than 2^62 - 1");
             });
         }
     }
@@ -267,7 +271,6 @@ namespace yosemite {
 
     void ntoken::setkycrule(uint8_t type, uint16_t kyc) {
         eosio_assert(static_cast<uint32_t>(type < NTOKEN_KYC_RULE_TYPE_MAX), "invalid type");
-//        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
         require_auth(YOSEMITE_SYSTEM_ACCOUNT);
 
         kyc_rule_index kyc_rule(get_self(), get_self());
@@ -284,9 +287,8 @@ namespace yosemite {
             });
         }
     }
+}} // namespace native_token yosemite
 
-}
-
-EOSIO_ABI(yosemite::ntoken, (nissue)(nredeem)(transfer)(wptransfer)(ntransfer)(wpntransfer)
-                            (payfee)(setkycrule)
+EOSIO_ABI(yosemite::native_token::ntoken, (nissue)(nredeem)(transfer)(wptransfer)(ntransfer)(wpntransfer)
+                                          (payfee)(setkycrule)
 )

@@ -46,7 +46,7 @@ namespace yosemite {
             i.options = options;
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE);
     }
 
     void digital_contract::addsigners(const dcid &dc_id, const vector<account_name> &signers) {
@@ -65,7 +65,7 @@ namespace yosemite {
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS);
     }
 
     void digital_contract::sign(const dcid &dc_id, account_name signer, const string &signerinfo) {
@@ -95,7 +95,7 @@ namespace yosemite {
             i.signerinfo = signerinfo;
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
     }
 
     void digital_contract::upadddochash(const dcid &dc_id, const string &adddochash) {
@@ -111,7 +111,7 @@ namespace yosemite {
             i.adddochash = adddochash;
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH);
     }
 
     void digital_contract::remove(const dcid &dc_id) {
@@ -131,7 +131,7 @@ namespace yosemite {
 
         dcontract_idx.erase(info);
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE);
     }
 }
 
