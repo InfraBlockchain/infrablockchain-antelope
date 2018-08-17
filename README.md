@@ -27,10 +27,17 @@ YOSEMITE is released under the open source MIT license and is offered â€œAS ISâ€
 6. Ubuntu 18.04
 7. MacOS Darwin 10.12 and higher (MacOS 10.13.x recommended)
 
+## Integrated Services
+1. [Native Token](contracts/yx.ntoken/README.md)
+1. [Non-native or User Tokens](contracts/yx.token/README.md)
+1. [Account Management and KYC](contracts/yx.identity/README.md)
+1. [Digital Contract Signining Service](contracts/yx.dcontract/README.md)
+
 ## Resources
 1. [Website](https://yosemitex.com)
 1. [White Paper](https://yosemitex.com/documents/YOSEMITE_Blockchain_Technical_White_Paper_201802a.pdf)
 <!-- 1. [Roadmap](https://github.com/EOSIO/Documentation/blob/master/Roadmap.md) -->
+1. [Java SDK](https://github.com/YosemiteLabs/yosemite-j)
 
 <!--
 <a name="gettingstarted"></a>
