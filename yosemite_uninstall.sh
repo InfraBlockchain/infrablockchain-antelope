@@ -29,7 +29,7 @@
 ############################################################################################
 
 binaries=(clyos
-          yos-wallet
+          keyos
           yosemite)
 
 if [ -d "/usr/local/yosemite" ]; then
