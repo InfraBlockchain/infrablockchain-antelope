@@ -6,6 +6,7 @@
 #include <fc/exception/exception.hpp>
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/core_symbol.hpp>
+#include <yosemite/chain/native_token_symbol.hpp>
 #include <string>
 #include <functional>
 

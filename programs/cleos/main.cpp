@@ -662,7 +662,7 @@ asset to_asset( const string& code, const string& s ) {
 }
 
 inline asset to_asset( const string& s ) {
-   return to_asset( "yx.token", s );
+   return to_asset( "yx.ntoken", s );
 }
 
 struct set_account_permission_subcommand {
@@ -1543,6 +1543,7 @@ void get_account( const string& accountName, bool json_format ) {
       std::cout << "memory: " << std::endl
                 << indent << "quota: " << std::setw(15) << to_pretty_net(res.ram_quota) << "  used: " << std::setw(15) << to_pretty_net(res.ram_usage) << std::endl << std::endl;
 
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
       std::cout << "net bandwidth: " << std::endl;
       if ( res.total_resources.is_object() ) {
          auto net_total = to_asset(res.total_resources.get_object()["net_weight"].as_string());
@@ -1665,16 +1666,19 @@ void get_account( const string& accountName, bool json_format ) {
             std::cout << std::endl;
          }
       }
+#endif
 
       if( res.core_liquid_balance.valid() ) {
          std::cout << res.core_liquid_balance->get_symbol().name() << " balances: " << std::endl;
          std::cout << indent << std::left << std::setw(11)
                    << "liquid:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
          std::cout << indent << std::left << std::setw(11)
                    << "staked:" << std::right << std::setw(18) << staked << std::endl;
          std::cout << indent << std::left << std::setw(11)
                    << "unstaking:" << std::right << std::setw(18) << unstaking << std::endl;
          std::cout << indent << std::left << std::setw(11) << "total:" << std::right << std::setw(18) << (*res.core_liquid_balance + staked + unstaking) << std::endl;
+#endif
          std::cout << std::endl;
       }
 

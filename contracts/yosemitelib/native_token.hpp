@@ -7,8 +7,9 @@
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/yx_asset.hpp>
 
-namespace yosemite {
+/* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
 
+namespace yosemite {
     static const uint64_t NTOKEN_TOTAL_BALANCE_KEY = N(totalbal);
 
     using namespace eosio;
