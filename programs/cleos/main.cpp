@@ -1669,15 +1669,18 @@ void get_account( const string& accountName, bool json_format ) {
 #endif
 
       if( res.core_liquid_balance.valid() ) {
-         std::cout << res.core_liquid_balance->get_symbol().name() << " balances: " << std::endl;
+         std::cout << "native token balances:" << std::endl;
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
          std::cout << indent << std::left << std::setw(11)
                    << "liquid:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
          std::cout << indent << std::left << std::setw(11)
                    << "staked:" << std::right << std::setw(18) << staked << std::endl;
          std::cout << indent << std::left << std::setw(11)
                    << "unstaking:" << std::right << std::setw(18) << unstaking << std::endl;
          std::cout << indent << std::left << std::setw(11) << "total:" << std::right << std::setw(18) << (*res.core_liquid_balance + staked + unstaking) << std::endl;
+#else
+         std::cout << indent << std::left << std::setw(11)
+                   << "total:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
 #endif
          std::cout << std::endl;
       }
