@@ -2,12 +2,15 @@
 
 <!-- [![Build status](https://badge.buildkite.com/370fe5c79410f7d695e4e34c500b4e86e3ac021c6b1f739e20.svg?branch=master)](https://buildkite.com/EOSIO/eosio) -->
 
-Welcome to the YOSEMITE source code repository! This software enables governments and companies to utilize the advantages of blockchain and conduct sustainable policies and businesses.
-YOSEMITE is powered by EOSIO software to get low latency block confirmation and BFT finality.
+Using a volatile native crypto-currency causes a great hindrance in running a business. YOSEMITE resolves that problem by using tokens that have their values pegged to government-approved fiat money. Those fiat-pegged stable coins (e.g. USD-pegged dUSD token) are issued by trust entities (Depositories) as the underlying token of the blockchain. We call it native token.
 
-Othern than EOSIO features, some of the novel features of YOSEMITE include:
+YOSEMITE's unique Proof-of-Transaction(PoT) consensus algorithm, which allows only the direct contributors to the blockchain to create blocks and get rewarded, can address the fundamental problems in PoW, PoS consensus algorithms and sustain a fair and reasonable operation.
 
-1. Uses real money (e.g. USD, EUR, CNY) as the native token for transaction fee
+Finally, governments and companies globally have a capable underlying system to utilize the advantages of blockchain and conduct sustainable policies and businesses.
+
+YOSEMITE is powered by EOSIO software to get low latency block confirmation and BFT finality. Other than EOSIO features, some of the novel features of YOSEMITE include:
+
+1. Uses real money (e.g. USD, EUR, CNY) as the native token for transaction fee : [README](contracts/yx.ntoken/README.md)
 1. KYC/AML Compliant Blockchain
 1. Proof-of-Transaction & Transaction-as-a-Vote (will be provided)
 1. Embedded Decentralized Exchange (will be provided)
