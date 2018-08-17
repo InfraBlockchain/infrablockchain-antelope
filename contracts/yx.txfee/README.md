@@ -9,14 +9,14 @@ Environment Var.
 ---
 
 ```bash
-YOSEMITE_CLEOS=$YOSEMITE_HOME/build/programs/cleos/cleos
+YOSEMITE_CLYOS=$YOSEMITE_HOME/build/programs/clyos/clyos
 YOSEMITE_CONTRACTS_DIR=$YOSEMITE_HOME/build/contracts
 ```
 
 Install Transaction Fee System Contract
 ---
 ```bash
-$YOSEMITE_CLEOS set contract yx.txfee $YOSEMITE_CONTRACTS_DIR/yx.txfee/ -p yx.txfee@active
+$YOSEMITE_CLYOS set contract yx.txfee $YOSEMITE_CONTRACTS_DIR/yx.txfee/ -p yx.txfee@active
 ```
 
 YOSEMITE Transaction Fee Operation Names
@@ -62,31 +62,31 @@ Transaction fees can be updated by the active block producers
 
 ```bash
 // yx.system
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.newacc", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.regprod", "3000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.regidauth", "2000000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.newacc", "1000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regprod", "3000000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regidauth", "2000000.0000 DKRW" ]' -p yosemite@active
 
 // yx.ntoken
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.nissue", "0.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.nredeem", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.transfer", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.ntransfer", "200.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nissue", "0.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nredeem", "1000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.transfer", "100.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.ntransfer", "200.0000 DKRW" ]' -p yosemite@active
 
 // yx.token
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.tcreate", "10000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.tissue", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.tredeem", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.ttransfer", "100.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tcreate", "10000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tissue", "500.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tredeem", "500.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.ttransfer", "100.0000 DKRW" ]' -p yosemite@active
 
 // yx.dcontract
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.dccreate", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.dcaddsign", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.dcsign", "300.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.dcupadd", "50.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLEOS push action yx.txfee settxfee '[ "tf.dcremove", "0.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dccreate", "500.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcaddsign", "100.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcsign", "300.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcupadd", "50.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcremove", "0.0000 DKRW" ]' -p yosemite@active
 
-$YOSEMITE_CLEOS get table -l 100 yx.txfee yx.txfee txfees
+$YOSEMITE_CLYOS get table -l 100 yx.txfee yx.txfee txfees
 {
   "rows": [{
       "operation": "tf.dcaddsign",
@@ -115,7 +115,7 @@ Querying the accumulated native token amount in the Transaction Fee Profit Pool
 ---
 
 ```bash
-$YOSEMITE_CLEOS get table yx.ntoken yx.txfee ntaccounts
+$YOSEMITE_CLYOS get table yx.ntoken yx.txfee ntaccounts
 {
   "rows": [{
       "depository": "sysdepo1",
