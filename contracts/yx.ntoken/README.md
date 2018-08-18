@@ -296,11 +296,15 @@ clyos get table yx.ntoken user1 ntaccounts
 ```
 {
   "rows": [{
-      "depository": "d1",
-      "amount": 500000000
+      "token": {
+        "amount": "50000.0000 DKRW",
+        "issuer": "d1"
+      }
     },{
-      "depository": "d2",
-      "amount": 10000000
+      "token": {
+        "amount": "1000.0000 DKRW",
+        "issuer": "d2"
+      }
     }
   ],
   "more": false
@@ -317,7 +321,7 @@ clyos get table yx.ntoken user1 ntaccountstt
 ```
 {
   "rows": [{
-      "amount": 510000000
+      "amount": 51000.0000 DKRW
     }
   ],
   "more": false

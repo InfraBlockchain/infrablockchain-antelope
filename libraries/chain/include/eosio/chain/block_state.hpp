@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include <eosio/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <eosio/chain/block_header_state.hpp>
 #include <eosio/chain/block.hpp>
 #include <eosio/chain/transaction_metadata.hpp>

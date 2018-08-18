@@ -40,7 +40,7 @@ namespace eosio { namespace chain {
 
          try {
             transaction_vote.candidate = fc::raw::unpack<yosemite_core::transaction_vote_candidate_name_type>(tx_ext_item.second);
-         } EOS_RETHROW_EXCEPTIONS(invalid_trx_vote_target_account, "Invalid transaction vote candidate account name");
+         } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote candidate account name");
       }
    }
 

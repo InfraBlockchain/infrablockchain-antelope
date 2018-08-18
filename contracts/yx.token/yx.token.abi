@@ -100,8 +100,7 @@
       "base": "",
       "fields": [
         {"name":"id", "type":"uint64"},
-        {"name":"yx_symbol_serialized", "type":"uint128"},
-        {"name":"amount", "type":"int64"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"options", "type":"uint16"}
       ]
     },
@@ -129,13 +128,13 @@
     { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }
   ],
   "tables": [{
-      "name": "taccounts",
+      "name": "accounts",
       "type": "accounts_type",
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
     },{
-      "name": "tstats",
+      "name": "stat",
       "type": "stats_type",
       "index_type": "i64",
       "key_names" : ["issuer"],

@@ -6,7 +6,7 @@
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/contract_table_objects.hpp>
-#include <eosio/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <fc/utility.hpp>
 #include <sstream>
 #include <algorithm>

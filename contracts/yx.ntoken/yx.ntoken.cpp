@@ -123,17 +123,17 @@ namespace yosemite { namespace native_token {
 
         accounts_native accounts_table_native(get_self(), from);
         for (auto &balance_holder : accounts_table_native) {
-            yx_symbol native_token_symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL, balance_holder.depository};
+            yx_symbol native_token_symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL, balance_holder.token.issuer};
 
             int64_t to_balance = 0;
-            if (balance_holder.amount <= amount.amount) {
-                to_balance = balance_holder.amount;
+            if (balance_holder.token.amount <= amount.amount) {
+                to_balance = balance_holder.token.amount;
                 amount.amount -= to_balance;
-                zeroedout_depos.push_back(balance_holder.depository);
+                zeroedout_depos.push_back(balance_holder.token.issuer);
             } else {
                 to_balance = amount.amount;
                 amount.amount = 0;
-                remained_ntoken = yx_asset{balance_holder.amount - to_balance, native_token_symbol};
+                remained_ntoken = yx_asset{balance_holder.token.amount - to_balance, native_token_symbol};
             }
 
             if (from == payer) {
@@ -166,7 +166,7 @@ namespace yosemite { namespace native_token {
         bool called_by_system_contract = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
         if (!called_by_system_contract) {
             eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
-            eosio_assert(static_cast<uint32_t>(token.amount > 0), "must transfer positive token");
+            eosio_assert(static_cast<uint32_t>(token.amount > 0), "negative token is not allowed");
             eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
                          "cannot transfer non-native token with this operation or wrong precision is specified");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
@@ -216,13 +216,12 @@ namespace yosemite { namespace native_token {
 
         if (native_holder == accounts_table_native.end()) {
             accounts_table_native.emplace(get_self(), [&](auto &holder) {
-                holder.depository = token.issuer;
-                holder.amount = token.amount;
+                holder.token = token;
             });
         } else {
             accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-                holder.amount += token.amount;
-                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount),
+                holder.token += token;
+                eosio_assert(static_cast<uint32_t>(holder.token.amount > 0 && holder.token.amount <= asset::max_amount),
                              "token amount cannot be more than 2^62 - 1");
             });
         }
@@ -231,12 +230,13 @@ namespace yosemite { namespace native_token {
         const auto &total_holder = accounts_table_total.find(NTOKEN_TOTAL_BALANCE_KEY);
         if (total_holder == accounts_table_total.end()) {
             accounts_table_total.emplace(get_self(), [&](auto &tot_holder) {
-                tot_holder.amount = token.amount;
+                tot_holder.amount.amount = token.amount;
+                tot_holder.amount.symbol = token.symbol;
             });
         } else {
             accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
-                tot_holder.amount += token.amount;
-                eosio_assert(static_cast<uint32_t>(tot_holder.amount > 0 && tot_holder.amount <= asset::max_amount),
+                tot_holder.amount.amount += token.amount;
+                eosio_assert(static_cast<uint32_t>(tot_holder.amount.amount > 0 && tot_holder.amount.amount <= asset::max_amount),
                              "token amount cannot be more than 2^62 - 1");
             });
         }
@@ -245,12 +245,12 @@ namespace yosemite { namespace native_token {
     void ntoken::sub_native_token_balance(const account_name &owner, const yx_asset &token) {
         accounts_native accounts_table_native(get_self(), owner);
         const auto &native_holder = accounts_table_native.get(token.issuer, "account doesn't have native token of the specified depository");
-        eosio_assert(static_cast<uint32_t>(native_holder.amount >= token.amount), "insufficient native token of the specified depository");
+        eosio_assert(static_cast<uint32_t>(native_holder.token.amount >= token.amount), "insufficient native token of the specified depository");
 
         bool erase;
         accounts_table_native.modify(native_holder, 0, [&](auto &holder) {
-            holder.amount -= token.amount;
-            erase = holder.amount == 0;
+            holder.token -= token;
+            erase = holder.token.amount == 0;
         });
         if (erase) {
             accounts_table_native.erase(native_holder);
@@ -258,11 +258,11 @@ namespace yosemite { namespace native_token {
 
         accounts_native_total accounts_table_total(get_self(), owner);
         const auto &total_holder = accounts_table_total.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
-        eosio_assert(static_cast<uint32_t>(total_holder.amount >= token.amount), "insufficient total native token");
+        eosio_assert(static_cast<uint32_t>(total_holder.amount.amount >= token.amount), "insufficient total native token");
 
         accounts_table_total.modify(total_holder, 0, [&](auto &tot_holder) {
-            tot_holder.amount -= token.amount;
-            erase = tot_holder.amount == 0;
+            tot_holder.amount.amount -= token.amount;
+            erase = tot_holder.amount.amount == 0;
         });
         if (erase) {
             accounts_table_total.erase(total_holder);

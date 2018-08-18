@@ -42,7 +42,7 @@ namespace yosemite { namespace non_native_token {
         uint64_t primary_key() const { return issuer; }
     };
 
-    typedef eosio::multi_index<N(tstats), token_stats> stats;
+    typedef eosio::multi_index<N(stat), token_stats> stats;
 
     class token : public contract {
     public:
@@ -64,13 +64,11 @@ namespace yosemite { namespace non_native_token {
         /* scope = owner */
         struct balance_holder {
             uint64_t id = 0;
-            uint128_t yx_symbol_s{}; // yx_symbol which is serialized to 128 bit;
-            // eosio::symbol_type::value is higher 64 bit and issuer account is lower 64 bit.
-            int64_t amount = 0;
+            yx_asset token;
             uint16_t options = TOKEN_ACCOUNT_OPTIONS_NONE;
 
             uint64_t primary_key() const { return id; }
-            uint128_t by_yx_symbol_s() const { return yx_symbol_s; }
+            uint128_t by_yx_symbol() const { return token.get_yx_symbol().to_uint128(); }
         };
 
         /* KYC rule for token */
@@ -81,8 +79,8 @@ namespace yosemite { namespace non_native_token {
             TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
         };
 
-        typedef eosio::multi_index<N(taccounts), balance_holder,
-                indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol_s> >
+        typedef eosio::multi_index<N(accounts), balance_holder,
+                indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol> >
         > accounts;
 
         void add_token_balance(const account_name &owner, const yx_asset &token);
@@ -91,8 +89,6 @@ namespace yosemite { namespace non_native_token {
                                               const token_stats &tstats);
     };
 
-    namespace ytoken {
-
     bool does_token_exist(const yx_symbol &ysymbol) {
         eosio_assert(static_cast<uint32_t>(!ysymbol.is_native()), "native token is not allowed for this API");
 
@@ -100,6 +96,4 @@ namespace yosemite { namespace non_native_token {
         const auto &tstats = stats_table.find(ysymbol.issuer);
         return tstats != stats_table.end();
     }
-
-    } //namespace ytoken
 }}

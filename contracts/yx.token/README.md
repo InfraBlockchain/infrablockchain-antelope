@@ -179,13 +179,13 @@ clyos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"
 
 # Tables
 
-## tstats
+## stat
 Get the token statistics
 ```
-clyos get table yx.token 4,BTC tstats
+clyos get table yx.token 4,BTC stat
 ```
 
-### results of tstats
+### results of stat
 ```
 {
   "rows": [{
@@ -200,23 +200,24 @@ clyos get table yx.token 4,BTC tstats
 }
 ```
 
-## taccounts
+## accounts
 Get all the token balances of the user
 ```
-clyos get table yx.token user1 taccounts
+clyos get table yx.token user2 accounts
 ```
 
-### results of taccounts
+### results of accounts
 1. id : This is just for internal managing purpose. 
-1. yx_symbol_serialized : 128-bit integers which is combined with the EOS.IO symbol value and the issuer
-   * | eosio::symbol value(64-bit integer) | issuer (64-bit integer) |
+1. token : yx_asset type which are token amount and issuer
 1. amount : balance of the account
 ```
 {
   "rows": [{
       "id": 0,
-      "yx_symbol_serialized": "0x00000000000080480654455354000000",
-      "amount": "1000000000",
+      "token": {
+        "amount": "10000.0000 BTC",
+        "issuer": "d2"
+      },
       "options": 0
     }
   ],

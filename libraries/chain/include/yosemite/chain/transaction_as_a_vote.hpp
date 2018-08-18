@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 #include <eosio/chain/name.hpp>
-#include <eosio/chain/exceptions.hpp>
+#include <yosemite/chain/exceptions.hpp>
 #include <fc/reflect/reflect.hpp>
 
 #define YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD 1001

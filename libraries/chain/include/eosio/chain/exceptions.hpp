@@ -194,9 +194,6 @@ namespace eosio { namespace chain {
       FC_DECLARE_DERIVED_EXCEPTION( unknown_transaction_compression, transaction_exception,
                                     3040014, "Unknown transaction compression" )
 
-      FC_DECLARE_DERIVED_EXCEPTION( invalid_trx_vote_target_account, transaction_exception,
-                                    3041001, "Invalid Transaction-Vote Target Account Data" )
-
 
    FC_DECLARE_DERIVED_EXCEPTION( action_validate_exception, chain_exception,
                                  3050000, "Action validate exception" )

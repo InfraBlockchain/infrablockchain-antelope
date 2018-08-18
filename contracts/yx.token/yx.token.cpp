@@ -126,16 +126,15 @@ namespace yosemite { namespace non_native_token {
         if (balance_holder == sym_index.end()) {
             accounts_table.emplace(get_self(), [&](auto &holder) {
                 holder.id = accounts_table.available_primary_key();
-                holder.yx_symbol_s = yx_symbol_s;
-                holder.amount = token.amount;
+                holder.token = token;
             });
         } else {
             eosio_assert(static_cast<uint32_t>((balance_holder->options & TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT) != TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT),
                     "account is frozen by token issuer");
 
             sym_index.modify(balance_holder, 0, [&](auto &holder) {
-                holder.amount += token.amount;
-                eosio_assert(static_cast<uint32_t>(holder.amount > 0 && holder.amount <= asset::max_amount),
+                holder.token += token;
+                eosio_assert(static_cast<uint32_t>(holder.token.amount > 0 && holder.token.amount <= asset::max_amount),
                              "token amount cannot be more than 2^62 - 1");
             });
         }
@@ -148,14 +147,14 @@ namespace yosemite { namespace non_native_token {
         const auto &balance_holder = sym_index.find(yx_symbol_s);
 
         eosio_assert(static_cast<uint32_t>(balance_holder != sym_index.end()), "account doesn't have token");
-        eosio_assert(static_cast<uint32_t>(balance_holder->amount >= token.amount), "insufficient token balance");
+        eosio_assert(static_cast<uint32_t>(balance_holder->token >= token), "insufficient token balance");
         eosio_assert(static_cast<uint32_t>((balance_holder->options & TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT) != TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT),
                 "account is frozen by token issuer");
 
         bool erase;
         sym_index.modify(balance_holder, 0, [&](auto &holder) {
-            holder.amount -= token.amount;
-            erase = holder.amount == 0;
+            holder.token -= token;
+            erase = holder.token.amount == 0;
         });
         if (erase) {
             sym_index.erase(balance_holder);
@@ -168,7 +167,6 @@ namespace yosemite { namespace non_native_token {
 
     void token::setkycrule(const yx_symbol &ysymbol, uint8_t type, uint16_t kyc) {
         eosio_assert(static_cast<uint32_t>(type < TOKEN_KYC_RULE_TYPE_MAX), "invalid type");
-//        eosio_assert(static_cast<uint32_t>(is_valid_kyc_status(kyc)), "invalid kyc flags");
         require_auth(ysymbol.issuer);
 
         stats stats_table(get_self(), ysymbol.value);

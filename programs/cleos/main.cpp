@@ -91,7 +91,7 @@ Options:
 #include <eosio/chain/trace.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/chain/contract_types.hpp>
-#include <eosio/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -310,7 +310,8 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
                   std::make_pair(YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD,
                           fc::raw::pack(tx_vote_account_name)));
       }
-   } EOS_RETHROW_EXCEPTIONS(invalid_trx_vote_target_account, "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
+   } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account,
+         "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
 
    if (!tx_skip_sign) {
       auto required_keys = determine_required_keys(trx);
