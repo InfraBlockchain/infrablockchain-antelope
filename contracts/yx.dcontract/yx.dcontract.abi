@@ -76,7 +76,7 @@
       "base": "",
       "fields": [
         {"name":"id", "type":"uint64"},
-        {"name":"dcid_serialized", "type":"uint128"},
+        {"name":"dcid", "type":"dcid"},
         {"name":"signerinfo", "type":"string"}
       ]
     }

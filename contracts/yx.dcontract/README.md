@@ -171,15 +171,17 @@ clyos get table yx.dcontract user2 signers
 ```
 ### result of signers
 1. id : This is just for internal managing purpose. 
-1. dcid_serialized : 128-bit integers which is combined with the creator of the digital contract and the sequence
-   * | the creator(64-bit integer) | sequence (64-bit integer) |
+1. dcid : digital contract id type which are creator and sequence
 1. signerinfo : additional information string for the signer saved by the sign action
 ```
 $ clyos get table yx.dcontract user1 signers
 {
   "rows": [{
       "id": 0,
-      "dcid_serialized": "0x01000000000000007055729bdebaafc2",
+      "dcid": {
+        "creator": "servprovider",
+        "sequence": 1
+      },
       "signerinfo": ""
     }
   ],
@@ -190,8 +192,11 @@ $ clyos get table yx.dcontract user2 signers
 {
   "rows": [{
       "id": 0,
-      "dcid_serialized": "0x01000000000000007055729bdebaafc2",
-      "signerinfo": "I am user2"
+      "dcid": {
+        "creator": "servprovider",
+        "sequence": 1
+      },
+      "signerinfo": "foo"
     }
   ],
   "more": false

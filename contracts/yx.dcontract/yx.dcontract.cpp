@@ -91,7 +91,7 @@ namespace yosemite {
         dcontract_signer_index dc_signer_index{get_self(), signer};
         dc_signer_index.emplace(get_self(), [&](auto &i) {
             i.id = dc_signer_index.available_primary_key();
-            i.dc_id_s = dc_id.to_uint128();
+            i.dc_id = dc_id;
             i.signerinfo = signerinfo;
         });
 

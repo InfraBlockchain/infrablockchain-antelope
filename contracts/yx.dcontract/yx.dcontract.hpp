@@ -65,11 +65,11 @@ namespace yosemite {
     /* scope = signer */
     struct dcontract_signer_info {
         uint64_t id = 0; // just primary key
-        uint128_t dc_id_s{}; // dc_id which is serialized to 128 bit
+        dcid dc_id{};
         string signerinfo{};
 
         uint64_t primary_key() const { return id; }
-        uint128_t by_dc_id_s() const { return dc_id_s; }
+        uint128_t by_dc_id_s() const { return dc_id.to_uint128(); }
     };
 
     typedef eosio::multi_index<N(dcontracts), dcontract_info> dcontract_index;

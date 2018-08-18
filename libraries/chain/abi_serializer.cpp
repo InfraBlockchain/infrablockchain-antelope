@@ -12,6 +12,7 @@
 #include <fc/io/raw.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <fc/io/varint.hpp>
+#include <yosemite/chain/digital_contract.hpp>
 #include <yosemite/chain/yx_symbol.hpp>
 #include <yosemite/chain/yx_asset.hpp>
 
@@ -105,6 +106,7 @@ namespace eosio { namespace chain {
       built_in_types.emplace("extended_asset",            pack_unpack<extended_asset>());
       built_in_types.emplace("yx_symbol",                 pack_unpack<yosemite::chain::yx_symbol>());
       built_in_types.emplace("yx_asset",                  pack_unpack<yosemite::chain::yx_asset>());
+      built_in_types.emplace("dcid",                      pack_unpack<yosemite::chain::dcid>());
    }
 
    void abi_serializer::set_abi(const abi_def& abi, const fc::microseconds& max_serialization_time) {
