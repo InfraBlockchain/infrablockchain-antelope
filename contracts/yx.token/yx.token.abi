@@ -128,13 +128,13 @@
     { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }
   ],
   "tables": [{
-      "name": "accounts",
+      "name": "taccounts",
       "type": "accounts_type",
       "index_type": "i64",
       "key_names" : ["id"],
       "key_types" : ["uint64"]
     },{
-      "name": "stat",
+      "name": "tstats",
       "type": "stats_type",
       "index_type": "i64",
       "key_names" : ["issuer"],

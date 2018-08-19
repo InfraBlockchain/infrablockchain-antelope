@@ -179,13 +179,13 @@ clyos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"
 
 # Tables
 
-## stat
+## tstats
 Get the token statistics
 ```
-clyos get table yx.token 4,BTC stat
+clyos get table yx.token 4,BTC tstats
 ```
 
-### results of stat
+### results of tstats
 ```
 {
   "rows": [{
@@ -200,13 +200,13 @@ clyos get table yx.token 4,BTC stat
 }
 ```
 
-## accounts
+## taccounts
 Get all the token balances of the user
 ```
-clyos get table yx.token user2 accounts
+clyos get table yx.token user2 taccounts
 ```
 
-### results of accounts
+### results of taccounts
 1. id : This is just for internal managing purpose. 
 1. token : yx_asset type which are token amount and issuer
 1. amount : balance of the account
@@ -230,5 +230,5 @@ clyos get table yx.token user2 accounts
    * | the symbol(64-bit integer) | issuer (64-bit integer) |
    * Web Assembly VM follows little endian.
 ```
-clyos get table yx.token user2 accounts --index 2 --key-type i128 -L 0x00000000000080480654455354000000 -l 1
+clyos get table yx.token user2 taccounts --index 2 --key-type i128 -L 0x00000000000080480654455354000000 -l 1
 ```

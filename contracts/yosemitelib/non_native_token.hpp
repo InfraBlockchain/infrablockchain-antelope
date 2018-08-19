@@ -42,7 +42,7 @@ namespace yosemite { namespace non_native_token {
         uint64_t primary_key() const { return issuer; }
     };
 
-    typedef eosio::multi_index<N(stat), token_stats> stats;
+    typedef eosio::multi_index<N(tstats), token_stats> stats;
 
     class token : public contract {
     public:
@@ -79,7 +79,7 @@ namespace yosemite { namespace non_native_token {
             TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
         };
 
-        typedef eosio::multi_index<N(accounts), balance_holder,
+        typedef eosio::multi_index<N(taccounts), balance_holder,
                 indexed_by<N(yxsymbol), const_mem_fun<balance_holder, uint128_t, &balance_holder::by_yx_symbol> >
         > accounts;
 
