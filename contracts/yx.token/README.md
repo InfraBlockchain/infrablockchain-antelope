@@ -224,3 +224,11 @@ clyos get table yx.token user2 accounts
   "more": false
 }
 ```
+
+### get the specific token balance of the user
+* The value of -L is `yx_symbol_serialized`; 128-bit integers which is combined with the symbol and the issuer.
+   * | the symbol(64-bit integer) | issuer (64-bit integer) |
+   * Web Assembly VM follows little endian.
+```
+clyos get table yx.token user2 accounts --index 2 --key-type i128 -L 0x00000000000080480654455354000000 -l 1
+```

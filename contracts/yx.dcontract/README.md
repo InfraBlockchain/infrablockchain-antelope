@@ -204,7 +204,9 @@ $ clyos get table yx.dcontract user2 signers
 ```
 
 ## get the signer information by dcid
-
+* The value of -L is `dcid_serialized`; 128-bit integers which is combined with the creator of the digital contract and the sequence.
+   * | the creator(64-bit integer) | sequence (64-bit integer) |
+   * Web Assembly VM follows little endian.
 ```
 clyos get table yx.dcontract user2 signers --index 2 --key-type i128 -L 0x01000000000000007055729bdebaafc2 -l 1
 ```
