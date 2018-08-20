@@ -82,7 +82,7 @@ Issue native token to an account by the system depository
 * d1 must be the system depository registered and authroized by [yx.system](../../contracts/yx.system/).
 * In this example, 4,DKRW is the native token.
 ```
-$ clyos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0000 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
+clyos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0000 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
 ```
 
 ### parameters of nissue
