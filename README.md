@@ -37,7 +37,7 @@ YOSEMITE is released under the open source MIT license and is offered â€œAS ISâ€
 1. [Website](https://yosemitex.com)
 1. [White Paper](https://yosemitex.com/documents/YOSEMITE_Blockchain_Technical_White_Paper_201802a.pdf)
 1. [Java SDK](https://github.com/YosemiteLabs/yosemite-j)
-<!-- 1. [Roadmap](https://github.com/EOSIO/Documentation/blob/master/Roadmap.md) -->
+1. [Roadmap](roadmap.md)
 
 <!--
 <a name="gettingstarted"></a>
