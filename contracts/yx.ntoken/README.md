@@ -277,7 +277,7 @@ clyos get table yx.ntoken d1 ntstats
 {
   "rows": [{
       "key": "basicstats",
-      "supply": "35169900000",
+      "supply": "3516990.0000 DKRW",
       "options": 0
     }
   ],

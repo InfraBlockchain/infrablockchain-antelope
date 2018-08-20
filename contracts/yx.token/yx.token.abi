@@ -109,7 +109,7 @@
       "base": "",
       "fields": [
         {"name":"issuer", "type":"account_name"},
-        {"name":"supply", "type":"uint64"},
+        {"name":"supply", "type":"asset"},
         {"name":"can_set_options", "type":"uint16"},
         {"name":"options", "type":"uint16"},
         {"name":"kyc_rule_types", "type":"uint8[]"},

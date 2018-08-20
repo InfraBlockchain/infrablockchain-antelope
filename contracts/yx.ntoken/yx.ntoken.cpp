@@ -47,12 +47,12 @@ namespace yosemite { namespace native_token {
         if (tstats == stats.end()) {
             stats.emplace(get_self(), [&](auto &s) {
                 s.key = NTOKEN_BASIC_STATS_KEY;
-                s.supply = token.amount;
+                s.supply = asset{token.amount, YOSEMITE_NATIVE_TOKEN_SYMBOL};
             });
         } else {
             stats.modify(tstats, 0, [&](auto &s) {
-                s.supply += token.amount;
-                eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount),
+                s.supply.amount += token.amount;
+                eosio_assert(static_cast<uint32_t>(s.supply.amount > 0 && s.supply.amount <= asset::max_amount),
                              "cannot issue token more than 2^62 - 1");
             });
         }
@@ -81,11 +81,11 @@ namespace yosemite { namespace native_token {
 
         stats_native stats(get_self(), token.issuer);
         const auto &tstats = stats.get(NTOKEN_BASIC_STATS_KEY, "createn for the issuer is not called");
-        eosio_assert(static_cast<uint32_t>(tstats.supply >= token.amount),
+        eosio_assert(static_cast<uint32_t>(tstats.supply.amount >= token.amount),
                      "insufficient supply of the native token of the specified depository");
 
         stats.modify(tstats, 0, [&](auto &s) {
-            s.supply -= token.amount;
+            s.supply.amount -= token.amount;
         });
 
         sub_native_token_balance(token.issuer, token);

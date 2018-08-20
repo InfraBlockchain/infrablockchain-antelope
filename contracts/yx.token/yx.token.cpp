@@ -20,6 +20,7 @@ namespace yosemite { namespace non_native_token {
 
         stats_table.emplace(get_self(), [&](auto &s) {
             s.issuer = ysymbol.issuer;
+            s.supply = asset{0, ysymbol.value};
             s.can_set_options = can_set_options;
         });
 
@@ -38,8 +39,8 @@ namespace yosemite { namespace non_native_token {
         const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
 
         stats_table.modify(tstats, 0, [&](auto &s) {
-            s.supply += token.amount;
-            eosio_assert(static_cast<uint32_t>(s.supply > 0 && s.supply <= asset::max_amount),
+            s.supply.amount += token.amount;
+            eosio_assert(static_cast<uint32_t>(s.supply.amount > 0 && s.supply.amount <= asset::max_amount),
                          "token amount cannot be more than 2^62 - 1");
         });
 
@@ -64,10 +65,10 @@ namespace yosemite { namespace non_native_token {
 
         stats stats_table(get_self(), token.symbol.value);
         const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
-        eosio_assert(static_cast<uint32_t>(token.amount <= tstats.supply), "redeem token exceeds supply amount");
+        eosio_assert(static_cast<uint32_t>(token.amount <= tstats.supply.amount), "redeem token exceeds supply amount");
 
         stats_table.modify(tstats, 0, [&](auto &s) {
-            s.supply -= token.amount;
+            s.supply.amount -= token.amount;
         });
 
         sub_token_balance(token.issuer, token);

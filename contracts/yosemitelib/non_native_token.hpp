@@ -33,7 +33,7 @@ namespace yosemite { namespace non_native_token {
     /* scope = token symbol */
     struct token_stats {
         uint64_t issuer = 0;
-        int64_t supply = 0;
+        asset supply;
         uint16_t can_set_options = TOKEN_CAN_SET_OPTIONS_NONE; // can set only at token creation time
         uint16_t options = TOKEN_OPTIONS_NONE;
         std::vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type

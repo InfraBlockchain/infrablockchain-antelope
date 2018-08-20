@@ -108,7 +108,7 @@
       "base": "",
       "fields": [
         {"name":"key", "type":"name"},
-        {"name":"supply", "type":"int64"},
+        {"name":"supply", "type":"asset"},
         {"name":"options", "type":"uint8"}
       ]
     },
