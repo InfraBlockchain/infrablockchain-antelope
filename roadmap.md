@@ -4,6 +4,8 @@
 Permissioned Blockchain operated by only Seed Trust Nodes
 
 * Target Date : Sep. 2018
+* https://github.com/YosemiteLabs/yosemite-public-blockchain/milestone/1
+
 ### Main Features
 * Stable Coin support with Depository
   * single stable coin per chain, multiple Depository per stable coin
@@ -15,6 +17,8 @@ Permissioned Blockchain operated by only Seed Trust Nodes
 PoT Based BFT Consensus (Public PoT Node Pool support)
 
 * Target Date : Apr. 2019
+* https://github.com/YosemiteLabs/yosemite-public-blockchain/milestone/2
+
 ### Main Features
 * Transaction-as-a-Vote(TaaV)
 * Decentralized Token Exchange
@@ -24,6 +28,8 @@ PoT Based BFT Consensus (Public PoT Node Pool support)
 Smart Contract Platform
 
 * Target Date : Sep. 2019
+* https://github.com/YosemiteLabs/yosemite-public-blockchain/milestone/3
+
 ### Main Features
 * WebAssembly based smart contract
 * smart contract execution billed by stable coin
