@@ -1769,7 +1769,7 @@ int main( int argc, char** argv ) {
          return;
       }
 
-      auto pk    = r1 ? private_key_type::generate_r1() : private_key_type::generate();
+      auto pk    = r1 ? private_key_type::generate_r1() : private_key_type::generate<fc::ecc::yosemite_private_key_shim>();
       auto privs = string(pk);
       auto pubs  = string(pk.get_public_key());
       if (print_console) {
