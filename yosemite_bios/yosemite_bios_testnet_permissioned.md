@@ -1,6 +1,6 @@
 YOSEMITE Blockchain (Permissioned version) BIOS setup for Testnet 
 ===
-(revision 20180817 for Testnet v0.4.0)
+(revision 20180820 for Testnet v0.4.0)
 
 Testnet Public Access Node URL
 ---
@@ -53,17 +53,17 @@ YOSEMITE_MONGODB_DATA_DIR=/mnt/mongodb
 Initial key
 ---
 ```bash
-$YOSEMITE_CLEOS create key
-Private key: 5KR14orrckPKBxUe4zUZCoY8GF8xhYUtKjiriSnsTGhUKrZTHxo
-Public key: EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
+Public key: YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 ```
 
 Genesis Json
 ---
 ```json
 {
-  "initial_timestamp": "2018-07-30T12:00:00.000",
-  "initial_key": "EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9",
+  "initial_timestamp": "2018-08-15T12:00:00.000",
+  "initial_key": "YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3",
   "initial_configuration": {
     "max_block_net_usage": 1048576,
     "target_block_net_usage_pct": 1000,
@@ -103,7 +103,7 @@ agent-name = "YOSEMITE Testnet Dev Agent"
 max-clients = 25
 enable-stale-production = true
 producer-name = yosemite
-signature-provider = EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9=KEY:5KR14orrckPKBxUe4zUZCoY8GF8xhYUtKjiriSnsTGhUKrZTHxo
+signature-provider = YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3=KEY:YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
 plugin = eosio::http_plugin
 plugin = eosio::chain_plugin
 plugin = eosio::chain_api_plugin
@@ -155,7 +155,7 @@ $YOSEMITE_CLI wallet unlock
 
 * yosemite initial key
 ```bash
-$YOSEMITE_CLI wallet import --private-key 5KR14orrckPKBxUe4zUZCoY8GF8xhYUtKjiriSnsTGhUKrZTHxo
+$YOSEMITE_CLI wallet import --private-key YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
 ```
 
 Create System Accounts
@@ -163,12 +163,12 @@ Create System Accounts
 
 * yx.msig(privileged), yx.txfee, yx.identity, yx.ntoken(privileged), yx.token(privileged), yx.dcontract(privileged)
 ```bash
-$YOSEMITE_CLI create account yosemite yx.msig EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
-$YOSEMITE_CLI create account yosemite yx.txfee EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
-$YOSEMITE_CLI create account yosemite yx.identity EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
-$YOSEMITE_CLI create account yosemite yx.ntoken EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
-$YOSEMITE_CLI create account yosemite yx.token EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
-$YOSEMITE_CLI create account yosemite yx.dcontract EOS6HrSCEbKTgZLe8stDgFB3Pip2tKtBxTPuffuoynnZnfUxHS3x9
+$YOSEMITE_CLI create account yosemite yx.msig YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.txfee YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.identity YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.ntoken YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.token YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 
 ```
 
@@ -177,23 +177,23 @@ Create initial Identity Authority Account
 
 * idauth1
 ```bash
-$YOSEMITE_CLI create key
-Private key: 5KND1U57MvsdWzPi8TY53XpaBPBGQNTdQSTDtEexTVexz9mP6Q9
-Public key: EOS5gFJS9EhjNpvcaGuDQqaeGQnNLuF9sWUt2s8surF1tRtSzLJiG
-$YOSEMITE_CLI wallet import --private-key 5KND1U57MvsdWzPi8TY53XpaBPBGQNTdQSTDtEexTVexz9mP6Q9
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5K5Qe2ndgcfhWqdUjHnfhvCKVqCE82Rih6JrNQuuVJBcathAx9m
+Public key: YOS6EfGUaA5MNLH1GiHd64DcDr3HMgY1AM3WR1vdHKaah9Z4cWPZq
+$YOSEMITE_CLI wallet import --private-key YPV_5K5Qe2ndgcfhWqdUjHnfhvCKVqCE82Rih6JrNQuuVJBcathAx9m
 
-$YOSEMITE_CLI create account yosemite idauth1 EOS5gFJS9EhjNpvcaGuDQqaeGQnNLuF9sWUt2s8surF1tRtSzLJiG
+$YOSEMITE_CLI create account yosemite idauth1 YOS6EfGUaA5MNLH1GiHd64DcDr3HMgY1AM3WR1vdHKaah9Z4cWPZq
 
 ```
 
 * idauth2
 ```bash
-$YOSEMITE_CLI create key
-Private key: 5K25HU8a7qgkfb9o2skiNupEs9H3wE6CWSd9qjako2gnFioekaX
-Public key: EOS68JZEkVt4Z3dkrSmQ4SkH8XyVJVKTmnvawZyWcrxzhoH1WMp4Q
-$YOSEMITE_CLI wallet import --private-key 5K25HU8a7qgkfb9o2skiNupEs9H3wE6CWSd9qjako2gnFioekaX
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5JRzPhyg9jY4thDJ1rLsSr4zdLLoA7UEMQRw3vJFGmGKTZF5Kbx
+Public key: YOS5VvWLCqXL3AQyuXZfUTnEiWuhJNV6Nq3YbbS7Z98cN7GiRo9LR
+$YOSEMITE_CLI wallet import --private-key YPV_5JRzPhyg9jY4thDJ1rLsSr4zdLLoA7UEMQRw3vJFGmGKTZF5Kbx
 
-$YOSEMITE_CLI create account yosemite idauth2 EOS68JZEkVt4Z3dkrSmQ4SkH8XyVJVKTmnvawZyWcrxzhoH1WMp4Q
+$YOSEMITE_CLI create account yosemite idauth2 YOS5VvWLCqXL3AQyuXZfUTnEiWuhJNV6Nq3YbbS7Z98cN7GiRo9LR
 ```
 
 
@@ -202,23 +202,23 @@ Create initial System Depository Account
 
 * sysdepo1
 ```bash
-$YOSEMITE_CLI create key
-Private key: 5KCqedPhHjbaBRi4ujhFsS3aGCcNuXwVGrMaxRW3DvB5Wo3beax
-Public key: EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtxKUhxKh5HfSSM1dHeQo
-$YOSEMITE_CLI wallet import --private-key 5KCqedPhHjbaBRi4ujhFsS3aGCcNuXwVGrMaxRW3DvB5Wo3beax
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5J8WZRwfYVzsH8i3LaRQLGorVD788RFYqALEsLmeK8a6Kq6re2W
+Public key: YOS6o8hwGio5V2LgBxFMZi4bdVG5AvcHeFiMpaREKuZ29BwXpNTpH
+$YOSEMITE_CLI wallet import --private-key YPV_5J8WZRwfYVzsH8i3LaRQLGorVD788RFYqALEsLmeK8a6Kq6re2W
 
-$YOSEMITE_CLI create account yosemite sysdepo1 EOS7myk8qduMNnxo9Q9RZ2uxfaerQhXMPtxKUhxKh5HfSSM1dHeQo
+$YOSEMITE_CLI create account yosemite sysdepo1 YOS6o8hwGio5V2LgBxFMZi4bdVG5AvcHeFiMpaREKuZ29BwXpNTpH
 
 ```
 
 * sysdepo2
 ```bash
-$YOSEMITE_CLI create key
-Private key: 5HyRsRWBi4bUXjmnmaskw9BU8a2sdqn3Jfqt21Few9xUyYR5tXr
-Public key: EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxmPgk7C8fEi4FnQKhHLwM
-$YOSEMITE_CLI wallet import --private-key 5HyRsRWBi4bUXjmnmaskw9BU8a2sdqn3Jfqt21Few9xUyYR5tXr
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5K5MBizJ6HuG1kdvQTeMnpKjpFSZHm64Nj3X6MvJR6AnTF8mHkx
+Public key: YOS61njg9Zs9oQmAmwLnrcVBrniWKshKAhoQJJqNVVnYXCPSRKLTE
+$YOSEMITE_CLI wallet import --private-key YPV_5K5MBizJ6HuG1kdvQTeMnpKjpFSZHm64Nj3X6MvJR6AnTF8mHkx
 
-$YOSEMITE_CLI create account yosemite sysdepo2 EOS62AXYcUxcSQQgKhnQ1oid2w1XNvCKxmPgk7C8fEi4FnQKhHLwM
+$YOSEMITE_CLI create account yosemite sysdepo2 YOS61njg9Zs9oQmAmwLnrcVBrniWKshKAhoQJJqNVVnYXCPSRKLTE
 ```
 
 Install Yosemite System Contract
@@ -329,114 +329,114 @@ producer-name = producer.i
 producer-name = producer.j
 
 # producer.a
-signature-provider = EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y=KEY:5JuTjNtFmqWG1ivMLJgeRgo5w2WV5iwHa2u1n8owvpyUdy7DUr6
+signature-provider = YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn=KEY:YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
 # producer.b
-signature-provider = EOS79oucvH1iBTh5RrMgm6vRe9ERNSPQx4AiXGVctjmZQMkCkFrzS=KEY:5JbXQdi7vzRXtxnyBi9PSTzaxACJagDKUFQkLE7Dg9ZYMyykJR8
+signature-provider = YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm=KEY:YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
 # producer.c
-signature-provider = EOS6FTViN9RtWd7B7RbERxcdhWSh2jmqiLkhMck315uSUwCsjeNHe=KEY:5JEJrZMbDSZmFfRUbt1JVC3wrBv9cJG7QaiP58f8Mr9K1Wf9Cnn
+signature-provider = YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo=KEY:YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
 # producer.d
-signature-provider = EOS66ABHVyT25wYUd2suW6JtbrwLrUdPFVDA1vjU8ttU289d2DPvJ=KEY:5HsDW4pNKWDA91WcBuNNXT8sL5soVhXLHqZU7ZZqJzJC1YghXjT
+signature-provider = YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy=KEY:YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
 # producer.e
-signature-provider = EOS8Ab5kDP22ta5FRmShTsZ4SZ3ubwptxzKWSBw7FtZLsew12SfrW=KEY:5JFbKCZray6WGQZtkkxqQ9mencwQn5qynjJ1tXJRtaUH7oNRGnP
+signature-provider = YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1=KEY:YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
 # producer.f
-signature-provider = EOS6mUfvfWUJFVyQi23YwNtXMUHfSuExkr7WwWYr4RVzVD5TyASYh=KEY:5KQmxBJPcM6dtgkPCnbZxDxR7fYufyAXmQpowtccDosSHCMnvzD
+signature-provider = YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641=KEY:YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
 # producer.g
-signature-provider = EOS4xWpwU957GRJzXBjRRFWKegp772Z636xDXMyNopT4eR7pAq7cn=KEY:5J3stfy2eL19D99A9BH6rWdNyBJN52KGBLgGzPcd2i1H2E2c8RE
+signature-provider = YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq=KEY:YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
 # producer.h
-signature-provider = EOS8JjyHbTYw2uzqC14h48HwHKZFrBjJUfcKDo4hbPPui1ftBRktx=KEY:5JWtg8FYV8vsTLtVKyFKFDDWgHnxC8K8HrJBqPhp7EAT9NAC8CR
+signature-provider = YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6=KEY:YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
 # producer.i
-signature-provider = EOS8mRvKmUuiSVwxvL9R4wg1z9Tkjs7STuaNZZAivUxkWtFUxBW4H=KEY:5J5L2x6E23sMykwirFJMHpWrHn9oypowdFcTs5ThFFNCBRpSZCJ
+signature-provider = YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is=KEY:YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
 # producer.j
-signature-provider = EOS7wwywnEFqM2fjWTvTuF5E8ELu9hpbWke3aCUYqEkfw9aP1G2ph=KEY:5Jj8nMEZiL4fZSxDf8xMHmVs94JrPiwwH66EE3b3pM9YpUyQdAv
+signature-provider = YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC=KEY:YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
 ```
 
 * create block producer accounts
 ```bash
-$YOSEMITE_CLI create key
-Private key: 5JuTjNtFmqWG1ivMLJgeRgo5w2WV5iwHa2u1n8owvpyUdy7DUr6
-Public key: EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y
-$YOSEMITE_CLI wallet import --private-key 5JuTjNtFmqWG1ivMLJgeRgo5w2WV5iwHa2u1n8owvpyUdy7DUr6
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
+Public key: YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn
+$YOSEMITE_CLI wallet import --private-key YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
 
-$YOSEMITE_CLI create key
-Private key: 5JbXQdi7vzRXtxnyBi9PSTzaxACJagDKUFQkLE7Dg9ZYMyykJR8
-Public key: EOS79oucvH1iBTh5RrMgm6vRe9ERNSPQx4AiXGVctjmZQMkCkFrzS
-$YOSEMITE_CLI wallet import --private-key 5JbXQdi7vzRXtxnyBi9PSTzaxACJagDKUFQkLE7Dg9ZYMyykJR8
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
+Public key: YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm
+$YOSEMITE_CLI wallet import --private-key YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
 
-$YOSEMITE_CLI create key
-Private key: 5JEJrZMbDSZmFfRUbt1JVC3wrBv9cJG7QaiP58f8Mr9K1Wf9Cnn
-Public key: EOS6FTViN9RtWd7B7RbERxcdhWSh2jmqiLkhMck315uSUwCsjeNHe
-$YOSEMITE_CLI wallet import --private-key 5JEJrZMbDSZmFfRUbt1JVC3wrBv9cJG7QaiP58f8Mr9K1Wf9Cnn
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
+Public key: YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo
+$YOSEMITE_CLI wallet import --private-key YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
 
-$YOSEMITE_CLI create key
-Private key: 5HsDW4pNKWDA91WcBuNNXT8sL5soVhXLHqZU7ZZqJzJC1YghXjT
-Public key: EOS66ABHVyT25wYUd2suW6JtbrwLrUdPFVDA1vjU8ttU289d2DPvJ
-$YOSEMITE_CLI wallet import --private-key 5HsDW4pNKWDA91WcBuNNXT8sL5soVhXLHqZU7ZZqJzJC1YghXjT
-
-$YOSEMITE_CLI create key
-Private key: 5JFbKCZray6WGQZtkkxqQ9mencwQn5qynjJ1tXJRtaUH7oNRGnP
-Public key: EOS8Ab5kDP22ta5FRmShTsZ4SZ3ubwptxzKWSBw7FtZLsew12SfrW
-$YOSEMITE_CLI wallet import --private-key 5JFbKCZray6WGQZtkkxqQ9mencwQn5qynjJ1tXJRtaUH7oNRGnP
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
+Public key: YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy
+$YOSEMITE_CLI wallet import --private-key YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
  
-$YOSEMITE_CLI create key
-Private key: 5KQmxBJPcM6dtgkPCnbZxDxR7fYufyAXmQpowtccDosSHCMnvzD
-Public key: EOS6mUfvfWUJFVyQi23YwNtXMUHfSuExkr7WwWYr4RVzVD5TyASYh
-$YOSEMITE_CLI wallet import --private-key 5KQmxBJPcM6dtgkPCnbZxDxR7fYufyAXmQpowtccDosSHCMnvzD
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
+Public key: YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1
+$YOSEMITE_CLI wallet import --private-key YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
 
-$YOSEMITE_CLI create key
-Private key: 5J3stfy2eL19D99A9BH6rWdNyBJN52KGBLgGzPcd2i1H2E2c8RE
-Public key: EOS4xWpwU957GRJzXBjRRFWKegp772Z636xDXMyNopT4eR7pAq7cn
-$YOSEMITE_CLI wallet import --private-key 5J3stfy2eL19D99A9BH6rWdNyBJN52KGBLgGzPcd2i1H2E2c8RE
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
+Public key: YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641
+$YOSEMITE_CLI wallet import --private-key YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
 
-$YOSEMITE_CLI create key
-Private key: 5JWtg8FYV8vsTLtVKyFKFDDWgHnxC8K8HrJBqPhp7EAT9NAC8CR
-Public key: EOS8JjyHbTYw2uzqC14h48HwHKZFrBjJUfcKDo4hbPPui1ftBRktx
-$YOSEMITE_CLI wallet import --private-key 5JWtg8FYV8vsTLtVKyFKFDDWgHnxC8K8HrJBqPhp7EAT9NAC8CR
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
+Public key: YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq
+$YOSEMITE_CLI wallet import --private-key YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
 
-$YOSEMITE_CLI create key
-Private key: 5J5L2x6E23sMykwirFJMHpWrHn9oypowdFcTs5ThFFNCBRpSZCJ
-Public key: EOS8mRvKmUuiSVwxvL9R4wg1z9Tkjs7STuaNZZAivUxkWtFUxBW4H
-$YOSEMITE_CLI wallet import --private-key 5J5L2x6E23sMykwirFJMHpWrHn9oypowdFcTs5ThFFNCBRpSZCJ
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
+Public key: YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6
+$YOSEMITE_CLI wallet import --private-key YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
 
-$YOSEMITE_CLI create key
-Private key: 5Jj8nMEZiL4fZSxDf8xMHmVs94JrPiwwH66EE3b3pM9YpUyQdAv
-Public key: EOS7wwywnEFqM2fjWTvTuF5E8ELu9hpbWke3aCUYqEkfw9aP1G2ph
-$YOSEMITE_CLI wallet import --private-key 5Jj8nMEZiL4fZSxDf8xMHmVs94JrPiwwH66EE3b3pM9YpUyQdAv
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
+Public key: YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is
+$YOSEMITE_CLI wallet import --private-key YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
 
-$YOSEMITE_CLI create account yosemite producer.a EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.b EOS79oucvH1iBTh5RrMgm6vRe9ERNSPQx4AiXGVctjmZQMkCkFrzS -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.c EOS6FTViN9RtWd7B7RbERxcdhWSh2jmqiLkhMck315uSUwCsjeNHe -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.d EOS66ABHVyT25wYUd2suW6JtbrwLrUdPFVDA1vjU8ttU289d2DPvJ -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.e EOS8Ab5kDP22ta5FRmShTsZ4SZ3ubwptxzKWSBw7FtZLsew12SfrW -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.f EOS6mUfvfWUJFVyQi23YwNtXMUHfSuExkr7WwWYr4RVzVD5TyASYh -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.g EOS4xWpwU957GRJzXBjRRFWKegp772Z636xDXMyNopT4eR7pAq7cn -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.h EOS8JjyHbTYw2uzqC14h48HwHKZFrBjJUfcKDo4hbPPui1ftBRktx -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.i EOS8mRvKmUuiSVwxvL9R4wg1z9Tkjs7STuaNZZAivUxkWtFUxBW4H -p yosemite@active
-$YOSEMITE_CLI create account yosemite producer.j EOS7wwywnEFqM2fjWTvTuF5E8ELu9hpbWke3aCUYqEkfw9aP1G2ph -p yosemite@active
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
+Public key: YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC
+$YOSEMITE_CLI wallet import --private-key YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
+
+$YOSEMITE_CLI create account yosemite producer.a YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.b YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.c YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.d YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.e YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1 -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.f YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641 -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.g YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.h YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6 -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.i YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is -p yosemite@active
+$YOSEMITE_CLI create account yosemite producer.j YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC -p yosemite@active
 
 ```
 
 * register and authorize block producers (permissioned)
 
 ```bash
-$YOSEMITE_CLI push action yosemite regproducer '["producer.a","EOS6WZQdBdvfYre8akxVqCgp8SVYjrJRBnLqqpYGe7AXyJTTPYf4y","http://producera.io",1]' -p producer.a@active -p yosemite@active
-$YOSEMITE_CLI push action yosemite regproducer '["producer.b","EOS79oucvH1iBTh5RrMgm6vRe9ERNSPQx4AiXGVctjmZQMkCkFrzS","http://producerb.io",1]' -p producer.b@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.a","YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn","http://producera.io",1]' -p producer.a@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.b","YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm","http://producerb.io",1]' -p producer.b@active -p yosemite@active
 
 $YOSEMITE_CLI push action yosemite authproducer '["producer.a"]' -p yosemite@active
 $YOSEMITE_CLI push action yosemite authproducer '["producer.b"]' -p yosemite@active
 
-$YOSEMITE_CLI push action yosemite regproducer '["producer.c","EOS6FTViN9RtWd7B7RbERxcdhWSh2jmqiLkhMck315uSUwCsjeNHe","http://producerc.io",1]' -p producer.c@active -p yosemite@active
-$YOSEMITE_CLI push action yosemite regproducer '["producer.d","EOS66ABHVyT25wYUd2suW6JtbrwLrUdPFVDA1vjU8ttU289d2DPvJ","http://producerd.io",1]' -p producer.d@active -p yosemite@active
-$YOSEMITE_CLI push action yosemite regproducer '["producer.e","EOS8Ab5kDP22ta5FRmShTsZ4SZ3ubwptxzKWSBw7FtZLsew12SfrW","http://producere.io",1]' -p producer.e@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.c","YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo","http://producerc.io",1]' -p producer.c@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.d","YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy","http://producerd.io",1]' -p producer.d@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.e","YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1","http://producere.io",1]' -p producer.e@active -p yosemite@active
 
 $YOSEMITE_CLI push action yosemite authproducer '["producer.c"]' -p yosemite@active
 $YOSEMITE_CLI push action yosemite authproducer '["producer.d"]' -p yosemite@active
 $YOSEMITE_CLI push action yosemite authproducer '["producer.e"]' -p yosemite@active
 
-$YOSEMITE_CLI push action yosemite regproducer '["producer.f","EOS6mUfvfWUJFVyQi23YwNtXMUHfSuExkr7WwWYr4RVzVD5TyASYh","http://producerf.io",1]' -p producer.f@active -p yosemite@active
-$YOSEMITE_CLI push action yosemite regproducer '["producer.g","EOS4xWpwU957GRJzXBjRRFWKegp772Z636xDXMyNopT4eR7pAq7cn","http://producerg.io",1]' -p producer.g@active -p yosemite@active
-$YOSEMITE_CLI push action yosemite regproducer '["producer.h","EOS8JjyHbTYw2uzqC14h48HwHKZFrBjJUfcKDo4hbPPui1ftBRktx","http://producerh.io",1]' -p producer.h@active -p yosemite@active
-$YOSEMITE_CLI push action yosemite regproducer '["producer.i","EOS8mRvKmUuiSVwxvL9R4wg1z9Tkjs7STuaNZZAivUxkWtFUxBW4H","http://produceri.io",1]' -p producer.i@active -p yosemite@active
-$YOSEMITE_CLI push action yosemite regproducer '["producer.j","EOS7wwywnEFqM2fjWTvTuF5E8ELu9hpbWke3aCUYqEkfw9aP1G2ph","http://producerj.io",1]' -p producer.j@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.f","YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641","http://producerf.io",1]' -p producer.f@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.g","YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq","http://producerg.io",1]' -p producer.g@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.h","YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6","http://producerh.io",1]' -p producer.h@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.i","YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is","http://produceri.io",1]' -p producer.i@active -p yosemite@active
+$YOSEMITE_CLI push action yosemite regproducer '["producer.j","YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC","http://producerj.io",1]' -p producer.j@active -p yosemite@active
 
 $YOSEMITE_CLI push action yosemite authproducer '["producer.f"]' -p yosemite@active
 $YOSEMITE_CLI push action yosemite authproducer '["producer.g"]' -p yosemite@active
@@ -544,38 +544,38 @@ Create New User Accounts
 ---
 
 ```bash
-$YOSEMITE_CLI create key
-Private key: 5JsqBiEGge54oBRPEuPZ4rTm8EHxzDNzXMbwNoTh8y5Lms1YMJT
-Public key: EOS7qw27KHaVWJEgA113u9xQVUtEubUKFhRJfiDt752iAqb6qbv9V
-$YOSEMITE_CLI wallet import --private-key 5JsqBiEGge54oBRPEuPZ4rTm8EHxzDNzXMbwNoTh8y5Lms1YMJT
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5KTdP4VyuhZ1ba3sX8JvHjKXgcTFUA75QHf92nrGYQX4coVJRAW
+Public key: YOS7y8FkTHo58ZvrMa6yrTpo3D2Y2AA4dMAZzQ8aZY6R6geZSDZ75
+$YOSEMITE_CLI wallet import --private-key YPV_5KTdP4VyuhZ1ba3sX8JvHjKXgcTFUA75QHf92nrGYQX4coVJRAW
 
-$YOSEMITE_CLI create key
-Private key: 5JMsmWCrQ7YEDfUNhmPts7W3AuUFxeWpionyP8EuMf35kG3AeCU
-Public key: EOS7hbLPy5cmtNBdHibrS8CD1YUsKbvq7t9nGVvnJtTKHvxsq6ynf
-$YOSEMITE_CLI wallet import --private-key 5JMsmWCrQ7YEDfUNhmPts7W3AuUFxeWpionyP8EuMf35kG3AeCU
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5KDKMejP2AZFGCMxLh67t7417coEgUu7PfQZk7ufuYA4wTBiNC4
+Public key: YOS8ZFsmfpevP8pKPMXuQMNB7P9KJoKzZwwzu2uww9VrRx7E7NUQj
+$YOSEMITE_CLI wallet import --private-key YPV_5KDKMejP2AZFGCMxLh67t7417coEgUu7PfQZk7ufuYA4wTBiNC4
 
-$YOSEMITE_CLI create key
-Private key: 5K2iUzbSy4qyEzjf93DGDxBMrL8c8VGnSvLhE26DEJhEwvVEwj8
-Public key: EOS75qaGrHrXskTUJLoedxwc7KbLxksfgiYBpgeiMcTCsnhiuhx6U
-$YOSEMITE_CLI wallet import --private-key 5K2iUzbSy4qyEzjf93DGDxBMrL8c8VGnSvLhE26DEJhEwvVEwj8
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5Jj4ryu8TY1cVhiLvPkBHKiwMAXV18WqJM97h8hfsBUt5sMJE3r
+Public key: YOS5ubmvsnjHviACtfc9SwGbY7SprqTu1P5GQeDfwfZmhCq6aR7GH
+$YOSEMITE_CLI wallet import --private-key YPV_5Jj4ryu8TY1cVhiLvPkBHKiwMAXV18WqJM97h8hfsBUt5sMJE3r
 
-$YOSEMITE_CLI create key
-Private key: 5HrWpMMjCM1UhxKAvCg8NKRyExapwS1vyiQXe8VBpNEDsNMn4nE
-Public key: EOS584bQn471vv2q7N1xeDXayfDtiim8kPsNm45TRuJ9D51YPFFmX
-$YOSEMITE_CLI wallet import --private-key 5HrWpMMjCM1UhxKAvCg8NKRyExapwS1vyiQXe8VBpNEDsNMn4nE
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5KWoErpjc9yQ2HF6rLuijLFgmAqVEoDLGWmDQAT6NM5DCgcSgo1
+Public key: YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ3rNfKp96hzFxyit
+$YOSEMITE_CLI wallet import --private-key YPV_5KWoErpjc9yQ2HF6rLuijLFgmAqVEoDLGWmDQAT6NM5DCgcSgo1
 
-$YOSEMITE_CLI create key
-Private key: 5HsUEcT7J56iRrHFiGR9pGeQAiLaow4AbR7QA38w9T44SBnEMYk
-Public key: EOS5UbAi7wTM1wpFNp81bghD9EfV1HHSn8n39Qz4jKD1oHmW7oyNS
-$YOSEMITE_CLI wallet import --private-key 5HsUEcT7J56iRrHFiGR9pGeQAiLaow4AbR7QA38w9T44SBnEMYk
+$YOSEMITE_CLI create key --to-console
+Private key: YPV_5JP9oWWsMaTEBcw1Y7Jn8JzxQBq51FDcGVGqCi5gpMDyKqio26j
+Public key: YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh
+$YOSEMITE_CLI wallet import --private-key YPV_5JP9oWWsMaTEBcw1Y7Jn8JzxQBq51FDcGVGqCi5gpMDyKqio26j
 
 // Identity Authority can create accounts having 12 chracters without paying 'tf.newacc' transaction fee
-$YOSEMITE_CLI create account idauth1 useraccount1 EOS7qw27KHaVWJEgA113u9xQVUtEubUKFhRJfiDt752iAqb6qbv9V -p idauth1@active
-$YOSEMITE_CLI create account idauth1 useraccount2 EOS7hbLPy5cmtNBdHibrS8CD1YUsKbvq7t9nGVvnJtTKHvxsq6ynf -p idauth1@active
-$YOSEMITE_CLI create account idauth1 useraccount3 EOS75qaGrHrXskTUJLoedxwc7KbLxksfgiYBpgeiMcTCsnhiuhx6U -p idauth1@active
+$YOSEMITE_CLI create account idauth1 useraccount1 YOS7y8FkTHo58ZvrMa6yrTpo3D2Y2AA4dMAZzQ8aZY6R6geZSDZ75 -p idauth1@active
+$YOSEMITE_CLI create account idauth1 useraccount2 YOS8ZFsmfpevP8pKPMXuQMNB7P9KJoKzZwwzu2uww9VrRx7E7NUQj -p idauth1@active
+$YOSEMITE_CLI create account idauth1 useraccount3 YOS5ubmvsnjHviACtfc9SwGbY7SprqTu1P5GQeDfwfZmhCq6aR7GH -p idauth1@active
 
 // Only system account can create accounts having less than 12 characters
-$YOSEMITE_CLI create account yosemite com EOS584bQn471vv2q7N1xeDXayfDtiim8kPsNm45TRuJ9D51YPFFmX -p yosemite@active
+$YOSEMITE_CLI create account yosemite com YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ3rNfKp96hzFxyit -p yosemite@active
 
 // Only suffix account can create accounts having arbitrary prefix with the same suffix name
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"com\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"1f32i7t23\"}" -p idauth1@active
@@ -585,9 +585,9 @@ executed transaction: c9fb1c0cf6c6c9d73e377bcfd405802e129f85cf86a68a57bc15f91d25
 #     yx.ntoken <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"memo":"nis...
 #      sysdepo1 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"memo":"nis...
 #           com <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"memo":"nis...
-$YOSEMITE_CLI create account com acquire.com EOS5UbAi7wTM1wpFNp81bghD9EfV1HHSn8n39Qz4jKD1oHmW7oyNS -p com@active
+$YOSEMITE_CLI create account com acquire.com YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh -p com@active
 executed transaction: 9268f4e3b7e44caaf1a7c3528ff44ce6e9cfdb8d6dfcf33aa2cc44d7a6c5604a  200 bytes  4900 us
-#      yosemite <= yosemite::newaccount         {"creator":"com","name":"acquire.com","owner":{"threshold":1,"keys":[{"key":"EOS5UbAi7wTM1wpFNp81bgh...
+#      yosemite <= yosemite::newaccount         {"creator":"com","name":"acquire.com","owner":{"threshold":1,"keys":[{"key":"YOS5UbAi7wTM1wpFNp81bgh...
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"com","token":"1000.0000 DKRW"}
 #     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.0000 DKRW","issuer":"sysdepo1"}}
 #           com <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.0000 DKRW","issuer":"sysdepo1"}}
@@ -775,7 +775,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
       "trx": [
         1,{
           "signatures": [
-            "SIG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
+            "YSG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
           ],
           "compression": "none",
           "packed_context_free_data": "",
@@ -812,7 +812,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
       ],
       "transaction_extensions": [],
       "signatures": [
-        "SIG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
+        "YSG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
       ],
       "context_free_data": []
     }
