@@ -327,29 +327,3 @@ clyos get table yx.ntoken user1 ntaccountstt
   "more": false
 }
 ```
-
-# Execution Example
-* Let's say d1 is the system depository for DKRW with precision 4, the native token of the blockchain.
-```
-clyos push action yosemite regsysdepo '["d1","http://sysdepo.org",1]' -p d1 yosemite
-clyos push action yosemite authsysdepo '["d1"]' -p yosemite
-```
-* First of all, you must set transaction fee for all actions and d1, d2, user1 and user2 accounts are KYC'ed.
-* Here's the example:
-```
-clyos push action yx.ntoken nissue '[ "d1", {"amount":"1000000.0000 DKRW","issuer":"d1"}, "memo" ]' -p d1
-clyos get table yx.ntoken d1 ntstats
-clyos get table yx.ntoken d1 ntaccounts
-clyos push action yx.ntoken transfer '[ "d1", "user1", "10000.0000 DKRW", "memo"]' -p d1
-clyos push action yx.ntoken ntransfer '[ "d1", "user1", {"amount":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p d1
-clyos get table yx.ntoken user1 ntaccounts
-clyos get table yx.ntoken user1 ntaccountstt
-clyos push action yx.ntoken wptransfer '[ "user1", "user2", "10000.0000 DKRW", "d1", "memo" ]' -p user1 d1
-clyos get table yx.ntoken user1 ntaccounts
-clyos get table yx.ntoken d1 ntaccounts
-clyos get table yx.ntoken user2 ntaccounts
-clyos push action yx.ntoken wpntransfer '[ "user1", "user2", {"amount":"10000.0000 DKRW","issuer":"d1"}, "d1", "memo" ]' -p user1 d1
-clyos get table yx.ntoken user1 ntaccounts
-clyos get table yx.ntoken d1 ntaccounts
-clyos get table yx.ntoken user2 ntaccounts
-```
