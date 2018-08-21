@@ -3,7 +3,7 @@ YOSEMITE Public Key, Private Key, Signature Format
 
 * YOSEMITE blockchain supports secp256k1 elliptic curve cryptography as default. (same as Bitcoin and EOS)
 * Public/Private keys generated from the EOS blockchain software are supported on YOSEMITE chain.
-* YOSEMITE blockchain supports R1 elliptic curve (secp256r1) cryptography also. secp256r1 is used in widely used devices such as iPhone.
+* YOSEMITE blockchain supports R1 elliptic curve (secp256r1) cryptography also. secp256r1 is widely used in popular devices such as iPhone.
 
 
 ## YOSEMITE Keys
@@ -20,7 +20,7 @@ Public key: YOS7Te8Jd4fF6HbTJH2BUYADBucb2yYYSRh3mVv4hgjkAJL15rzjF
 
 #### YOSEMITE Private Key (secp256k1)
 * key prefix of base58 private key string : "YPV_"
-* private key string format : "YPV_" + base58 representation of 256 bit secp256k1 private key secret in WIP format (https://en.bitcoin.it/wiki/Wallet_import_format)
+* private key string format : "YPV_" + base58 representation of secp256k1 private key secret (256 bit) in WIP format (37 bytes) (https://en.bitcoin.it/wiki/Wallet_import_format)
 
 #### YOSEMITE Signature (secp256k1)
 * prefix of base58 signature string : "YSG_K1_"
@@ -62,7 +62,7 @@ Public key: EOS7M4hiQnu83M5S5NM7Vx4JE57dVB3fxkFAckeMhLf7xpWW1wCdF
 
 #### EOS Private Key (secp256k1)
 * no key prefix of private key string
-* private key string format : base58 representation of 256 bit secp256k1 private key secret in WIP format (https://en.bitcoin.it/wiki/Wallet_import_format)
+* private key string format : base58 representation of secp256k1 private key secret (256 bit) in WIP format (37 bytes) (https://en.bitcoin.it/wiki/Wallet_import_format)
 
 #### EOS Signature (secp256k1)
 * prefix of base58 signature string : "SIG_K1_"
