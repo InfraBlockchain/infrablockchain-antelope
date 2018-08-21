@@ -39,8 +39,14 @@ YOSEMITE is released under the open source MIT license and is offered â€œAS ISâ€
 1. [Java SDK](https://github.com/YosemiteLabs/yosemite-j)
 1. [Roadmap](roadmap.md)
 
-<!--
 <a name="gettingstarted"></a>
 ## Getting Started
-Instructions detailing the process of getting the software, building it, running a simple test network that produces blocks, account creation and uploading a sample contract to the blockchain can be found in [Getting Started](https://developers.eos.io/eosio-nodeos/docs/overview-1) on the [EOSIO Developer Portal](https://developers.eos.io).
--->
+YOSEMITE is based on EOSIO software. So instructions detailing the process of getting the software, building it, running a simple test network that produces blocks, account creation to the blockchain can be helped by [Getting Started](https://developers.eos.io/eosio-nodeos/docs/overview-1) on the [EOSIO Developer Portal](https://developers.eos.io).
+But the names of programs and scripts are changed.
+```
+nodeos -> yosemite
+cleos  -> clyos ('cl'ient + 'yos'emite)
+keosd  -> keyos (key + 'yos'emite)
+```
+
+To build YOSEMITE, use `yosemite_build.sh`. To install and unsintall, use `yosemite_install.sh` and `yosemite_uninstall.sh`.
