@@ -13,13 +13,13 @@
 * YosemiteChain can check the integrity of the digital signature with all accounts because it has all the public keys of accounts.
 
 
-# Digital Signing With Digital Contracts
+# Digital Signing of Digital Contract
 
 ## digital signing of the action of digital contract creation
 * When a creation action is delivered to this Yosemite contract, it checks that the action is sent by the service provider who wants to create the digital contract.
 * The creation action includes the list of accounts who are contract signers for `sign` action.
 
-## digital signing of the digital contract
+## digital signing of the created digital contract
 * An action for digital contract signing must be signed by one of the contract signers, not the service provider.
 * Digital signature embedded in the action cryptographically proves that one of the contract signers actually signs the digital contract.
 * It also proves that the signing action is sent under the approval of the contract signer.
