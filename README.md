@@ -49,4 +49,17 @@ cleos  -> clyos ('cl'ient + 'yos'emite)
 keosd  -> keyos (key + 'yos'emite)
 ```
 
+## Build and Install
 To build YOSEMITE, use `yosemite_build.sh`. To install and unsintall, use `yosemite_install.sh` and `yosemite_uninstall.sh`.
+
+## Local Single-node Testnet
+For local test environment, [EOSIO Local Single-node Testnet](https://developers.eos.io/eosio-nodeos/docs/local-single-node-testnet) would help.
+
+For the first execution of YOSEMITE signle-node blockchain, you should do like below:
+```
+cd build/programs/yosemite
+./yosemite -e -p yosemite --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin \
+           --config-dir $HOME/yosemite/config \
+           --data-dir $HOME/yosemite/data
+```
+Then you can adjust `config.ini` under `config-dir` to just execute `./yosemite`.
