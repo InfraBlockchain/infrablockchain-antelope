@@ -48,6 +48,11 @@ nodeos -> yosemite
 cleos  -> clyos ('cl'ient + 'yos'emite)
 keosd  -> keyos (key + 'yos'emite)
 ```
+### Client Tool
+clyos : https://developers.eos.io/eosio-nodeos/docs/cleos-overview
+
+### Private Key Store Daemon
+keyos : https://developers.eos.io/eosio-nodeos/docs/keosd-overview
 
 ## Build and Install
 To build YOSEMITE, use `yosemite_build.sh`. To install and unsintall, use `yosemite_install.sh` and `yosemite_uninstall.sh`.
