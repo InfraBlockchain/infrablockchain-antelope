@@ -61,10 +61,20 @@ To build YOSEMITE, use `yosemite_build.sh`. To install and unsintall, use `yosem
 For local test environment, [EOSIO Local Single-node Testnet](https://developers.eos.io/eosio-nodeos/docs/local-single-node-testnet) would help.
 
 For the first execution of YOSEMITE signle-node blockchain, you should do like below:
-```
+```shell
 cd build/programs/yosemite
 ./yosemite -e -p yosemite --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin \
            --config-dir $HOME/yosemite/config \
            --data-dir $HOME/yosemite/data
 ```
 Then you can adjust `config.ini` under `config-dir` to just execute `./yosemite`.
+```ini
+enable-stale-production = true
+ 
+producer-name = yosemite
+ 
+plugin = eosio::producer_plugin
+plugin = eosio::chain_api_plugin
+plugin = eosio::http_plugin
+plugin = eosio::history_api_plugin
+```
