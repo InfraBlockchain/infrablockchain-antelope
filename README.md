@@ -51,7 +51,7 @@ keosd  -> keyos (key + 'yos'emite)
 ### Client Tool
 clyos : https://developers.eos.io/eosio-nodeos/docs/cleos-overview
 
-### Private Key Store Daemon
+### Key Store Daemon
 keyos : https://developers.eos.io/eosio-nodeos/docs/keosd-overview
 
 ## Build and Install
