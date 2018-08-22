@@ -200,9 +200,10 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
 
    // YOSEMITE Transaction-as-a-Vote for Proof-of-Transaction
    cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
-
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
    cmd->add_option("--max-net-usage", tx_max_net_usage, localized("set an upper limit on the net usage budget, in bytes, for the transaction (defaults to 0 which means no limit)"));
+#endif
 }
 
 vector<chain::permission_level> get_account_permissions(const vector<string>& permissions) {
@@ -786,7 +787,7 @@ void ensure_keosd_running(CLI::App* app) {
     if (app->get_subcommand("create")->got_subcommand("key")) // create key does not require wallet
        return;
     if (auto* subapp = app->get_subcommand("system")) {
-       if (subapp->got_subcommand("listproducers") || subapp->got_subcommand("listbw") || subapp->got_subcommand("bidnameinfo")) // system list* do not require wallet
+       if (subapp->got_subcommand("listproducers") || subapp->got_subcommand("listbw")) // system list* do not require wallet
          return;
     }
 
@@ -884,24 +885,20 @@ struct create_account_subcommand {
    bool simple;
 
    create_account_subcommand(CLI::App* actionRoot, bool s) : simple(s) {
-      auto createAccount = actionRoot->add_subcommand( (simple ? "account" : "newaccount"), localized("Create an account, buy ram, stake for bandwidth for the account"));
+      auto createAccount = actionRoot->add_subcommand( (simple ? "account" : "newaccount"), localized("Create an account"));
       createAccount->add_option("creator", creator, localized("The name of the account creating the new account"))->required();
       createAccount->add_option("name", account_name, localized("The name of the new account"))->required();
       createAccount->add_option("OwnerKey", owner_key_str, localized("The owner public key for the new account"))->required();
       createAccount->add_option("ActiveKey", active_key_str, localized("The active public key for the new account"));
 
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
       if (!simple) {
          createAccount->add_option("--stake-net", stake_net,
                                    (localized("The amount of EOS delegated for net bandwidth")))->required();
          createAccount->add_option("--stake-cpu", stake_cpu,
                                    (localized("The amount of EOS delegated for CPU bandwidth")))->required();
-         createAccount->add_option("--buy-ram-kbytes", buy_ram_bytes_in_kbytes,
-                                   (localized("The amount of RAM bytes to purchase for the new account in kibibytes (KiB), default is 8 KiB")));
-         createAccount->add_option("--buy-ram", buy_ram_eos,
-                                   (localized("The amount of RAM bytes to purchase for the new account in EOS")));
-         createAccount->add_flag("--transfer", transfer,
-                                 (localized("Transfer voting power and right to unstake EOS to receiver")));
       }
+#endif
 
       add_standard_transaction_options(createAccount);
 
@@ -916,24 +913,22 @@ struct create_account_subcommand {
                active_key = public_key_type(active_key_str);
             } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid active public key: ${public_key}", ("public_key", active_key_str));
             auto create = create_newaccount(creator, account_name, owner_key, active_key);
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
             if (!simple) {
-               if ( buy_ram_eos.empty() && buy_ram_bytes_in_kbytes == 0) {
-                  std::cerr << "ERROR: Either --buy-ram or --buy-ram-kbytes with non-zero value is required" << std::endl;
-                  return;
-               }
-               action buyram = !buy_ram_eos.empty() ? create_buyram(creator, account_name, to_asset(buy_ram_eos))
-                  : create_buyrambytes(creator, account_name, buy_ram_bytes_in_kbytes * 1024);
                auto net = to_asset(stake_net);
                auto cpu = to_asset(stake_cpu);
                if ( net.get_amount() != 0 || cpu.get_amount() != 0 ) {
                   action delegate = create_delegate( creator, account_name, net, cpu, transfer);
-                  send_actions( { create, buyram, delegate } );
+                  send_actions( { create, delegate } );
                } else {
-                  send_actions( { create, buyram } );
+                  send_actions( { create } );
                }
             } else {
                send_actions( { create } );
             }
+#else
+          send_actions( { create } );
+#endif
       });
    }
 };
@@ -951,140 +946,6 @@ struct unregister_producer_subcommand {
                   ("producer", producer_str);
 
          send_actions({create_action({permission_level{producer_str,config::active_name}}, config::system_account_name, N(unregprod), act_payload)});
-      });
-   }
-};
-
-struct vote_producer_proxy_subcommand {
-   string voter_str;
-   string proxy_str;
-
-   vote_producer_proxy_subcommand(CLI::App* actionRoot) {
-      auto vote_proxy = actionRoot->add_subcommand("proxy", localized("Vote your stake through a proxy"));
-      vote_proxy->add_option("voter", voter_str, localized("The voting account"))->required();
-      vote_proxy->add_option("proxy", proxy_str, localized("The proxy account"))->required();
-      add_standard_transaction_options(vote_proxy);
-
-      vote_proxy->set_callback([this] {
-         fc::variant act_payload = fc::mutable_variant_object()
-                  ("voter", voter_str)
-                  ("proxy", proxy_str)
-                  ("producers", std::vector<account_name>{});
-         send_actions({create_action({permission_level{voter_str,config::active_name}}, config::system_account_name, N(voteproducer), act_payload)});
-      });
-   }
-};
-
-struct vote_producers_subcommand {
-   string voter_str;
-   vector<eosio::name> producer_names;
-
-   vote_producers_subcommand(CLI::App* actionRoot) {
-      auto vote_producers = actionRoot->add_subcommand("prods", localized("Vote for one or more producers"));
-      vote_producers->add_option("voter", voter_str, localized("The voting account"))->required();
-      vote_producers->add_option("producers", producer_names, localized("The account(s) to vote for. All options from this position and following will be treated as the producer list."))->required();
-      add_standard_transaction_options(vote_producers);
-
-      vote_producers->set_callback([this] {
-
-         std::sort( producer_names.begin(), producer_names.end() );
-
-         fc::variant act_payload = fc::mutable_variant_object()
-                  ("voter", voter_str)
-                  ("proxy", "")
-                  ("producers", producer_names);
-         send_actions({create_action({permission_level{voter_str,config::active_name}}, config::system_account_name, N(voteproducer), act_payload)});
-      });
-   }
-};
-
-struct approve_producer_subcommand {
-   eosio::name voter;
-   eosio::name producer_name;
-
-   approve_producer_subcommand(CLI::App* actionRoot) {
-      auto approve_producer = actionRoot->add_subcommand("approve", localized("Add one producer to list of voted producers"));
-      approve_producer->add_option("voter", voter, localized("The voting account"))->required();
-      approve_producer->add_option("producer", producer_name, localized("The account to vote for"))->required();
-      add_standard_transaction_options(approve_producer);
-
-      approve_producer->set_callback([this] {
-            auto result = call(get_table_func, fc::mutable_variant_object("json", true)
-                               ("code", name(config::system_account_name).to_string())
-                               ("scope", name(config::system_account_name).to_string())
-                               ("table", "voters")
-                               ("table_key", "owner")
-                               ("lower_bound", voter.value)
-                               ("limit", 1)
-            );
-            auto res = result.as<eosio::chain_apis::read_only::get_table_rows_result>();
-            if ( res.rows.empty() || res.rows[0]["owner"].as_string() != name(voter).to_string() ) {
-               std::cerr << "Voter info not found for account " << voter << std::endl;
-               return;
-            }
-            EOS_ASSERT( 1 == res.rows.size(), multiple_voter_info, "More than one voter_info for account" );
-            auto prod_vars = res.rows[0]["producers"].get_array();
-            vector<eosio::name> prods;
-            for ( auto& x : prod_vars ) {
-               prods.push_back( name(x.as_string()) );
-            }
-            prods.push_back( producer_name );
-            std::sort( prods.begin(), prods.end() );
-            auto it = std::unique( prods.begin(), prods.end() );
-            if (it != prods.end() ) {
-               std::cerr << "Producer \"" << producer_name << "\" is already on the list." << std::endl;
-               return;
-            }
-            fc::variant act_payload = fc::mutable_variant_object()
-               ("voter", voter)
-               ("proxy", "")
-               ("producers", prods);
-            send_actions({create_action({permission_level{voter,config::active_name}}, config::system_account_name, N(voteproducer), act_payload)});
-      });
-   }
-};
-
-struct unapprove_producer_subcommand {
-   eosio::name voter;
-   eosio::name producer_name;
-
-   unapprove_producer_subcommand(CLI::App* actionRoot) {
-      auto approve_producer = actionRoot->add_subcommand("unapprove", localized("Remove one producer from list of voted producers"));
-      approve_producer->add_option("voter", voter, localized("The voting account"))->required();
-      approve_producer->add_option("producer", producer_name, localized("The account to remove from voted producers"))->required();
-      add_standard_transaction_options(approve_producer);
-
-      approve_producer->set_callback([this] {
-            auto result = call(get_table_func, fc::mutable_variant_object("json", true)
-                               ("code", name(config::system_account_name).to_string())
-                               ("scope", name(config::system_account_name).to_string())
-                               ("table", "voters")
-                               ("table_key", "owner")
-                               ("lower_bound", voter.value)
-                               ("limit", 1)
-            );
-            auto res = result.as<eosio::chain_apis::read_only::get_table_rows_result>();
-            if ( res.rows.empty() || res.rows[0]["owner"].as_string() != name(voter).to_string() ) {
-               std::cerr << "Voter info not found for account " << voter << std::endl;
-               return;
-            }
-            EOS_ASSERT( 1 == res.rows.size(), multiple_voter_info, "More than one voter_info for account" );
-            auto prod_vars = res.rows[0]["producers"].get_array();
-            vector<eosio::name> prods;
-            for ( auto& x : prod_vars ) {
-               prods.push_back( name(x.as_string()) );
-            }
-            auto it = std::remove( prods.begin(), prods.end(), producer_name );
-            if (it == prods.end() ) {
-               std::cerr << "Cannot remove: producer \"" << producer_name << "\" is not on the list." << std::endl;
-               return;
-            }
-            prods.erase( it, prods.end() ); //should always delete only one element
-            fc::variant act_payload = fc::mutable_variant_object()
-               ("voter", voter)
-               ("proxy", "")
-               ("producers", prods);
-            send_actions({create_action({permission_level{voter,config::active_name}}, config::system_account_name, N(voteproducer), act_payload)});
       });
    }
 };
@@ -1241,59 +1102,6 @@ struct undelegate_bandwidth_subcommand {
    }
 };
 
-struct bidname_subcommand {
-   string bidder_str;
-   string newname_str;
-   string bid_amount;
-   bidname_subcommand(CLI::App *actionRoot) {
-      auto bidname = actionRoot->add_subcommand("bidname", localized("Name bidding"));
-      bidname->add_option("bidder", bidder_str, localized("The bidding account"))->required();
-      bidname->add_option("newname", newname_str, localized("The bidding name"))->required();
-      bidname->add_option("bid", bid_amount, localized("The amount of EOS to bid"))->required();
-      add_standard_transaction_options(bidname);
-      bidname->set_callback([this] {
-         fc::variant act_payload = fc::mutable_variant_object()
-                  ("bidder", bidder_str)
-                  ("newname", newname_str)
-                  ("bid", to_asset(bid_amount));
-         send_actions({create_action({permission_level{bidder_str, config::active_name}}, config::system_account_name, N(bidname), act_payload)});
-      });
-   }
-};
-
-struct bidname_info_subcommand {
-   bool print_json = false;
-   string newname_str;
-   bidname_info_subcommand(CLI::App* actionRoot) {
-      auto list_producers = actionRoot->add_subcommand("bidnameinfo", localized("Get bidname info"));
-      list_producers->add_flag("--json,-j", print_json, localized("Output in JSON format"));
-      list_producers->add_option("newname", newname_str, localized("The bidding name"))->required();
-      list_producers->set_callback([this] {
-         auto rawResult = call(get_table_func, fc::mutable_variant_object("json", true)
-                               ("code", "eosio")("scope", "eosio")("table", "namebids")
-                               ("lower_bound", eosio::chain::string_to_name(newname_str.c_str()))("limit", 1));
-         if ( print_json ) {
-            std::cout << fc::json::to_pretty_string(rawResult) << std::endl;
-            return;
-         }
-         auto result = rawResult.as<eosio::chain_apis::read_only::get_table_rows_result>();
-         if ( result.rows.empty() ) {
-            std::cout << "No bidname record found" << std::endl;
-            return;
-         }
-         for ( auto& row : result.rows ) {
-            fc::time_point time(fc::microseconds(row["last_bid_time"].as_uint64()));
-            int64_t bid = row["high_bid"].as_int64();
-            std::cout << std::left << std::setw(18) << "bidname:" << std::right << std::setw(24) << row["newname"].as_string() << "\n"
-                      << std::left << std::setw(18) << "highest bidder:" << std::right << std::setw(24) << row["high_bidder"].as_string() << "\n"
-                      << std::left << std::setw(18) << "highest bid:" << std::right << std::setw(24) << (bid > 0 ? bid : -bid) << "\n"
-                      << std::left << std::setw(18) << "last bid time:" << std::right << std::setw(24) << ((std::string)time).c_str() << std::endl;
-            if (bid < 0) std::cout << "This auction has already closed" << std::endl;
-         }
-      });
-   }
-};
-
 struct list_bw_subcommand {
    eosio::name account;
    bool print_json = false;
@@ -1331,57 +1139,6 @@ struct list_bw_subcommand {
    }
 };
 
-struct buyram_subcommand {
-   string from_str;
-   string receiver_str;
-   string amount;
-   bool kbytes = false;
-
-   buyram_subcommand(CLI::App* actionRoot) {
-      auto buyram = actionRoot->add_subcommand("buyram", localized("Buy RAM"));
-      buyram->add_option("payer", from_str, localized("The account paying for RAM"))->required();
-      buyram->add_option("receiver", receiver_str, localized("The account receiving bought RAM"))->required();
-      buyram->add_option("amount", amount, localized("The amount of EOS to pay for RAM, or number of kbytes of RAM if --kbytes is set"))->required();
-      buyram->add_flag("--kbytes,-k", kbytes, localized("buyram in number of kbytes"));
-      add_standard_transaction_options(buyram);
-      buyram->set_callback([this] {
-         if (kbytes) {
-            fc::variant act_payload = fc::mutable_variant_object()
-                  ("payer", from_str)
-                  ("receiver", receiver_str)
-                  ("bytes", fc::to_uint64(amount) * 1024ull);
-            send_actions({create_action({permission_level{from_str,config::active_name}}, config::system_account_name, N(buyrambytes), act_payload)});            
-         } else {
-            fc::variant act_payload = fc::mutable_variant_object()
-               ("payer", from_str)
-               ("receiver", receiver_str)
-               ("quant", to_asset(amount));
-            send_actions({create_action({permission_level{from_str,config::active_name}}, config::system_account_name, N(buyram), act_payload)});
-         }
-      });
-   }
-};
-
-struct sellram_subcommand {
-   string from_str;
-   string receiver_str;
-   uint64_t amount;
-
-   sellram_subcommand(CLI::App* actionRoot) {
-      auto sellram = actionRoot->add_subcommand("sellram", localized("Sell RAM"));
-      sellram->add_option("account", receiver_str, localized("The account to receive EOS for sold RAM"))->required();
-      sellram->add_option("bytes", amount, localized("Number of RAM bytes to sell"))->required();
-      add_standard_transaction_options(sellram);
-
-      sellram->set_callback([this] {
-            fc::variant act_payload = fc::mutable_variant_object()
-               ("account", receiver_str)
-               ("bytes", amount);
-            send_actions({create_action({permission_level{receiver_str,config::active_name}}, config::system_account_name, N(sellram), act_payload)});
-         });
-   }
-};
-
 struct claimrewards_subcommand {
    string owner;
 
@@ -1394,40 +1151,6 @@ struct claimrewards_subcommand {
          fc::variant act_payload = fc::mutable_variant_object()
                   ("owner", owner);
          send_actions({create_action({permission_level{owner,config::active_name}}, config::system_account_name, N(claimrewards), act_payload)});
-      });
-   }
-};
-
-struct regproxy_subcommand {
-   string proxy;
-
-   regproxy_subcommand(CLI::App* actionRoot) {
-      auto register_proxy = actionRoot->add_subcommand("regproxy", localized("Register an account as a proxy (for voting)"));
-      register_proxy->add_option("proxy", proxy, localized("The proxy account to register"))->required();
-      add_standard_transaction_options(register_proxy);
-
-      register_proxy->set_callback([this] {
-         fc::variant act_payload = fc::mutable_variant_object()
-                  ("proxy", proxy)
-                  ("isproxy", true);
-         send_actions({create_action({permission_level{proxy,config::active_name}}, config::system_account_name, N(regproxy), act_payload)});
-      });
-   }
-};
-
-struct unregproxy_subcommand {
-   string proxy;
-
-   unregproxy_subcommand(CLI::App* actionRoot) {
-      auto unregister_proxy = actionRoot->add_subcommand("unregproxy", localized("Unregister an account as a proxy (for voting)"));
-      unregister_proxy->add_option("proxy", proxy, localized("The proxy account to unregister"))->required();
-      add_standard_transaction_options(unregister_proxy);
-
-      unregister_proxy->set_callback([this] {
-         fc::variant act_payload = fc::mutable_variant_object()
-                  ("proxy", proxy)
-                  ("isproxy", false);
-         send_actions({create_action({permission_level{proxy,config::active_name}}, config::system_account_name, N(regproxy), act_payload)});
       });
    }
 };
@@ -2991,29 +2714,14 @@ int main( int argc, char** argv ) {
    auto registerProducer = register_producer_subcommand(system);
    auto unregisterProducer = unregister_producer_subcommand(system);
 
-   auto voteProducer = system->add_subcommand("voteproducer", localized("Vote for a producer"));
-   voteProducer->require_subcommand();
-   auto voteProxy = vote_producer_proxy_subcommand(voteProducer);
-   auto voteProducers = vote_producers_subcommand(voteProducer);
-   auto approveProducer = approve_producer_subcommand(voteProducer);
-   auto unapproveProducer = unapprove_producer_subcommand(voteProducer);
-
    auto listProducers = list_producers_subcommand(system);
 
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
    auto delegateBandWidth = delegate_bandwidth_subcommand(system);
    auto undelegateBandWidth = undelegate_bandwidth_subcommand(system);
    auto listBandWidth = list_bw_subcommand(system);
-   auto bidname = bidname_subcommand(system);
-   auto bidnameinfo = bidname_info_subcommand(system);
-
-   auto biyram = buyram_subcommand(system);
-   auto sellram = sellram_subcommand(system);
-
+#endif
    auto claimRewards = claimrewards_subcommand(system);
-
-   auto regProxy = regproxy_subcommand(system);
-   auto unregProxy = unregproxy_subcommand(system);
-
    auto cancelDelay = canceldelay_subcommand(system);
 
    try {
