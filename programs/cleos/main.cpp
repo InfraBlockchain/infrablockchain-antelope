@@ -1,24 +1,24 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
- *  @defgroup eosclienttool EOSIO Command Line Client Reference
- *  @brief Tool for sending transactions and querying state from @ref nodeos
- *  @ingroup eosclienttool
+ *  @copyright defined in yosemite/LICENSE.txt
+ *  @defgroup yosclienttool YOSEMITE Command Line Client Reference
+ *  @brief Tool for sending transactions and querying state from @ref yosemite
+ *  @ingroup yosclienttool
  */
 
 /**
-  @defgroup eosclienttool
+  @defgroup yosclienttool
 
-  @section intro Introduction to cleos
+  @section intro Introduction to clyos
 
-  `cleos` is a command line tool that interfaces with the REST api exposed by @ref nodeos. In order to use `cleos` you will need to
-  have a local copy of `nodeos` running and configured to load the 'eosio::chain_api_plugin'.
+  `clyos` is a command line tool that interfaces with the REST api exposed by @ref yosemite. In order to use `clyos` you will need to
+  have a local copy of `yosemite` running and configured to load the 'eosio::chain_api_plugin'.
 
-   cleos contains documentation for all of its commands. For a list of all commands known to cleos, simply run it with no arguments:
+   clyos contains documentation for all of its commands. For a list of all commands known to clyos, simply run it with no arguments:
 ```
-$ ./cleos
-Command Line Interface to EOSIO Client
-Usage: programs/cleos/cleos [OPTIONS] SUBCOMMAND
+$ ./clyos
+Command Line Interface to YOSEMITE Client
+Usage: programs/clyos/clyos [OPTIONS] SUBCOMMAND
 
 Options:
   -h,--help                   Print this help message and exit
@@ -45,17 +45,17 @@ Subcommands:
 ```
 To get help with any particular subcommand, run it with no arguments as well:
 ```
-$ ./cleos create
+$ ./clyos create
 Create various items, on and off the blockchain
-Usage: ./cleos create SUBCOMMAND
+Usage: ./clyos create SUBCOMMAND
 
 Subcommands:
   key                         Create a new keypair and print the public and private keys
   account                     Create a new account on the blockchain
 
-$ ./cleos create account
+$ ./clyos create account
 Create a new account on the blockchain
-Usage: ./cleos create account [OPTIONS] creator name OwnerKey ActiveKey
+Usage: ./clyos create account [OPTIONS] creator name OwnerKey ActiveKey
 
 Positionals:
   creator TEXT                The name of the account creating the new account
@@ -637,7 +637,7 @@ asset to_asset( const string& code, const string& s ) {
    auto it = cache.find( sym );
    auto sym_str = a.symbol_name();
    if ( it == cache.end() ) {
-      auto json = call(get_currency_stats_func, fc::mutable_variant_object("json", false)
+      auto json = call(get_token_stats_func, fc::mutable_variant_object("json", false)
                        ("code", code)
                        ("symbol", sym_str)
       );
@@ -802,10 +802,10 @@ void ensure_keosd_running(CLI::App* app) {
 
     boost::filesystem::path binPath = boost::dll::program_location();
     binPath.remove_filename();
-    // This extra check is necessary when running cleos like this: ./cleos ...
+    // This extra check is necessary when running clyos like this: ./clyos ...
     if (binPath.filename_is_dot())
         binPath.remove_filename();
-    binPath.append(key_store_executable_name); // if cleos and keosd are in the same installation directory
+    binPath.append(key_store_executable_name); // if clyos and keosd are in the same installation directory
     if (!boost::filesystem::exists(binPath)) {
         binPath.remove_filename().remove_filename().append(key_store_executable_name).append(key_store_executable_name);
     }
@@ -1550,7 +1550,7 @@ void get_account( const string& accountName, bool json_format ) {
          auto net_total = to_asset(res.total_resources.get_object()["net_weight"].as_string());
 
          if( net_total.get_symbol() != unstaking.get_symbol() ) {
-            // Core symbol of nodeos responding to the request is different than core symbol built into cleos
+            // Core symbol of yosemite responding to the request is different than core symbol built into clyos
             unstaking = asset( 0, net_total.get_symbol() ); // Correct core symbol for unstaking asset.
             staked = asset( 0, net_total.get_symbol() ); // Correct core symbol for staked asset.
          }
@@ -1798,7 +1798,7 @@ int main( int argc, char** argv ) {
    bool pack_action_data_flag = false;
    auto pack_transaction = convert->add_subcommand("pack_transaction", localized("From plain signed json to packed form"));
    pack_transaction->add_option("transaction", plain_signed_transaction_json, localized("The plain signed json (string)"))->required();
-   pack_transaction->add_flag("--pack-action-data", pack_action_data_flag, localized("Pack all action data within transaction, needs interaction with nodeos"));
+   pack_transaction->add_flag("--pack-action-data", pack_action_data_flag, localized("Pack all action data within transaction, needs interaction with yosemite"));
    pack_transaction->set_callback([&] {
       fc::variant trx_var;
       try {
@@ -1821,7 +1821,7 @@ int main( int argc, char** argv ) {
    bool unpack_action_data_flag = false;
    auto unpack_transaction = convert->add_subcommand("unpack_transaction", localized("From packed to plain signed json form"));
    unpack_transaction->add_option("transaction", packed_transaction_json, localized("The packed transaction json (string containing packed_trx and optionally compression fields)"))->required();
-   unpack_transaction->add_flag("--unpack-action-data", unpack_action_data_flag, localized("Unpack all action data within transaction, needs interaction with nodeos"));
+   unpack_transaction->add_flag("--unpack-action-data", unpack_action_data_flag, localized("Unpack all action data within transaction, needs interaction with yosemite"));
    unpack_transaction->set_callback([&] {
       fc::variant packed_trx_var;
       packed_transaction packed_trx;
@@ -1935,12 +1935,12 @@ int main( int argc, char** argv ) {
             abi = fc::json::to_pretty_string(abi_d);
       }
       catch(chain::missing_chain_api_plugin_exception&) {
-         //see if this is an old nodeos that doesn't support get_raw_code_and_abi
+         //see if this is an old yosemite that doesn't support get_raw_code_and_abi
          const auto old_result = call(get_code_func, fc::mutable_variant_object("account_name", accountName)("code_as_wasm",code_as_wasm));
          code_hash = old_result["code_hash"].as_string();
          if(code_as_wasm) {
             wasm = old_result["wasm"].as_string();
-            std::cout << localized("Warning: communicating to older nodeos which returns malformed binary wasm") << std::endl;
+            std::cout << localized("Warning: communicating to older yosemite which returns malformed binary wasm") << std::endl;
          }
          else
             wast = old_result["wast"].as_string();
@@ -2034,36 +2034,36 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // currency accessors
-   // get currency balance
-   string symbol;
-   auto get_currency = get->add_subcommand( "currency", localized("Retrieve information related to standard currencies"), true);
-   get_currency->require_subcommand();
-   auto get_balance = get_currency->add_subcommand( "balance", localized("Retrieve the balance of an account for a given currency"), false);
-   get_balance->add_option( "contract", code, localized("The contract that operates the currency") )->required();
-   get_balance->add_option( "account", accountName, localized("The account to query balances for") )->required();
-   get_balance->add_option( "symbol", symbol, localized("The symbol for the currency if the contract operates multiple currencies") );
+   // token accessors
+   // get token balance
+   string ysymbol;
+   auto get_token = get->add_subcommand("token", localized("Retrieve information related to standard tokens"), true);
+   get_token->require_subcommand();
+
+   auto get_balance = get_token->add_subcommand("balance",
+                                                localized("Retrieve the balance of an account for a given token"),
+                                                false);
+   get_balance->add_option("contract", code, localized("The contract that operates the token (e.g. yx.token)"))->required();
+   get_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
+   get_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
    get_balance->set_callback([&] {
-      auto result = call(get_currency_balance_func, fc::mutable_variant_object
+      auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
          ("account", accountName)
          ("code", code)
-         ("symbol", symbol.empty() ? fc::variant() : symbol)
+         ("ysymbol", ysymbol)
       );
 
-      const auto& rows = result.get_array();
-      for( const auto& r : rows ) {
-         std::cout << r.as_string()
-                   << std::endl;
-      }
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
    });
 
-   auto get_currency_stats = get_currency->add_subcommand( "stats", localized("Retrieve the stats of for a given currency"), false);
-   get_currency_stats->add_option( "contract", code, localized("The contract that operates the currency") )->required();
-   get_currency_stats->add_option( "symbol", symbol, localized("The symbol for the currency if the contract operates multiple currencies") )->required();
-   get_currency_stats->set_callback([&] {
-      auto result = call(get_currency_stats_func, fc::mutable_variant_object("json", false)
+   auto get_token_stats = get_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
+   get_token_stats->add_option("contract", code, localized("The contract that operates the token"))->required();
+   get_token_stats->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
+   get_token_stats->set_callback([&] {
+      auto result = call(get_token_stats_func, fc::mutable_variant_object("json", false)
          ("code", code)
-         ("symbol", symbol)
+         ("ysymbol", ysymbol)
       );
 
       std::cout << fc::json::to_pretty_string(result)

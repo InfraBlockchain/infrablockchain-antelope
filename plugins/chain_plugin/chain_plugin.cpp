@@ -14,12 +14,12 @@
 #include <eosio/chain/reversible_block_object.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/generated_transaction_object.hpp>
-
 #include <eosio/chain/eosio_contract.hpp>
-
+#include <eosio/chain/wast_to_wasm.hpp>
 #include <eosio/utilities/key_conversion.hpp>
 #include <eosio/utilities/common.hpp>
-#include <eosio/chain/wast_to_wasm.hpp>
+
+#include <yosemite/chain/system_accounts.hpp>
 
 #include <boost/signals2/connection.hpp>
 #include <boost/algorithm/string.hpp>
@@ -1153,6 +1153,62 @@ fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_p
    return results;
 }
 
+yx_asset read_only::get_token_balance(const read_only::get_token_balance_params &p) const {
+   yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
+   const abi_def abi = eosio::chain_apis::get_abi(db, p.code);
+   yx_asset result{};
+
+   const auto &d = db.db();
+   static const uint8_t secondary_index_num = 0;
+   const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, p.account, N(taccounts)));
+   const auto * const secondary_table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
+         boost::make_tuple(p.code, p.account, N(taccounts) | secondary_index_num)); // yxsymbol secondary index
+   EOS_ASSERT(table_id && secondary_table_id, chain::empty_token_exception, "The account doesn't have the token.");
+
+   const auto &secondary_index = d.get_index<index128_index>().indices();
+   const auto &secondary_index_by_secondary = secondary_index.get<by_secondary>();
+
+   const auto &itr = secondary_index_by_secondary.find(
+         boost::make_tuple(secondary_table_id->id, target_symbol.to_uint128()));
+   EOS_ASSERT(itr != secondary_index_by_secondary.end(), chain::empty_token_exception, "The account doesn't have the token.");
+
+   const auto *itr2 = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, itr->primary_key));
+   EOS_ASSERT(itr2, chain::empty_token_exception, "The account doesn't have the token.");
+
+   vector<char> data;
+   copy_inline_row(*itr2, data);
+
+   abi_serializer abis;
+   abis.set_abi(abi, abi_serializer_max_time);
+   fc::variant account_info = abis.binary_to_variant(abis.get_table_type(N(taccounts)), data, abi_serializer_max_time);
+   result = account_info["token"].as<yx_asset>();
+
+   return result;
+}
+
+read_only::get_token_stats_result read_only::get_token_stats(const read_only::get_token_stats_params &p) const {
+   yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
+
+   const auto &d = db.db();
+   const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, target_symbol.symbol.value(), N(tstats)));
+   EOS_ASSERT(table_id, chain::contract_table_query_exception, "Missing table");
+
+   const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, target_symbol.issuer.value));
+   EOS_ASSERT(itr, chain::token_not_found_exception, "The issuer has not created the token.");
+
+   fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
+   read_only::get_token_stats_result result;
+
+   fc::raw::unpack(ds, result.issuer);
+   fc::raw::unpack(ds, result.supply);
+   fc::raw::unpack(ds, result.can_set_options);
+   fc::raw::unpack(ds, result.options);
+   fc::raw::unpack(ds, result.kyc_rule_types);
+   fc::raw::unpack(ds, result.kyc_rule_flags);
+
+   return result;
+}
+
 // TODO: move this and similar functions to a header. Copied from wasm_interface.cpp.
 // TODO: fix strict aliasing violation
 static float64_t to_softfloat64( double d ) {
@@ -1551,7 +1607,7 @@ read_only::get_account_results read_only::get_account( const get_account_params&
    if( abi_serializer::to_abi(code_account.abi, abi) ) {
       abi_serializer abis( abi, abi_serializer_max_time );
 
-      const auto ntoken_code = N(yx.ntoken);
+      const auto ntoken_code = YOSEMITE_NATIVE_TOKEN_ACCOUNT;
 
       // get total balance of native token
       const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(ntoken_code, params.account_name, N(ntaccountstt)));
