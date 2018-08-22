@@ -552,12 +552,12 @@ fc::variant regproducer_variant(const account_name& producer, const public_key_t
             ;
 }
 
-chain::action create_transfer(const string& contract, const name& sender, const name& recipient, asset amount, const string& memo ) {
+chain::action create_transfer(const string& contract, const name& sender, const name& recipient, yx_asset token, const string& memo) {
 
    auto transfer = fc::mutable_variant_object
       ("from", sender)
       ("to", recipient)
-      ("quantity", amount)
+      ("token", token)
       ("memo", memo);
 
    auto args = fc::mutable_variant_object
@@ -787,7 +787,11 @@ void ensure_keosd_running(CLI::App* app) {
     if (app->get_subcommand("create")->got_subcommand("key")) // create key does not require wallet
        return;
     if (auto* subapp = app->get_subcommand("system")) {
-       if (subapp->got_subcommand("listproducers") || subapp->got_subcommand("listbw")) // system list* do not require wallet
+       if (subapp->got_subcommand("listproducers")
+#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+       || subapp->got_subcommand("listbw")
+#endif
+       ) // system list* do not require wallet
          return;
     }
 
@@ -1757,22 +1761,21 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // token accessors
+   // yx.token accessors
    // get token balance
    string ysymbol;
-   auto get_token = get->add_subcommand("token", localized("Retrieve information related to standard tokens"), true);
+   auto get_token = get->add_subcommand("token", localized("Retrieve information related to yosemite non-native tokens"), true);
    get_token->require_subcommand();
 
    auto get_balance = get_token->add_subcommand("balance",
                                                 localized("Retrieve the balance of an account for a given token"),
                                                 false);
-   get_balance->add_option("contract", code, localized("The contract that operates the token (e.g. yx.token)"))->required();
    get_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
    get_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
    get_balance->set_callback([&] {
       auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
          ("account", accountName)
-         ("code", code)
+         ("code", "yx.token")
          ("ysymbol", ysymbol)
       );
 
@@ -1781,11 +1784,10 @@ int main( int argc, char** argv ) {
    });
 
    auto get_token_stats = get_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
-   get_token_stats->add_option("contract", code, localized("The contract that operates the token"))->required();
    get_token_stats->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
    get_token_stats->set_callback([&] {
       auto result = call(get_token_stats_func, fc::mutable_variant_object("json", false)
-         ("code", code)
+         ("code", "yx.token")
          ("ysymbol", ysymbol)
       );
 
@@ -2089,17 +2091,16 @@ int main( int argc, char** argv ) {
    auto setActionPermission = set_action_permission_subcommand(setAction);
 
    // Transfer subcommand
-   string con = "yx.token";
    string sender;
    string recipient;
-   string amount;
+   string token;
    string memo;
-   auto transfer = app.add_subcommand("transfer", localized("Transfer EOS from account to account"), false);
-   transfer->add_option("sender", sender, localized("The account sending EOS"))->required();
-   transfer->add_option("recipient", recipient, localized("The account receiving EOS"))->required();
-   transfer->add_option("amount", amount, localized("The amount of EOS to send"))->required();
+   auto transfer = app.add_subcommand("transfer", localized("Transfer token from account to account"), false);
+
+   transfer->add_option("sender", sender, localized("The account sending token"))->required();
+   transfer->add_option("recipient", recipient, localized("The account receiving token"))->required();
+   transfer->add_option("token", token, localized("The amount, symbol and its issuer of token to send (e.g. 1.0000 BTC@d2)"))->required();
    transfer->add_option("memo", memo, localized("The memo for the transfer"));
-   transfer->add_option("--contract,-c", con, localized("The contract which controls the token"));
 
    add_standard_transaction_options(transfer, "sender@active");
    transfer->set_callback([&] {
@@ -2110,7 +2111,7 @@ int main( int argc, char** argv ) {
          tx_force_unique = false;
       }
 
-      send_actions({create_transfer(con, sender, recipient, to_asset(con, amount), memo)});
+      send_actions({create_transfer("yx.token", sender, recipient, yosemite::chain::yx_asset::from_string(token), memo)});
    });
 
    // Net subcommand

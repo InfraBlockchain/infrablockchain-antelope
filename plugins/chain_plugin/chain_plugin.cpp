@@ -1191,10 +1191,10 @@ read_only::get_token_stats_result read_only::get_token_stats(const read_only::ge
 
    const auto &d = db.db();
    const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, target_symbol.symbol.value(), N(tstats)));
-   EOS_ASSERT(table_id, chain::contract_table_query_exception, "Missing table");
+   EOS_ASSERT(table_id, chain::token_not_found_exception, "Token is not created.");
 
    const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, target_symbol.issuer.value));
-   EOS_ASSERT(itr, chain::token_not_found_exception, "The issuer has not created the token.");
+   EOS_ASSERT(itr, chain::token_not_found_exception, "Token is not created by the issuer.");
 
    fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
    read_only::get_token_stats_result result;
