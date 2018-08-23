@@ -1186,6 +1186,42 @@ yx_asset read_only::get_token_balance(const read_only::get_token_balance_params 
    return result;
 }
 
+asset read_only::get_native_token_balance(const get_native_token_balance_params &params) const {
+   const abi_def abi = eosio::chain_apis::get_abi(db, YOSEMITE_NATIVE_TOKEN_ACCOUNT);
+
+   const auto &d = db.db();
+   if (params.issuer) {
+      const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
+            boost::make_tuple(YOSEMITE_NATIVE_TOKEN_ACCOUNT, params.account, N(ntaccounts)));
+      EOS_ASSERT(table_id, chain::empty_token_exception, "The account doesn't have the native token.");
+
+      const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, *params.issuer));
+      EOS_ASSERT(itr, chain::empty_token_exception, "The account doesn't have the native token for the specified issuer.");
+
+      fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
+      yx_asset token;
+
+      fc::raw::unpack(ds, token);
+
+      return token.amount;
+   } else {
+      // In case of total balance
+      const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
+            boost::make_tuple(YOSEMITE_NATIVE_TOKEN_ACCOUNT, params.account, N(ntaccountstt)));
+      EOS_ASSERT(table_id, chain::empty_token_exception, "The account doesn't have the native token.");
+
+      const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, N(totalbal)));
+      EOS_ASSERT(itr, chain::empty_token_exception, "The account doesn't have the native token.");
+
+      fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
+      asset result;
+
+      fc::raw::unpack(ds, result);
+
+      return result;
+   }
+}
+
 read_only::get_token_stats_result read_only::get_token_stats(const read_only::get_token_stats_params &p) const {
    yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
 
@@ -1205,6 +1241,25 @@ read_only::get_token_stats_result read_only::get_token_stats(const read_only::ge
    fc::raw::unpack(ds, result.options);
    fc::raw::unpack(ds, result.kyc_rule_types);
    fc::raw::unpack(ds, result.kyc_rule_flags);
+
+   return result;
+}
+
+read_only::get_native_token_stats_result read_only::get_native_token_stats(const read_only::get_native_token_stats_params &params) const {
+   const auto &d = db.db();
+   const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
+         boost::make_tuple(YOSEMITE_NATIVE_TOKEN_ACCOUNT, params.issuer, N(ntstats)));
+   EOS_ASSERT(table_id, chain::native_token_not_found_exception, "The issuer is not the system depository or it has never issued.");
+
+   const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, N(basicstats)));
+   EOS_ASSERT(itr, chain::contract_table_query_exception, "database of yx.ntoken might be broken");
+
+   fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
+   read_only::get_native_token_stats_result result;
+
+   fc::raw::unpack(ds, result.key);
+   fc::raw::unpack(ds, result.supply);
+   fc::raw::unpack(ds, result.options);
 
    return result;
 }

@@ -271,6 +271,13 @@ public:
 
    yx_asset get_token_balance(const get_token_balance_params &params) const;
 
+   struct get_native_token_balance_params {
+      name account;
+      optional<name> issuer;
+   };
+
+   asset get_native_token_balance(const get_native_token_balance_params &params) const;
+
    struct get_currency_stats_params {
       name           code;
       string         symbol;
@@ -299,6 +306,18 @@ public:
    };
 
    get_token_stats_result get_token_stats(const get_token_stats_params &params) const;
+
+   struct get_native_token_stats_params {
+      account_name issuer;
+   };
+
+   struct get_native_token_stats_result {
+      uint64_t key; //internal value which can be ignored
+      asset supply;
+      uint8_t options;
+   };
+
+   get_native_token_stats_result get_native_token_stats(const get_native_token_stats_params &params) const;
 
    struct get_producers_params {
       bool        json = false;
@@ -659,6 +678,9 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(ma
 FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (code)(account)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_params, (code)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (issuer)(supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
+FC_REFLECT(eosio::chain_apis::read_only::get_native_token_balance_params, (account)(issuer));
+FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_params, (issuer));
+FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_result, (supply)(options));
 
 FC_REFLECT( eosio::chain_apis::read_only::get_producers_params, (json)(lower_bound)(limit) )
 FC_REFLECT( eosio::chain_apis::read_only::get_producers_result, (rows)(total_producer_vote_weight)(more) );

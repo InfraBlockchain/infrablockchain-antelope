@@ -90,6 +90,8 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_table_rows, 200),
       CHAIN_RO_CALL(get_token_balance, 200),
       CHAIN_RO_CALL(get_token_stats, 200),
+      CHAIN_RO_CALL(get_native_token_balance, 200),
+      CHAIN_RO_CALL(get_native_token_stats, 200),
       CHAIN_RO_CALL(get_producers, 200),
       CHAIN_RO_CALL(get_producer_schedule, 200),
       CHAIN_RO_CALL(get_scheduled_transactions, 200),

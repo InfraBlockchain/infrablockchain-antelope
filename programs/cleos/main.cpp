@@ -1795,6 +1795,37 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
+   auto get_ntoken = get->add_subcommand("ntoken", localized("Retrieve information related to yosemite native token"), true);
+   get_ntoken->require_subcommand();
+
+   auto get_ntoken_balance = get_ntoken->add_subcommand("balance",
+                                                        localized("Retrieve the balance of an account for native token"),
+                                                        false);
+   string issuer;
+   get_ntoken_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
+   get_ntoken_balance->add_option("issuer", issuer, localized("The issuer of native token"));
+   get_ntoken_balance->set_callback([&] {
+      auto result = call(get_native_token_balance_func, fc::mutable_variant_object("json", false)
+            ("account", accountName)
+            ("code", "yx.ntoken")
+            ("issuer", issuer.empty() ? fc::variant() : issuer)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   auto get_ntoken_stats = get_ntoken->add_subcommand("stats", localized("Retrieve the stats of for native token"), false);
+   get_ntoken_stats->add_option("issuer", issuer, localized("The issuer of native token"))->required();
+   get_ntoken_stats->set_callback([&] {
+      auto result = call(get_native_token_stats_func, fc::mutable_variant_object("json", false)
+            ("issuer", issuer)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
    // get accounts
    string public_key_str;
    auto getAccounts = get->add_subcommand("accounts", localized("Retrieve accounts associated with a public key"), false);
