@@ -8,7 +8,7 @@ YOSEMITE's unique Proof-of-Transaction(PoT) consensus algorithm, which allows on
 
 Finally, governments and companies globally have a capable underlying system to utilize the advantages of blockchain and conduct sustainable policies and businesses.
 
-YOSEMITE is powered by EOSIO software to get low latency block confirmation and BFT finality. Other than EOSIO features, some of the novel features of YOSEMITE include:
+YOSEMITE is powered by [EOSIO software](https://github.com/EOSIO/eos) to get low latency block confirmation and BFT finality. Other than EOSIO features, some of the novel features of YOSEMITE include:
 
 1. Uses real money (e.g. USD, EUR, CNY) as the native token for transaction fee : [README](contracts/yx.ntoken/README.md)
 1. KYC/AML Compliant Blockchain
@@ -41,7 +41,7 @@ YOSEMITE is released under the open source MIT license and is offered â€œAS ISâ€
 
 <a name="gettingstarted"></a>
 ## Getting Started
-YOSEMITE is based on EOSIO software. So instructions detailing the process of getting the software, building it, running a simple test network that produces blocks, account creation to the blockchain can be helped by [Getting Started](https://developers.eos.io/eosio-nodeos/docs/overview-1) on the [EOSIO Developer Portal](https://developers.eos.io).
+YOSEMITE is based on [EOSIO software](https://github.com/EOSIO/eos). So instructions detailing the process of getting the software, building it, running a simple test network that produces blocks, account creation to the blockchain can be helped by [Getting Started](https://developers.eos.io/eosio-nodeos/docs/overview-1) on the [EOSIO Developer Portal](https://developers.eos.io).
 But the names of programs and scripts are changed.
 ```
 nodeos -> yosemite
