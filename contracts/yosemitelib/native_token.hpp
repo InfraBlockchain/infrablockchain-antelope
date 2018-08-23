@@ -94,6 +94,8 @@ namespace yosemite { namespace native_token {
                                 const yx_asset &remained_ntoken = {}) {
         auto tx_fee = yosemite::get_transaction_fee(operation);
         if (tx_fee.amount > 0) {
+            require_auth(payer);
+
             accounts_native accounts_table_native(YOSEMITE_NATIVE_TOKEN_ACCOUNT, payer);
             for (auto &balance_holder : accounts_table_native) {
                 if (std::find(zeroedout_depos.begin(), zeroedout_depos.end(), balance_holder.token.issuer) != zeroedout_depos.end()) {

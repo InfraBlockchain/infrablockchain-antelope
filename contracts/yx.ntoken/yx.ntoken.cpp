@@ -193,7 +193,7 @@ namespace yosemite { namespace native_token {
     }
 
     void ntoken::payfee(account_name payer, yx_asset token) {
-        require_auth(payer);
+        require_auth(payer); // just for sure
         require_auth(YOSEMITE_SYSTEM_ACCOUNT);
 
         if (token.amount <= 0) return;
