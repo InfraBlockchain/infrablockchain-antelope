@@ -514,24 +514,6 @@ chain::action create_action(const vector<permission_level>& authorization, const
    return chain::action{authorization, code, act, variant_to_bin(code, act, args)};
 }
 
-chain::action create_buyram(const name& creator, const name& newaccount, const asset& quantity) {
-   fc::variant act_payload = fc::mutable_variant_object()
-         ("payer", creator.to_string())
-         ("receiver", newaccount.to_string())
-         ("quant", quantity.to_string());
-   return create_action(tx_permission.empty() ? vector<chain::permission_level>{{creator,config::active_name}} : get_account_permissions(tx_permission),
-                        config::system_account_name, N(buyram), act_payload);
-}
-
-chain::action create_buyrambytes(const name& creator, const name& newaccount, uint32_t numbytes) {
-   fc::variant act_payload = fc::mutable_variant_object()
-         ("payer", creator.to_string())
-         ("receiver", newaccount.to_string())
-         ("bytes", numbytes);
-   return create_action(tx_permission.empty() ? vector<chain::permission_level>{{creator,config::active_name}} : get_account_permissions(tx_permission),
-                        config::system_account_name, N(buyrambytes), act_payload);
-}
-
 chain::action create_delegate(const name& from, const name& receiver, const asset& net, const asset& cpu, bool transfer) {
    fc::variant act_payload = fc::mutable_variant_object()
          ("from", from.to_string())
@@ -925,8 +907,6 @@ struct create_account_subcommand {
    string active_key_str;
    string stake_net;
    string stake_cpu;
-   uint32_t buy_ram_bytes_in_kbytes = 0;
-   string buy_ram_eos;
    bool transfer;
    bool simple;
 
