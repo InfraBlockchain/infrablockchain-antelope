@@ -35,7 +35,7 @@ Subcommands:
   create                      Create various items, on and off the blockchain
   get                         Retrieve various items and information from the blockchain
   set                         Set or update blockchain state
-  transfer                    Transfer EOS from account to account
+  transfer                    Transfer token from account to account
   net                         Interact with local p2p network connections
   wallet                      Interact with local wallet
   sign                        Sign a transaction
@@ -644,7 +644,8 @@ authority parse_json_authority(const std::string& authorityJsonOrFile) {
 }
 
 authority parse_json_authority_or_key(const std::string& authorityJsonOrFile) {
-   if (boost::istarts_with(authorityJsonOrFile, "EOS") || boost::istarts_with(authorityJsonOrFile, "PUB_R1")) {
+   if (boost::istarts_with(authorityJsonOrFile, fc::crypto::config::public_key_legacy_prefix_yosemite)
+       || boost::istarts_with(authorityJsonOrFile, fc::crypto::config::public_key_legacy_prefix_eos) || boost::istarts_with(authorityJsonOrFile, "PUB_R1")) {
       try {
          return authority(public_key_type(authorityJsonOrFile));
       } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid public key: ${public_key}", ("public_key", authorityJsonOrFile))
