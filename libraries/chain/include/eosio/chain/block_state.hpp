@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <eosio/chain/block_header_state.hpp>
 #include <eosio/chain/block.hpp>
 #include <eosio/chain/transaction_metadata.hpp>
@@ -25,6 +26,10 @@ namespace eosio { namespace chain {
       /// this data is redundant with the data stored in block, but facilitates
       /// recapturing transactions when we pop a block
       vector<transaction_metadata_ptr>                    trxs;
+
+      /// YOSEMITE Transaction-as-a-Vote for Proof-of-Transaction
+      /// cumulated transaction votes in this block
+      yosemite_core::transaction_votes_in_block           trx_votes;
    };
 
    using block_state_ptr = std::shared_ptr<block_state>;

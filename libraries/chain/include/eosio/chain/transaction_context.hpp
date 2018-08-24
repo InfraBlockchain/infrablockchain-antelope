@@ -1,4 +1,5 @@
 #pragma once
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/trace.hpp>
 
@@ -44,6 +45,8 @@ namespace eosio { namespace chain {
 
          std::tuple<int64_t, int64_t, bool> max_bandwidth_billed_accounts_can_pay( bool force_elastic_limits = false )const;
 
+         void add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount);
+
       private:
 
          friend struct controller_impl;
@@ -87,6 +90,8 @@ namespace eosio { namespace chain {
          fc::microseconds              leeway = fc::microseconds(3000);
          int64_t                       billed_cpu_time_us = 0;
          bool                          explicit_billed_cpu_time = false;
+
+         yosemite_core::transaction_vote   transaction_vote;
 
       private:
          bool                          is_initialized = false;

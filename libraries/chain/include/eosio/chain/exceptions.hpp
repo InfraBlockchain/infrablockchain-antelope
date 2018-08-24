@@ -504,4 +504,10 @@ namespace eosio { namespace chain {
                                     3230002, "Database API Exception" )
       FC_DECLARE_DERIVED_EXCEPTION( arithmetic_exception,   contract_api_exception,
                                     3230003, "Arithmetic Exception" )
+      FC_DECLARE_DERIVED_EXCEPTION(token_not_found_exception, contract_api_exception,
+                                   3231000, "Token is not created")
+      FC_DECLARE_DERIVED_EXCEPTION(empty_token_exception, contract_api_exception,
+                                   3231001, "Account doesn't have the token")
+      FC_DECLARE_DERIVED_EXCEPTION(native_token_not_found_exception, contract_api_exception,
+                                   3231002, "Unknown system depository or it has never issued")
 } } // eosio::chain

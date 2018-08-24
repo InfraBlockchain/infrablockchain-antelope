@@ -76,8 +76,6 @@ namespace eosio {
 
           typedef websocketpp::transport::asio::endpoint<transport_config>
               transport_type;
-
-          static const long timeout_open_handshake = 0;
       };
    }
 
@@ -107,6 +105,8 @@ namespace eosio {
 
          bool                     validate_host;
          set<string>              valid_hosts;
+
+         uint32_t                 idle_connection_timeout_ms;
 
          bool host_port_is_valid( const std::string& header_host_port, const string& endpoint_local_host_port ) {
             return !validate_host || header_host_port == endpoint_local_host_port || valid_hosts.find(header_host_port) != valid_hosts.end();
@@ -155,8 +155,10 @@ namespace eosio {
                   EOS_THROW(chain::http_exception, "Failed to set HTTPS cipher list");
             } catch (const fc::exception& e) {
                elog("https server initialization error: ${w}", ("w", e.to_detail_string()));
+               throw;
             } catch(std::exception& e) {
                elog("https server initialization error: ${w}", ("w", e.what()));
+               throw;
             }
 
             return ctx;
@@ -252,24 +254,17 @@ namespace eosio {
 
          template<class T>
          void create_server_for_endpoint(const tcp::endpoint& ep, websocketpp::server<detail::asio_with_stub_log<T>>& ws) {
-            try {
-               ws.clear_access_channels(websocketpp::log::alevel::all);
-               ws.init_asio(&app().get_io_service());
-               ws.set_reuse_addr(true);
-               ws.set_max_http_body_size(max_body_size);
-               ws.set_http_handler([&](connection_hdl hdl) {
-                  handle_http_request<T>(ws.get_con_from_hdl(hdl));
-               });
-            } catch ( const fc::exception& e ){
-               elog( "http: ${e}", ("e",e.to_detail_string()));
-            } catch ( const std::exception& e ){
-               elog( "http: ${e}", ("e",e.what()));
-            } catch (...) {
-               elog("error thrown from http io service");
-            }
+            ws.clear_access_channels(websocketpp::log::alevel::all);
+            ws.init_asio(&app().get_io_service());
+            ws.set_reuse_addr(true);
+            ws.set_max_http_body_size(max_body_size);
+            ws.set_open_handshake_timeout(idle_connection_timeout_ms);
+            ws.set_http_handler([&](connection_hdl hdl) {
+               handle_http_request<T>(ws.get_con_from_hdl(hdl));
+            });
          }
 
-         void add_aliases_for_endpoint( const tcp::endpoint& ep, string host, string port ) {
+         void add_aliases_for_endpoint( const tcp::endpoint& ep, const string &host, const string &port ) {
             auto resolved_port_str = std::to_string(ep.port());
             valid_hosts.emplace(host + ":" + port);
             valid_hosts.emplace(host + ":" + resolved_port_str);
@@ -322,11 +317,14 @@ namespace eosio {
             ("verbose-http-errors", bpo::bool_switch()->default_value(false), "Append the error log to HTTP responses")
             ("http-validate-host", boost::program_options::value<bool>()->default_value(true), "If set to false, then any incoming \"Host\" header is considered valid")
             ("http-alias", bpo::value<std::vector<string>>()->composing(), "Additionaly acceptable values for the \"Host\" header of incoming HTTP requests, can be specified multiple times.  Includes http/s_server_address by default.")
+            ("idle-connection-timeout-ms", bpo::value<uint32_t>()->default_value(5000), "Timeout in milliseconds to cut idle connections out")
             ;
    }
 
    void http_plugin::plugin_initialize(const variables_map& options) {
       try {
+         my->idle_connection_timeout_ms = options.at("idle-connection-timeout-ms").as<uint32_t >();
+
          my->validate_host = options.at("http-validate-host").as<bool>();
          if( options.count( "http-alias" )) {
             const auto& aliases = options["http-alias"].as<vector<string>>();
@@ -345,6 +343,7 @@ namespace eosio {
             } catch ( const boost::system::system_error& ec ) {
                elog( "failed to configure http to listen on ${h}:${p} (${m})",
                      ("h", host)( "p", port )( "m", ec.what()));
+               throw;
             }
 
             // add in resolved hosts and ports as well
@@ -354,16 +353,14 @@ namespace eosio {
          }
 
          if( options.count( "https-server-address" ) && options.at( "https-server-address" ).as<string>().length()) {
-            if( !options.count( "https-certificate-chain-file" ) ||
-                options.at( "https-certificate-chain-file" ).as<string>().empty()) {
-               elog( "https-certificate-chain-file is required for HTTPS" );
-               return;
-            }
-            if( !options.count( "https-private-key-file" ) ||
-                options.at( "https-private-key-file" ).as<string>().empty()) {
-               elog( "https-private-key-file is required for HTTPS" );
-               return;
-            }
+            EOS_ASSERT(options.count("https-certificate-chain-file") &&
+                       !options.at("https-certificate-chain-file").as<string>().empty(),
+                       chain::plugin_config_exception,
+                       "https-certificate-chain-file is required for HTTPS");
+            EOS_ASSERT(options.count("https-private-key-file") &&
+                       !options.at("https-private-key-file").as<string>().empty(),
+                       chain::plugin_config_exception,
+                       "https-private-key-file is required for HTTPS");
 
             string lipstr = options.at( "https-server-address" ).as<string>();
             string host = lipstr.substr( 0, lipstr.find( ':' ));
@@ -378,6 +375,7 @@ namespace eosio {
             } catch ( const boost::system::system_error& ec ) {
                elog( "failed to configure https to listen on ${h}:${p} (${m})",
                      ("h", host)( "p", port )( "m", ec.what()));
+               throw;
             }
 
             // add in resolved hosts and ports as well
@@ -388,8 +386,6 @@ namespace eosio {
 
          my->max_body_size = options.at( "max-body-size" ).as<uint32_t>();
          verbose_http_errors = options.at( "verbose-http-errors" ).as<bool>();
-
-         //watch out for the returns above when adding new code here
       } FC_LOG_AND_RETHROW()
    }
 
