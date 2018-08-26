@@ -138,8 +138,6 @@ namespace eosio {
 
         void add_ws_handler(const string& url, ws_message_handler<basic_socket_endpoint> handler);
         void add_wss_handler(const string& url, ws_message_handler<tls_socket_endpoint> handler);
-        void close_ws_connection(ws_connection<basic_socket_endpoint> conn, websocketpp::close::status::value code, const string &reason = "");
-        void close_wss_connection(ws_connection<tls_socket_endpoint> conn, websocketpp::close::status::value code, const string &reason = "");
 
       private:
         std::unique_ptr<class http_plugin_impl> my;

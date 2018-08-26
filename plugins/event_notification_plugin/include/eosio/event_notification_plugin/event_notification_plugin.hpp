@@ -11,6 +11,21 @@
 namespace eosio {
     using namespace appbase;
 
+    namespace event_notification_api {
+        struct operation {
+            string name; // subscribe, unsubscribe, ...
+            fc::variant params; // json object for each operation
+        };
+
+        struct subscribe_request {
+            optional<account_name> subscriber;
+        };
+
+        struct tx_irreversibility_request {
+            transaction_id_type tx_id;
+        };
+    }
+
     class event_notification_plugin : public appbase::plugin<event_notification_plugin> {
     public:
         APPBASE_PLUGIN_REQUIRES((chain_plugin)(http_plugin))
@@ -24,21 +39,22 @@ namespace eosio {
         void plugin_shutdown();
 
         template <typename SocketType>
-        typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, void>::type
-        close_ws_connection(ws_connection<SocketType> ws_conn, websocketpp::close::status::value code, const string &reason = "") {
-            auto& http = app().get_plugin<http_plugin>();
-            http.close_ws_connection(std::move(ws_conn), code, reason);
-        }
+        void handle_message(ws_connection<SocketType> ws_conn, ws_message<SocketType> ws_msg);
+
+    private:
+        std::unordered_set<size_t> subscribed_connections{};
 
         template <typename SocketType>
-        typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, void>::type
-        close_ws_connection(ws_connection<SocketType> ws_conn, websocketpp::close::status::value code, const string &reason = "") {
-            auto& http = app().get_plugin<http_plugin>();
-            http.close_wss_connection(std::move(ws_conn), code, reason);
-        }
+        void subscribe(ws_connection<SocketType> ws_conn, event_notification_api::subscribe_request &&params);
 
         template <typename SocketType>
-        void subscribe(ws_connection<SocketType> ws_conn, ws_message<SocketType> ws_msg);
+        void unsubscribe(ws_connection <SocketType> ws_conn);
+
+        template <typename SocketType>
+        void tx_irreversibility(ws_connection<SocketType> ws_conn, event_notification_api::tx_irreversibility_request &&params);
     };
 
 }
+
+FC_REFLECT(eosio::event_notification_api::operation, (name)(params))
+FC_REFLECT(eosio::event_notification_api::subscribe_request, (subscriber))
