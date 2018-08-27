@@ -8,6 +8,8 @@
 #include <eosio/chain/action_receipt.hpp>
 #include <eosio/chain/block.hpp>
 
+#include <yosemite/chain/transaction_as_a_vote.hpp>
+
 namespace eosio { namespace chain {
 
    struct base_action_trace {
@@ -40,6 +42,10 @@ namespace eosio { namespace chain {
       uint64_t                                   net_usage = 0;
       bool                                       scheduled = false;
       vector<action_trace>                       action_traces; ///< disposable
+
+      /// YOSEMITE Proof-of-Transaction
+      /// for transaction-vote logging in secondary log store
+      fc::optional<yosemite_core::transaction_vote> trx_vote;
 
       transaction_trace_ptr                      failed_dtrx_trace;
       fc::optional<fc::exception>                except;
