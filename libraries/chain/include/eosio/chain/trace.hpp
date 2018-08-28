@@ -44,7 +44,9 @@ namespace eosio { namespace chain {
       vector<action_trace>                       action_traces; ///< disposable
 
       /// YOSEMITE Proof-of-Transaction
-      /// for transaction-vote logging in secondary log store
+      /// tracking transaction vote amount generated from current transaction.
+      /// transaction votes collected from each transaction are accumulated in the (pending) 'block state' of each block.
+      /// this field is also used for transaction-vote logging in secondary log store
       fc::optional<yosemite_core::transaction_vote> trx_vote;
 
       transaction_trace_ptr                      failed_dtrx_trace;
@@ -61,4 +63,4 @@ FC_REFLECT_DERIVED( eosio::chain::action_trace,
                     (eosio::chain::base_action_trace), (inline_traces) )
 
 FC_REFLECT( eosio::chain::transaction_trace, (id)(receipt)(elapsed)(net_usage)(scheduled)
-                                             (action_traces)(failed_dtrx_trace)(except) )
+                                             (action_traces)(trx_vote)(failed_dtrx_trace)(except) )

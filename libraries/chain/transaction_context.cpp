@@ -19,7 +19,6 @@ namespace eosio { namespace chain {
    ,undo_session()
    ,trace(std::make_shared<transaction_trace>())
    ,start(s)
-   ,transaction_vote(0,0)
    ,net_usage(trace->net_usage)
    ,pseudo_start(s)
    {
@@ -39,7 +38,8 @@ namespace eosio { namespace chain {
          EOS_ASSERT( tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD, unsupported_feature, "support only transaction-as-a-vote transaction extension" );
 
          try {
-            transaction_vote.candidate = fc::raw::unpack<yosemite_core::transaction_vote_candidate_name_type>(tx_ext_item.second);
+            trace->trx_vote = yosemite_core::transaction_vote(
+                    fc::raw::unpack<yosemite_core::transaction_vote_candidate_name_type>(tx_ext_item.second), 0);
          } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote candidate account name");
       }
    }
@@ -415,9 +415,18 @@ namespace eosio { namespace chain {
    }
 
    void transaction_context::add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount) {
-      if (!transaction_vote.candidate.empty()) {
-         transaction_vote.vote_amount += vote_amount;
+
+      if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->candidate.empty()) {
+         trace->trx_vote->vote_amount += vote_amount;
       }
+   }
+
+   bool transaction_context::has_transaction_vote() const {
+      return trace->trx_vote.valid() && trace->trx_vote->has_vote();
+   }
+
+   const yosemite_core::transaction_vote& transaction_context::get_transaction_vote() const {
+      return (*(trace->trx_vote));
    }
 
    void transaction_context::dispatch_action( action_trace& trace, const action& a, account_name receiver, bool context_free, uint32_t recurse_depth ) {

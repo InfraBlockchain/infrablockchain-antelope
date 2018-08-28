@@ -28,7 +28,10 @@ namespace eosio { namespace chain {
       vector<transaction_metadata_ptr>                    trxs;
 
       /// YOSEMITE Transaction-as-a-Vote for Proof-of-Transaction
-      /// cumulated transaction votes in this block
+      /// the accumulated transaction votes data of this block.
+      /// the reason why transaction votes data structure is located in struct 'block_state'
+      /// is because 'block_state' data structure resides only in 'fork_db' state
+      /// from which the irreversible blocks are purged (evicted from memory)
       yosemite_core::transaction_votes_in_block           trx_votes;
    };
 

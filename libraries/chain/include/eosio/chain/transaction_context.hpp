@@ -45,7 +45,11 @@ namespace eosio { namespace chain {
 
          std::tuple<int64_t, int64_t, bool> max_bandwidth_billed_accounts_can_pay( bool force_elastic_limits = false )const;
 
+      public:
+         /// YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
          void add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount);
+         bool has_transaction_vote() const;
+         const yosemite_core::transaction_vote& get_transaction_vote() const;
 
       private:
 
@@ -90,8 +94,6 @@ namespace eosio { namespace chain {
          fc::microseconds              leeway = fc::microseconds(3000);
          int64_t                       billed_cpu_time_us = 0;
          bool                          explicit_billed_cpu_time = false;
-
-         yosemite_core::transaction_vote   transaction_vote;
 
       private:
          bool                          is_initialized = false;
