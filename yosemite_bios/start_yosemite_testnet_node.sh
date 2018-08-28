@@ -85,6 +85,8 @@ pkill -SIGINT $YOSEMITE_KEYD_BIN_NAME
 sleep 2
 nohup $YOSEMITE_KEYD --unlock-timeout 999999999 --http-server-address 127.0.0.1:8900 --wallet-dir $YOSEMITE_DEV_WALLET_DIR > $YOSEMITE_KEYD_LOG_FILE 2>&1&
 sleep 2
+$YOSEMITE_CLI wallet open
+$YOSEMITE_CLI wallet unlock --password $YOSEMITE_KEYD_WALLET_PASSWORD
 tail $YOSEMITE_KEYD_LOG_FILE
 
 { print_section_title "Start yosemite node"; } 2>/dev/null
