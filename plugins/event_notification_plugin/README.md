@@ -23,6 +23,7 @@ Currently, beta, this is just dummy operation.
 If a client registers the transaction id which want to check its irreversibility, it sends the request below.
 ```json
 {
+  "req_id": "1",
   "name": "tx_irreversibility",
   "params": {
     "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"
@@ -30,10 +31,11 @@ If a client registers the transaction id which want to check its irreversibility
 }
 ```
 
-If the transaction is already irreversible, Yosemite node sends the response immediately.
+If the transaction is already irreversible, Yosemite node sends the corresponding response immediately.
 But if not, when the block which includes the tranction above becomes irreversible, Yosemite node sends the response.
 ```json
 {
+  "req_id": "1",
   "name": "tx_irreversibility",
   "response": {
     "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"

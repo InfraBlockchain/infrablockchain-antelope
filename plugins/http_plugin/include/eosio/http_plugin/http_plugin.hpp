@@ -109,12 +109,12 @@ namespace eosio {
    using ws_message_handler = std::function<void(ws_connection<SocketType>, ws_message<SocketType>)>;
 
    /**
-    * @brief Callback type called when ws_connection is closed or failed
+    * @brief Callback type called after websocket connection is terminated
     *
     * Arguments: ws_connection
     */
    template<typename SocketType>
-   using ws_connection_close_handler = std::function<void(ws_connection<SocketType>)>;
+   using ws_connection_termination_handler = std::function<void(ws_connection<SocketType>)>;
 
    /**
     * @brief Internal websocketpp connection type
@@ -187,8 +187,8 @@ namespace eosio {
 
         void add_ws_handler(const string& url, ws_message_handler<basic_socket_endpoint> handler);
         void add_wss_handler(const string& url, ws_message_handler<tls_socket_endpoint> handler);
-        void set_ws_connection_close_handler(ws_connection_close_handler<basic_socket_endpoint> handler);
-        void set_wss_connection_close_handler(ws_connection_close_handler<tls_socket_endpoint> handler);
+        void set_ws_connection_termination_handler(ws_connection_termination_handler<basic_socket_endpoint> handler);
+        void set_wss_connection_termination_handler(ws_connection_termination_handler<tls_socket_endpoint> handler);
 
       private:
         std::unique_ptr<class http_plugin_impl> my;

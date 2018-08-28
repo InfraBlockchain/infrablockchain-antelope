@@ -15,11 +15,13 @@ namespace eosio {
 
     namespace event_notification_api {
         struct event_request {
+            string req_id;
             string name; // subscribe, unsubscribe, tx_irreversibility, ...
             fc::variant params; // json object for each operation
         };
 
         struct event_response {
+            string req_id;
             string name; // tx_irreversibility, ...
             fc::variant response;
         };
@@ -61,8 +63,8 @@ namespace eosio {
 
 }
 
-FC_REFLECT(eosio::event_notification_api::event_request, (name)(params))
-FC_REFLECT(eosio::event_notification_api::event_response, (name)(response))
+FC_REFLECT(eosio::event_notification_api::event_request, (req_id)(name)(params))
+FC_REFLECT(eosio::event_notification_api::event_response, (req_id)(name)(response))
 FC_REFLECT(eosio::event_notification_api::error_response, (code)(message))
 
 FC_REFLECT(eosio::event_notification_api::subscribe_request, (subscriber))
