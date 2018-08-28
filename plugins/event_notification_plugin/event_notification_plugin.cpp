@@ -105,7 +105,7 @@ namespace eosio {
             auto &waits_map = get_tx_irreversibility_waits_map<SocketType>();
 
             auto range = conn_to_tx_id_map.equal_range(ws_conn);
-            for (auto itr = range.first; itr != range.second; ++itr) {
+            for (auto itr = range.first; itr != range.second;) {
                 // get the range iterator to ws_connections via tx_id
                 auto waits_range = waits_map.equal_range(itr->second);
                 for (auto waits_itr = waits_range.first; waits_itr != waits_range.second; waits_itr++) {
@@ -114,9 +114,8 @@ namespace eosio {
                         break;
                     }
                 }
+                itr = conn_to_tx_id_map.erase(itr);
             }
-
-            conn_to_tx_id_map.erase(ws_conn);
         }
 
         template <typename SocketType>
@@ -183,9 +182,8 @@ namespace eosio {
                             break;
                         }
                     }
-                }
-                if (std::distance(waits_range.first, waits_range.second) != 0) {
-                    tx_irreversibility_waits.erase(tx_meta->id);
+
+                    waits_itr = tx_irreversibility_waits.erase(waits_itr);
                 }
 
                 auto tls_waits_range = tx_irreversibility_waits_tls.equal_range(tx_meta->id);
@@ -203,9 +201,8 @@ namespace eosio {
                             break;
                         }
                     }
-                }
-                if (std::distance(tls_waits_range.first, tls_waits_range.second) != 0) {
-                    tx_irreversibility_waits_tls.erase(tx_meta->id);
+
+                    waits_itr = tx_irreversibility_waits_tls.erase(waits_itr);
                 }
             }
         }
