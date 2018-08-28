@@ -1,3 +1,5 @@
+#include <utility>
+
 /**
  *  @file
  *  @copyright defined in eos/LICENSE.txt
@@ -11,15 +13,7 @@
 #include <fc/io/json.hpp>
 #include <fc/crypto/openssl.hpp>
 
-#include <boost/asio.hpp>
 #include <boost/optional.hpp>
-
-#include <websocketpp/config/asio_client.hpp>
-#include <websocketpp/config/asio.hpp>
-#include <websocketpp/server.hpp>
-#include <websocketpp/config/asio_client.hpp>
-#include <websocketpp/client.hpp>
-#include <websocketpp/logger/stub.hpp>
 
 #include <thread>
 #include <memory>
@@ -32,6 +26,7 @@ namespace eosio {
    namespace asio = boost::asio;
 
    using std::map;
+   using std::unordered_map;
    using std::vector;
    using std::set;
    using std::string;
@@ -42,51 +37,75 @@ namespace eosio {
    using boost::asio::ip::address_v6;
    using std::shared_ptr;
    using websocketpp::connection_hdl;
+   using namespace websocketpp::close;
 
-
-   namespace detail {
-
-      template<class T>
-      struct asio_with_stub_log : public websocketpp::config::asio {
-          typedef asio_with_stub_log type;
-          typedef asio base;
-
-          typedef base::concurrency_type concurrency_type;
-
-          typedef base::request_type request_type;
-          typedef base::response_type response_type;
-
-          typedef base::message_type message_type;
-          typedef base::con_msg_manager_type con_msg_manager_type;
-          typedef base::endpoint_msg_manager_type endpoint_msg_manager_type;
-
-          typedef websocketpp::log::stub elog_type;
-          typedef websocketpp::log::stub alog_type;
-
-          typedef base::rng_type rng_type;
-
-          struct transport_config : public base::transport_config {
-              typedef type::concurrency_type concurrency_type;
-              typedef type::alog_type alog_type;
-              typedef type::elog_type elog_type;
-              typedef type::request_type request_type;
-              typedef type::response_type response_type;
-              typedef T socket_type;
-          };
-
-          typedef websocketpp::transport::asio::endpoint<transport_config>
-              transport_type;
-      };
-   }
-
-   using websocket_server_type = websocketpp::server<detail::asio_with_stub_log<websocketpp::transport::asio::basic_socket::endpoint>>;
-   using websocket_server_tls_type =  websocketpp::server<detail::asio_with_stub_log<websocketpp::transport::asio::tls_socket::endpoint>>;
+   using websocket_server_type = websocketpp::server<http_config::asio_with_stub_log<basic_socket_endpoint>>;
+   using websocket_server_tls_type =  websocketpp::server<http_config::asio_with_stub_log<tls_socket_endpoint>>;
    using ssl_context_ptr =  websocketpp::lib::shared_ptr<websocketpp::lib::asio::ssl::context>;
 
    static bool verbose_http_errors = false;
 
    class http_plugin_impl {
+      template<typename SocketType>
+      struct ws_connection_equal {
+         bool operator()(const ws_connection<SocketType> &lhs, const ws_connection<SocketType> &rhs) const {
+            return lhs.get() == rhs.get();
+         }
+      };
+
+      template<typename SocketType>
+      struct ws_connection_hash {
+         size_t operator()(const ws_connection<SocketType> &conn) const {
+            return reinterpret_cast<size_t>(conn.get());
+         }
+      };
+
       public:
+         unordered_map<string, ws_message_handler<basic_socket_endpoint>> ws_message_handlers;
+         unordered_map<string, ws_message_handler<tls_socket_endpoint>> wss_message_handlers;
+         unordered_map<ws_connection<basic_socket_endpoint>, ws_message_handler<basic_socket_endpoint>,
+                       ws_connection_hash<basic_socket_endpoint>, ws_connection_equal<basic_socket_endpoint>> connection_to_wsh_map;
+         unordered_map<ws_connection<tls_socket_endpoint>, ws_message_handler<tls_socket_endpoint>,
+                       ws_connection_hash<tls_socket_endpoint>, ws_connection_equal<tls_socket_endpoint>> connection_to_wssh_map;
+         ws_connection_close_handler<basic_socket_endpoint> plain_ws_connection_close_handler;
+         ws_connection_close_handler<tls_socket_endpoint> tls_ws_connection_close_handler;
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, const decltype(ws_message_handlers) &>::type
+         get_websocket_handler_map() const {
+            return ws_message_handlers;
+         }
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, const decltype(wss_message_handlers) &>::type
+         get_websocket_handler_map() const {
+            return wss_message_handlers;
+         }
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(connection_to_wsh_map) &>::type
+         get_connection_to_websocket_handler_map() {
+            return connection_to_wsh_map;
+         }
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(connection_to_wssh_map) &>::type
+         get_connection_to_websocket_handler_map() {
+            return connection_to_wssh_map;
+         }
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(plain_ws_connection_close_handler) &>::type
+         get_ws_connection_close_handler() {
+            return plain_ws_connection_close_handler;
+         }
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(tls_ws_connection_close_handler) &>::type
+         get_ws_connection_close_handler() {
+            return tls_ws_connection_close_handler;
+         }
+
          map<string,url_handler>  url_handlers;
          optional<tcp::endpoint>  listen_endpoint;
          string                   access_control_allow_origin;
@@ -127,7 +146,7 @@ namespace eosio {
             }
          }
 
-         ssl_context_ptr on_tls_init(websocketpp::connection_hdl hdl) {
+         ssl_context_ptr on_tls_init(const websocketpp::connection_hdl &hdl) {
             ssl_context_ptr ctx = websocketpp::lib::make_shared<websocketpp::lib::asio::ssl::context>(asio::ssl::context::sslv23_server);
 
             try {
@@ -165,7 +184,7 @@ namespace eosio {
          }
 
          template<class T>
-         static void handle_exception(typename websocketpp::server<detail::asio_with_stub_log<T>>::connection_ptr con) {
+         static void handle_exception(typename websocketpp::server<http_config::asio_with_stub_log<T>>::connection_ptr con) {
             string err = "Internal Service error, http: ";
             try {
                con->set_status( websocketpp::http::status_code::internal_server_error );
@@ -197,7 +216,7 @@ namespace eosio {
          }
 
          template<class T>
-         void handle_http_request(typename websocketpp::server<detail::asio_with_stub_log<T>>::connection_ptr con) {
+         void handle_http_request(typename websocketpp::server<http_config::asio_with_stub_log<T>>::connection_ptr con) {
             try {
                bool is_secure = con->get_uri()->get_secure();
                const auto& local_endpoint = con->get_socket().lowest_layer().local_endpoint();
@@ -230,7 +249,7 @@ namespace eosio {
 
                con->append_header( "Content-type", "application/json" );
                auto body = con->get_request_body();
-               auto resource = con->get_uri()->get_resource();
+               auto resource = con->get_resource();
                auto handler_itr = url_handlers.find( resource );
                if( handler_itr != url_handlers.end()) {
                   con->defer_http_response();
@@ -252,8 +271,74 @@ namespace eosio {
             }
          }
 
+         template<typename T>
+         void handle_websocket_open(ws_connection<T> conn) {
+            auto resource = conn->get_resource();
+
+            dlog("websocket open handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", resource));
+
+            auto handler_map = get_websocket_handler_map<T>();
+            auto handler_itr = handler_map.find(resource);
+            if (handler_itr != handler_map.end()) {
+               auto &conn_to_handler_map = get_connection_to_websocket_handler_map<T>();
+               conn_to_handler_map.insert(std::make_pair(conn, handler_itr->second));
+            } else {
+               dlog("websocket handler not found: ${ep}", ("ep", resource));
+               error_results results{websocketpp::http::status_code::not_found,
+                                     "Not Found", error_results::error_info(fc::exception(FC_LOG_MESSAGE(error, "Unknown Endpoint")), verbose_http_errors)};
+               conn->close(status::internal_endpoint_error, fc::json::to_string(results));
+            }
+         }
+
+         template<typename T>
+         void handle_websocket_close(ws_connection<T> conn) {
+             auto &conn_to_handler_map = get_connection_to_websocket_handler_map<T>();
+             conn_to_handler_map.erase(conn);
+
+             auto &close_handler = get_ws_connection_close_handler<T>();
+             if (close_handler) {
+                close_handler(conn);
+             }
+         }
+
+         template<typename T>
+         void handle_websocket_fail(ws_connection<T> conn) {
+             auto &conn_to_handler_map = get_connection_to_websocket_handler_map<T>();
+             conn_to_handler_map.erase(conn);
+
+            auto &close_handler = get_ws_connection_close_handler<T>();
+            if (close_handler) {
+               close_handler(conn);
+            }
+         }
+
+         template<typename T>
+         void handle_websocket_message(ws_connection<T> conn, ws_message<T> msg) {
+            dlog("websocket message handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", conn->get_resource()));
+
+            auto &conn_to_handler_map = get_connection_to_websocket_handler_map<T>();
+            try {
+               auto handler_itr = conn_to_handler_map.find(conn);
+               if (handler_itr != conn_to_handler_map.end()) {
+                  handler_itr->second(conn, msg);
+               } else {
+                  dlog("websocket message handler is not found");
+               }
+            } catch (const fc::exception& e) {
+               auto err = e.to_detail_string();
+               elog("${e}", ("e", err));
+               conn->close(status::internal_endpoint_error, err);
+            } catch (const std::exception &e) {
+               elog("${e}", ("e", e.what()));
+               conn->close(status::internal_endpoint_error, e.what());
+            } catch (...) {
+               elog("${e}", ("e", "Unknown error"));
+               conn->close(status::internal_endpoint_error, "Unknown error");
+            }
+         }
+
          template<class T>
-         void create_server_for_endpoint(const tcp::endpoint& ep, websocketpp::server<detail::asio_with_stub_log<T>>& ws) {
+         void create_server_for_endpoint(const tcp::endpoint& ep, websocketpp::server<http_config::asio_with_stub_log<T>>& ws) {
             ws.clear_access_channels(websocketpp::log::alevel::all);
             ws.init_asio(&app().get_io_service());
             ws.set_reuse_addr(true);
@@ -262,6 +347,18 @@ namespace eosio {
             ws.set_http_handler([&](connection_hdl hdl) {
                handle_http_request<T>(ws.get_con_from_hdl(hdl));
             });
+            ws.set_open_handler([&](connection_hdl hdl) {
+               handle_websocket_open<T>(ws.get_con_from_hdl(hdl));
+            });
+            ws.set_close_handler([&](connection_hdl hdl) {
+               handle_websocket_close<T>(ws.get_con_from_hdl(hdl));
+            });
+            ws.set_fail_handler([&](connection_hdl hdl) {
+               handle_websocket_fail<T>(ws.get_con_from_hdl(hdl));
+            });
+            ws.set_message_handler([&](connection_hdl hdl, ws_message<T> msg) {
+               handle_websocket_message<T>(ws.get_con_from_hdl(hdl), msg);
+            });
          }
 
          void add_aliases_for_endpoint( const tcp::endpoint& ep, const string &host, const string &port ) {
@@ -269,7 +366,6 @@ namespace eosio {
             valid_hosts.emplace(host + ":" + port);
             valid_hosts.emplace(host + ":" + resolved_port_str);
          }
-
    };
 
    http_plugin::http_plugin():my(new http_plugin_impl()){}
@@ -493,4 +589,25 @@ namespace eosio {
       return (!my->listen_endpoint || my->listen_endpoint->address().is_loopback());
    }
 
+   void http_plugin::add_ws_handler(const string& url, ws_message_handler<basic_socket_endpoint> handler) {
+      ilog("add websocket handler: ${c}", ("c", url));
+      app().get_io_service().post([=]() {
+          my->ws_message_handlers.insert(std::make_pair(url, handler));
+      });
+   }
+
+   void http_plugin::add_wss_handler(const string& url, ws_message_handler<tls_socket_endpoint> handler) {
+      ilog("add secure websocket handler: ${c}", ("c", url));
+      app().get_io_service().post([=]() {
+          my->wss_message_handlers.insert(std::make_pair(url, handler));
+      });
+   }
+
+   void http_plugin::set_ws_connection_close_handler(ws_connection_close_handler<basic_socket_endpoint> handler) {
+      my->plain_ws_connection_close_handler = handler;
+   }
+
+   void http_plugin::set_wss_connection_close_handler(ws_connection_close_handler<tls_socket_endpoint> handler) {
+      my->tls_ws_connection_close_handler = handler;
+   }
 }
