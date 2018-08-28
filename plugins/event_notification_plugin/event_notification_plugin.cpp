@@ -70,17 +70,35 @@ namespace eosio {
 
         template <typename SocketType>
         void handle_message(ws_connection<SocketType> ws_conn, ws_message<SocketType> ws_msg) {
-            auto param = fc::json::from_string(ws_msg->get_payload()).template as<event_notification_api::event_request>();
-            if (param.name == "tx_irreversibility") {
-                tx_irreversibility<SocketType>(ws_conn, param.req_id,
-                        std::move(param.params.template as<event_notification_api::tx_irreversibility_request>()));
-            } else if (param.name == "subscribe") {
-                subscribe<SocketType>(ws_conn, std::move(param.params.template as<event_notification_api::subscribe_request>()));
-            } else if (param.name == "unsubscribe") {
-                unsubscribe<SocketType>(ws_conn);
-            } else {
+            try {
+                auto event_request_variant = fc::json::from_string(ws_msg->get_payload());
+                auto event_request = event_request_variant.template as<event_notification_api::event_base>();
+                if (event_request.req_id.empty()) {
+                    ws_conn->close(status::invalid_subprotocol_data, "empty request id");
+                    return;
+                }
+                if (event_request.name == "tx_irreversibility") {
+                    tx_irreversibility<SocketType>(ws_conn, event_request.req_id,
+                            std::move(event_request_variant.template as<event_notification_api::tx_irreversibility_request>()));
+                } else if (event_request.name == "subscribe") {
+                    subscribe<SocketType>(ws_conn, std::move(event_request_variant.template as<event_notification_api::subscribe_request>()));
+                } else if (event_request.name == "unsubscribe") {
+                    unsubscribe<SocketType>(ws_conn);
+                } else {
+                    ws_conn->close(status::invalid_subprotocol_data, "unknown operation");
+                }
+            } catch (const fc::exception &ex) {
+                auto error_info = ex.to_string();
+                elog("Exception in handling message : ${s}", ("s", error_info));
+                ws_conn->close(status::invalid_subprotocol_data, error_info);
+            } catch (const std::exception &ex) {
+                elog("Exception in handling message : ${s}", ("s", ex.what()));
+                ws_conn->close(status::invalid_subprotocol_data, ex.what());
+            } catch (...) {
+                elog("Undefined Exception in handling message");
                 ws_conn->close(status::invalid_subprotocol_data, "unknown operation");
             }
+            /* NEVER DO ANYTHING FOR WS_CONN HERE */
         }
 
         template <typename SocketType>
@@ -137,40 +155,38 @@ namespace eosio {
 
                 auto get_tx_result = history_plug->get_read_only_api().get_transaction(get_tx_params);
                 if (get_tx_result.block_num <= get_tx_result.last_irreversible_block) {
-                    event_notification_api::event_response result;
-                    result.req_id = std::move(req_id);
-                    result.name = "tx_irreversibility";
-                    to_variant(event_notification_api::tx_irreversibility_response{std::move(params.tx_id)}, result.response);
-                    ws_conn->send(fc::json::to_string(result));
-
-                    return;
+                    event_notification_api::tx_irreversibility_response response;
+                    response.req_id = std::move(req_id);
+                    response.name = "tx_irreversibility";
+                    response.tx_id = params.tx_id;
+                    ws_conn->send(fc::json::to_string(response));
+                } else {
+                    register_tx_irreversibility<SocketType>(ws_conn, req_id, params.tx_id); // will be notified by on_irreversible_block
                 }
-
-                register_tx_irreversibility<SocketType>(ws_conn, req_id, params.tx_id); // will be notified by irreversible_block
             } catch (const tx_not_found &ex) {
                 chain::controller &chain = chain_plug->chain();
 
                 if (chain.is_known_unexpired_transaction(params.tx_id)) {
-                    register_tx_irreversibility<SocketType>(ws_conn, req_id, params.tx_id); // will be notified by irreversible_block
+                    register_tx_irreversibility<SocketType>(ws_conn, req_id, params.tx_id); // will be notified by on_irreversible_block
                 } else {
-                    event_notification_api::error_response result{500, ex.to_string()};
+                    event_notification_api::error_response result{req_id, "error", 500, ex.to_string()};
                     ws_conn->send(fc::json::to_string(result));
                 }
             } catch (const fc::exception &ex) {
                 auto error_info = ex.to_string();
                 elog("Exception in handling tx_irreversibility : ${s}", ("s", error_info));
 
-                event_notification_api::error_response result{500, error_info};
+                event_notification_api::error_response result{req_id, "error", 500, error_info};
                 ws_conn->send(fc::json::to_string(result));
             } catch (const std::exception &ex) {
                 elog("Exception in handling tx_irreversibility : ${s}", ("s", ex.what()));
 
-                event_notification_api::error_response result{500, ex.what()};
+                event_notification_api::error_response result{req_id, "error", 500, ex.what()};
                 ws_conn->send(fc::json::to_string(result));
             } catch (...) {
                 elog("Undefined Exception in handling tx_irreversibility");
 
-                event_notification_api::error_response result{500, "undefined error"};
+                event_notification_api::error_response result{req_id, "error", 500, "undefined error"};
                 ws_conn->send(fc::json::to_string(result));
             }
             /* NEVER DO ANYTHING FOR WS_CONN HERE */
@@ -180,11 +196,12 @@ namespace eosio {
             for (auto &tx_meta : block->trxs) {
                 auto waits_range = tx_irreversibility_waits.equal_range(tx_meta->id);
                 for (auto waits_itr = waits_range.first; waits_itr != waits_range.second;) {
-                    event_notification_api::event_response result;
-                    result.req_id = std::move(waits_itr->second.req_id);
-                    result.name = "tx_irreversibility";
-                    to_variant(event_notification_api::tx_irreversibility_response{tx_meta->id}, result.response);
-                    waits_itr->second.ws_conn->send(fc::json::to_string(result));
+                    event_notification_api::tx_irreversibility_response response;
+                    response.req_id = std::move(waits_itr->second.req_id);
+                    response.name = "tx_irreversibility";
+                    response.tx_id = tx_meta->id;
+
+                    waits_itr->second.ws_conn->send(fc::json::to_string(response));
 
                     //remove tx_id from conn_to_tx_id_map
                     auto range = conn_to_tx_id_map.equal_range(waits_itr->second.ws_conn);
@@ -200,11 +217,11 @@ namespace eosio {
 
                 auto tls_waits_range = tx_irreversibility_waits_tls.equal_range(tx_meta->id);
                 for (auto waits_itr = tls_waits_range.first; waits_itr != tls_waits_range.second;) {
-                    event_notification_api::event_response result;
-                    result.req_id = std::move(waits_itr->second.req_id);
-                    result.name = "tx_irreversibility";
-                    to_variant(event_notification_api::tx_irreversibility_response{tx_meta->id}, result.response);
-                    waits_itr->second.ws_conn->send(fc::json::to_string(result));
+                    event_notification_api::tx_irreversibility_response response;
+                    response.req_id = std::move(waits_itr->second.req_id);
+                    response.name = "tx_irreversibility";
+                    response.tx_id = tx_meta->id;
+                    waits_itr->second.ws_conn->send(fc::json::to_string(response));
 
                     //remove tx_id from conn_to_tx_id_map
                     auto range = tls_conn_to_tx_id_map.equal_range(waits_itr->second.ws_conn);

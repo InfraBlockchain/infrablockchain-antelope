@@ -14,33 +14,34 @@ namespace eosio {
     using namespace appbase;
 
     namespace event_notification_api {
-        struct event_request {
+        struct event_base {
             string req_id;
             string name; // subscribe, unsubscribe, tx_irreversibility, ...
-            fc::variant params; // json object for each operation
-        };
-
-        struct event_response {
-            string req_id;
-            string name; // tx_irreversibility, ...
-            fc::variant response;
         };
 
         struct error_response {
+            string req_id;
+            string name;
             uint16_t code;
             string message;
         };
 
         struct subscribe_request {
+            string req_id;
+            string name;
             optional<account_name> subscriber;
         };
 
         struct tx_irreversibility_request {
+            string req_id;
+            string name;
             transaction_id_type tx_id;
             optional<uint32_t> block_num_hint;
         };
 
         struct tx_irreversibility_response {
+            string req_id;
+            string name;
             transaction_id_type tx_id;
         };
     }
@@ -63,12 +64,9 @@ namespace eosio {
 
 }
 
-FC_REFLECT(eosio::event_notification_api::event_request, (req_id)(name)(params))
-FC_REFLECT(eosio::event_notification_api::event_response, (req_id)(name)(response))
-FC_REFLECT(eosio::event_notification_api::error_response, (code)(message))
-
-FC_REFLECT(eosio::event_notification_api::subscribe_request, (subscriber))
-
-FC_REFLECT(eosio::event_notification_api::tx_irreversibility_request, (tx_id)(block_num_hint))
-FC_REFLECT(eosio::event_notification_api::tx_irreversibility_response, (tx_id))
+FC_REFLECT(eosio::event_notification_api::event_base, (req_id)(name))
+FC_REFLECT(eosio::event_notification_api::error_response, (req_id)(name)(code)(message))
+FC_REFLECT(eosio::event_notification_api::subscribe_request, (req_id)(name)(subscriber))
+FC_REFLECT(eosio::event_notification_api::tx_irreversibility_request, (req_id)(name)(tx_id)(block_num_hint))
+FC_REFLECT(eosio::event_notification_api::tx_irreversibility_response, (req_id)(name)(tx_id))
 

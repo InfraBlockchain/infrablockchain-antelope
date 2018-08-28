@@ -25,9 +25,7 @@ If a client registers the transaction id which want to check its irreversibility
 {
   "req_id": "1",
   "name": "tx_irreversibility",
-  "params": {
-    "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"
-  }
+  "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"
 }
 ```
 
@@ -37,9 +35,7 @@ But if not, when the block which includes the tranction above becomes irreversib
 {
   "req_id": "1",
   "name": "tx_irreversibility",
-  "response": {
-    "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"
-  }
+  "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"
 }
 ```
 
