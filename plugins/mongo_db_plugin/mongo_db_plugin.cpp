@@ -9,6 +9,8 @@
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/types.hpp>
 
+#include <yosemite/chain/transaction_as_a_vote.hpp>
+
 #include <fc/io/json.hpp>
 #include <fc/utf8.hpp>
 #include <fc/variant.hpp>
@@ -752,6 +754,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
 void mongo_db_plugin_impl::_process_applied_transaction( const chain::transaction_trace_ptr& t ) {
    using namespace bsoncxx::types;
    using bsoncxx::builder::basic::kvp;
+   using bsoncxx::builder::basic::sub_array;
 
    auto trans_traces = mongo_conn[db_name][trans_traces_col];
    auto action_traces = mongo_conn[db_name][action_traces_col];
@@ -805,6 +808,16 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
          elog( "  JSON: ${j}", ("j", json));
       }
    }
+
+   // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+   if (!t->trx_vote && t->trx_vote->has_vote()) {
+      auto& trx_vote = *(t->trx_vote);
+      trans_traces_doc.append(kvp( "trx_vote", [&trx_vote](sub_array child) {
+          child.append(trx_vote.candidate.to_string());
+          child.append(b_int32{static_cast<std::int32_t>(trx_vote.vote_amount)});
+      } ));
+   }
+
    trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
 
    try {
@@ -821,6 +834,7 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
    using namespace bsoncxx::builder;
    using bsoncxx::builder::basic::kvp;
    using bsoncxx::builder::basic::make_document;
+   using bsoncxx::builder::basic::sub_array;
 
    mongocxx::options::update update_opts{};
    update_opts.upsert( true );
@@ -893,6 +907,20 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
             elog( "  JSON: ${j}", ("j", json) );
          }
       }
+
+      // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+      if (bs->trx_votes.has_transaction_votes()) {
+          auto trx_votes = bs->trx_votes.get_tx_vote_list();
+          block_doc.append(kvp( "trx_votes", [&trx_votes](sub_array child) {
+              for(const auto& trx_vote : trx_votes) {
+                 auto array_builder = bsoncxx::builder::basic::array{};
+                 array_builder.append(trx_vote.candidate.to_string());
+                 array_builder.append(b_int32{static_cast<std::int32_t>(trx_vote.vote_amount)});
+                 child.append(array_builder.view());
+              }
+          } ));
+      }
+
       block_doc.append( kvp( "createdAt", b_date{now} ) );
 
       try {

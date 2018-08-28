@@ -139,6 +139,10 @@ namespace yosemite_core {
 
             return tx_vote_list;
         }
+
+        bool has_transaction_votes() {
+            return tx_votes.size() > 0;
+        }
     };
 
 }
