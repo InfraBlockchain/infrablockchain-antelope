@@ -3,6 +3,10 @@
 Based on `eosio::http_plugin` and `websocketpp`, this plugin registeres WebSocket message handlers for plain and TLS socket.
 From the HTTP and HTTPS port listened via eosio::http_plugin, WebSocket clients which want to be notified events are subscribed.
 
+## Usage Recommendation
+This plugin is targeted to help to remove the sleep-based polling to check the irreversibility of transactions sent by DApps.
+So it's recommended to use for the transaction history access purpose for DApps.
+
 ## WebSocket URLs
 ws://${http_plugin@http-server-address}/v1/event_notification
 
