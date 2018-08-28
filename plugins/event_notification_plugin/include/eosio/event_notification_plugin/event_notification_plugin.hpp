@@ -6,15 +6,27 @@
 
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/http_plugin/http_plugin.hpp>
+#include <eosio/history_plugin/history_plugin.hpp>
 #include <appbase/application.hpp>
+#include <fc/any.hpp>
 
 namespace eosio {
     using namespace appbase;
 
     namespace event_notification_api {
-        struct operation {
-            string name; // subscribe, unsubscribe, ...
+        struct event_request {
+            string name; // subscribe, unsubscribe, tx_irreversibility, ...
             fc::variant params; // json object for each operation
+        };
+
+        struct event_response {
+            string name; // tx_irreversibility, ...
+            fc::variant response;
+        };
+
+        struct error_response {
+            uint16_t code;
+            string message;
         };
 
         struct subscribe_request {
@@ -23,12 +35,17 @@ namespace eosio {
 
         struct tx_irreversibility_request {
             transaction_id_type tx_id;
+            optional<uint32_t> block_num_hint;
+        };
+
+        struct tx_irreversibility_response {
+            transaction_id_type tx_id;
         };
     }
 
     class event_notification_plugin : public appbase::plugin<event_notification_plugin> {
     public:
-        APPBASE_PLUGIN_REQUIRES((chain_plugin)(http_plugin))
+        APPBASE_PLUGIN_REQUIRES((chain_plugin)(http_plugin)(history_plugin))
 
         event_notification_plugin();
         virtual ~event_notification_plugin();
@@ -38,23 +55,18 @@ namespace eosio {
         void plugin_startup();
         void plugin_shutdown();
 
-        template <typename SocketType>
-        void handle_message(ws_connection<SocketType> ws_conn, ws_message<SocketType> ws_msg);
-
     private:
-        std::unordered_set<size_t> subscribed_connections{};
-
-        template <typename SocketType>
-        void subscribe(ws_connection<SocketType> ws_conn, event_notification_api::subscribe_request &&params);
-
-        template <typename SocketType>
-        void unsubscribe(ws_connection <SocketType> ws_conn);
-
-        template <typename SocketType>
-        void tx_irreversibility(ws_connection<SocketType> ws_conn, event_notification_api::tx_irreversibility_request &&params);
+        unique_ptr<class event_notification_plugin_impl> my;
     };
 
 }
 
-FC_REFLECT(eosio::event_notification_api::operation, (name)(params))
+FC_REFLECT(eosio::event_notification_api::event_request, (name)(params))
+FC_REFLECT(eosio::event_notification_api::event_response, (name)(response))
+FC_REFLECT(eosio::event_notification_api::error_response, (code)(message))
+
 FC_REFLECT(eosio::event_notification_api::subscribe_request, (subscriber))
+
+FC_REFLECT(eosio::event_notification_api::tx_irreversibility_request, (tx_id)(block_num_hint))
+FC_REFLECT(eosio::event_notification_api::tx_irreversibility_response, (tx_id))
+

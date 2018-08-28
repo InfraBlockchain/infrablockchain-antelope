@@ -67,6 +67,8 @@ namespace eosio {
                        ws_connection_hash<basic_socket_endpoint>, ws_connection_equal<basic_socket_endpoint>> connection_to_wsh_map;
          unordered_map<ws_connection<tls_socket_endpoint>, ws_message_handler<tls_socket_endpoint>,
                        ws_connection_hash<tls_socket_endpoint>, ws_connection_equal<tls_socket_endpoint>> connection_to_wssh_map;
+         ws_connection_close_handler<basic_socket_endpoint> plain_ws_connection_close_handler;
+         ws_connection_close_handler<tls_socket_endpoint> tls_ws_connection_close_handler;
 
          template<typename SocketType>
          typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, const decltype(ws_message_handlers) &>::type
@@ -90,6 +92,18 @@ namespace eosio {
          typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(connection_to_wssh_map) &>::type
          get_connection_to_websocket_handler_map() {
             return connection_to_wssh_map;
+         }
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(plain_ws_connection_close_handler) &>::type
+         get_ws_connection_close_handler() {
+            return plain_ws_connection_close_handler;
+         }
+
+         template<typename SocketType>
+         typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(tls_ws_connection_close_handler) &>::type
+         get_ws_connection_close_handler() {
+            return tls_ws_connection_close_handler;
          }
 
          map<string,url_handler>  url_handlers;
@@ -278,18 +292,24 @@ namespace eosio {
 
          template<typename T>
          void handle_websocket_close(ws_connection<T> conn) {
-             dlog("websocket close handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", conn->get_resource()));
-
              auto &conn_to_handler_map = get_connection_to_websocket_handler_map<T>();
              conn_to_handler_map.erase(conn);
+
+             auto &close_handler = get_ws_connection_close_handler<T>();
+             if (close_handler) {
+                close_handler(conn);
+             }
          }
 
          template<typename T>
          void handle_websocket_fail(ws_connection<T> conn) {
-             dlog("websocket fail handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", conn->get_resource()));
-
              auto &conn_to_handler_map = get_connection_to_websocket_handler_map<T>();
              conn_to_handler_map.erase(conn);
+
+            auto &close_handler = get_ws_connection_close_handler<T>();
+            if (close_handler) {
+               close_handler(conn);
+            }
          }
 
          template<typename T>
@@ -304,9 +324,16 @@ namespace eosio {
                } else {
                   dlog("websocket message handler is not found");
                }
+            } catch (const fc::exception& e) {
+               auto err = e.to_detail_string();
+               elog("${e}", ("e", err));
+               conn->close(status::internal_endpoint_error, err);
+            } catch (const std::exception &e) {
+               elog("${e}", ("e", e.what()));
+               conn->close(status::internal_endpoint_error, e.what());
             } catch (...) {
-               conn_to_handler_map.erase(conn);
-               conn->close(status::internal_endpoint_error, "Unknown error"); //TODO:make handle_websocket_exception()
+               elog("${e}", ("e", "Unknown error"));
+               conn->close(status::internal_endpoint_error, "Unknown error");
             }
          }
 
@@ -329,7 +356,7 @@ namespace eosio {
             ws.set_fail_handler([&](connection_hdl hdl) {
                handle_websocket_fail<T>(ws.get_con_from_hdl(hdl));
             });
-            ws.set_message_handler([&](connection_hdl hdl, typename websocketpp::server<http_config::asio_with_stub_log<T>>::message_ptr msg) {
+            ws.set_message_handler([&](connection_hdl hdl, ws_message<T> msg) {
                handle_websocket_message<T>(ws.get_con_from_hdl(hdl), msg);
             });
          }
@@ -576,4 +603,11 @@ namespace eosio {
       });
    }
 
+   void http_plugin::set_ws_connection_close_handler(ws_connection_close_handler<basic_socket_endpoint> handler) {
+      my->plain_ws_connection_close_handler = handler;
+   }
+
+   void http_plugin::set_wss_connection_close_handler(ws_connection_close_handler<tls_socket_endpoint> handler) {
+      my->tls_ws_connection_close_handler = handler;
+   }
 }
