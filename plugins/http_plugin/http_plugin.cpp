@@ -25,10 +25,9 @@ namespace eosio {
 
    namespace asio = boost::asio;
 
-   using std::map;
    using std::unordered_map;
    using std::vector;
-   using std::set;
+   using std::unordered_set;
    using std::string;
    using std::regex;
    using boost::optional;
@@ -109,7 +108,7 @@ namespace eosio {
             return tls_ws_connection_term_handler;
          }
 
-         map<string,url_handler>  url_handlers;
+         unordered_map<string, url_handler> url_handlers;
          optional<tcp::endpoint>  listen_endpoint;
          string                   access_control_allow_origin;
          string                   access_control_allow_headers;
@@ -126,7 +125,7 @@ namespace eosio {
          websocket_server_tls_type https_server;
 
          bool                     validate_host;
-         set<string>              valid_hosts;
+         unordered_set<string>    valid_hosts;
 
          uint32_t                 idle_connection_timeout_ms;
 
