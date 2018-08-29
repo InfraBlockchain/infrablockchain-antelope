@@ -151,7 +151,7 @@ namespace eosio {
 
       connection_ptr find_connection( const string &host )const;
 
-      std::set< connection_ptr >       connections;
+      std::unordered_set< connection_ptr >       connections;
       bool                             done = false;
       unique_ptr< sync_manager >       sync_master;
       unique_ptr< dispatch_manager >   dispatcher;
