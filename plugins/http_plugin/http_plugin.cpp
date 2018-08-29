@@ -44,6 +44,19 @@ namespace eosio {
 
    static bool verbose_http_errors = false;
 
+#define DEFINE_ENABLE_IF_TEMPLATE_GETTERS(first, second, getter_name) \
+   template<typename SocketType> \
+   typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(first) &>::type \
+   getter_name() { \
+      return first; \
+   } \
+   \
+   template<typename SocketType> \
+   typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(second) &>::type \
+   getter_name() { \
+      return second; \
+   } \
+
    class http_plugin_impl {
       template<typename SocketType>
       struct ws_connection_equal {
@@ -127,7 +140,47 @@ namespace eosio {
          bool                     validate_host;
          unordered_set<string>    valid_hosts;
 
+         unordered_set<ws_connection<basic_socket_endpoint>> http_connections;
+         unordered_set<ws_connection<tls_socket_endpoint>> https_connections;
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(http_connections, https_connections, get_http_connections_set);
+
          uint32_t                 idle_connection_timeout_ms;
+         uint32_t                 max_connections;
+
+         bool is_max_connections_reached() {
+            return max_connections > 0 &&
+                   (http_connections.size() + https_connections.size() + ws_connection_to_msgh_map.size() + wss_connection_to_msgh_map.size())
+                    >= max_connections;
+         }
+
+         template <typename T> 
+         bool is_already_connected(ws_connection<T> ws_conn) {
+            if (max_connections == 0) return true;
+
+            auto &connections_set = get_http_connections_set<T>();
+            return connections_set.find(ws_conn) != connections_set.end();
+         }
+
+         template <typename T>
+         void register_keep_alive_http_connection(ws_connection<T> ws_conn) {
+            if (max_connections == 0) return;
+
+            auto &connections_set = get_http_connections_set<T>();
+            connections_set.insert(ws_conn);
+         }
+
+         template <typename T>
+         void unregister_keep_alive_http_connection(ws_connection<T> ws_conn) {
+            if (max_connections == 0) return;
+
+            auto &connections_set = get_http_connections_set<T>();
+
+            dlog("before erase, connections_set.size()=${size}", ("size", connections_set.size()));
+
+            connections_set.erase(ws_conn);
+
+            dlog("after erase, connections_set.size()=${size}", ("size", connections_set.size()));
+         }
 
          bool host_port_is_valid( const std::string& header_host_port, const string& endpoint_local_host_port ) {
             return !validate_host || header_host_port == endpoint_local_host_port || valid_hosts.find(header_host_port) != valid_hosts.end();
@@ -186,7 +239,7 @@ namespace eosio {
          }
 
          template<class T>
-         static void handle_exception(typename websocketpp::server<http_config::asio_with_stub_log<T>>::connection_ptr con) {
+         static void handle_exception(ws_connection<T> con) {
             string err = "Internal Service error, http: ";
             try {
                con->set_status( websocketpp::http::status_code::internal_server_error );
@@ -218,8 +271,14 @@ namespace eosio {
          }
 
          template<class T>
-         void handle_http_request(typename websocketpp::server<http_config::asio_with_stub_log<T>>::connection_ptr con) {
+         void handle_http_request(ws_connection<T> con) {
             try {
+               bool is_already_keep_alive = is_already_connected<T>(con);
+               if (!is_already_keep_alive && is_max_connections_reached()) {
+                  con->set_status(websocketpp::http::status_code::too_many_requests);
+                  return;
+               }
+
                bool is_secure = con->get_uri()->get_secure();
                const auto& local_endpoint = con->get_socket().lowest_layer().local_endpoint();
                auto local_socket_host_port = local_endpoint.address().to_string() + ":" + std::to_string(local_endpoint.port());
@@ -244,6 +303,10 @@ namespace eosio {
                   con->append_header( "Access-Control-Allow-Credentials", "true" );
                }
 
+               if (!is_already_keep_alive) {
+                  register_keep_alive_http_connection<T>(con);
+               }
+
                if(req.get_method() == "OPTIONS") {
                   con->set_status(websocketpp::http::status_code::ok);
                   return;
@@ -262,7 +325,6 @@ namespace eosio {
                   } );
 
                } else {
-                  dlog( "404 - not found: ${ep}", ("ep", resource));
                   error_results results{websocketpp::http::status_code::not_found,
                                         "Not Found", error_results::error_info(fc::exception( FC_LOG_MESSAGE( error, "Unknown Endpoint" )), verbose_http_errors )};
                   con->set_body( fc::json::to_string( results ));
@@ -277,46 +339,48 @@ namespace eosio {
          void handle_websocket_open(ws_connection<T> conn) {
             auto resource = conn->get_resource();
 
-            dlog("websocket open handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", resource));
-
             auto handler_map = get_websocket_msghandler_map<T>();
             auto handler_itr = handler_map.find(resource);
             if (handler_itr != handler_map.end()) {
+               bool is_connected = is_already_connected<T>(conn);
+               if (!is_connected && is_max_connections_reached()) {
+                  error_results results{websocketpp::http::status_code::too_many_requests,
+                                        "Too many connections",
+                                        error_results::error_info(fc::exception(FC_LOG_MESSAGE(error, "Too many connections")),
+                                                                  verbose_http_errors)};
+                  conn->close(status::internal_endpoint_error, fc::json::to_string(results));
+                  return;
+               }
+
                auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
                conn_to_handler_map.insert(std::make_pair(conn, handler_itr->second));
             } else {
-               dlog("websocket handler not found: ${ep}", ("ep", resource));
                error_results results{websocketpp::http::status_code::not_found,
-                                     "Not Found", error_results::error_info(fc::exception(FC_LOG_MESSAGE(error, "Unknown Endpoint")), verbose_http_errors)};
+                                     "Not Found",
+                                     error_results::error_info(fc::exception(FC_LOG_MESSAGE(error, "Unknown Endpoint")),
+                                                               verbose_http_errors)};
                conn->close(status::internal_endpoint_error, fc::json::to_string(results));
             }
          }
 
          template<typename T>
-         void handle_websocket_close(ws_connection<T> conn) {
-             auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
-             conn_to_handler_map.erase(conn);
+         void handle_websocket_close_or_fail(ws_connection<T> conn) {
+            if (conn->is_http_connection()) {
+               unregister_keep_alive_http_connection<T>(conn);
+            } else {
+               auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
+               conn_to_handler_map.erase(conn);
 
-             auto &term_handler = get_ws_connection_termination_handler<T>();
-             if (term_handler) {
-                term_handler(conn);
-             }
-         }
-
-         template<typename T>
-         void handle_websocket_fail(ws_connection<T> conn) {
-             auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
-             conn_to_handler_map.erase(conn);
-
-            auto &term_handler = get_ws_connection_termination_handler<T>();
-            if (term_handler) {
-               term_handler(conn);
+               auto &term_handler = get_ws_connection_termination_handler<T>();
+               if (term_handler) {
+                  term_handler(conn);
+               }
             }
          }
 
          template<typename T>
          void handle_websocket_message(ws_connection<T> conn, ws_message<T> msg) {
-            dlog("websocket message handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", conn->get_resource()));
+            //dlog("websocket message handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", conn->get_resource()));
 
             auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
             try {
@@ -353,10 +417,10 @@ namespace eosio {
                handle_websocket_open<T>(ws.get_con_from_hdl(hdl));
             });
             ws.set_close_handler([&](connection_hdl hdl) {
-               handle_websocket_close<T>(ws.get_con_from_hdl(hdl));
+               handle_websocket_close_or_fail<T>(ws.get_con_from_hdl(hdl));
             });
             ws.set_fail_handler([&](connection_hdl hdl) {
-               handle_websocket_fail<T>(ws.get_con_from_hdl(hdl));
+               handle_websocket_close_or_fail<T>(ws.get_con_from_hdl(hdl));
             });
             ws.set_message_handler([&](connection_hdl hdl, ws_message<T> msg) {
                handle_websocket_message<T>(ws.get_con_from_hdl(hdl), msg);
@@ -416,12 +480,14 @@ namespace eosio {
             ("http-validate-host", boost::program_options::value<bool>()->default_value(true), "If set to false, then any incoming \"Host\" header is considered valid")
             ("http-alias", bpo::value<std::vector<string>>()->composing(), "Additionaly acceptable values for the \"Host\" header of incoming HTTP requests, can be specified multiple times.  Includes http/s_server_address by default.")
             ("idle-connection-timeout-ms", bpo::value<uint32_t>()->default_value(5000), "Timeout in milliseconds to cut idle connections out")
+            ("max-connections", bpo::value<uint32_t>()->default_value(100), "The maximum number of HTTP and WebSocket connections which is allowed to connect and keep alive")
             ;
    }
 
    void http_plugin::plugin_initialize(const variables_map& options) {
       try {
-         my->idle_connection_timeout_ms = options.at("idle-connection-timeout-ms").as<uint32_t >();
+         my->idle_connection_timeout_ms = options.at("idle-connection-timeout-ms").as<uint32_t>();
+         my->max_connections = options.at("max-connections").as<uint32_t>();
 
          my->validate_host = options.at("http-validate-host").as<bool>();
          if( options.count( "http-alias" )) {
@@ -484,6 +550,11 @@ namespace eosio {
 
          my->max_body_size = options.at( "max-body-size" ).as<uint32_t>();
          verbose_http_errors = options.at( "verbose-http-errors" ).as<bool>();
+
+         my->http_connections.clear();
+         my->https_connections.clear();
+         my->ws_connection_to_msgh_map.clear();
+         my->wss_connection_to_msgh_map.clear();
       } FC_LOG_AND_RETHROW()
    }
 
