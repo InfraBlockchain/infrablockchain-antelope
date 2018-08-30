@@ -9,8 +9,8 @@
 namespace yosemite {
     static const int MAX_SIGNERS = 32;
 
-    void digital_contract::check_signers_param(const vector<account_name> &signers,
-                                               flat_set<account_name> &duplicates) {
+    void digital_contract::check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates,
+                                               identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc) {
         eosio_assert(static_cast<uint32_t>(!signers.empty()), "signers cannot be empty");
         eosio_assert(static_cast<uint32_t>(signers.size() <= MAX_SIGNERS), "too many signers");
 
@@ -18,18 +18,21 @@ namespace yosemite {
             eosio_assert(static_cast<uint32_t>(is_account(signer)), "signer account does not exist");
             auto result = duplicates.insert(signer);
             eosio_assert(static_cast<uint32_t>(result.second), "duplicated signer account exists");
+            eosio_assert(static_cast<uint32_t>(identity::is_account_type(signer, signer_type)), "signer is not the required account type");
+            eosio_assert(static_cast<uint32_t>(identity::has_all_kyc_status(signer, signer_kyc)), "signer does not have required KYC status");
         }
     }
 
     void digital_contract::create(const dcid &dc_id, const string &conhash, const string &adddochash,
-                                  const vector<account_name> &signers, const time_point_sec &expiration, uint8_t options) {
+                                  const vector<account_name> &signers, const time_point_sec &expiration,
+                                  identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc, uint8_t options) {
         eosio_assert(static_cast<uint32_t>(!conhash.empty()), "conhash cannot be empty");
         eosio_assert(static_cast<uint32_t>(conhash.size() <= 256), "conhash is too long");
         eosio_assert(static_cast<uint32_t>(adddochash.size() <= 256), "additional conhash is too long");
         eosio_assert(static_cast<uint32_t>(expiration > time_point_sec(now() + 60)), "digital contract is expired or expiration time is too close to now");
         eosio_assert(static_cast<uint32_t>(options == 0), "options is currently reserved");
         flat_set<account_name> empty_duplicates;
-        check_signers_param(signers, empty_duplicates);
+        check_signers_param(signers, empty_duplicates, signer_type, signer_kyc);
 
         require_auth(dc_id.creator);
 
@@ -43,6 +46,8 @@ namespace yosemite {
             i.adddochash = adddochash;
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
             i.expiration = expiration;
+            i.signer_type = signer_type;
+            i.signer_kyc = signer_kyc;
             i.options = options;
         });
 
@@ -58,7 +63,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(info.expiration > time_point_sec(now())), "digital contract is expired");
         // check duplicated signer
         flat_set<account_name> duplicates{info.signers.begin(), info.signers.end()};
-        check_signers_param(signers, duplicates);
+        check_signers_param(signers, duplicates, info.signer_type, info.signer_kyc);
         eosio_assert(static_cast<uint32_t>(info.signers.size() + signers.size() <= MAX_SIGNERS), "too many signers in total");
 
         dcontract_idx.modify(info, 0, [&](auto &i) {

@@ -44,7 +44,7 @@ clyos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.0000 D
 Create a digital contract
 
 ```
-clyos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequence":1},"conhash":"123456","adddochash":"","signers":["user1", "user2"],"expiration":"2018-08-31T02:49:57","options":0}' -p servprovider
+clyos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequence":1},"conhash":"123456","adddochash":"","signers":["user1", "user2"],"expiration":"2018-08-31T02:49:57","signer_type":0,"signer_kyc":0,"signer_type":0,"signer_kyc":0,"options":0}' -p servprovider
 ```
 
 ### parameters of create
@@ -61,6 +61,8 @@ clyos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequen
 1. expiration : expiration time in the ISO8601 format, combined date and time to seconds in UTC e.g. 2018-08-31T02:49:57
    * YosemiteChain assumes that the time-zone of the expiration time is UTC. Other time-zones are not considered.
    * The minimum expiration is 1 minute from now.
+1. signer_type : the required type of the signer account defined by [yx.identity](../../contracts/yx.identity/); 0 for general case
+1. signer_kyc : 16-bit flag from [yx.identity](../../contracts/yx.identity/) which indicates the required KYC status of the signer account ; 0 for general case
 1. options : reserved; must be 0
 
 ## sign
@@ -81,6 +83,7 @@ clyos push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequenc
 Add additional signers to the created digital contract
 
 * The action only succeeds when none of the signers has signed the contract.
+* The type and/or the KYC status of the signer account are checked if the creator set `signer_type` and/or `signer_kyc`.
 ```
 clyos push action yx.dcontract addsigners '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signers":["user3"]}' -p servprovider
 ```
@@ -135,6 +138,8 @@ clyos get table yx.dcontract servprovider dcontracts
       "conhash": "abcdef",
       "adddochash": "",
       "expiration": "2018-08-31T02:49:57",
+      "signer_type": 0,
+      "signer_kyc": 0,
       "options": 0,
       "signers": [
         "user1",
@@ -150,6 +155,8 @@ clyos get table yx.dcontract servprovider dcontracts
       "conhash": "abcd1234",
       "adddochash": "",
       "expiration": "2018-08-31T02:49:57",
+      "signer_type": 0,
+      "signer_kyc": 1,
       "options": 0,
       "signers": [
         "user1",

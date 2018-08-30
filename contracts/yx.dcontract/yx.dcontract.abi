@@ -3,6 +3,14 @@
    {
       "new_type_name": "account_name",
       "type": "name"
+   },
+   {
+      "new_type_name": "identity_type",
+      "type": "uint16"
+   },
+   {
+      "new_type_name": "identity_kyc",
+      "type": "uint16"
    }
   ],
   "structs": [
@@ -23,6 +31,8 @@
         {"name":"adddochash", "type":"string"},
         {"name":"signers", "type":"account_name[]"},
         {"name":"expiration", "type":"time_point_sec"},
+        {"name":"signer_type", "type":"identity_type"},
+        {"name":"signer_kyc", "type":"identity_kyc"},
         {"name":"options", "type":"uint8"}
       ]
     },
@@ -66,6 +76,8 @@
         {"name":"conhash", "type":"string"},
         {"name":"adddochash", "type":"string"},
         {"name":"expiration", "type":"time_point_sec"},
+        {"name":"signer_type", "type":"identity_type"},
+        {"name":"signer_kyc", "type":"identity_kyc"},
         {"name":"options", "type":"uint8"},
         {"name":"signers", "type":"account_name[]"},
         {"name":"done_signers", "type":"uint8[]"}

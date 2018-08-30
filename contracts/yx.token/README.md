@@ -141,7 +141,7 @@ clyos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2
 1. type
    * 0 : transfer send
    * 1 : transfer receive
-1. kyc : 16-bit flags from [yx.identity](../../contracts/yx.identity/)
+1. kyc : 16-bit flag from [yx.identity](../../contracts/yx.identity/)
 
 ## setoptions
 overwrite or add token options

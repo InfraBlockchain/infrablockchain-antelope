@@ -26,12 +26,16 @@
 
 namespace yosemite { namespace identity {
 
+    using identity_type_t = uint16_t;
+    using identity_kyc_t = uint16_t;
+    using identity_state_t = uint32_t;
+
     struct identity_info {
         account_name account;
         account_name identity_authority; // identity authority account managing the identity info. of this 'account'
-        uint16_t type; // account type (e.g. normal, system, ...)
-        uint16_t kyc; // KYC status (e.g. email, phone, real name, bank account, ...)
-        uint32_t state; // account state (e.g. flag for blacklisted account, Identity-Authority specific flags, ...)
+        identity_type_t type; // account type (e.g. normal, system, ...)
+        identity_kyc_t kyc; // KYC status (e.g. email, phone, real name, bank account, ...)
+        identity_state_t state; // account state (e.g. flag for blacklisted account, Identity-Authority specific flags, ...)
         std::string data; // Identity-Authority specific data
 
         uint64_t primary_key() const { return account; }
@@ -61,7 +65,7 @@ namespace yosemite { namespace identity {
         }
     }
 
-    uint16_t get_identity_account_type(const account_name account) {
+    identity_type_t get_identity_account_type(const account_name account) {
         if (is_system_account(account)) {
             return YOSEMITE_ID_ACC_TYPE_SYSTEM;
         }
@@ -78,11 +82,11 @@ namespace yosemite { namespace identity {
 //        return type == YOSEMITE_ID_ACC_TYPE_NORMAL || type == YOSEMITE_ID_ACC_TYPE_SYSTEM;
 //    }
 
-    bool is_account_type(const account_name account, uint16_t type_code) {
+    bool is_account_type(const account_name account, identity_type_t type_code) {
         return get_identity_account_type(account) == type_code;
     }
 
-    uint16_t get_identity_kyc_status(const account_name account) {
+    identity_kyc_t get_identity_kyc_status(const account_name account) {
         if (is_system_account(account)) {
             return YOSEMITE_ID_KYC_MAX_AUTH;
         }
@@ -99,16 +103,16 @@ namespace yosemite { namespace identity {
 //        return kyc_flags <= YOSEMITE_ID_KYC_MAX_AUTH;
 //    }
 
-    bool has_kyc_status(const account_name account, uint16_t kyc_flags) {
+    bool has_kyc_status(const account_name account, identity_kyc_t kyc_flags) {
         if (kyc_flags == 0) return true;
         return (get_identity_kyc_status(account) & kyc_flags) != 0;
     }
 
-    bool has_all_kyc_status(const account_name account, uint16_t kyc_flags) {
+    bool has_all_kyc_status(const account_name account, identity_kyc_t kyc_flags) {
         return (get_identity_kyc_status(account) & kyc_flags) == kyc_flags;
     }
 
-    uint32_t get_identity_account_state(const account_name account) {
+    identity_state_t get_identity_account_state(const account_name account) {
         if (is_system_account(account)) {
             return YOSEMITE_ID_ACC_STATE_CLEAR;
         }
@@ -125,12 +129,12 @@ namespace yosemite { namespace identity {
 //        return state_flags <= YOSEMITE_ID_ACC_STATE_MAX;
 //    }
 
-    bool has_account_state(const account_name account, uint32_t state_flag) {
+    bool has_account_state(const account_name account, identity_state_t state_flag) {
         if (state_flag == 0) return true;
         return (get_identity_account_state(account) & state_flag) != 0;
     }
 
-    bool has_all_account_state(const account_name account, uint32_t state_flags) {
+    bool has_all_account_state(const account_name account, identity_state_t state_flags) {
         return (get_identity_account_state(account) & state_flags) == state_flags;
     }
 
