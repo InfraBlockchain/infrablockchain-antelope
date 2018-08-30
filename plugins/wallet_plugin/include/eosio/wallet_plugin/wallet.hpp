@@ -52,12 +52,13 @@ class soft_wallet final : public wallet_api
        * Get the WIF private key corresponding to a public key.  The
        * private key must already be in the wallet.
        */
-      private_key_type get_private_key( public_key_type pubkey )const override;
+      private_key_type get_private_key(const public_key_type &pubkey)const override;
 
       /**
        *  @param role - active | owner | posting | memo
        */
-      pair<public_key_type,private_key_type>  get_private_key_from_password( string account, string role, string password )const;
+      pair<public_key_type,private_key_type>  get_private_key_from_password(const string &account, const string &role,
+                                                                            const string &password)const;
 
       /** Checks whether the wallet has just been created and has not yet had a password set.
        *
@@ -87,7 +88,7 @@ class soft_wallet final : public wallet_api
        * @param password the password previously set with \c set_password()
        * @ingroup Wallet Management
        */
-      void    unlock(string password) override;
+      void    unlock(const string &password) override;
 
       /** Checks the password of the wallet
        *
@@ -96,7 +97,7 @@ class soft_wallet final : public wallet_api
        * @param password the password previously set with \c set_password()
        * @ingroup Wallet Management
        */
-      void    check_password(string password) override;
+      void    check_password(const string &password) override;
 
       /** Sets a new password on the wallet.
        *
@@ -104,7 +105,7 @@ class soft_wallet final : public wallet_api
        * execute this command.
        * @ingroup Wallet Management
        */
-      void    set_password(string password) override;
+      void    set_password(const string &password) override;
 
       /** Dumps all private keys owned by the wallet.
        *
@@ -132,7 +133,7 @@ class soft_wallet final : public wallet_api
        *                        existing wallet file
        * @returns true if the specified wallet is loaded
        */
-      bool    load_wallet_file(string wallet_filename = "");
+      bool    load_wallet_file(const string &wallet_filename = "");
 
       /** Saves the current wallet to the given filename.
        *
@@ -144,7 +145,7 @@ class soft_wallet final : public wallet_api
        *                        or overwrite.  If \c wallet_filename is empty,
        *                        save to the current filename.
        */
-      void    save_wallet_file(string wallet_filename = "");
+      void    save_wallet_file(const string &wallet_filename = "");
 
       /** Sets the wallet filename used for future writes.
        *
@@ -153,7 +154,7 @@ class soft_wallet final : public wallet_api
        *
        * @param wallet_filename the new filename to use for future saves
        */
-      void    set_wallet_filename(string wallet_filename);
+      void    set_wallet_filename(const string &wallet_filename);
 
       /** Imports a WIF Private Key into the wallet to be used to sign transactions by an account.
        *
@@ -161,7 +162,7 @@ class soft_wallet final : public wallet_api
        *
        * @param wif_key the WIF Private Key to import
        */
-      bool import_key( string wif_key ) override;
+      bool import_key(const string &wif_key) override;
 
       /** Removes a key from the wallet.
        *
@@ -169,7 +170,7 @@ class soft_wallet final : public wallet_api
        *
        * @param key the Public Key to remove
        */
-      bool remove_key( string key ) override;
+      bool remove_key(const string &key) override;
 
        /** Creates a key within the wallet to be used to sign transactions by an account.
        *
@@ -177,11 +178,11 @@ class soft_wallet final : public wallet_api
        *
        * @param key_type the key type to create. May be empty to allow wallet to pick appropriate/"best" key type
        */
-      string create_key( string key_type ) override;
+      string create_key(const string &key_type) override;
 
       /* Attempts to sign a digest via the given public_key
       */
-      optional<signature_type> try_sign_digest( const digest_type digest, const public_key_type public_key ) override;
+      optional<signature_type> try_sign_digest(const digest_type &digest, const public_key_type &public_key) override;
 
       std::shared_ptr<detail::soft_wallet_impl> my;
       void encrypt_keys();

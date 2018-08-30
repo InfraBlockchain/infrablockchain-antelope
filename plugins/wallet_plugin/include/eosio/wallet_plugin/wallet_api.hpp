@@ -21,7 +21,7 @@ class wallet_api
        * Get the private key corresponding to a public key.  The
        * private key must already be in the wallet.
        */
-      virtual private_key_type get_private_key( public_key_type pubkey ) const = 0;
+      virtual private_key_type get_private_key(const public_key_type &pubkey) const = 0;
 
       /** Checks whether the wallet is locked (is unable to use its private keys).
        *
@@ -43,7 +43,7 @@ class wallet_api
        * @param password the password previously set with \c set_password()
        * @ingroup Wallet Management
        */
-      virtual void    unlock(string password) = 0;
+      virtual void    unlock(const string &password) = 0;
 
       /** Checks the password of the wallet
        *
@@ -52,7 +52,7 @@ class wallet_api
        * @param password the password previously set with \c set_password()
        * @ingroup Wallet Management
        */
-      virtual void    check_password(string password) = 0;
+      virtual void    check_password(const string &password) = 0;
 
       /** Sets a new password on the wallet.
        *
@@ -60,7 +60,7 @@ class wallet_api
        * execute this command.
        * @ingroup Wallet Management
        */
-      virtual void    set_password(string password) = 0;
+      virtual void    set_password(const string &password) = 0;
 
       /** Dumps all private keys owned by the wallet.
        *
@@ -81,7 +81,7 @@ class wallet_api
        *
        * @param wif_key the WIF Private Key to import
        */
-      virtual bool import_key( string wif_key ) = 0;
+      virtual bool import_key(const string &wif_key) = 0;
 
       /** Removes a key from the wallet.
        *
@@ -89,7 +89,7 @@ class wallet_api
        *
        * @param key the Public Key to remove
        */
-      virtual bool remove_key( string key ) = 0;
+      virtual bool remove_key(const string &key) = 0;
 
        /** Creates a key within the wallet to be used to sign transactions by an account.
        *
@@ -97,11 +97,11 @@ class wallet_api
        *
        * @param key_type the key type to create. May be empty to allow wallet to pick appropriate/"best" key type
        */
-      virtual string create_key( string key_type ) = 0;
+      virtual string create_key(const string &key_type) = 0;
 
       /** Returns a signature given the digest and public_key, if this wallet can sign via that public key
        */
-      virtual optional<signature_type> try_sign_digest( const digest_type digest, const public_key_type public_key ) = 0;
+      virtual optional<signature_type> try_sign_digest(const digest_type &digest, const public_key_type &public_key) = 0;
 };
 
 }}
