@@ -174,12 +174,7 @@ namespace eosio {
             if (max_connections == 0) return;
 
             auto &connections_set = get_http_connections_set<T>();
-
-            dlog("before erase, connections_set.size()=${size}", ("size", connections_set.size()));
-
             connections_set.erase(ws_conn);
-
-            dlog("after erase, connections_set.size()=${size}", ("size", connections_set.size()));
          }
 
          bool host_port_is_valid( const std::string& header_host_port, const string& endpoint_local_host_port ) {
@@ -387,8 +382,6 @@ namespace eosio {
                auto handler_itr = conn_to_handler_map.find(conn);
                if (handler_itr != conn_to_handler_map.end()) {
                   handler_itr->second(conn, msg);
-               } else {
-                  dlog("websocket message handler is not found");
                }
             } catch (const fc::exception& e) {
                auto err = e.to_detail_string();
