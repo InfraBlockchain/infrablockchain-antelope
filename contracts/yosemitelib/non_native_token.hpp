@@ -6,6 +6,7 @@
 
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
+#include <yosemitelib/identity.hpp>
 #include <eosiolib/eosio.hpp>
 #include <string>
 
@@ -30,6 +31,14 @@ namespace yosemite { namespace non_native_token {
     #define TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER             0b0000000000000001
     #define TOKEN_OPTIONS_MAX                               0b0000000000000001
 
+    /* KYC rule for token */
+    enum token_kyc_rule_type {
+        TOKEN_KYC_RULE_TYPE_TRANSFER_SEND    = 0,
+        TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE = 1,
+
+        TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
+    };
+
     /* scope = token symbol */
     struct token_stats {
         uint64_t issuer = 0;
@@ -37,7 +46,7 @@ namespace yosemite { namespace non_native_token {
         uint16_t can_set_options = TOKEN_CAN_SET_OPTIONS_NONE; // can set only at token creation time
         uint16_t options = TOKEN_OPTIONS_NONE;
         std::vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type
-        std::vector<uint16_t> kyc_rule_flags; // from yosemitelib/identity.hpp
+        std::vector<identity::identity_kyc_t> kyc_rule_flags; // from yosemitelib/identity.hpp
 
         uint64_t primary_key() const { return issuer; }
     };
@@ -54,7 +63,7 @@ namespace yosemite { namespace non_native_token {
         void redeem(const yx_asset &token, const string &memo);
         void transfer(account_name from, account_name to, yx_asset asset, const string &memo);
         void wptransfer(account_name from, account_name to, yx_asset token, account_name payer, const string &memo);
-        void setkycrule(const yx_symbol &ysymbol, uint8_t type, uint16_t kyc);
+        void setkycrule(const yx_symbol &ysymbol, uint8_t type, identity::identity_kyc_t kyc);
         void setoptions(const yx_symbol &ysymbol, uint16_t options, bool overwrite);
         void freezeacc(const yx_symbol &ysymbol, const vector<account_name> &accs, bool freeze);
 
@@ -69,14 +78,6 @@ namespace yosemite { namespace non_native_token {
 
             uint64_t primary_key() const { return id; }
             uint128_t by_yx_symbol() const { return token.get_yx_symbol().to_uint128(); }
-        };
-
-        /* KYC rule for token */
-        enum token_kyc_rule_type {
-            TOKEN_KYC_RULE_TYPE_TRANSFER_SEND    = 0,
-            TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE = 1,
-
-            TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
         };
 
         typedef eosio::multi_index<N(taccounts), balance_holder,

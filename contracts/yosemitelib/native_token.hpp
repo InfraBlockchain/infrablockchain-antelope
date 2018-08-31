@@ -6,6 +6,7 @@
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/yx_asset.hpp>
+#include <yosemitelib/identity.hpp>
 
 /* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
 
@@ -29,7 +30,7 @@ namespace yosemite { namespace native_token {
         void ntransfer(account_name from, account_name to, const yx_asset &token, const string &memo);
         void wpntransfer(account_name from, account_name to, const yx_asset &token, account_name payer, const string &memo);
         void payfee(account_name payer, yx_asset token);
-        void setkycrule(uint8_t type, uint16_t kyc);
+        void setkycrule(uint8_t type, identity::identity_kyc_t kyc);
 
     private:
 
@@ -52,7 +53,7 @@ namespace yosemite { namespace native_token {
 
         struct kyc_rule {
             uint8_t type = 0; // == ntoken_kyc_rule_type
-            uint16_t kyc_flags = 0; // from yosemitelib/identity.hpp
+            identity::identity_kyc_t kyc_flags = 0; // from yosemitelib/identity.hpp
 
             uint64_t primary_key() const { return type; }
         };

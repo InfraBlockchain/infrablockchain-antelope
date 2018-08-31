@@ -1,5 +1,4 @@
 #include <yosemitelib/native_token.hpp>
-#include <yosemitelib/identity.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/system_depository.hpp>
@@ -269,7 +268,7 @@ namespace yosemite { namespace native_token {
         }
     }
 
-    void ntoken::setkycrule(uint8_t type, uint16_t kyc) {
+    void ntoken::setkycrule(uint8_t type, identity::identity_kyc_t kyc) {
         eosio_assert(static_cast<uint32_t>(type < NTOKEN_KYC_RULE_TYPE_MAX), "invalid type");
         require_auth(YOSEMITE_SYSTEM_ACCOUNT);
 
