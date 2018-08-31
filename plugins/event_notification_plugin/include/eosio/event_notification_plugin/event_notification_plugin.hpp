@@ -10,8 +10,9 @@
 #include <appbase/application.hpp>
 #include <fc/any.hpp>
 
-namespace eosio {
+namespace yosemite {
     using namespace appbase;
+    using namespace eosio;
 
     namespace event_notification_api {
         struct event_base {
@@ -59,14 +60,14 @@ namespace eosio {
         void plugin_shutdown();
 
     private:
-        unique_ptr<class event_notification_plugin_impl> my;
+        std::unique_ptr<class event_notification_plugin_impl> my;
     };
 
 }
 
-FC_REFLECT(eosio::event_notification_api::event_base, (req_id)(name))
-FC_REFLECT(eosio::event_notification_api::error_response, (req_id)(name)(code)(message))
-FC_REFLECT(eosio::event_notification_api::subscribe_request, (req_id)(name)(subscriber))
-FC_REFLECT(eosio::event_notification_api::tx_irreversibility_request, (req_id)(name)(tx_id)(block_num_hint))
-FC_REFLECT(eosio::event_notification_api::tx_irreversibility_response, (req_id)(name)(tx_id))
+FC_REFLECT(yosemite::event_notification_api::event_base, (req_id)(name))
+FC_REFLECT(yosemite::event_notification_api::error_response, (req_id)(name)(code)(message))
+FC_REFLECT(yosemite::event_notification_api::subscribe_request, (req_id)(name)(subscriber))
+FC_REFLECT(yosemite::event_notification_api::tx_irreversibility_request, (req_id)(name)(tx_id)(block_num_hint))
+FC_REFLECT(yosemite::event_notification_api::tx_irreversibility_response, (req_id)(name)(tx_id))
 

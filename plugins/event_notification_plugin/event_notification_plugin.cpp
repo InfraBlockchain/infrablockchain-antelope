@@ -6,7 +6,7 @@
 #include <fc/exception/exception.hpp>
 #include <fc/io/json.hpp>
 
-namespace eosio {
+namespace yosemite {
     using namespace websocketpp::close;
     using std::unordered_multimap;
 
