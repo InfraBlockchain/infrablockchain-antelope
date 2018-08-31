@@ -455,13 +455,13 @@ namespace eosio {
          get_transaction_result result;
 
          if (in_history) {
-            result.id = p.id;
             result.last_irreversible_block = chain.last_irreversible_block_num();
-
-
             result.id         = itr->trx_id;
             result.block_num  = itr->block_num;
             result.block_time = itr->block_time;
+            if (p.simplified && *p.simplified) {
+                return result;
+            }
 
             while( itr != idx.end() && itr->trx_id == result.id ) {
 
@@ -514,6 +514,10 @@ namespace eosio {
                         result.last_irreversible_block = chain.last_irreversible_block_num();
                         result.block_num = *p.block_num_hint;
                         result.block_time = blk->timestamp;
+                        if (p.simplified && *p.simplified) {
+                           return result;
+                        }
+
                         fc::mutable_variant_object r("receipt", receipt);
                         r("trx", chain.to_variant_with_abi(mtrx.trx, abi_serializer_max_time));
                         result.trx = move(r);
@@ -527,6 +531,10 @@ namespace eosio {
                         result.last_irreversible_block = chain.last_irreversible_block_num();
                         result.block_num = *p.block_num_hint;
                         result.block_time = blk->timestamp;
+                        if (p.simplified && *p.simplified) {
+                           return result;
+                        }
+
                         fc::mutable_variant_object r("receipt", receipt);
                         result.trx = move(r);
                         found = true;
