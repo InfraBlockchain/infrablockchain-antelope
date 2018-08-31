@@ -69,7 +69,7 @@ class read_only {
       struct get_transaction_params {
          transaction_id_type           id;
          optional<uint32_t>            block_num_hint;
-         optional<bool>                simplified; /* get_transaction_result::id, block_num, last_irreversible_block are only given */
+         optional<bool>                simplified; /* get_transaction_result::id, block_num, block_time, last_irreversible_block are only given */
       };
 
       struct get_transaction_result {
