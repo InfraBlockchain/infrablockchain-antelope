@@ -7,6 +7,10 @@ Through the HTTP and HTTPS ports listened via eosio::http_plugin, WebSocket clie
 This plugin is targeted to help to remove the sleep-based polling to check the irreversibility of transactions sent by DApps.
 So it's recommended to use only for the transaction history access purpose for DApps.
 
+If you want to use this plugin, you must add to config.ini like below.
+
+> plugin = yosemite::event_notification_plugin
+
 ## WebSocket URLs
 ws://${http_plugin@http-server-address}/v1/event_notification
 
