@@ -37,13 +37,13 @@ int main(int argc, char** argv)
 {
    try {
       bfs::path home = determine_home_directory();
-      app().set_default_data_dir(home / "eosio-wallet");
-      app().set_default_config_dir(home / "eosio-wallet");
+      app().set_default_data_dir(home / "yosemite-wallet");
+      app().set_default_config_dir(home / "yosemite-wallet");
       app().register_plugin<wallet_api_plugin>();
       if(!app().initialize<wallet_plugin, wallet_api_plugin, http_plugin>(argc, argv))
          return -1;
       auto& http = app().get_plugin<http_plugin>();
-      http.add_handler("/v1/keosd/stop", [](string, string, url_response_callback cb) { cb(200, "{}"); std::raise(SIGTERM); } );
+      http.add_handler("/v1/keyos/stop", [](string, string, url_response_callback cb) { cb(200, "{}"); std::raise(SIGTERM); } );
       app().startup();
       app().exec();
    } catch (const fc::exception& e) {

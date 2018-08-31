@@ -1,0 +1,145 @@
+{
+  "types": [
+    {
+      "new_type_name": "account_name",
+      "type": "name"
+    }
+  ],
+  "structs": [
+    {
+      "name": "yx_symbol",
+      "base": "",
+      "fields": [
+        {"name":"symbol", "type":"symbol"},
+        {"name":"issuer", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "yx_asset",
+      "base": "",
+      "fields": [
+        {"name":"amount", "type":"asset"},
+        {"name":"issuer", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "create",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"can_set_options", "type":"uint16"}
+      ]
+    },
+    {
+      "name": "issue",
+      "base": "",
+      "fields": [
+        {"name":"to", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "redeem",
+      "base": "",
+      "fields": [
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "transfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "wptransfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"payer", "type":"account_name"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "setkycrule",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
+      ]
+    },
+    {
+      "name": "setoptions",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"options", "type":"uint16"},
+        {"name":"overwrite", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "freezeacc",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"accs", "type":"account_name[]"},
+        {"name":"freeze", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "accounts_type",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"options", "type":"uint16"}
+      ]
+    },
+    {
+      "name": "stats_type",
+      "base": "",
+      "fields": [
+        {"name":"issuer", "type":"account_name"},
+        {"name":"supply", "type":"asset"},
+        {"name":"can_set_options", "type":"uint16"},
+        {"name":"options", "type":"uint16"},
+        {"name":"kyc_rule_types", "type":"uint8[]"},
+        {"name":"kyc_rule_flags", "type":"uint16[]"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "create", "type": "create", "ricardian_contract": "" },
+    { "name": "issue", "type": "issue", "ricardian_contract": "" },
+    { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
+    { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
+    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
+    { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
+    { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
+    { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }
+  ],
+  "tables": [{
+      "name": "taccounts",
+      "type": "accounts_type",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "tstats",
+      "type": "stats_type",
+      "index_type": "i64",
+      "key_names" : ["issuer"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "ricardian_clauses": []
+}

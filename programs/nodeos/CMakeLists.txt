@@ -60,6 +60,7 @@ target_link_libraries( ${NODE_EXECUTABLE_NAME}
         PRIVATE -Wl,${whole_archive_flag} txn_test_gen_plugin        -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${whole_archive_flag} db_size_api_plugin         -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${whole_archive_flag} producer_api_plugin        -Wl,${no_whole_archive_flag}
+        PRIVATE -Wl,${whole_archive_flag} event_notification_plugin  -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${build_id_flag}
         PRIVATE chain_plugin http_plugin producer_plugin http_client_plugin
         PRIVATE eosio_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
@@ -77,7 +78,7 @@ install( TARGETS
    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
 )
-install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/eosio
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/${REPRESENTATIVE_INSTALL_NAME}
         DIRECTORY_PERMISSIONS OWNER_READ
                               OWNER_WRITE
                               OWNER_EXECUTE
@@ -87,7 +88,7 @@ install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/eosio
                               WORLD_READ
                               WORLD_EXECUTE
 )
-install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/eosio
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/${REPRESENTATIVE_INSTALL_NAME}
         DIRECTORY_PERMISSIONS OWNER_READ
                               OWNER_WRITE
                               OWNER_EXECUTE

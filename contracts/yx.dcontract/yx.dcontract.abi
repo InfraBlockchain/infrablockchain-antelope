@@ -1,0 +1,120 @@
+{
+  "types": [
+   {
+      "new_type_name": "account_name",
+      "type": "name"
+   },
+   {
+      "new_type_name": "identity_type",
+      "type": "uint16"
+   },
+   {
+      "new_type_name": "identity_kyc",
+      "type": "uint16"
+   }
+  ],
+  "structs": [
+    {
+      "name": "dcid",
+      "base": "",
+      "fields": [
+        {"name":"creator", "type":"account_name"},
+        {"name":"sequence", "type":"uint64"}
+      ]
+    },
+    {
+      "name": "create",
+      "base": "",
+      "fields": [
+        {"name":"dcid", "type":"dcid"},
+        {"name":"conhash", "type":"string"},
+        {"name":"adddochash", "type":"string"},
+        {"name":"signers", "type":"account_name[]"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"signer_type", "type":"identity_type"},
+        {"name":"signer_kyc", "type":"identity_kyc"},
+        {"name":"options", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "addsigners",
+      "base": "",
+      "fields": [
+        {"name":"dcid", "type":"dcid"},
+        {"name":"signers", "type":"account_name[]"}
+      ]
+    },
+    {
+      "name": "sign",
+      "base": "",
+      "fields": [
+        {"name":"dcid", "type":"dcid"},
+        {"name":"signer", "type":"account_name"},
+        {"name":"signerinfo", "type":"string"}
+      ]
+    },
+    {
+      "name": "upadddochash",
+      "base": "",
+      "fields": [
+        {"name":"dcid", "type":"dcid"},
+        {"name":"adddochash", "type":"string"}
+      ]
+    },
+    {
+      "name": "remove",
+      "base": "",
+      "fields": [
+        {"name":"dcid", "type":"dcid"}
+      ]
+    },
+    {
+      "name": "dcontracts_type",
+      "base": "",
+      "fields": [
+        {"name":"sequence", "type":"uint64"},
+        {"name":"conhash", "type":"string"},
+        {"name":"adddochash", "type":"string"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"signer_type", "type":"identity_type"},
+        {"name":"signer_kyc", "type":"identity_kyc"},
+        {"name":"options", "type":"uint8"},
+        {"name":"signers", "type":"account_name[]"},
+        {"name":"done_signers", "type":"uint8[]"}
+      ]
+    },
+    {
+      "name": "dc_signers_type",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"dcid", "type":"dcid"},
+        {"name":"signerinfo", "type":"string"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "create", "type": "create", "ricardian_contract": "" },
+    { "name": "addsigners", "type": "addsigners", "ricardian_contract": "" },
+    { "name": "sign", "type": "sign", "ricardian_contract": "" },
+    { "name": "upadddochash", "type": "upadddochash", "ricardian_contract": "" },
+    { "name": "remove", "type": "remove", "ricardian_contract": "" }
+  ],
+  "tables": [
+    {
+      "name": "dcontracts",
+      "type": "dcontracts_type",
+      "index_type": "i64",
+      "key_names" : ["sequence"],
+      "key_types" : ["uint64"]
+    },
+    {
+      "name": "signers",
+      "type": "dc_signers_type",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "ricardian_clauses": []
+}

@@ -316,6 +316,27 @@ bool apply_context::cancel_deferred_transaction( const uint128_t& sender_id, acc
    return gto;
 }
 
+
+//////////////////////////////////////
+/// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+
+void apply_context::cast_transaction_vote(uint32_t vote_amount) {
+    // only system contracts on privileged account can call transaction vote API
+    require_authorization(config::system_account_name);
+    trx_context.add_transaction_vote(vote_amount);
+}
+
+vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_head_block() {
+   auto head_block_ptr = control.head_block_state();
+   if (!head_block_ptr) {
+       return vector<yosemite_core::transaction_vote>();
+   }
+   return head_block_ptr->trx_votes.get_tx_vote_list();
+}
+
+//////////////////////////////////////
+
+
 const table_id_object* apply_context::find_table( name code, name scope, name table ) {
    return db.find<table_id_object, by_code_scope_table>(boost::make_tuple(code, scope, table));
 }

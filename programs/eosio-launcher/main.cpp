@@ -818,8 +818,8 @@ launcher_def::bind_nodes () {
          node.name = inst.name;
          node.instance = &inst;
          auto kp = is_bios ?
-            private_key_type(string("5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3")) :
-            private_key_type::generate();
+            private_key_type(string("YPV_5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3")) :
+            private_key_type::generate<fc::ecc::yosemite_private_key_shim>();
          auto pubkey = kp.get_public_key();
          node.keys.emplace_back (move(kp));
          if (is_bios) {

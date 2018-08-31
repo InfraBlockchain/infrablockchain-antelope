@@ -6,6 +6,7 @@
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/contract_table_objects.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <fc/utility.hpp>
 #include <sstream>
 #include <algorithm>
@@ -480,6 +481,14 @@ class apply_context {
       bool cancel_deferred_transaction( const uint128_t& sender_id, account_name sender );
       bool cancel_deferred_transaction( const uint128_t& sender_id ) { return cancel_deferred_transaction(sender_id, receiver); }
 
+   /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+   public:
+
+      /// contribute transaction voting from an action in current transaction
+      void cast_transaction_vote(uint32_t vote_amount);
+
+      /// get transaction vote data accumulated in the head block (previous block)
+      vector<yosemite_core::transaction_vote> get_transaction_votes_in_head_block();
 
    /// Authorization methods:
    public:

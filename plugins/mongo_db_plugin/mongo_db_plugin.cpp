@@ -9,6 +9,8 @@
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/types.hpp>
 
+#include <yosemite/chain/transaction_as_a_vote.hpp>
+
 #include <fc/io/json.hpp>
 #include <fc/utf8.hpp>
 #include <fc/variant.hpp>
@@ -752,6 +754,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
 void mongo_db_plugin_impl::_process_applied_transaction( const chain::transaction_trace_ptr& t ) {
    using namespace bsoncxx::types;
    using bsoncxx::builder::basic::kvp;
+   using bsoncxx::builder::basic::sub_array;
 
    auto trans_traces = mongo_conn[db_name][trans_traces_col];
    auto action_traces = mongo_conn[db_name][action_traces_col];
@@ -805,6 +808,16 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
          elog( "  JSON: ${j}", ("j", json));
       }
    }
+
+   // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+   if (!t->trx_vote && t->trx_vote->has_vote()) {
+      auto& trx_vote = *(t->trx_vote);
+      trans_traces_doc.append(kvp( "trx_vote", [&trx_vote](sub_array child) {
+          child.append(trx_vote.candidate.to_string());
+          child.append(b_int32{static_cast<std::int32_t>(trx_vote.vote_amount)});
+      } ));
+   }
+
    trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
 
    try {
@@ -821,6 +834,7 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
    using namespace bsoncxx::builder;
    using bsoncxx::builder::basic::kvp;
    using bsoncxx::builder::basic::make_document;
+   using bsoncxx::builder::basic::sub_array;
 
    mongocxx::options::update update_opts{};
    update_opts.upsert( true );
@@ -893,6 +907,20 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
             elog( "  JSON: ${j}", ("j", json) );
          }
       }
+
+      // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+      if (bs->trx_votes.has_transaction_votes()) {
+          auto trx_votes = bs->trx_votes.get_tx_vote_list();
+          block_doc.append(kvp( "trx_votes", [&trx_votes](sub_array child) {
+              for(const auto& trx_vote : trx_votes) {
+                 auto array_builder = bsoncxx::builder::basic::array{};
+                 array_builder.append(trx_vote.candidate.to_string());
+                 array_builder.append(b_int32{static_cast<std::int32_t>(trx_vote.vote_amount)});
+                 child.append(array_builder.view());
+              }
+          } ));
+      }
+
       block_doc.append( kvp( "createdAt", b_date{now} ) );
 
       try {
@@ -1331,7 +1359,7 @@ void mongo_db_plugin::set_program_options(options_description& cli, options_desc
 {
    cfg.add_options()
          ("mongodb-queue-size,q", bpo::value<uint32_t>()->default_value(1024),
-         "The target queue size between nodeos and MongoDB plugin thread.")
+         "The target queue size between yosemite and MongoDB plugin thread.")
          ("mongodb-abi-cache-size", bpo::value<uint32_t>()->default_value(2048),
           "The maximum size of the abi cache for serializing data.")
          ("mongodb-wipe", bpo::bool_switch()->default_value(false),
@@ -1341,8 +1369,8 @@ void mongo_db_plugin::set_program_options(options_description& cli, options_desc
          "If specified then only abi data pushed to mongodb until specified block is reached.")
          ("mongodb-uri,m", bpo::value<std::string>(),
          "MongoDB URI connection string, see: https://docs.mongodb.com/master/reference/connection-string/."
-               " If not specified then plugin is disabled. Default database 'EOS' is used if not specified in URI."
-               " Example: mongodb://127.0.0.1:27017/EOS")
+               " If not specified then plugin is disabled. Default database 'YOSEMITE' is used if not specified in URI."
+               " Example: mongodb://127.0.0.1:27017/YOSEMITE")
          ("mongodb-store-blocks", bpo::value<bool>()->default_value(true),
           "Enables storing blocks in mongodb.")
          ("mongodb-store-block-states", bpo::value<bool>()->default_value(true),
@@ -1373,7 +1401,7 @@ void mongo_db_plugin::plugin_initialize(const variables_map& options)
                my->wipe_database_on_startup = true;
             } else if( options.count( "mongodb-block-start" ) == 0 ) {
                EOS_ASSERT( false, chain::plugin_config_exception, "--mongodb-wipe required with --replay-blockchain, --hard-replay-blockchain, or --delete-all-blocks"
-                                 " --mongodb-wipe will remove all EOS collections from mongodb." );
+                                 " --mongodb-wipe will remove all YOSEMITE collections from mongodb." );
             }
          }
 
@@ -1448,7 +1476,7 @@ void mongo_db_plugin::plugin_initialize(const variables_map& options)
          mongocxx::uri uri = mongocxx::uri{uri_str};
          my->db_name = uri.database();
          if( my->db_name.empty())
-            my->db_name = "EOS";
+            my->db_name = "YOSEMITE";
          my->mongo_conn = mongocxx::client{uri};
 
          // hook up to signals on controller
