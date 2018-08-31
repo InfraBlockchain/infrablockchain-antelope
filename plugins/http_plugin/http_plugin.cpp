@@ -42,20 +42,21 @@ namespace eosio {
    using websocket_server_tls_type =  websocketpp::server<http_config::asio_with_stub_log<tls_socket_endpoint>>;
    using ssl_context_ptr =  websocketpp::lib::shared_ptr<websocketpp::lib::asio::ssl::context>;
 
-   static bool verbose_http_errors = false;
-
-#define DEFINE_ENABLE_IF_TEMPLATE_GETTERS(first, second, getter_name) \
-   template<typename SocketType> \
+#define DEFINE_ENABLE_IF_TEMPLATE_GETTERS(first, second, getter_name)                                       \
+   template<typename SocketType>                                                                            \
    typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(first) &>::type \
-   getter_name() { \
-      return first; \
-   } \
-   \
-   template<typename SocketType> \
-   typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(second) &>::type \
-   getter_name() { \
-      return second; \
-   } \
+   getter_name() {                                                                                          \
+      return first;                                                                                         \
+   }                                                                                                        \
+                                                                                                            \
+   template<typename SocketType>                                                                            \
+   typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(second) &>::type  \
+   getter_name() {                                                                                          \
+      return second;                                                                                        \
+   }                                                                                                        \
+
+
+   static bool verbose_http_errors = false;
 
    class http_plugin_impl {
       template<typename SocketType>
@@ -80,46 +81,15 @@ namespace eosio {
       public:
          unordered_map<string, ws_message_handler<basic_socket_endpoint>> ws_message_handlers;
          unordered_map<string, ws_message_handler<tls_socket_endpoint>> wss_message_handlers;
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(ws_message_handlers, wss_message_handlers, get_websocket_msghandler_map);
+
          ws_connection_to_message_handler_map<basic_socket_endpoint> ws_connection_to_msgh_map;
          ws_connection_to_message_handler_map<tls_socket_endpoint> wss_connection_to_msgh_map;
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(ws_connection_to_msgh_map, wss_connection_to_msgh_map, get_ws_connection_to_msghandler_map);
+
          ws_connection_termination_handler<basic_socket_endpoint> plain_ws_connection_term_handler;
          ws_connection_termination_handler<tls_socket_endpoint> tls_ws_connection_term_handler;
-
-         template<typename SocketType>
-         typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, const decltype(ws_message_handlers) &>::type
-         get_websocket_msghandler_map() const {
-            return ws_message_handlers;
-         }
-
-         template<typename SocketType>
-         typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, const decltype(wss_message_handlers) &>::type
-         get_websocket_msghandler_map() const {
-            return wss_message_handlers;
-         }
-
-         template<typename SocketType>
-         typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(ws_connection_to_msgh_map) &>::type
-         get_ws_connection_to_msghandler_map() {
-            return ws_connection_to_msgh_map;
-         }
-
-         template<typename SocketType>
-         typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(wss_connection_to_msgh_map) &>::type
-         get_ws_connection_to_msghandler_map() {
-            return wss_connection_to_msgh_map;
-         }
-
-         template<typename SocketType>
-         typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(plain_ws_connection_term_handler) &>::type
-         get_ws_connection_termination_handler() {
-            return plain_ws_connection_term_handler;
-         }
-
-         template<typename SocketType>
-         typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(tls_ws_connection_term_handler) &>::type
-         get_ws_connection_termination_handler() {
-            return tls_ws_connection_term_handler;
-         }
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(plain_ws_connection_term_handler, tls_ws_connection_term_handler, get_ws_connection_termination_handler);
 
          unordered_map<string, url_handler> url_handlers;
          optional<tcp::endpoint>  listen_endpoint;
