@@ -17,9 +17,9 @@ namespace yosemite { namespace identity {
         eosio_assert( is_account(account), "account does not exist");
         eosio_assert( is_authorized_identity_authority(identity_authority),
                       "identity_authority is not authorized identity authority");
-//        eosio_assert( is_valid_account_type(type), "invalid account type value");
-//        eosio_assert( is_valid_kyc_status(kyc), "invalid kyc status value");
-//        eosio_assert( is_valid_account_state(state), "invalid account state value");
+        eosio_assert( is_valid_account_type(type), "invalid account type value");
+        eosio_assert( is_valid_kyc_status(kyc), "invalid kyc status value");
+        eosio_assert( is_valid_account_state(state), "invalid account state value");
         eosio_assert( data.size() < 256, "data too long" );
 
         require_auth( identity_authority );
@@ -66,7 +66,7 @@ namespace yosemite { namespace identity {
 
     void identity_contract::settype(account_name account, uint16_t type) {
 
-//        eosio_assert( is_valid_account_type(type), "invalid account type value");
+        eosio_assert( is_valid_account_type(type), "invalid account type value");
 
         // self == YOSEMITE_IDENTITY_ACCOUNT
         identity_idx identity_table(get_self(),get_self());
@@ -87,7 +87,7 @@ namespace yosemite { namespace identity {
 
     void identity_contract::setkyc(account_name account, uint16_t kyc) {
 
-//        eosio_assert( is_valid_kyc_status(kyc), "invalid kyc status value");
+        eosio_assert( is_valid_kyc_status(kyc), "invalid kyc status value");
 
         // self == YOSEMITE_IDENTITY_ACCOUNT
         identity_idx identity_table(get_self(),get_self());
@@ -108,7 +108,7 @@ namespace yosemite { namespace identity {
 
     void identity_contract::setstate(account_name account, uint32_t state) {
 
-//        eosio_assert( is_valid_account_state(state), "invalid account state value");
+        eosio_assert( is_valid_account_state(state), "invalid account state value");
 
         // self == YOSEMITE_IDENTITY_ACCOUNT
         identity_idx identity_table(get_self(),get_self());

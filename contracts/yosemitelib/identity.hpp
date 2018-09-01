@@ -78,9 +78,9 @@ namespace yosemite { namespace identity {
         }
     }
 
-//    bool is_valid_account_type(uint16_t type) {
-//        return type == YOSEMITE_ID_ACC_TYPE_NORMAL || type == YOSEMITE_ID_ACC_TYPE_SYSTEM;
-//    }
+    bool is_valid_account_type(uint16_t type) {
+        return type == YOSEMITE_ID_ACC_TYPE_NORMAL || type == YOSEMITE_ID_ACC_TYPE_SYSTEM;
+    }
 
     bool is_account_type(const account_name account, identity_type_t type_code) {
         return get_identity_account_type(account) == type_code;
@@ -99,9 +99,9 @@ namespace yosemite { namespace identity {
         }
     }
 
-//    bool is_valid_kyc_status(uint16_t kyc_flags) {
-//        return kyc_flags <= YOSEMITE_ID_KYC_MAX_AUTH;
-//    }
+    bool is_valid_kyc_status(uint16_t kyc_flags) {
+        return kyc_flags <= YOSEMITE_ID_KYC_MAX_AUTH;
+    }
 
     bool has_kyc_status(const account_name account, identity_kyc_t kyc_flags) {
         if (kyc_flags == 0) return true;
@@ -125,9 +125,9 @@ namespace yosemite { namespace identity {
         }
     }
 
-//    bool is_valid_account_state(uint32_t state_flags) {
-//        return state_flags <= YOSEMITE_ID_ACC_STATE_MAX;
-//    }
+    bool is_valid_account_state(uint32_t state_flags) {
+        return state_flags <= YOSEMITE_ID_ACC_STATE_MAX;
+    }
 
     bool has_account_state(const account_name account, identity_state_t state_flag) {
         if (state_flag == 0) return true;
