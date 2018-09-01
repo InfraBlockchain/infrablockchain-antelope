@@ -813,15 +813,16 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
       }
    }
 
-   // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
-   if (!(t->trx_vote) && t->trx_vote->has_vote()) {
-      auto& trx_vote = *(t->trx_vote);
-      elog("trx_vote [${to}]", ("to", trx_vote.candidate.to_string()));
-      trans_traces_doc.append(kvp( "trx_vote", [&trx_vote](sub_array child) {
-          child.append(trx_vote.candidate.to_string());
-          child.append(b_int32{static_cast<std::int32_t>(trx_vote.vote_amount)});
-      } ));
-   }
+//   // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+//   // trx_vote is serialized in transaction_trace object
+//   if (!(t->trx_vote) && t->trx_vote->has_vote()) {
+//      auto& trx_vote = *(t->trx_vote);
+//      //elog("trx_vote [${to}]", ("to", trx_vote.to.to_string()));
+//      trans_traces_doc.append(kvp( "trx_vote", [&trx_vote](sub_array child) {
+//          child.append(trx_vote.to.to_string());
+//          child.append(b_int32{static_cast<std::int32_t>(trx_vote.amt)});
+//      } ));
+//   }
 
    // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
    //trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
@@ -921,8 +922,8 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
           block_doc.append(kvp( "trx_votes", [&trx_votes](sub_array child) {
               for(const auto& trx_vote : trx_votes) {
                  auto array_builder = bsoncxx::builder::basic::array{};
-                 array_builder.append(trx_vote.candidate.to_string());
-                 array_builder.append(b_int32{static_cast<std::int32_t>(trx_vote.vote_amount)});
+                 array_builder.append(trx_vote.to.to_string());
+                 array_builder.append(b_int32{static_cast<std::int32_t>(trx_vote.amt)});
                  child.append(array_builder.view());
               }
           } ));

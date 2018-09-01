@@ -49,7 +49,7 @@ namespace yosemitesys {
             });
         }
 
-        /// read tran transaction votes sum data for each vote-candidate account,
+        /// read tran transaction votes sum data for each vote-to(candidate) account,
         /// accumulated from the transactions in the previous block right before current pending block
         uint32_t tx_votes_packed_size = read_head_block_trx_votes_data(nullptr, 0);
 
@@ -67,11 +67,11 @@ namespace yosemitesys {
             for (int i = 0; i < cnt; i++) {
                 yosemite_transaction_vote &trx_vote = votes_arr[i];
 
-                auto prod_vote = _producers.find( trx_vote.candidate_name );
+                auto prod_vote = _producers.find( trx_vote.to );
 
                 if (prod_vote != _producers.end()) {
                     _producers.modify( prod_vote, 0, [&]( producer_info& info ){
-                        info.total_votes += weighted_vote(trx_vote.vote_amount);
+                        info.total_votes += weighted_vote(trx_vote.amount);
                     });
                 }
             }

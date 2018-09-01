@@ -39,8 +39,8 @@ namespace eosio { namespace chain {
 
          try {
             trace->trx_vote = yosemite_core::transaction_vote(
-                    fc::raw::unpack<yosemite_core::transaction_vote_candidate_name_type>(tx_ext_item.second), 0);
-         } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote candidate account name");
+                    fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
+         } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
       }
    }
 
@@ -437,8 +437,8 @@ namespace eosio { namespace chain {
 
    void transaction_context::add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount) {
 
-      if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->candidate.empty()) {
-         trace->trx_vote->vote_amount += vote_amount;
+      if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->to.empty()) {
+         trace->trx_vote->amt += vote_amount;
       }
    }
 

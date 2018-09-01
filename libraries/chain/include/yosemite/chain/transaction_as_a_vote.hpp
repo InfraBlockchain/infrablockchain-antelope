@@ -59,7 +59,7 @@ namespace yosemite_core {
      *
      * YOSEMITE Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOS transaction binary data format.
      * The transaction-extension field code for YOSEMITE TaaV is 1001,
-     * and the field value should be encoded as the binary representation of 64bit base-32 encoding for blockchain account name of transaction-vote target(candidate)
+     * and the field value should be encoded as the binary representation of 64bit base-32 encoding for blockchain account name of transaction-vote target
      *
      * Example of json representation blockchain transaction with YOSEMITE TaaV
      * {
@@ -94,36 +94,36 @@ namespace yosemite_core {
      *
      */
 
-    using transaction_vote_candidate_name_type = eosio::chain::name;
+    using transaction_vote_to_name_type = eosio::chain::name;
     using transaction_vote_amount_type = uint32_t;
 
     struct transaction_vote {
 
-        explicit transaction_vote(transaction_vote_candidate_name_type c, transaction_vote_amount_type v) : candidate(c), vote_amount(v) {}
+        explicit transaction_vote(transaction_vote_to_name_type t, transaction_vote_amount_type a) : to(t), amt(a) {}
 
-        transaction_vote_candidate_name_type candidate; // eosio::chain::name
-        transaction_vote_amount_type vote_amount;
+        transaction_vote_to_name_type to; // eosio::chain::name
+        transaction_vote_amount_type amt;
 
         bool has_vote() {
-            return !candidate.empty() && vote_amount != 0;
+            return !to.empty() && amt != 0;
         }
     };
 
     struct transaction_votes_in_block {
 
         // ordered map
-        map<transaction_vote_candidate_name_type, transaction_vote_amount_type> tx_votes;
+        map<transaction_vote_to_name_type, transaction_vote_amount_type> tx_votes;
 
         void add_transaction_vote(const transaction_vote& tx_vote) {
 
-            auto vote_it = tx_votes.find(tx_vote.candidate);
+            auto vote_it = tx_votes.find(tx_vote.to);
             if (vote_it == tx_votes.end()) {
-                tx_votes[tx_vote.candidate] = tx_vote.vote_amount;
+                tx_votes[tx_vote.to] = tx_vote.amt;
             } else {
-                auto current = tx_votes[tx_vote.candidate];
-                auto new_val = current + tx_vote.vote_amount;
+                auto current = tx_votes[tx_vote.to];
+                auto new_val = current + tx_vote.amt;
                 EOS_ASSERT( new_val > current, eosio::chain::arithmetic_exception, "overflow of transaction vote amount");
-                tx_votes[tx_vote.candidate] =  new_val;
+                tx_votes[tx_vote.to] =  new_val;
             }
         }
 
@@ -147,5 +147,5 @@ namespace yosemite_core {
 
 }
 
-FC_REFLECT(yosemite_core::transaction_vote, (candidate)(vote_amount))
+FC_REFLECT(yosemite_core::transaction_vote, (to)(amt))
 FC_REFLECT(yosemite_core::transaction_votes_in_block, (tx_votes))

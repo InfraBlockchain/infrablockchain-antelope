@@ -25,8 +25,8 @@ extern "C" {
    /**
     *  Cast Transaction Vote
     *  @brief Contribute transaction voting from an action in current transaction context.
-    *         The vote amount is accumulated to the vote-candidate account specified in the current transaction context.
-    *         Transaction votes from all the actions in a transaction are cast to one vote-candidate account.
+    *         The vote amount is accumulated to the vote-to(candidate) account specified in the current transaction context.
+    *         Transaction votes from all the actions in a transaction are cast to one vote-to(candidate) account.
     *         Only system contracts on privileged account can call transaction vote API
     *
     *
@@ -37,7 +37,7 @@ extern "C" {
 
    /**
     * Get transaction vote data accumulated in the head block (previous block)
-    * @brief Get transaction votes sum data for each vote-candidate account,
+    * @brief Get transaction votes sum data for each vote-to(candidate) account,
     *        accumulated from the transactions in the previous block right before current pending block
     *
     * @param buffer - a buffer to write the accumulated transaction votes data to
@@ -53,6 +53,6 @@ extern "C" {
 }
 
 struct yosemite_transaction_vote {
-    uint64_t candidate_name;
-    uint32_t vote_amount;
+    uint64_t to; // account name
+    uint32_t amount;
 };
