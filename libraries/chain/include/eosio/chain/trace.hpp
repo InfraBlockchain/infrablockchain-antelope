@@ -59,6 +59,12 @@ namespace eosio { namespace chain {
 FC_REFLECT( eosio::chain::base_action_trace,
                     (receipt)(act)(elapsed)(cpu_usage)(console)(total_cpu_usage)(trx_id) )
 
+// [YOSEMITE] 'trx_id's in 'action_trace' are duplicated in the serialized 'transaction_trace'.
+// This causes wasted storage for the secondary database store (mongo_db_plugin)
+// When 'action_trace' is stored in secondary db, 'trx_id' field is added manually in secondary db
+//FC_REFLECT( eosio::chain::base_action_trace,
+//                      (receipt)(act)(elapsed)(cpu_usage)(console)(total_cpu_usage) )
+
 FC_REFLECT_DERIVED( eosio::chain::action_trace,
                     (eosio::chain::base_action_trace), (inline_traces) )
 

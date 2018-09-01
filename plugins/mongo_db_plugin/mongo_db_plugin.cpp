@@ -93,7 +93,7 @@ public:
    void purge_abi_cache();
 
    bool add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                          bool executed, const std::chrono::milliseconds& now );
+                          /*const std::string& trx_id,*/ bool executed /*, const std::chrono::milliseconds& now*/ );
 
    void update_account(const chain::action& act);
 
@@ -706,7 +706,7 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
 
 bool
 mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                                        bool executed, const std::chrono::milliseconds& now )
+                                        /*const std::string& trx_id,*/ bool executed /*, const std::chrono::milliseconds& now*/ )
 {
    using namespace bsoncxx::types;
    using bsoncxx::builder::basic::kvp;
@@ -736,7 +736,9 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
             elog( "  JSON: ${j}", ("j", json) );
          }
       }
-      action_traces_doc.append( kvp( "createdAt", b_date{now} ) );
+      //action_traces_doc.append( kvp( "trx_id", b_utf8{trx_id} ) );
+      // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
+      //action_traces_doc.append( kvp( "createdAt", b_date{now} ) );
 
       mongocxx::model::insert_one insert_op{action_traces_doc.view()};
       bulk_action_traces.append( insert_op );
@@ -744,7 +746,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
    }
 
    for( const auto& iline_atrace : atrace.inline_traces ) {
-      added |= add_action_trace( bulk_action_traces, iline_atrace, executed, now );
+      added |= add_action_trace( bulk_action_traces, iline_atrace, /*trx_id,*/ executed /*, now*/ );
    }
 
    return added;
@@ -760,8 +762,8 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
    auto action_traces = mongo_conn[db_name][action_traces_col];
    auto trans_traces_doc = bsoncxx::builder::basic::document{};
 
-   auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-         std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
+   //auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+   //      std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
 
    mongocxx::options::bulk_write bulk_opts;
    bulk_opts.ordered(false);
@@ -769,9 +771,11 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
    bool write_atraces = false;
    bool executed = t->receipt.valid() && t->receipt->status == chain::transaction_receipt_header::executed;
 
+   string trx_id = t->id.str();
+
    for( const auto& atrace : t->action_traces ) {
       try {
-         write_atraces |= add_action_trace( bulk_action_traces, atrace, executed, now );
+         write_atraces |= add_action_trace( bulk_action_traces, atrace, /*trx_id,*/ executed /*, now*/ );
       } catch(...) {
          handle_mongo_exception("add action traces", __LINE__);
       }
@@ -810,15 +814,17 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
    }
 
    // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
-   if (!t->trx_vote && t->trx_vote->has_vote()) {
+   if (!(t->trx_vote) && t->trx_vote->has_vote()) {
       auto& trx_vote = *(t->trx_vote);
+      elog("trx_vote [${to}]", ("to", trx_vote.candidate.to_string()));
       trans_traces_doc.append(kvp( "trx_vote", [&trx_vote](sub_array child) {
           child.append(trx_vote.candidate.to_string());
           child.append(b_int32{static_cast<std::int32_t>(trx_vote.vote_amount)});
       } ));
    }
 
-   trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
+   // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
+   //trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
 
    try {
       if( !trans_traces.insert_one( trans_traces_doc.view())) {
@@ -845,8 +851,8 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
    const auto& block_id = bs->id;
    const auto block_id_str = block_id.str();
 
-   auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-         std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
+   //auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+   //      std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
 
    if( store_block_states ) {
       auto block_states = mongo_conn[db_name][block_states_col];
@@ -873,7 +879,8 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
             elog( "  JSON: ${j}", ("j", json) );
          }
       }
-      block_state_doc.append( kvp( "createdAt", b_date{now} ) );
+      // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
+      //block_state_doc.append( kvp( "createdAt", b_date{now} ) );
 
       try {
          if( !block_states.update_one( make_document( kvp( "block_id", block_id_str ) ),
@@ -921,7 +928,8 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
           } ));
       }
 
-      block_doc.append( kvp( "createdAt", b_date{now} ) );
+      // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
+      //block_doc.append( kvp( "createdAt", b_date{now} ) );
 
       try {
          if( !blocks.update_one( make_document( kvp( "block_id", block_id_str ) ),
@@ -959,10 +967,9 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
          if( !ir_block ) return; // should never happen
       }
 
-      auto update_doc = make_document( kvp( "$set", make_document( kvp( "irreversible", b_bool{true} ),
+      auto update_doc = make_document( kvp( "$set", make_document( kvp( "irreversibleAt", b_date{now} ),
                                                                    kvp( "validated", b_bool{bs->validated} ),
-                                                                   kvp( "in_current_chain", b_bool{bs->in_current_chain} ),
-                                                                   kvp( "updatedAt", b_date{now} ) ) ) );
+                                                                   kvp( "in_current_chain", b_bool{bs->in_current_chain} ) ) ) );
 
       blocks.update_one( make_document( kvp( "_id", ir_block->view()["_id"].get_oid() ) ), update_doc.view() );
    }
@@ -972,6 +979,9 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
       mongocxx::options::bulk_write bulk_opts;
       bulk_opts.ordered( false );
       auto bulk = trans.create_bulk_write( bulk_opts );
+
+      auto block_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+              std::chrono::microseconds{bs->block->timestamp.to_time_point().time_since_epoch().count()});
 
       for( const auto& receipt : bs->block->transactions ) {
          string trx_id_str;
@@ -986,10 +996,15 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
             trx_id_str = id.str();
          }
 
-         auto update_doc = make_document( kvp( "$set", make_document( kvp( "irreversible", b_bool{true} ),
+//          auto update_doc = make_document( kvp( "$set", make_document( kvp( "irreversible", b_bool{true} ),
+//                                                                       kvp( "block_id", block_id_str ),
+//                                                                       kvp( "block_num", b_int32{static_cast<int32_t>(block_num)} ),
+//                                                                       kvp( "updatedAt", b_date{now} ) ) ) );
+
+         auto update_doc = make_document( kvp( "$set", make_document( kvp( "irreversibleAt", b_date{now} ),
                                                                       kvp( "block_id", block_id_str ),
                                                                       kvp( "block_num", b_int32{static_cast<int32_t>(block_num)} ),
-                                                                      kvp( "updatedAt", b_date{now} ) ) ) );
+                                                                      kvp( "block_time", b_date{block_time} ) ) ) );
 
          mongocxx::model::update_one update_op{make_document( kvp( "trx_id", trx_id_str ) ), update_doc.view()};
          update_op.upsert( true );
@@ -1299,12 +1314,12 @@ void mongo_db_plugin_impl::init() {
       try {
          // blocks indexes
          auto blocks = mongo_conn[db_name][blocks_col];
-         blocks.create_index( bsoncxx::from_json( R"xxx({ "block_num" : 1 })xxx" ));
-         blocks.create_index( bsoncxx::from_json( R"xxx({ "block_id" : 1 })xxx" ));
+         blocks.create_index( bsoncxx::from_json( R"xxx({ "block_num" : -1 })xxx" ));
+         blocks.create_index( bsoncxx::from_json( R"xxx({ "block_id" : -1 })xxx" ));
 
          auto block_stats = mongo_conn[db_name][block_states_col];
-         block_stats.create_index( bsoncxx::from_json( R"xxx({ "block_num" : 1 })xxx" ));
-         block_stats.create_index( bsoncxx::from_json( R"xxx({ "block_id" : 1 })xxx" ));
+         block_stats.create_index( bsoncxx::from_json( R"xxx({ "block_num" : -1 })xxx" ));
+         block_stats.create_index( bsoncxx::from_json( R"xxx({ "block_id" : -1 })xxx" ));
 
          // accounts indexes
          accounts.create_index( bsoncxx::from_json( R"xxx({ "name" : 1 })xxx" ));
@@ -1319,6 +1334,8 @@ void mongo_db_plugin_impl::init() {
          // action traces indexes
          auto action_traces = mongo_conn[db_name][action_traces_col];
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "trx_id" : 1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : 1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : 1 })xxx" ));
 
          // pub_keys indexes
          auto pub_keys = mongo_conn[db_name][pub_keys_col];
