@@ -33,6 +33,7 @@
 #include <mongocxx/instance.hpp>
 #include <mongocxx/exception/operation_exception.hpp>
 #include <mongocxx/exception/logic_error.hpp>
+#include <mongocxx/options/index.hpp>
 
 namespace fc { class variant; }
 
@@ -93,7 +94,7 @@ public:
    void purge_abi_cache();
 
    bool add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                          /*const std::string& trx_id,*/ bool executed /*, const std::chrono::milliseconds& now*/ );
+                          /*const std::string& trx_id,*/ bool executed, const std::chrono::milliseconds& now );
 
    void update_account(const chain::action& act);
 
@@ -706,9 +707,10 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
 
 bool
 mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                                        /*const std::string& trx_id,*/ bool executed /*, const std::chrono::milliseconds& now*/ )
+                                        /*const std::string& trx_id,*/ bool executed, const std::chrono::milliseconds& now )
 {
    using namespace bsoncxx::types;
+   using bsoncxx::builder::basic::make_document;
    using bsoncxx::builder::basic::kvp;
 
    if( executed && atrace.receipt.receiver == chain::config::system_account_name ) {
@@ -737,16 +739,31 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
          }
       }
       //action_traces_doc.append( kvp( "trx_id", b_utf8{trx_id} ) );
-      // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
-      //action_traces_doc.append( kvp( "createdAt", b_date{now} ) );
 
-      mongocxx::model::insert_one insert_op{action_traces_doc.view()};
-      bulk_action_traces.append( insert_op );
+      // documents in 'action_traces' collection can be updated,
+      // ObjectId.getTimestamp() cannot be used as document creation time, explicit 'createdAt' timestamp is required
+      // to retrieve exact document timestamp even for the case of temporary chain fork.
+      action_traces_doc.append( kvp( "createdAt", b_date{now} ) );
+
+      // Actions having same global action sequence number can be 'upsert'ed several times when temporary chain fork occurs
+      // before the block containing the updated actions becomes irreversible.
+
+      // 'upsert' 'action_traces' document instead of 'insert'
+      //mongocxx::model::insert_one insert_op{action_traces_doc.view()};
+      //bulk_action_traces.append( insert_op );
+
+      mongocxx::model::update_one upsert_op{
+         make_document( kvp( "receipt.global_sequence", b_int64{static_cast<int64_t>(atrace.receipt.global_sequence)} ) ),
+         make_document( kvp( "$set", action_traces_doc.view() ) )
+      };
+      upsert_op.upsert( true );
+      bulk_action_traces.append( upsert_op );
+
       added = true;
    }
 
    for( const auto& iline_atrace : atrace.inline_traces ) {
-      added |= add_action_trace( bulk_action_traces, iline_atrace, /*trx_id,*/ executed /*, now*/ );
+      added |= add_action_trace( bulk_action_traces, iline_atrace, /*trx_id,*/ executed, now );
    }
 
    return added;
@@ -762,8 +779,8 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
    auto action_traces = mongo_conn[db_name][action_traces_col];
    auto trans_traces_doc = bsoncxx::builder::basic::document{};
 
-   //auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-   //      std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
+   auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+         std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
 
    mongocxx::options::bulk_write bulk_opts;
    bulk_opts.ordered(false);
@@ -775,7 +792,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
 
    for( const auto& atrace : t->action_traces ) {
       try {
-         write_atraces |= add_action_trace( bulk_action_traces, atrace, /*trx_id,*/ executed /*, now*/ );
+         write_atraces |= add_action_trace( bulk_action_traces, atrace, /*trx_id,*/ executed, now );
       } catch(...) {
          handle_mongo_exception("add action traces", __LINE__);
       }
@@ -1335,7 +1352,7 @@ void mongo_db_plugin_impl::init() {
          // action traces indexes
          auto action_traces = mongo_conn[db_name][action_traces_col];
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "trx_id" : 1 })xxx" ));
-         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : 1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : 1 })xxx" ), mongocxx::options::index().unique(true) );
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : 1 })xxx" ));
 
          // pub_keys indexes
