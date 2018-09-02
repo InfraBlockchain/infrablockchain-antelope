@@ -144,13 +144,13 @@ clyos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2
 1. kyc : 16-bit flag from [yx.identity](../../contracts/yx.identity/)
 
 ## setoptions
-overwrite or add token options
+set or add token options
 
 * The token depository can freeze token transfer or unfreeze it with TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER flag.
    * FREEZE_TOKEN_TRANSFER flag of can_set_options must be set at token creation time.
 
 ```
-clyos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "overwrite":1}' -p d2
+clyos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "reset":1}' -p d2
 ```
 
 ### parameters of setoptions
@@ -158,9 +158,9 @@ clyos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2
 1. options : 16-bit flags
    * 0b0000000000000000 : TOKEN_OPTIONS_NONE
    * 0b0000000000000001 : TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER
-1. overwrite
-   * 1 : overwrite
-   * 0 : add (don't overwrite)
+1. reset
+   * 1 : reset
+   * 0 : add (don't reset)
 
 ## freezeacc
 Freeze an account which has the token by its issuer

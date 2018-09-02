@@ -83,7 +83,7 @@
       "fields": [
         {"name":"ysymbol", "type":"yx_symbol"},
         {"name":"options", "type":"uint16"},
-        {"name":"overwrite", "type":"uint8"}
+        {"name":"reset", "type":"uint8"}
       ]
     },
     {
