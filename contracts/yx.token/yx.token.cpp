@@ -181,13 +181,13 @@ namespace yosemite { namespace non_native_token {
         auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), type);
         if (itr == tstats.kyc_rules.end()) {
             stats_table.modify(tstats, 0, [&](auto &s) {
-                s.kyc_rule_types.push_back(type);
+                s.kyc_rules.push_back(type);
                 s.kyc_rule_flags.push_back(kyc);
             });
         } else {
             auto index = std::distance(tstats.kyc_rules.begin(), itr);
             stats_table.modify(tstats, 0, [&](auto &s) {
-                s.kyc_rule_types[static_cast<size_t>(index)] = type;
+                s.kyc_rules[static_cast<size_t>(index)] = type;
                 s.kyc_rule_flags[static_cast<size_t>(index)] = kyc;
             });
         }

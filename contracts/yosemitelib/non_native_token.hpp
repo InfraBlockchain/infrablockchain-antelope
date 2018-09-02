@@ -39,7 +39,7 @@ namespace yosemite { namespace non_native_token {
 
         TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
     };
-    using token_rule_t = u_int8_t;
+    using token_rule_t = uint8_t;
 
     /* scope = token symbol */
     struct token_stats {
