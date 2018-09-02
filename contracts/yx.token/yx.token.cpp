@@ -21,6 +21,10 @@ namespace yosemite { namespace non_native_token {
             s.issuer = ysymbol.issuer;
             s.supply = asset{0, ysymbol.value};
             s.can_set_options = can_set_options;
+            s.kyc_rules.clear();
+            s.kyc_rule_flags.clear();
+            s.account_types.clear();
+            s.account_type_rules.clear();
         });
 
         charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);
@@ -99,7 +103,7 @@ namespace yosemite { namespace non_native_token {
             eosio_assert(static_cast<uint32_t>((tstats.options & TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER) != TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER),
                          "token transfer is frozen");
         }
-        if (!tstats.kyc_rule_types.empty()) {
+        if (!tstats.kyc_rules.empty()) {
             eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(from, TOKEN_KYC_RULE_TYPE_TRANSFER_SEND, tstats)),
                          "KYC authentication for from account is failed");
             eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE, tstats)),
@@ -165,7 +169,7 @@ namespace yosemite { namespace non_native_token {
         native_token::charge_transaction_fee(payer, operation);
     }
 
-    void token::setkycrule(const yx_symbol &ysymbol, uint8_t type, identity::identity_kyc_t kyc) {
+    void token::setkycrule(const yx_symbol &ysymbol, token_rule_t type, identity::identity_kyc_t kyc) {
         eosio_assert(static_cast<uint32_t>(type < TOKEN_KYC_RULE_TYPE_MAX), "invalid type");
         require_auth(ysymbol.issuer);
 
@@ -174,14 +178,14 @@ namespace yosemite { namespace non_native_token {
         eosio_assert(static_cast<uint32_t>((tstats.can_set_options & TOKEN_CAN_SET_OPTIONS_SET_KYC_RULE) == TOKEN_CAN_SET_OPTIONS_SET_KYC_RULE),
                      "cannot set KYC rule");
 
-        auto itr = std::find(tstats.kyc_rule_types.begin(), tstats.kyc_rule_types.end(), type);
-        if (itr == tstats.kyc_rule_types.end()) {
+        auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), type);
+        if (itr == tstats.kyc_rules.end()) {
             stats_table.modify(tstats, 0, [&](auto &s) {
                 s.kyc_rule_types.push_back(type);
                 s.kyc_rule_flags.push_back(kyc);
             });
         } else {
-            auto index = std::distance(tstats.kyc_rule_types.begin(), itr);
+            auto index = std::distance(tstats.kyc_rules.begin(), itr);
             stats_table.modify(tstats, 0, [&](auto &s) {
                 s.kyc_rule_types[static_cast<size_t>(index)] = type;
                 s.kyc_rule_flags[static_cast<size_t>(index)] = kyc;
@@ -191,20 +195,20 @@ namespace yosemite { namespace non_native_token {
         charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
     }
 
-    bool token::check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
+    bool token::check_identity_auth_for_transfer(account_name account, const token_rule_type &kycrule_type,
                                                  const token_stats &tstats) {
         eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
                      "account is blacklisted by identity authority");
 
-        auto itr = std::find(tstats.kyc_rule_types.begin(), tstats.kyc_rule_types.end(), kycrule_type);
-        if (itr == tstats.kyc_rule_types.end()) return true;
+        auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), kycrule_type);
+        if (itr == tstats.kyc_rules.end()) return true;
 
-        auto index = std::distance(tstats.kyc_rule_types.begin(), itr);
+        auto index = std::distance(tstats.kyc_rules.begin(), itr);
         auto kyc_flags = tstats.kyc_rule_flags[static_cast<size_t>(index)];
         return identity::has_all_kyc_status(account, kyc_flags);
     }
 
-    void token::setoptions(const yx_symbol &ysymbol, uint16_t options, bool overwrite) {
+    void token::setoptions(const yx_symbol &ysymbol, uint16_t options, bool reset) {
         eosio_assert(static_cast<uint32_t>(options <= TOKEN_OPTIONS_MAX), "invalid options");
         require_auth(ysymbol.issuer);
 
@@ -216,7 +220,7 @@ namespace yosemite { namespace non_native_token {
         }
 
         stats_table.modify(tstats, 0, [&](auto &s) {
-            if (overwrite) {
+            if (reset) {
                 s.options = options;
             } else {
                 s.options |= options;

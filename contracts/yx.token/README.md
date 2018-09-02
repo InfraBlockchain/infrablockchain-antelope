@@ -192,7 +192,7 @@ clyos get table yx.token 4,BTC tstats
       "issuer": "d2",
       "supply": "800000.0000 BTC",
       "options": 0,
-      "kyc_rule_types": [],
+      "kyc_rules": [],
       "kyc_rule_flags": []
     }
   ],

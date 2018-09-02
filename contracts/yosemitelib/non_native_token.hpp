@@ -20,7 +20,8 @@ namespace yosemite { namespace non_native_token {
     #define TOKEN_CAN_SET_OPTIONS_FREEZE_TOKEN_TRANSFER     0b0000000000000001
     #define TOKEN_CAN_SET_OPTIONS_FREEZE_ACCOUNT            0b0000000000000010
     #define TOKEN_CAN_SET_OPTIONS_SET_KYC_RULE              0b0000000000000100
-    #define TOKEN_CAN_SET_OPTIONS_MAX                       0b0000000000000111
+    #define TOKEN_CAN_SET_OPTIONS_SET_ACCOUNT_TYPE_RULE     0b0000000000001000
+    #define TOKEN_CAN_SET_OPTIONS_MAX                       0b0000000000001111
 
     /* Option flags for account management */
     #define TOKEN_ACCOUNT_OPTIONS_NONE                      0b0000000000000000
@@ -31,13 +32,14 @@ namespace yosemite { namespace non_native_token {
     #define TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER             0b0000000000000001
     #define TOKEN_OPTIONS_MAX                               0b0000000000000001
 
-    /* KYC rule for token */
-    enum token_kyc_rule_type {
+    /* Rules for token */
+    enum token_rule_type {
         TOKEN_KYC_RULE_TYPE_TRANSFER_SEND    = 0,
         TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE = 1,
 
         TOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
     };
+    using token_rule_t = u_int8_t;
 
     /* scope = token symbol */
     struct token_stats {
@@ -45,8 +47,10 @@ namespace yosemite { namespace non_native_token {
         asset supply;
         uint16_t can_set_options = TOKEN_CAN_SET_OPTIONS_NONE; // can set only at token creation time
         uint16_t options = TOKEN_OPTIONS_NONE;
-        std::vector<uint8_t> kyc_rule_types; // == token_kyc_rule_type
+        std::vector<token_rule_t> kyc_rules;
         std::vector<identity::identity_kyc_t> kyc_rule_flags; // from yosemitelib/identity.hpp
+        std::vector<identity::identity_type_t> account_types; // from yosemitelib/identity.hpp (reserved)
+        std::vector<token_rule_t> account_type_rules; // (reserved)
 
         uint64_t primary_key() const { return issuer; }
     };
@@ -63,8 +67,8 @@ namespace yosemite { namespace non_native_token {
         void redeem(const yx_asset &token, const string &memo);
         void transfer(account_name from, account_name to, yx_asset asset, const string &memo);
         void wptransfer(account_name from, account_name to, yx_asset token, account_name payer, const string &memo);
-        void setkycrule(const yx_symbol &ysymbol, uint8_t type, identity::identity_kyc_t kyc);
-        void setoptions(const yx_symbol &ysymbol, uint16_t options, bool overwrite);
+        void setkycrule(const yx_symbol &ysymbol, token_rule_t type, identity::identity_kyc_t kyc);
+        void setoptions(const yx_symbol &ysymbol, uint16_t options, bool reset);
         void freezeacc(const yx_symbol &ysymbol, const vector<account_name> &accs, bool freeze);
 
     private:
@@ -86,7 +90,7 @@ namespace yosemite { namespace non_native_token {
 
         void add_token_balance(const account_name &owner, const yx_asset &token);
         void sub_token_balance(const account_name &owner, const yx_asset &token);
-        bool check_identity_auth_for_transfer(account_name account, const token_kyc_rule_type &kycrule_type,
+        bool check_identity_auth_for_transfer(account_name account, const token_rule_type &kycrule_type,
                                               const token_stats &tstats);
     };
 
