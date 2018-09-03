@@ -1755,7 +1755,9 @@ vector<transaction_metadata_ptr> controller::get_unapplied_transactions() const 
 }
 
 void controller::drop_unapplied_transaction(const transaction_metadata_ptr& trx) {
-   my->unapplied_transactions.erase(trx->signed_id);
+   if (my->unapplied_transactions.erase(trx->signed_id) > 0) {
+      my->emit(dropped_transaction, trx->id);
+   }
 }
 
 vector<transaction_id_type> controller::get_scheduled_transactions() const {
@@ -1881,6 +1883,10 @@ bool controller::is_resource_greylisted(const account_name &name) const {
 
 const flat_set<account_name> &controller::get_resource_greylist() const {
    return  my->conf.resource_greylist;
+}
+
+void controller::emit_dropped_transaction(const transaction_id_type &tx_id) {
+   my->emit(dropped_transaction, tx_id);
 }
 
 } } /// eosio::chain

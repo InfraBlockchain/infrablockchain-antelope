@@ -972,7 +972,9 @@ producer_plugin_impl::start_block_result producer_plugin_impl::start_block(bool 
       auto& persisted_by_id = _persistent_transactions.get<by_id>();
       auto& persisted_by_expiry = _persistent_transactions.get<by_expiry>();
       while(!persisted_by_expiry.empty() && persisted_by_expiry.begin()->expiry <= pbs->header.timestamp.to_time_point()) {
-         persisted_by_expiry.erase(persisted_by_expiry.begin());
+         auto itr = persisted_by_expiry.begin();
+         chain.emit_dropped_transaction(itr->trx_id);
+         persisted_by_expiry.erase(itr);
       }
 
       try {

@@ -44,6 +44,7 @@ namespace yosemite {
             string req_id;
             string name;
             transaction_id_type tx_id;
+            bool dropped;
         };
     }
 
@@ -69,5 +70,5 @@ FC_REFLECT(yosemite::event_notification_api::event_base, (req_id)(name))
 FC_REFLECT(yosemite::event_notification_api::error_response, (req_id)(name)(code)(message))
 FC_REFLECT(yosemite::event_notification_api::subscribe_request, (req_id)(name)(subscriber))
 FC_REFLECT(yosemite::event_notification_api::tx_irreversibility_request, (req_id)(name)(tx_id)(block_num_hint))
-FC_REFLECT(yosemite::event_notification_api::tx_irreversibility_response, (req_id)(name)(tx_id))
+FC_REFLECT(yosemite::event_notification_api::tx_irreversibility_response, (req_id)(name)(tx_id)(dropped))
 
