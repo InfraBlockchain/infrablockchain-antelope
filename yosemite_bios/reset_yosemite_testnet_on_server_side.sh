@@ -423,7 +423,9 @@ $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"useraccount3\", 
 
 $YOSEMITE_CLI get table -L useraccount1 -l 1 yx.identity yx.identity identity
 
-$YOSEMITE_CLI push action yx.identity settype "{\"account\":\"useraccount1\", \"type\":$(echo 'ibase=2; 11111111' | bc)}" -p idauth1@active
+$YOSEMITE_CLI push action yx.identity settype "{\"account\":\"useraccount1\", \"type\":$(echo 'ibase=2; 1000000000000000' | bc)}" -p idauth1@active
+
+$YOSEMITE_CLI push action yx.identity settype "{\"account\":\"useraccount1\", \"type\":$(echo 'ibase=2; 0' | bc)}" -p idauth1@active
 
 $YOSEMITE_CLI push action yx.identity setkyc "{\"account\":\"useraccount1\", \"kyc\":$(echo 'ibase=2; 1111' | bc)}" -p idauth1@active
 
