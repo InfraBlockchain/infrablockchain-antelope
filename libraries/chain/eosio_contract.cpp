@@ -87,8 +87,10 @@ void apply_eosio_newaccount(apply_context& context) {
    // Check if the creator is privileged
    const auto &creator = db.get<account_object, by_name>(create.creator);
    if( !creator.privileged ) {
-      EOS_ASSERT( name_str.find( "eosio." ) != 0, action_validate_exception,
-                  "only privileged accounts can have names that start with 'eosio.'" );
+      EOS_ASSERT( name_str.find( "yx." ) != 0, action_validate_exception,
+                  "only privileged accounts can have names that start with 'yx.'" );
+      EOS_ASSERT( name_str.find( "yosemite" ) != 0, action_validate_exception,
+                  "only privileged accounts can have names that start with 'yosemite'" );
    }
 
    auto existing_account = db.find<account_object, by_name>(create.name);

@@ -192,49 +192,69 @@ namespace yosemite {
             /* NEVER DO ANYTHING FOR WS_CONN HERE */
         }
 
-        void on_irreversible_block(const block_state_ptr &block) {
-            for (auto &tx_meta : block->trxs) {
-                auto waits_range = tx_irreversibility_waits.equal_range(tx_meta->id);
-                for (auto waits_itr = waits_range.first; waits_itr != waits_range.second;) {
-                    event_notification_api::tx_irreversibility_response response;
-                    response.req_id = std::move(waits_itr->second.req_id);
-                    response.name = "tx_irreversibility";
-                    response.tx_id = tx_meta->id;
+        void notify_tx_irreversibility(const transaction_id_type &tx_id, bool dropped = false) {
+            auto waits_range = tx_irreversibility_waits.equal_range(tx_id);
+            for (auto waits_itr = waits_range.first; waits_itr != waits_range.second;) {
+                event_notification_api::tx_irreversibility_response response;
+                response.req_id = std::move(waits_itr->second.req_id);
+                response.name = "tx_irreversibility";
+                response.tx_id = tx_id;
+                response.dropped = dropped;
 
-                    waits_itr->second.ws_conn->send(fc::json::to_string(response));
+                waits_itr->second.ws_conn->send(fc::json::to_string(response));
 
-                    //remove tx_id from conn_to_tx_id_map
-                    auto range = conn_to_tx_id_map.equal_range(waits_itr->second.ws_conn);
-                    for (auto itr = range.first; itr != range.second; ++itr) {
-                        if (itr->second == tx_meta->id) {
-                            conn_to_tx_id_map.erase(itr);
-                            break;
-                        }
+                //remove tx_id from conn_to_tx_id_map
+                auto range = conn_to_tx_id_map.equal_range(waits_itr->second.ws_conn);
+                for (auto itr = range.first; itr != range.second; ++itr) {
+                    if (itr->second == tx_id) {
+                        conn_to_tx_id_map.erase(itr);
+                        break;
                     }
-
-                    waits_itr = tx_irreversibility_waits.erase(waits_itr);
                 }
 
-                auto tls_waits_range = tx_irreversibility_waits_tls.equal_range(tx_meta->id);
-                for (auto waits_itr = tls_waits_range.first; waits_itr != tls_waits_range.second;) {
-                    event_notification_api::tx_irreversibility_response response;
-                    response.req_id = std::move(waits_itr->second.req_id);
-                    response.name = "tx_irreversibility";
-                    response.tx_id = tx_meta->id;
-                    waits_itr->second.ws_conn->send(fc::json::to_string(response));
-
-                    //remove tx_id from conn_to_tx_id_map
-                    auto range = tls_conn_to_tx_id_map.equal_range(waits_itr->second.ws_conn);
-                    for (auto itr = range.first; itr != range.second; ++itr) {
-                        if (itr->second == tx_meta->id) {
-                            tls_conn_to_tx_id_map.erase(itr);
-                            break;
-                        }
-                    }
-
-                    waits_itr = tx_irreversibility_waits_tls.erase(waits_itr);
-                }
+                waits_itr = tx_irreversibility_waits.erase(waits_itr);
             }
+
+            auto tls_waits_range = tx_irreversibility_waits_tls.equal_range(tx_id);
+            for (auto waits_itr = tls_waits_range.first; waits_itr != tls_waits_range.second;) {
+                event_notification_api::tx_irreversibility_response response;
+                response.req_id = std::move(waits_itr->second.req_id);
+                response.name = "tx_irreversibility";
+                response.tx_id = tx_id;
+                response.dropped = dropped;
+                waits_itr->second.ws_conn->send(fc::json::to_string(response));
+
+                //remove tx_id from conn_to_tx_id_map
+                auto range = tls_conn_to_tx_id_map.equal_range(waits_itr->second.ws_conn);
+                for (auto itr = range.first; itr != range.second; ++itr) {
+                    if (itr->second == tx_id) {
+                        tls_conn_to_tx_id_map.erase(itr);
+                        break;
+                    }
+                }
+
+                waits_itr = tx_irreversibility_waits_tls.erase(waits_itr);
+            }
+        }
+
+        void on_irreversible_block(const block_state_ptr &block) {
+            if (tx_irreversibility_waits.empty() && tx_irreversibility_waits_tls.empty()) {
+                return;
+            }
+
+            for (auto &tx_meta : block->trxs) {
+                notify_tx_irreversibility(tx_meta->id);
+            }
+        }
+
+        void on_dropped_transaction(const transaction_id_type &tx_id) {
+            dlog("dropped transaction : ${tx_id}", ("tx_id", tx_id));
+
+            if (tx_irreversibility_waits.empty() && tx_irreversibility_waits_tls.empty()) {
+                return;
+            }
+
+            notify_tx_irreversibility(tx_id, true);
         }
     };
 
@@ -267,6 +287,7 @@ namespace yosemite {
 
         chain::controller &cc = my->chain_plug->chain();
         cc.irreversible_block.connect(boost::bind(&event_notification_plugin_impl::on_irreversible_block, my.get(), _1));
+        cc.dropped_transaction.connect(boost::bind(&event_notification_plugin_impl::on_dropped_transaction, my.get(), _1));
     }
 
     void event_notification_plugin::plugin_shutdown() {
