@@ -1,10 +1,10 @@
 # Event Notification Plugin (beta)
 
-Based on `eosio::http_plugin` and `websocketpp`, this plugin registeres WebSocket message handlers for plain and TLS socket.
-Through the HTTP and HTTPS ports listened via eosio::http_plugin, WebSocket clients which want to be notified events are subscribed.
+Based on `eosio::http_plugin` and `websocketpp`, this plugin registers WebSocket message handlers for each type of sockets.
+Through the HTTP and HTTPS ports listened via `eosio::http_plugin`, WebSocket clients which want to be notified events are subscribed.
 
 ## Usage Recommendation
-This plugin is targeted to help to remove the sleep-based polling to check the irreversibility of transactions sent by DApps.
+It is targeted to help to remove the sleep-based polling to check the irreversibility of transactions sent by DApps.
 So it's recommended to use only for the transaction history access purpose for DApps.
 
 If you want to use this plugin, you must add to config.ini like below.
@@ -29,7 +29,8 @@ If a client registers the transaction id which want to check its irreversibility
 {
   "req_id": "1",
   "name": "tx_irreversibility",
-  "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"
+  "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5",
+  "dropped": false
 }
 ```
 
@@ -39,8 +40,19 @@ But if not, when the block which includes the tranction above becomes irreversib
 {
   "req_id": "1",
   "name": "tx_irreversibility",
-  "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5"
+  "tx_id": "a4f2bfe30205cf8805aa17014759152414bc6db6879b9de465fefe91cd118db5",
+  "dropped": false
 }
 ```
 
-Note that this processing is done on WebSocket. The response for the request is not synchronous.
+If the transaction is expired, Yosemite node sends the corresponding response with `dropped` flag as true.
+```json
+{
+  "req_id": "2",
+  "name": "tx_irreversibility",
+  "tx_id": "c0a9e9bac509f0dd37c93b49ba02947ed33c6cb831f5e7c6cd9e7c0b765ffdb6",
+  "dropped": true
+}
+```
+
+Note that all the processings are done on WebSocket, which means the response is not synchronous to the request.
