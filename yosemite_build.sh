@@ -34,7 +34,7 @@ txtrst=$(tput sgr0)
 
 TIME_BEGIN=$( date -u +%s )
 
-${PWD}/eosio_build.sh
+/bin/bash ${PWD}/eosio_build.sh
 retVal=$?
 if [ $retVal -ne 0 ]; then
     exit $retVal
