@@ -28,6 +28,10 @@
 # https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/master/LICENSE
 ############################################################################################
    
+if [ "$(id -u)" -ne 0 ]; then
+  printf "\n\tThis requires sudo. Please run with sudo.\n\n"
+  exit -1
+fi
 
 CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ "${CWD}" != "${PWD}" ]; then
