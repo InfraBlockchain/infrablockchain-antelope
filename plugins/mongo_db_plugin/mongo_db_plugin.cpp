@@ -109,7 +109,7 @@ public:
    void purge_abi_cache();
 
    bool add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                          const uint32_t& block_num, const std::chrono::milliseconds& block_time, /*const std::string& trx_id,*/ bool executed /*, const std::chrono::milliseconds& now*/ );
+                          const uint32_t& block_num, const std::chrono::milliseconds& block_time, bool executed, uint64_t parent_global_sequence /*const std::string& trx_id, const std::chrono::milliseconds& now*/ );
 
    void update_account(const chain::action& act);
 
@@ -203,7 +203,7 @@ public:
    static const std::string block_states_col;
    static const std::string blocks_col;
    static const std::string trans_col;
-   static const std::string trans_traces_col;
+   //static const std::string trans_traces_col;
    static const std::string action_traces_col;
    static const std::string accounts_col;
    static const std::string pub_keys_col;
@@ -220,7 +220,7 @@ const permission_name mongo_db_plugin_impl::active = chain::config::active_name;
 const std::string mongo_db_plugin_impl::block_states_col = "block_states";
 const std::string mongo_db_plugin_impl::blocks_col = "blocks";
 const std::string mongo_db_plugin_impl::trans_col = "transactions";
-const std::string mongo_db_plugin_impl::trans_traces_col = "transaction_traces";
+//const std::string mongo_db_plugin_impl::trans_traces_col = "transaction_traces";
 const std::string mongo_db_plugin_impl::action_traces_col = "action_traces";
 const std::string mongo_db_plugin_impl::accounts_col = "accounts";
 const std::string mongo_db_plugin_impl::pub_keys_col = "pub_keys";
@@ -674,7 +674,7 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
    const auto trx_id_str = trx_id.str();
    const auto& trx = t->trx;
 
-   trans_doc.append( kvp( "trx_id", trx_id_str ) );
+   trans_doc.append( kvp( "id", trx_id_str ) );
 
    auto v = to_variant_with_abi( trx );
    string trx_json = fc::json::to_string( v );
@@ -725,7 +725,7 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
    try {
       mongocxx::options::update update_opts{};
       update_opts.upsert( true );
-      if( !trans.update_one( make_document( kvp( "trx_id", trx_id_str ) ),
+      if( !trans.update_one( make_document( kvp( "id", trx_id_str ) ),
                              make_document( kvp( "$set", trans_doc.view() ) ), update_opts ) ) {
          EOS_ASSERT( false, chain::mongo_db_insert_fail, "Failed to insert trans ${id}", ("id", trx_id) );
       }
@@ -737,7 +737,7 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
 
 bool
 mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                                        const uint32_t& block_num, const std::chrono::milliseconds& block_time, /*const std::string& trx_id,*/ bool executed /*, const std::chrono::milliseconds& now*/ )
+                                        const uint32_t& block_num, const std::chrono::milliseconds& block_time, bool executed, uint64_t parent_global_sequence /*const std::string& trx_id, const std::chrono::milliseconds& now*/ )
 {
    using namespace bsoncxx::types;
    using bsoncxx::builder::basic::make_document;
@@ -748,6 +748,8 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
    }
 
    bool added = false;
+   uint64_t global_sequence = atrace.receipt.global_sequence;
+
    if( start_block_reached && store_action_traces && filter_include( atrace ) ) {
       auto action_traces_doc = bsoncxx::builder::basic::document{};
       const chain::base_action_trace& base = atrace; // without inline action traces
@@ -778,6 +780,10 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       action_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
       action_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
 
+      if (parent_global_sequence > 0) {
+          action_traces_doc.append( kvp( "parent", b_int64{static_cast<int64_t>(parent_global_sequence)} ) );
+      }
+
       // Actions having same global action sequence number can be 'upsert'ed several times when temporary chain fork occurs
       // before the block containing the updated actions becomes irreversible.
 
@@ -786,7 +792,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       //bulk_action_traces.append( insert_op );
 
       mongocxx::model::update_one upsert_op{
-         make_document( kvp( "receipt.global_sequence", b_int64{static_cast<int64_t>(atrace.receipt.global_sequence)} ) ),
+         make_document( kvp( "receipt.global_sequence", b_int64{static_cast<int64_t>(global_sequence)} ) ),
          make_document( kvp( "$set", action_traces_doc.view() ) )
       };
       upsert_op.upsert( true );
@@ -796,7 +802,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
    }
 
    for( const auto& iline_atrace : atrace.inline_traces ) {
-      added |= add_action_trace( bulk_action_traces, iline_atrace, block_num, block_time, /*trx_id,*/ executed /*, now*/ );
+      added |= add_action_trace( bulk_action_traces, iline_atrace, block_num, block_time, executed, global_sequence /*trx_id, now*/ );
    }
 
    return added;
@@ -806,6 +812,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
 void mongo_db_plugin_impl::_process_applied_transaction( const transaction_trace_entry& te ) {
    using namespace bsoncxx::types;
    using bsoncxx::builder::basic::kvp;
+   using bsoncxx::builder::basic::make_document;
    using bsoncxx::builder::basic::sub_array;
 
    const transaction_trace_ptr& t = te.trx_trace_ptr;
@@ -813,7 +820,9 @@ void mongo_db_plugin_impl::_process_applied_transaction( const transaction_trace
    const auto block_time = std::chrono::duration_cast<std::chrono::milliseconds>(
            std::chrono::microseconds{te.block_time.to_time_point().time_since_epoch().count()});
 
-   auto trans_traces = mongo_conn[db_name][trans_traces_col];
+//   auto trans_traces = mongo_conn[db_name][trans_traces_col];
+   auto trans = mongo_conn[db_name][trans_col];
+
    auto action_traces = mongo_conn[db_name][action_traces_col];
    auto trans_traces_doc = bsoncxx::builder::basic::document{};
 
@@ -830,7 +839,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const transaction_trace
 
    for( const auto& atrace : t->action_traces ) {
       try {
-         write_atraces |= add_action_trace( bulk_action_traces, atrace, block_num, block_time, /*trx_id,*/ executed /*, now*/ );
+         write_atraces |= add_action_trace( bulk_action_traces, atrace, block_num, block_time, executed, 0 /*trx_id, now*/ );
       } catch(...) {
          handle_mongo_exception("add action traces", __LINE__);
       }
@@ -869,7 +878,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const transaction_trace
    }
 
 //   // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
-//   // trx_vote is serialized in transaction_trace object
+//   // trx_vote is serialized in transaction_trace object automatically
 //   if (!(t->trx_vote) && t->trx_vote->has_vote()) {
 //      auto& trx_vote = *(t->trx_vote);
 //      //elog("trx_vote [${to}]", ("to", trx_vote.to.to_string()));
@@ -882,13 +891,29 @@ void mongo_db_plugin_impl::_process_applied_transaction( const transaction_trace
    // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
    //trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
 
+   trans_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
+   trans_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
+
+   // merge 'trans_traces' document to the document stored in 'trans' collection
    try {
-      if( !trans_traces.insert_one( trans_traces_doc.view())) {
-         EOS_ASSERT( false, chain::mongo_db_insert_fail, "Failed to insert trans ${id}", ("id", t->id));
+      mongocxx::options::update update_opts{};
+      update_opts.upsert( true );
+      if( !trans.update_one( make_document( kvp( "id", trx_id ) ),
+                             make_document( kvp( "$set", trans_traces_doc.view() ) ), update_opts ) ) {
+          EOS_ASSERT( false, chain::mongo_db_insert_fail, "Failed to update trx-trace info for trans ${id}", ("id", trx_id) );
       }
-   } catch(...) {
-      handle_mongo_exception("trans_traces insert: " + json, __LINE__);
+   } catch( ... ) {
+       handle_mongo_exception( "trans trace update", __LINE__ );
    }
+
+// [YOSEMITE] DOES NOT save 'trans_traces' documents, 'trans_traces' documents are merged to 'trans' documents
+//   try {
+//      if( !trans_traces.insert_one( trans_traces_doc.view())) {
+//         EOS_ASSERT( false, chain::mongo_db_insert_fail, "Failed to insert trans ${id}", ("id", t->id));
+//      }
+//   } catch(...) {
+//      handle_mongo_exception("trans_traces insert: " + json, __LINE__);
+//   }
 }
 
 void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr& bs ) {
@@ -1010,7 +1035,6 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
 
    const auto block_id = bs->block->id();
    const auto block_id_str = block_id.str();
-   const auto block_num = bs->block->block_num();
 
    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
          std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
@@ -1036,8 +1060,8 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
       bulk_opts.ordered( false );
       auto bulk = trans.create_bulk_write( bulk_opts );
 
-      auto block_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::microseconds{bs->block->timestamp.to_time_point().time_since_epoch().count()});
+      //auto block_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+      //        std::chrono::microseconds{bs->block->timestamp.to_time_point().time_since_epoch().count()});
 
       for( const auto& receipt : bs->block->transactions ) {
          string trx_id_str;
@@ -1057,12 +1081,11 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
 //                                                                       kvp( "block_num", b_int32{static_cast<int32_t>(block_num)} ),
 //                                                                       kvp( "updatedAt", b_date{now} ) ) ) );
 
+         // 'block-number' and 'block-time' are saved on _process_applied_transaction
          auto update_doc = make_document( kvp( "$set", make_document( kvp( "irrAt", b_date{now} ),
-                                                                      kvp( "bId", block_id_str ),
-                                                                      kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ),
-                                                                      kvp( "bTime", b_date{block_time} ) ) ) );
+                                                                      kvp( "bId", block_id_str ) ) ) );
 
-         mongocxx::model::update_one update_op{make_document( kvp( "trx_id", trx_id_str ) ), update_doc.view()};
+         mongocxx::model::update_one update_op{make_document( kvp( "id", trx_id_str ) ), update_doc.view()};
          update_op.upsert( true );
          bulk.append( update_op );
          transactions_in_block = true;
@@ -1327,7 +1350,7 @@ void mongo_db_plugin_impl::wipe_database() {
    auto block_states = mongo_conn[db_name][block_states_col];
    auto blocks = mongo_conn[db_name][blocks_col];
    auto trans = mongo_conn[db_name][trans_col];
-   auto trans_traces = mongo_conn[db_name][trans_traces_col];
+   //auto trans_traces = mongo_conn[db_name][trans_traces_col];
    auto action_traces = mongo_conn[db_name][action_traces_col];
    accounts = mongo_conn[db_name][accounts_col];
    auto pub_keys = mongo_conn[db_name][pub_keys_col];
@@ -1336,7 +1359,7 @@ void mongo_db_plugin_impl::wipe_database() {
    block_states.drop();
    blocks.drop();
    trans.drop();
-   trans_traces.drop();
+   //trans_traces.drop();
    action_traces.drop();
    accounts.drop();
    pub_keys.drop();
@@ -1382,16 +1405,21 @@ void mongo_db_plugin_impl::init() {
 
          // transactions indexes
          auto trans = mongo_conn[db_name][trans_col];
-         trans.create_index( bsoncxx::from_json( R"xxx({ "trx_id" : 1 })xxx" ));
+         trans.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
+         //trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ));
+         // implicit transactions having system actions like 'onblock' should be filtered in block explorer
+         trans.create_index( bsoncxx::from_json( R"xxx({ "implicit" : 1, "bTime" : -1 })xxx" ));
 
-         auto trans_trace = mongo_conn[db_name][trans_traces_col];
-         trans_trace.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
+         //auto trans_trace = mongo_conn[db_name][trans_traces_col];
+         //trans_trace.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
 
          // action traces indexes
          auto action_traces = mongo_conn[db_name][action_traces_col];
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "trx_id" : 1 })xxx" ));
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : 1 })xxx" ), mongocxx::options::index().unique(true) );
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : 1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "act.account" : 1, "act.name" : 1, "receipt.recv_sequence" : 1 })xxx" ));
+         //action_traces.create_index( bsoncxx::from_json( R"xxx({ "parent" : 1 })xxx" ));
 
          // pub_keys indexes
          auto pub_keys = mongo_conn[db_name][pub_keys_col];
