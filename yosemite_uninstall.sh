@@ -50,8 +50,8 @@ if [ -d "/usr/local/yosemite" ]; then
             done
             # Handle cleanup of directories created from installation
             if [ "$1" == "--full" ]; then
-               if [ -d ~/Library/Application\ Support/eosio ]; then rm -rf ~/Library/Application\ Support/eosio; fi # Mac OS
-               if [ -d ~/.local/share/eosio ]; then rm -rf ~/.local/share/eosio; fi # Linux
+               if [ -d ~/Library/Application\ Support/yosemite ]; then rm -rf ~/Library/Application\ Support/yosemite; fi # Mac OS
+               if [ -d ~/.local/share/yosemite ]; then rm -rf ~/.local/share/yosemite; fi # Linux
             fi
             popd &> /dev/null
             break;;
