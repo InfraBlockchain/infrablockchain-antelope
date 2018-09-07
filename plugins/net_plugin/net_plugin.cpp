@@ -149,9 +149,9 @@ namespace eosio {
             };
       possible_connections             allowed_connections{None};
 
-      connection_ptr find_connection( string host )const;
+      connection_ptr find_connection( const string &host )const;
 
-      std::set< connection_ptr >       connections;
+      std::unordered_set< connection_ptr >       connections;
       bool                             done = false;
       unique_ptr< sync_manager >       sync_master;
       unique_ptr< dispatch_manager >   dispatcher;
@@ -3104,7 +3104,7 @@ namespace eosio {
       }
       return result;
    }
-   connection_ptr net_plugin_impl::find_connection( string host )const {
+   connection_ptr net_plugin_impl::find_connection( const string &host )const {
       for( const auto& c : connections )
          if( c->peer_addr == host ) return c;
       return connection_ptr();

@@ -1,3 +1,5 @@
+#include <utility>
+
 /**
  *  @file
  *  @copyright defined in eos/LICENSE.txt
@@ -11,15 +13,7 @@
 #include <fc/io/json.hpp>
 #include <fc/crypto/openssl.hpp>
 
-#include <boost/asio.hpp>
 #include <boost/optional.hpp>
-
-#include <websocketpp/config/asio_client.hpp>
-#include <websocketpp/config/asio.hpp>
-#include <websocketpp/server.hpp>
-#include <websocketpp/config/asio_client.hpp>
-#include <websocketpp/client.hpp>
-#include <websocketpp/logger/stub.hpp>
 
 #include <thread>
 #include <memory>
@@ -31,9 +25,9 @@ namespace eosio {
 
    namespace asio = boost::asio;
 
-   using std::map;
+   using std::unordered_map;
    using std::vector;
-   using std::set;
+   using std::unordered_set;
    using std::string;
    using std::regex;
    using boost::optional;
@@ -42,54 +36,62 @@ namespace eosio {
    using boost::asio::ip::address_v6;
    using std::shared_ptr;
    using websocketpp::connection_hdl;
+   using namespace websocketpp::close;
 
-
-   namespace detail {
-
-      template<class T>
-      struct asio_with_stub_log : public websocketpp::config::asio {
-          typedef asio_with_stub_log type;
-          typedef asio base;
-
-          typedef base::concurrency_type concurrency_type;
-
-          typedef base::request_type request_type;
-          typedef base::response_type response_type;
-
-          typedef base::message_type message_type;
-          typedef base::con_msg_manager_type con_msg_manager_type;
-          typedef base::endpoint_msg_manager_type endpoint_msg_manager_type;
-
-          typedef websocketpp::log::stub elog_type;
-          typedef websocketpp::log::stub alog_type;
-
-          typedef base::rng_type rng_type;
-
-          struct transport_config : public base::transport_config {
-              typedef type::concurrency_type concurrency_type;
-              typedef type::alog_type alog_type;
-              typedef type::elog_type elog_type;
-              typedef type::request_type request_type;
-              typedef type::response_type response_type;
-              typedef T socket_type;
-          };
-
-          typedef websocketpp::transport::asio::endpoint<transport_config>
-              transport_type;
-
-          static const long timeout_open_handshake = 0;
-      };
-   }
-
-   using websocket_server_type = websocketpp::server<detail::asio_with_stub_log<websocketpp::transport::asio::basic_socket::endpoint>>;
-   using websocket_server_tls_type =  websocketpp::server<detail::asio_with_stub_log<websocketpp::transport::asio::tls_socket::endpoint>>;
+   using websocket_server_type = websocketpp::server<http_config::asio_with_stub_log<basic_socket_endpoint>>;
+   using websocket_server_tls_type =  websocketpp::server<http_config::asio_with_stub_log<tls_socket_endpoint>>;
    using ssl_context_ptr =  websocketpp::lib::shared_ptr<websocketpp::lib::asio::ssl::context>;
+
+#define DEFINE_ENABLE_IF_TEMPLATE_GETTERS(first, second, getter_name)                                       \
+   template<typename SocketType>                                                                            \
+   typename std::enable_if<std::is_same<SocketType, basic_socket_endpoint>::value, decltype(first) &>::type \
+   getter_name() {                                                                                          \
+      return first;                                                                                         \
+   }                                                                                                        \
+                                                                                                            \
+   template<typename SocketType>                                                                            \
+   typename std::enable_if<std::is_same<SocketType, tls_socket_endpoint>::value, decltype(second) &>::type  \
+   getter_name() {                                                                                          \
+      return second;                                                                                        \
+   }                                                                                                        \
+
 
    static bool verbose_http_errors = false;
 
    class http_plugin_impl {
+      template<typename SocketType>
+      struct ws_connection_equal {
+         bool operator()(const ws_connection<SocketType> &lhs, const ws_connection<SocketType> &rhs) const {
+            return lhs.get() == rhs.get();
+         }
+      };
+
+      template<typename SocketType>
+      struct ws_connection_hash {
+         size_t operator()(const ws_connection<SocketType> &conn) const {
+            return reinterpret_cast<size_t>(conn.get());
+         }
+      };
+
+      template<typename SocketType>
+      using ws_connection_to_message_handler_map =
+              std::unordered_map<ws_connection<SocketType>, ws_message_handler<SocketType>,
+                                 ws_connection_hash<SocketType>, ws_connection_equal<SocketType>>;
+
       public:
-         map<string,url_handler>  url_handlers;
+         unordered_map<string, ws_message_handler<basic_socket_endpoint>> ws_message_handlers;
+         unordered_map<string, ws_message_handler<tls_socket_endpoint>> wss_message_handlers;
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(ws_message_handlers, wss_message_handlers, get_websocket_msghandler_map);
+
+         ws_connection_to_message_handler_map<basic_socket_endpoint> ws_connection_to_msgh_map;
+         ws_connection_to_message_handler_map<tls_socket_endpoint> wss_connection_to_msgh_map;
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(ws_connection_to_msgh_map, wss_connection_to_msgh_map, get_ws_connection_to_msghandler_map);
+
+         ws_connection_termination_handler<basic_socket_endpoint> plain_ws_connection_term_handler;
+         ws_connection_termination_handler<tls_socket_endpoint> tls_ws_connection_term_handler;
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(plain_ws_connection_term_handler, tls_ws_connection_term_handler, get_ws_connection_termination_handler);
+
+         unordered_map<string, url_handler> url_handlers;
          optional<tcp::endpoint>  listen_endpoint;
          string                   access_control_allow_origin;
          string                   access_control_allow_headers;
@@ -106,7 +108,44 @@ namespace eosio {
          websocket_server_tls_type https_server;
 
          bool                     validate_host;
-         set<string>              valid_hosts;
+         unordered_set<string>    valid_hosts;
+
+         unordered_set<ws_connection<basic_socket_endpoint>> http_connections;
+         unordered_set<ws_connection<tls_socket_endpoint>> https_connections;
+         DEFINE_ENABLE_IF_TEMPLATE_GETTERS(http_connections, https_connections, get_http_connections_set);
+
+         uint32_t                 idle_connection_timeout_ms;
+         uint32_t                 max_connections;
+
+         bool is_max_connections_reached() {
+            return max_connections > 0 &&
+                   (http_connections.size() + https_connections.size() + ws_connection_to_msgh_map.size() + wss_connection_to_msgh_map.size())
+                    >= max_connections;
+         }
+
+         template <typename T> 
+         bool is_already_connected(ws_connection<T> ws_conn) {
+            if (max_connections == 0) return true;
+
+            auto &connections_set = get_http_connections_set<T>();
+            return connections_set.find(ws_conn) != connections_set.end();
+         }
+
+         template <typename T>
+         void register_keep_alive_http_connection(ws_connection<T> ws_conn) {
+            if (max_connections == 0) return;
+
+            auto &connections_set = get_http_connections_set<T>();
+            connections_set.insert(ws_conn);
+         }
+
+         template <typename T>
+         void unregister_keep_alive_http_connection(ws_connection<T> ws_conn) {
+            if (max_connections == 0) return;
+
+            auto &connections_set = get_http_connections_set<T>();
+            connections_set.erase(ws_conn);
+         }
 
          bool host_port_is_valid( const std::string& header_host_port, const string& endpoint_local_host_port ) {
             return !validate_host || header_host_port == endpoint_local_host_port || valid_hosts.find(header_host_port) != valid_hosts.end();
@@ -127,7 +166,7 @@ namespace eosio {
             }
          }
 
-         ssl_context_ptr on_tls_init(websocketpp::connection_hdl hdl) {
+         ssl_context_ptr on_tls_init(const websocketpp::connection_hdl &hdl) {
             ssl_context_ptr ctx = websocketpp::lib::make_shared<websocketpp::lib::asio::ssl::context>(asio::ssl::context::sslv23_server);
 
             try {
@@ -155,15 +194,17 @@ namespace eosio {
                   EOS_THROW(chain::http_exception, "Failed to set HTTPS cipher list");
             } catch (const fc::exception& e) {
                elog("https server initialization error: ${w}", ("w", e.to_detail_string()));
+               throw;
             } catch(std::exception& e) {
                elog("https server initialization error: ${w}", ("w", e.what()));
+               throw;
             }
 
             return ctx;
          }
 
          template<class T>
-         static void handle_exception(typename websocketpp::server<detail::asio_with_stub_log<T>>::connection_ptr con) {
+         static void handle_exception(ws_connection<T> con) {
             string err = "Internal Service error, http: ";
             try {
                con->set_status( websocketpp::http::status_code::internal_server_error );
@@ -195,8 +236,14 @@ namespace eosio {
          }
 
          template<class T>
-         void handle_http_request(typename websocketpp::server<detail::asio_with_stub_log<T>>::connection_ptr con) {
+         void handle_http_request(ws_connection<T> con) {
             try {
+               bool is_already_keep_alive = is_already_connected<T>(con);
+               if (!is_already_keep_alive && is_max_connections_reached()) {
+                  con->set_status(websocketpp::http::status_code::too_many_requests);
+                  return;
+               }
+
                bool is_secure = con->get_uri()->get_secure();
                const auto& local_endpoint = con->get_socket().lowest_layer().local_endpoint();
                auto local_socket_host_port = local_endpoint.address().to_string() + ":" + std::to_string(local_endpoint.port());
@@ -221,6 +268,10 @@ namespace eosio {
                   con->append_header( "Access-Control-Allow-Credentials", "true" );
                }
 
+               if (!is_already_keep_alive) {
+                  register_keep_alive_http_connection<T>(con);
+               }
+
                if(req.get_method() == "OPTIONS") {
                   con->set_status(websocketpp::http::status_code::ok);
                   return;
@@ -228,7 +279,7 @@ namespace eosio {
 
                con->append_header( "Content-type", "application/json" );
                auto body = con->get_request_body();
-               auto resource = con->get_uri()->get_resource();
+               auto resource = con->get_resource();
                auto handler_itr = url_handlers.find( resource );
                if( handler_itr != url_handlers.end()) {
                   con->defer_http_response();
@@ -239,7 +290,6 @@ namespace eosio {
                   } );
 
                } else {
-                  dlog( "404 - not found: ${ep}", ("ep", resource));
                   error_results results{websocketpp::http::status_code::not_found,
                                         "Not Found", error_results::error_info(fc::exception( FC_LOG_MESSAGE( error, "Unknown Endpoint" )), verbose_http_errors )};
                   con->set_body( fc::json::to_string( results ));
@@ -250,31 +300,101 @@ namespace eosio {
             }
          }
 
-         template<class T>
-         void create_server_for_endpoint(const tcp::endpoint& ep, websocketpp::server<detail::asio_with_stub_log<T>>& ws) {
-            try {
-               ws.clear_access_channels(websocketpp::log::alevel::all);
-               ws.init_asio(&app().get_io_service());
-               ws.set_reuse_addr(true);
-               ws.set_max_http_body_size(max_body_size);
-               ws.set_http_handler([&](connection_hdl hdl) {
-                  handle_http_request<T>(ws.get_con_from_hdl(hdl));
-               });
-            } catch ( const fc::exception& e ){
-               elog( "http: ${e}", ("e",e.to_detail_string()));
-            } catch ( const std::exception& e ){
-               elog( "http: ${e}", ("e",e.what()));
-            } catch (...) {
-               elog("error thrown from http io service");
+         template<typename T>
+         void handle_websocket_open(ws_connection<T> conn) {
+            auto resource = conn->get_resource();
+
+            auto handler_map = get_websocket_msghandler_map<T>();
+            auto handler_itr = handler_map.find(resource);
+            if (handler_itr != handler_map.end()) {
+               bool is_connected = is_already_connected<T>(conn);
+               if (!is_connected && is_max_connections_reached()) {
+                  error_results results{websocketpp::http::status_code::too_many_requests,
+                                        "Too many connections",
+                                        error_results::error_info(fc::exception(FC_LOG_MESSAGE(error, "Too many connections")),
+                                                                  verbose_http_errors)};
+                  conn->close(status::internal_endpoint_error, fc::json::to_string(results));
+                  return;
+               }
+
+               auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
+               conn_to_handler_map.insert(std::make_pair(conn, handler_itr->second));
+            } else {
+               error_results results{websocketpp::http::status_code::not_found,
+                                     "Not Found",
+                                     error_results::error_info(fc::exception(FC_LOG_MESSAGE(error, "Unknown Endpoint")),
+                                                               verbose_http_errors)};
+               conn->close(status::internal_endpoint_error, fc::json::to_string(results));
             }
          }
 
-         void add_aliases_for_endpoint( const tcp::endpoint& ep, string host, string port ) {
+         template<typename T>
+         void handle_websocket_close_or_fail(ws_connection<T> conn) {
+            if (conn->is_http_connection()) {
+               unregister_keep_alive_http_connection<T>(conn);
+            } else {
+               auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
+               conn_to_handler_map.erase(conn);
+
+               auto &term_handler = get_ws_connection_termination_handler<T>();
+               if (term_handler) {
+                  term_handler(conn);
+               }
+            }
+         }
+
+         template<typename T>
+         void handle_websocket_message(ws_connection<T> conn, ws_message<T> msg) {
+            //dlog("websocket message handler called for ${h} with ${uri}", ("h", conn->get_host())("uri", conn->get_resource()));
+
+            auto &conn_to_handler_map = get_ws_connection_to_msghandler_map<T>();
+            try {
+               auto handler_itr = conn_to_handler_map.find(conn);
+               if (handler_itr != conn_to_handler_map.end()) {
+                  handler_itr->second(conn, msg);
+               }
+            } catch (const fc::exception& e) {
+               auto err = e.to_detail_string();
+               elog("${e}", ("e", err));
+               conn->close(status::internal_endpoint_error, err);
+            } catch (const std::exception &e) {
+               elog("${e}", ("e", e.what()));
+               conn->close(status::internal_endpoint_error, e.what());
+            } catch (...) {
+               elog("${e}", ("e", "Unknown error"));
+               conn->close(status::internal_endpoint_error, "Unknown error");
+            }
+         }
+
+         template<class T>
+         void create_server_for_endpoint(const tcp::endpoint& ep, websocketpp::server<http_config::asio_with_stub_log<T>>& ws) {
+            ws.clear_access_channels(websocketpp::log::alevel::all);
+            ws.init_asio(&app().get_io_service());
+            ws.set_reuse_addr(true);
+            ws.set_max_http_body_size(max_body_size);
+            ws.set_open_handshake_timeout(idle_connection_timeout_ms);
+            ws.set_http_handler([&](connection_hdl hdl) {
+               handle_http_request<T>(ws.get_con_from_hdl(hdl));
+            });
+            ws.set_open_handler([&](connection_hdl hdl) {
+               handle_websocket_open<T>(ws.get_con_from_hdl(hdl));
+            });
+            ws.set_close_handler([&](connection_hdl hdl) {
+               handle_websocket_close_or_fail<T>(ws.get_con_from_hdl(hdl));
+            });
+            ws.set_fail_handler([&](connection_hdl hdl) {
+               handle_websocket_close_or_fail<T>(ws.get_con_from_hdl(hdl));
+            });
+            ws.set_message_handler([&](connection_hdl hdl, ws_message<T> msg) {
+               handle_websocket_message<T>(ws.get_con_from_hdl(hdl), msg);
+            });
+         }
+
+         void add_aliases_for_endpoint( const tcp::endpoint& ep, const string &host, const string &port ) {
             auto resolved_port_str = std::to_string(ep.port());
             valid_hosts.emplace(host + ":" + port);
             valid_hosts.emplace(host + ":" + resolved_port_str);
          }
-
    };
 
    http_plugin::http_plugin():my(new http_plugin_impl()){}
@@ -322,11 +442,16 @@ namespace eosio {
             ("verbose-http-errors", bpo::bool_switch()->default_value(false), "Append the error log to HTTP responses")
             ("http-validate-host", boost::program_options::value<bool>()->default_value(true), "If set to false, then any incoming \"Host\" header is considered valid")
             ("http-alias", bpo::value<std::vector<string>>()->composing(), "Additionaly acceptable values for the \"Host\" header of incoming HTTP requests, can be specified multiple times.  Includes http/s_server_address by default.")
+            ("idle-connection-timeout-ms", bpo::value<uint32_t>()->default_value(5000), "Timeout in milliseconds to cut idle connections out; 0 means infinite")
+            ("max-connections", bpo::value<uint32_t>()->default_value(100), "The maximum number of HTTP and WebSocket connections which is allowed to connect and keep alive; 0 means unlimited")
             ;
    }
 
    void http_plugin::plugin_initialize(const variables_map& options) {
       try {
+         my->idle_connection_timeout_ms = options.at("idle-connection-timeout-ms").as<uint32_t>();
+         my->max_connections = options.at("max-connections").as<uint32_t>();
+
          my->validate_host = options.at("http-validate-host").as<bool>();
          if( options.count( "http-alias" )) {
             const auto& aliases = options["http-alias"].as<vector<string>>();
@@ -345,6 +470,7 @@ namespace eosio {
             } catch ( const boost::system::system_error& ec ) {
                elog( "failed to configure http to listen on ${h}:${p} (${m})",
                      ("h", host)( "p", port )( "m", ec.what()));
+               throw;
             }
 
             // add in resolved hosts and ports as well
@@ -354,16 +480,14 @@ namespace eosio {
          }
 
          if( options.count( "https-server-address" ) && options.at( "https-server-address" ).as<string>().length()) {
-            if( !options.count( "https-certificate-chain-file" ) ||
-                options.at( "https-certificate-chain-file" ).as<string>().empty()) {
-               elog( "https-certificate-chain-file is required for HTTPS" );
-               return;
-            }
-            if( !options.count( "https-private-key-file" ) ||
-                options.at( "https-private-key-file" ).as<string>().empty()) {
-               elog( "https-private-key-file is required for HTTPS" );
-               return;
-            }
+            EOS_ASSERT(options.count("https-certificate-chain-file") &&
+                       !options.at("https-certificate-chain-file").as<string>().empty(),
+                       chain::plugin_config_exception,
+                       "https-certificate-chain-file is required for HTTPS");
+            EOS_ASSERT(options.count("https-private-key-file") &&
+                       !options.at("https-private-key-file").as<string>().empty(),
+                       chain::plugin_config_exception,
+                       "https-private-key-file is required for HTTPS");
 
             string lipstr = options.at( "https-server-address" ).as<string>();
             string host = lipstr.substr( 0, lipstr.find( ':' ));
@@ -378,6 +502,7 @@ namespace eosio {
             } catch ( const boost::system::system_error& ec ) {
                elog( "failed to configure https to listen on ${h}:${p} (${m})",
                      ("h", host)( "p", port )( "m", ec.what()));
+               throw;
             }
 
             // add in resolved hosts and ports as well
@@ -389,7 +514,10 @@ namespace eosio {
          my->max_body_size = options.at( "max-body-size" ).as<uint32_t>();
          verbose_http_errors = options.at( "verbose-http-errors" ).as<bool>();
 
-         //watch out for the returns above when adding new code here
+         my->http_connections.clear();
+         my->https_connections.clear();
+         my->ws_connection_to_msgh_map.clear();
+         my->wss_connection_to_msgh_map.clear();
       } FC_LOG_AND_RETHROW()
    }
 
@@ -499,4 +627,25 @@ namespace eosio {
       return (!my->listen_endpoint || my->listen_endpoint->address().is_loopback());
    }
 
+   void http_plugin::add_ws_handler(const string& url, ws_message_handler<basic_socket_endpoint> handler) {
+      ilog("add websocket handler: ${c}", ("c", url));
+      app().get_io_service().post([=]() {
+          my->ws_message_handlers.insert(std::make_pair(url, handler));
+      });
+   }
+
+   void http_plugin::add_wss_handler(const string& url, ws_message_handler<tls_socket_endpoint> handler) {
+      ilog("add secure websocket handler: ${c}", ("c", url));
+      app().get_io_service().post([=]() {
+          my->wss_message_handlers.insert(std::make_pair(url, handler));
+      });
+   }
+
+   void http_plugin::set_ws_connection_termination_handler(ws_connection_termination_handler<basic_socket_endpoint> handler) {
+      my->plain_ws_connection_term_handler = handler;
+   }
+
+   void http_plugin::set_wss_connection_termination_handler(ws_connection_termination_handler<tls_socket_endpoint> handler) {
+      my->tls_ws_connection_term_handler = handler;
+   }
 }
