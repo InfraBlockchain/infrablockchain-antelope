@@ -15,9 +15,12 @@
 ## Format of Token
 * The structure of token includes precision, symbol, and the issuer.
 * 4,DKRW@d1   
-   * 4 : precision (the number of bits used to hold the fractional part in the concept of floating-point numbers, .0000) 
+   * 4 : precision (the number of bits used to hold the fractional part in the concept of floating-point numbers, .0000)
+      * minumum : 4, maximum : 18
    * DKRW : symbol
+      * [Naming Convention of Symbols](https://developers.eos.io/eosio-cpp/docs/naming-conventions#section-symbols")
    * d1 : account name of the issuer
+      * [Naming Convention of YOSEMITE Standard Account Names](https://developers.eos.io/eosio-cpp/docs/naming-conventions#section-standard-account-names")
 * Different issuer results in different tokens. For example, 4,DKRW@d1 and 4,DKRW@d2 are different.
 * Different precision results in different tokens. For example, 4,BTC@d3 and 8,BTC@d3 are different.
 ### Format of Token Amount
