@@ -9,6 +9,16 @@
 * The token depository can freeze the token transfer.
 * Any Yosemite accounts who own the token can transfer it each other.
 
+# Decision Points Before Creating Token
+You must consider the decision points carefully because it cannot be changed once created.
+1. About precision
+   * The minimum precision is 4. It's enough to use in most cases.
+   * For backing crypto-currencies like BTC or ETH, you might need 8.
+1. About options
+   * Once the token is created, you cannot change the ways you handle the token. Generally the options of the token are for token management.
+   * The reason why you cannot change them is the users of Yosemite must know management rules of the token before they own it.
+   * Please read carefully about [`can_set_options`](#parameters-of-create).
+
 # Management Actions
 
 ## setting fee for operations
@@ -39,8 +49,16 @@ clyos push action yx.token create '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"},"
 1. can_set_options : 16-bit flags of options
    * NONE : 0b0000000000000000 (0)
    * FREEZE_TOKEN_TRANSFER : 0b0000000000000001 (1)
+      * The issuer can freeze or unfreeze the transfer of the token.
    * FREEZE_ACCOUNT : 0b0000000000000010 (2)
+      * The issuer can freeze or unfreeze the token owners. They cannot transfer the token if they are frozen.
    * SET_KYC_RULE : 0b0000000000000100 (4)
+      * The issuer can set KYC rules for the transfer of the token.
+      * Only the account which passes the required KYC authentication can send or receive the token.
+   * SET_ACCOUNT_TYPE_RULE : 0b0000000000001000 (8)
+      * The issuer can set the account type for the transfer of the token.
+      * For example, the account whose type is 'A' can only send to or receive from the account whose type is 'B'. The 'B' account can send to or receive from 'A' and the token issuer. That means only the 'B' can redeem the token.
+      * Note that this feature will be implemented in the future version.
 
 ## issue
 Issue the token to an account by the token depository
