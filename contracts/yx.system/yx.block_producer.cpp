@@ -71,7 +71,9 @@ namespace yosemitesys {
 
                 if (prod_vote != _producers.end()) {
                     _producers.modify( prod_vote, 0, [&]( producer_info& info ){
-                        info.total_votes += weighted_vote(trx_vote.amount);
+                        double weighted_vote_amount = weighted_vote(trx_vote.amount);
+                        info.total_votes += weighted_vote_amount;
+                        _gstate.total_producer_vote_weight += weighted_vote_amount;
                     });
                 }
             }
