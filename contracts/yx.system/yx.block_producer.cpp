@@ -71,8 +71,11 @@ namespace yosemitesys {
 
                 if (prod_vote != _producers.end()) {
                     _producers.modify( prod_vote, 0, [&]( producer_info& info ){
+                        double trx_vote_amount = static_cast<double>(trx_vote.amount);
+                        info.total_votes += trx_vote_amount;
+                        _gstate.total_producer_vote += trx_vote_amount;
                         double weighted_vote_amount = weighted_vote(trx_vote.amount);
-                        info.total_votes += weighted_vote_amount;
+                        info.total_votes_weight += weighted_vote_amount;
                         _gstate.total_producer_vote_weight += weighted_vote_amount;
                     });
                 }
@@ -95,7 +98,7 @@ namespace yosemitesys {
         std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
         top_producers.reserve(YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT);
 
-        for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && 0 <= it->total_votes && it->active() && it->is_trusted_seed; ++it ) {
+        for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && 0 <= it->total_votes_weight && it->active() && it->is_trusted_seed; ++it ) {
             top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
         }
 
@@ -141,6 +144,7 @@ namespace yosemitesys {
             _producers.emplace( producer, [&]( producer_info& info ){
                 info.owner           = producer;
                 info.total_votes     = 0;
+                info.total_votes_weight = 0;
                 info.producer_key    = producer_key;
                 info.is_active       = true;
                 info.is_trusted_seed = false;
