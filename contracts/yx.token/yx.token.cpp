@@ -23,8 +23,6 @@ namespace yosemite { namespace non_native_token {
             s.can_set_options = can_set_options;
             s.kyc_rules.clear();
             s.kyc_rule_flags.clear();
-            s.account_types.clear();
-            s.account_type_rules.clear();
         });
 
         charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);

@@ -49,8 +49,6 @@ namespace yosemite { namespace non_native_token {
         uint16_t options = TOKEN_OPTIONS_NONE;
         std::vector<token_rule_t> kyc_rules;
         std::vector<identity::identity_kyc_t> kyc_rule_flags; // from yosemitelib/identity.hpp
-        std::vector<identity::identity_type_t> account_types; // from yosemitelib/identity.hpp (reserved)
-        std::vector<token_rule_t> account_type_rules; // (reserved)
 
         uint64_t primary_key() const { return issuer; }
     };

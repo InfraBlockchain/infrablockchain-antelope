@@ -114,8 +114,6 @@
         {"name":"options", "type":"uint16"},
         {"name":"kyc_rules", "type":"uint8[]"},
         {"name":"kyc_rule_flags", "type":"uint16[]"}
-        {"name":"account_types", "type":"uint16[]"},
-        {"name":"account_type_rules", "type":"uint8[]"}
       ]
     }
   ],

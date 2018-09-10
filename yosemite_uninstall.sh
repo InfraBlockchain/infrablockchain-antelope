@@ -48,9 +48,14 @@ if [ -d "/usr/local/yosemite" ]; then
             for binary in ${binaries[@]}; do
                rm ${binary}
             done
+            # Handle cleanup of directories created from installation
+            if [ "$1" == "--full" ]; then
+               if [ -d ~/Library/Application\ Support/yosemite ]; then rm -rf ~/Library/Application\ Support/yosemite; fi # Mac OS
+               if [ -d ~/.local/share/yosemite ]; then rm -rf ~/.local/share/yosemite; fi # Linux
+            fi
             popd &> /dev/null
             break;;
-         [Nn]* ) 
+         [Nn]* )
             printf "\tAborting uninstall\n\n"
             exit -1;;
       esac
