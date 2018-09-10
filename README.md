@@ -78,4 +78,7 @@ plugin = eosio::chain_api_plugin
 plugin = eosio::http_plugin
 plugin = eosio::history_plugin
 plugin = eosio::history_api_plugin
+
+contracts-console = true
+verbose-http-errors = true
 ```
