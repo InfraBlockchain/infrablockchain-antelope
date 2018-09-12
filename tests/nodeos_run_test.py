@@ -11,7 +11,7 @@ import re
 
 ###############################################################
 # nodeos_run_test
-# --dump-error-details <Upon error print etc/eosio/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
+# --dump-error-details <Upon error print etc/yosemite/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
 # --keep-logs <Don't delete var/lib/node_* folders upon test completion>
 ###############################################################
 
@@ -19,6 +19,7 @@ Print=Utils.Print
 errorExit=Utils.errorExit
 cmdError=Utils.cmdError
 from core_symbol import CORE_SYMBOL
+from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 
 args = TestHelper.parse_args({"--host","--port","--prod-count","--defproducera_prvt_key","--defproducerb_prvt_key","--mongodb"
                               ,"--dump-error-details","--dont-launch","--keep-logs","-v","--leave-running","--only-bios","--clean-run"
@@ -48,8 +49,8 @@ killEosInstances=not dontKill
 killWallet=not dontKill
 dontBootstrap=sanityTest
 
-WalletdName="keosd"
-ClientName="cleos"
+WalletdName="keyos"
+ClientName="clyos"
 timeout = .5 * 12 * 2 + 60 # time for finalization with 1 producer + 60 seconds padding
 Utils.setIrreversibleTimeout(timeout)
 
@@ -203,13 +204,13 @@ try:
 
     # create accounts via eosio as otherwise a bid is needed 
     Print("Create new account %s via %s" % (testeraAccount.name, cluster.eosioAccount.name))
-    transId=node.createInitializeAccount(testeraAccount, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=False, exitOnError=True)
+    transId=node.createAccount(testeraAccount, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=False, exitOnError=True)
 
     Print("Create new account %s via %s" % (currencyAccount.name, cluster.eosioAccount.name))
-    transId=node.createInitializeAccount(currencyAccount, cluster.eosioAccount, stakedDeposit=5000, exitOnError=True)
+    transId=node.createAccount(currencyAccount, cluster.eosioAccount, stakedDeposit=5000, exitOnError=True)
 
     Print("Create new account %s via %s" % (exchangeAccount.name, cluster.eosioAccount.name))
-    transId=node.createInitializeAccount(exchangeAccount, cluster.eosioAccount, waitForTransBlock=True, exitOnError=True)
+    transId=node.createAccount(exchangeAccount, cluster.eosioAccount, waitForTransBlock=True, exitOnError=True)
 
     Print("Validating accounts after user accounts creation")
     accounts=[testeraAccount, currencyAccount, exchangeAccount]
@@ -219,25 +220,25 @@ try:
     if not node.verifyAccount(testeraAccount):
         errorExit("FAILURE - account creation failed.", raw=True)
 
-    transferAmount="97.5321 {0}".format(CORE_SYMBOL)
+    transferAmount="97.5321 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (transferAmount, defproduceraAccount.name, testeraAccount.name))
-    node.transferFunds(defproduceraAccount, testeraAccount, transferAmount, "test transfer")
+    node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer")
 
     expectedAmount=transferAmount
-    Print("Verify transfer, Expected: %s" % (expectedAmount))
-    actualAmount=node.getAccountEosBalanceStr(testeraAccount.name)
+    Print("Verify transfer, Expected: %s" % expectedAmount)
+    actualAmount=node.getAccountTotalNativeTokenBalanceStr(testeraAccount.name)
     if expectedAmount != actualAmount:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
-    transferAmount="0.0100 {0}".format(CORE_SYMBOL)
+    transferAmount="0.0100 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Force transfer funds %s from account %s to %s" % (
         transferAmount, defproduceraAccount.name, testeraAccount.name))
-    node.transferFunds(defproduceraAccount, testeraAccount, transferAmount, "test transfer", force=True)
+    node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer", force=True)
 
-    expectedAmount="97.5421 {0}".format(CORE_SYMBOL)
-    Print("Verify transfer, Expected: %s" % (expectedAmount))
-    actualAmount=node.getAccountEosBalanceStr(testeraAccount.name)
+    expectedAmount="97.5421 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    Print("Verify transfer, Expected: %s" % expectedAmount)
+    actualAmount=node.getAccountTotalNativeTokenBalanceStr(testeraAccount.name)
     if expectedAmount != actualAmount:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
@@ -256,26 +257,28 @@ try:
         cmdError("%s wallet unlock" % (ClientName))
         errorExit("Failed to unlock wallet %s" % (testWallet.name))
 
-    transferAmount="97.5311 {0}".format(CORE_SYMBOL)
+    transferAmount="97.5311 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (
         transferAmount, testeraAccount.name, currencyAccount.name))
-    trans=node.transferFunds(testeraAccount, currencyAccount, transferAmount, "test transfer a->b")
+    trans=node.transferNativeToken(testeraAccount, currencyAccount, transferAmount, "test transfer a->b")
     transId=Node.getTransId(trans)
 
-    expectedAmount="98.0311 {0}".format(CORE_SYMBOL) # 5000 initial deposit
+    expectedAmount="98.0311 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL) # 5000 initial deposit
     Print("Verify transfer, Expected: %s" % (expectedAmount))
-    actualAmount=node.getAccountEosBalanceStr(currencyAccount.name)
+    actualAmount=node.getAccountTotalNativeTokenBalanceStr(currencyAccount.name)
     if expectedAmount != actualAmount:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
+
+    node.issueNativeToken(currencyAccount.name, "d1", "100000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, "currency1111 issue", waitForTransBlock=True)
 
     Print("Validate last action for account %s" % (testeraAccount.name))
     actions=node.getActions(testeraAccount, -1, -1, exitOnError=True)
     try:
         if not enableMongo:
-            assert(actions["actions"][0]["action_trace"]["act"]["name"] == "transfer")
+            assert(actions["actions"][0]["action_trace"]["act"]["name"] == "ntransfer")
         else:
-            assert(actions["act"]["name"] == "transfer")
+            assert(actions["act"]["name"] == "ntransfer")
     except (AssertionError, TypeError, KeyError) as _:
         Print("Action validation failed. Actions: %s" % (actions))
         raise
@@ -292,76 +295,40 @@ try:
             key="[traces][0][act][name]"
             typeVal=  transaction["traces"][0]["act"]["name"]
             key="[traces][0][act][data][quantity]"
-            amountVal=transaction["traces"][0]["act"]["data"]["quantity"]
+            amountVal=transaction["traces"][0]["act"]["data"]["amount"]
             amountVal=int(decimal.Decimal(amountVal.split()[0])*10000)
         else:
             key="[actions][0][name]"
             typeVal=  transaction["actions"][0]["name"]
             key="[actions][0][data][quantity]"
-            amountVal=transaction["actions"][0]["data"]["quantity"]
+            amountVal=transaction["actions"][0]["data"]["amount"]
             amountVal=int(decimal.Decimal(amountVal.split()[0])*10000)
     except (TypeError, KeyError) as e:
         Print("transaction%s not found. Transaction: %s" % (key, transaction))
         raise
 
     if typeVal != "transfer" or amountVal != 975311:
-        errorExit("FAILURE - get transaction trans_id failed: %s %s %s" % (transId, typeVal, amountVal), raw=True)
+        errorExit("FAILURE - validating transaction failed: %s %s %s" % (transId, typeVal, amountVal), raw=True)
 
-    Print("Currency Contract Tests")
-    Print("verify no contract in place")
-    Print("Get code hash for account %s" % (currencyAccount.name))
-    codeHash=node.getAccountCodeHash(currencyAccount.name)
-    if codeHash is None:
-        cmdError("%s get code currency1111" % (ClientName))
-        errorExit("Failed to get code hash for account %s" % (currencyAccount.name))
-    hashNum=int(codeHash, 16)
-    if hashNum != 0:
-        errorExit("FAILURE - get code currency1111 failed", raw=True)
+    Print("yx.token Tests")
 
-    contractDir="contracts/eosio.token"
-    wasmFile="eosio.token.wasm"
-    abiFile="eosio.token.abi"
-    Print("Publish contract")
-    trans=node.publishContract(currencyAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
-    if trans is None:
-        cmdError("%s set contract currency1111" % (ClientName))
-        errorExit("Failed to publish contract.")
-
-    if not enableMongo:
-        Print("Get code hash for account %s" % (currencyAccount.name))
-        codeHash=node.getAccountCodeHash(currencyAccount.name)
-        if codeHash is None:
-            cmdError("%s get code currency1111" % (ClientName))
-            errorExit("Failed to get code hash for account %s" % (currencyAccount.name))
-        hashNum=int(codeHash, 16)
-        if hashNum == 0:
-            errorExit("FAILURE - get code currency1111 failed", raw=True)
-    else:
-        Print("verify abi is set")
-        account=node.getEosAccountFromDb(currencyAccount.name)
-        abiName=account["abi"]["structs"][0]["name"]
-        abiActionName=account["abi"]["actions"][0]["name"]
-        abiType=account["abi"]["actions"][0]["type"]
-        if abiName != "transfer" or abiActionName != "transfer" or abiType != "transfer":
-            errorExit("FAILURE - get EOS account failed", raw=True)
-
-    Print("push create action to currency1111 contract")
-    contract="currency1111"
-    action="create"
-    data="{\"issuer\":\"currency1111\",\"maximum_supply\":\"100000.0000 CUR\",\"can_freeze\":\"0\",\"can_recall\":\"0\",\"can_whitelist\":\"0\"}"
-    opts="--permission currency1111@active"
-    trans=node.pushMessage(contract, action, data, opts)
+    Print("push create action to yx.token contract")
+    contract = "yx.token"
+    action = "create"
+    data = "{\"ysymbol\":{\"symbol\":\"4,CUR\",\"issuer\":\"currency1111\"},\"can_set_options\":0}"
+    opts = "--permission currency1111@active"
+    trans = node.pushMessage(contract, action, data, opts)
     try:
         assert(trans)
         assert(trans[0])
     except (AssertionError, KeyError) as _:
-        Print("ERROR: Failed push create action to currency1111 contract assertion. %s" % (trans))
+        Print("ERROR: Failed push create action to yx.token contract assertion. %s" % (trans))
         raise
 
-    Print("push issue action to currency1111 contract")
-    action="issue"
-    data="{\"to\":\"currency1111\",\"quantity\":\"100000.0000 CUR\",\"memo\":\"issue\"}"
-    opts="--permission currency1111@active"
+    Print("push issue action to yx.token contract")
+    action = "issue"
+    data = "{\"to\":\"currency1111\",\"token\":{\"amount\":\"100000.0000 CUR\",\"issuer\":\"currency1111\"},\"memo\":\"issue\"}"
+    opts = "--permission currency1111@active"
     trans=node.pushMessage(contract, action, data, opts)
     try:
         assert(trans)
@@ -370,66 +337,57 @@ try:
         Print("ERROR: Failed push issue action to currency1111 contract assertion. %s" % (trans))
         raise
 
-    Print("Verify currency1111 contract has proper initial balance (via get table)")
-    contract="currency1111"
-    table="accounts"
-    row0=node.getTableRow(contract, currencyAccount.name, table, 0)
+    Print("Verify yx.token contract has proper initial balance (via get table)")
+    table = "taccounts"
+    row0 = node.getTableRow(contract, currencyAccount.name, table, 0)
     try:
-        assert(row0)
-        assert(row0["balance"] == "100000.0000 CUR")
+        assert row0
+        assert (row0["token"]["amount"] == "100000.0000 CUR")
     except (AssertionError, KeyError) as _:
         Print("ERROR: Failed get table row assertion. %s" % (row0))
         raise
 
-    Print("Verify currency1111 contract has proper initial balance (via get currency1111 balance)")
-    amountStr=node.getTableAccountBalance("currency1111", currencyAccount.name)
-
-    expected="100000.0000 CUR"
-    actual=amountStr
-    if actual != expected:
-        errorExit("FAILURE - currency1111 balance check failed. Expected: %s, Recieved %s" % (expected, actual), raw=True)
-
-    Print("Verify currency1111 contract has proper total supply of CUR (via get currency1111 stats)")
-    res=node.getCurrencyStats(contract, "CUR", exitOnError=True)
+    Print("Verify yx.token contract has proper total supply of CUR (via get yx.token tstats)")
+    ysymbolCUR = "4,CUR@currency1111"
+    res = node.getTokenStats(ysymbolCUR, exitOnError=True)
     try:
-        assert(res["CUR"]["supply"] == "100000.0000 CUR")
+        assert(res["supply"] == "100000.0000 CUR")
     except (AssertionError, KeyError) as _:
-        Print("ERROR: Failed get currecy stats assertion. %s" % (res))
+        Print("ERROR: Failed get currecy stats assertion. %s" % res)
         raise
 
-    dupRejected=False
-    dupTransAmount=10
-    totalTransfer=dupTransAmount
-    contract="currency1111"
-    action="transfer"
+    dupRejected = False
+    dupTransAmount = 10
+    totalTransfer = dupTransAmount
+    action = "transfer"
     for _ in range(5):
-        Print("push transfer action to currency1111 contract")
-        data="{\"from\":\"currency1111\",\"to\":\"defproducera\",\"quantity\":"
-        data +="\"00.00%s CUR\",\"memo\":\"test\"}" % (dupTransAmount)
-        opts="--permission currency1111@active"
-        trans=node.pushMessage(contract, action, data, opts)
+        Print("push transfer action to yx.token contract")
+        data = "{\"from\":\"currency1111\",\"to\":\"defproducera\",\"token\":"
+        data += "{\"amount\":\"00.00%s CUR\",\"issuer\":\"%s\"},\"memo\":\"test\"}" % (dupTransAmount, currencyAccount.name)
+        opts = "--permission currency1111@active"
+        trans = node.pushMessage(contract, action, data, opts)
         if trans is None or not trans[0]:
-            cmdError("%s push message currency1111 transfer" % (ClientName))
-            errorExit("Failed to push message to currency1111 contract")
+            cmdError("%s push message currency1111 transfer" % ClientName)
+            errorExit("Failed to push message to yx.token contract")
         transId=Node.getTransId(trans[1])
 
-        Print("push duplicate transfer action to currency1111 contract")
-        transDuplicate=node.pushMessage(contract, action, data, opts, True)
+        Print("push duplicate transfer action to yx.token contract")
+        transDuplicate = node.pushMessage(contract, action, data, opts, True)
         if transDuplicate is not None and transDuplicate[0]:
-            transDuplicateId=Node.getTransId(transDuplicate[1])
+            transDuplicateId = Node.getTransId(transDuplicate[1])
             if transId != transDuplicateId:
                 Print("%s push message currency1111 duplicate transfer incorrectly accepted, but they were generated with different transaction ids, this is a timing setup issue, trying again" % (ClientName))
                 # add the transfer that wasn't supposed to work
-                totalTransfer+=dupTransAmount
-                dupTransAmount+=1
+                totalTransfer += dupTransAmount
+                dupTransAmount += 1
                 # add the new first transfer that is expected to work
-                totalTransfer+=dupTransAmount
+                totalTransfer += dupTransAmount
                 continue
             else:
                 cmdError("%s push message currency1111 transfer, \norig: %s \ndup: %s" % (ClientName, trans, transDuplicate))
             errorExit("Failed to reject duplicate message for currency1111 contract")
         else:
-            dupRejected=True
+            dupRejected = True
             break
 
     if not dupRejected:
@@ -441,30 +399,23 @@ try:
         errorExit("Failed to verify push message transaction id.")
 
     Print("read current contract balance")
-    amountStr=node.getTableAccountBalance("currency1111", defproduceraAccount.name)
+    amountStr = node.getTokenBalance(defproduceraAccount.name, ysymbolCUR)
 
-    expectedDefproduceraBalance="0.00%s CUR" % (totalTransfer)
-    actual=amountStr
+    expectedDefproduceraBalance = "0.00%s CUR" % (totalTransfer)
+    actual = amountStr
     if actual != expectedDefproduceraBalance:
-        errorExit("FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (expectedDefproduceraBalance, actual), raw=True)
+        errorExit(
+            "FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (expectedDefproduceraBalance, actual),
+            raw=True)
 
-    amountStr=node.getTableAccountBalance("currency1111", currencyAccount.name)
-
-    expExtension=100-totalTransfer
-    expectedCurrency1111Balance="99999.99%s CUR" % (expExtension)
-    actual=amountStr
+    amountStr = node.getTokenBalance(currencyAccount.name, ysymbolCUR)
+    expExtension = 100 - totalTransfer
+    expectedCurrency1111Balance = "99999.99%s CUR" % (expExtension)
+    actual = amountStr
     if actual != expectedCurrency1111Balance:
-        errorExit("FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (expectedCurrency1111Balance, actual), raw=True)
-
-    amountStr=node.getCurrencyBalance("currency1111", currencyAccount.name, "CUR")
-    try:
-        assert(actual)
-        assert(isinstance(actual, str))
-        actual=amountStr.strip()
-        assert(expectedCurrency1111Balance == actual)
-    except (AssertionError, KeyError) as _:
-        Print("ERROR: Failed get currecy balance assertion. (expected=<%s>, actual=<%s>)" % (expectedCurrency1111Balance, actual))
-        raise
+        errorExit(
+            "FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (expectedCurrency1111Balance, actual),
+            raw=True)
 
     Print("Test for block decoded packed transaction (issue 2932)")
     blockId=node.getBlockIdByTransId(transId)
@@ -498,12 +449,13 @@ try:
     assert(myTrans)
     try:
         assert(myTrans["actions"][0]["name"] == "transfer")
-        assert(myTrans["actions"][0]["account"] == "currency1111")
+        assert(myTrans["actions"][0]["account"] == "yx.token")
         assert(myTrans["actions"][0]["authorization"][0]["actor"] == "currency1111")
         assert(myTrans["actions"][0]["authorization"][0]["permission"] == "active")
         assert(myTrans["actions"][0]["data"]["from"] == "currency1111")
         assert(myTrans["actions"][0]["data"]["to"] == "defproducera")
-        assert(myTrans["actions"][0]["data"]["quantity"] == "0.00%s CUR" % (dupTransAmount))
+        assert(myTrans["actions"][0]["data"]["token"]["amount"] == "0.00%s CUR" % (dupTransAmount))
+        assert(myTrans["actions"][0]["data"]["token"]["issuer"] == "currency1111")
         assert(myTrans["actions"][0]["data"]["memo"] == "test")
     except (AssertionError, TypeError, KeyError) as _:
         Print("FAILURE - Failed to parse block transaction. %s" % (myTrans))
@@ -514,36 +466,30 @@ try:
         cmdError("%s wallet unlock" % (ClientName))
         errorExit("Failed to unlock wallet %s" % (defproduceraWallet.name))
 
-    Print("push transfer action to currency1111 contract that would go negative")
-    contract="currency1111"
-    action="transfer"
-    data="{\"from\":\"defproducera\",\"to\":\"currency1111\",\"quantity\":"
-    data +="\"00.0051 CUR\",\"memo\":\"test\"}"
-    opts="--permission defproducera@active"
-    trans=node.pushMessage(contract, action, data, opts, True)
+    Print("push transfer action to yx.token contract that would go negative")
+    action = "transfer"
+    data = "{\"from\":\"defproducera\",\"to\":\"currency1111\",\"token\":"
+    data += "{\"amount\":\"00.0051 CUR\",\"issuer\":\"%s\"},\"memo\":\"test\"}" % currencyAccount.name
+    opts = "--permission defproducera@active"
+    trans = node.pushMessage(contract, action, data, opts, True)
     if trans is None or trans[0]:
         cmdError("%s push message currency1111 transfer should have failed" % (ClientName))
         errorExit("Failed to reject invalid transfer message to currency1111 contract")
 
     Print("read current contract balance")
-    amountStr=node.getTableAccountBalance("currency1111", defproduceraAccount.name)
-
-    actual=amountStr
+    actual = node.getTokenBalance(defproduceraAccount.name, ysymbolCUR)
     if actual != expectedDefproduceraBalance:
-        errorExit("FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (expectedDefproduceraBalance, actual), raw=True)
+        errorExit("FAILURE - Wrong defproducera balance (expected=%s, actual=%s)" % (expectedDefproduceraBalance, actual), raw=True)
 
-    amountStr=node.getTableAccountBalance("currency1111", currencyAccount.name)
-
-    actual=amountStr
+    actual = node.getTokenBalance(currencyAccount.name, ysymbolCUR)
     if actual != expectedCurrency1111Balance:
         errorExit("FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (expectedCurrency1111Balance, actual), raw=True)
 
-    Print("push another transfer action to currency1111 contract")
-    contract="currency1111"
-    action="transfer"
-    data="{\"from\":\"defproducera\",\"to\":\"currency1111\",\"quantity\":"
-    data +="\"00.00%s CUR\",\"memo\":\"test\"}" % (totalTransfer)
-    opts="--permission defproducera@active"
+    Print("push another transfer action to yx.token contract")
+    action = "transfer"
+    data = "{\"from\":\"defproducera\",\"to\":\"currency1111\",\"token\":"
+    data += "{\"amount\":\"00.00%s CUR\",\"issuer\":\"%s\"},\"memo\":\"test\"}" % (totalTransfer, currencyAccount.name)
+    opts = "--permission defproducera@active"
     trans=node.pushMessage(contract, action, data, opts)
     if trans is None or not trans[0]:
         cmdError("%s push message currency1111 transfer" % (ClientName))
@@ -551,47 +497,33 @@ try:
     transId=Node.getTransId(trans[1])
 
     Print("read current contract balance")
-    amountStr=node.getCurrencyBalance("currency1111", defproduceraAccount.name, "CUR")
-    expected="0.0000 CUR"
-    try:
-        actual=amountStr.strip()
-        assert(expected == actual or not actual)
-    except (AssertionError, KeyError) as _:
-        Print("ERROR: Failed get currecy balance assertion. (expected=<%s>, actual=<%s>)" % (str(expected), str(actual)))
-        raise
+    actual = node.getTokenBalance(defproduceraAccount.name, ysymbolCUR)
+    expected = "0.0000 CUR"
+    if actual != expected:
+        errorExit("FAILURE - Wrong defproduera balance (expected=%s, actual=%s)" % (str(expected), str(actual)), raw=True)
 
-    amountStr=node.getTableAccountBalance("currency1111", currencyAccount.name)
-
-    expected="100000.0000 CUR"
-    actual=amountStr
+    actual = node.getTokenBalance(currencyAccount.name, ysymbolCUR)
+    expected = "100000.0000 CUR"
     if actual != expected:
         errorExit("FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (str(expected), str(actual)), raw=True)
 
-    Print("push transfer action to currency1111 contract that would go negative")
-    contract="currency1111"
-    action="transfer"
-    data="{\"from\":\"defproducera\",\"to\":\"currency1111\",\"quantity\":"
-    data +="\"00.0025 CUR\",\"memo\":\"test\"}"
-    opts="--permission defproducera@active"
+    Print("push transfer action to yx.token contract that would go negative")
+    action = "transfer"
+    data = "{\"from\":\"defproducera\",\"to\":\"currency1111\",\"token\":"
+    data += "{\"amount\":\"00.0025 CUR\",\"issuer\":\"%s\"},\"memo\":\"test\"}" % currencyAccount.name
+    opts = "--permission defproducera@active"
     trans=node.pushMessage(contract, action, data, opts, True)
     if trans is None or trans[0]:
         cmdError("%s push message currency1111 transfer should have failed" % (ClientName))
         errorExit("Failed to reject invalid transfer message to currency1111 contract")
 
-    Print("read current contract balance")
-    amountStr=node.getCurrencyBalance("currency1111", defproduceraAccount.name, "CUR")
-    expected="0.0000 CUR"
-    try:
-        actual=amountStr.strip()
-        assert(expected == actual or not actual)
-    except (AssertionError, KeyError) as _:
-        Print("ERROR: Failed get currecy balance assertion. (expected=<%s>, actual=<%s>)" % (str(expected), str(actual)))
-        raise
+    actual = node.getTokenBalance(defproduceraAccount.name, ysymbolCUR)
+    expected = "0.0000 CUR"
+    if actual != expected:
+        errorExit("FAILURE - Wrong defproduera balance (expected=%s, actual=%s)" % (str(expected), str(actual)), raw=True)
 
-    amountStr=node.getTableAccountBalance("currency1111", currencyAccount.name)
-
-    expected="100000.0000 CUR"
-    actual=amountStr
+    actual = node.getTokenBalance(currencyAccount.name, ysymbolCUR)
+    expected = "100000.0000 CUR"
     if actual != expected:
         errorExit("FAILURE - Wrong currency1111 balance (expected=%s, actual=%s)" % (str(expected), str(actual)), raw=True)
 
@@ -599,32 +531,6 @@ try:
     if not walletMgr.lockWallet(defproduceraWallet):
         cmdError("%s wallet lock" % (ClientName))
         errorExit("Failed to lock wallet %s" % (defproduceraWallet.name))
-
-
-    Print("Exchange Contract Tests")
-    Print("upload exchange contract")
-
-    contractDir="contracts/exchange"
-    wasmFile="exchange.wasm"
-    abiFile="exchange.abi"
-    Print("Publish exchange contract")
-    trans=node.publishContract(exchangeAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
-    if trans is None:
-        cmdError("%s set contract exchange" % (ClientName))
-        errorExit("Failed to publish contract.")
-
-    contractDir="contracts/simpledb"
-    wasmFile="simpledb.wasm"
-    abiFile="simpledb.abi"
-    Print("Setting simpledb contract without simpledb account was causing core dump in %s." % (ClientName))
-    Print("Verify %s generates an error, but does not core dump." % (ClientName))
-    retMap=node.publishContract("simpledb", contractDir, wasmFile, abiFile, shouldFail=True)
-    if retMap is None:
-        errorExit("Failed to publish, but should have returned a details map")
-    if retMap["returncode"] == 0 or retMap["returncode"] == 139: # 139 SIGSEGV
-        errorExit("FAILURE - set contract exchange failed", raw=True)
-    else:
-        Print("Test successful, %s returned error code: %d" % (ClientName, retMap["returncode"]))
 
     Print("set permission")
     code="currency1111"
@@ -653,7 +559,6 @@ try:
     if not walletMgr.unlockWallet(testWallet):
         cmdError("%s wallet unlock test" % (ClientName))
         errorExit("Failed to unlock wallet %s" % (testWallet.name))
-
 
     Print("Get head block num.")
     currentBlockNum=node.getHeadBlockNum()

@@ -91,6 +91,7 @@ Options:
 #include <eosio/chain/trace.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/chain/contract_types.hpp>
+#include <yosemite/chain/native_token_symbol.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 
 #pragma push_macro("N")
@@ -1913,14 +1914,25 @@ int main( int argc, char** argv ) {
    get_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
    get_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
    get_balance->set_callback([&] {
-      auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
-         ("account", accountName)
-         ("code", "yx.token")
-         ("ysymbol", ysymbol)
-      );
+      try {
+         auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
+                 ("account", accountName)
+                 ("code", "yx.token")
+                 ("ysymbol", ysymbol)
+         );
 
-      std::cout << fc::json::to_pretty_string(result)
-                << std::endl;
+         std::cout << fc::json::to_pretty_string(result)
+                   << std::endl;
+      } catch (const fc::exception &ex) {
+         if (ex.code() == 3231001) { // == empty_token_exception
+            yx_symbol _yx_symbol = yx_symbol::from_string(ysymbol);
+            yx_asset empty_token{asset{0, _yx_symbol.symbol}, _yx_symbol.issuer};
+            std::cout << fc::json::to_pretty_string(empty_token)
+                      << std::endl;
+         } else {
+            throw;
+         }
+      }
    });
 
    auto get_token_stats = get_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
@@ -1945,14 +1957,31 @@ int main( int argc, char** argv ) {
    get_ntoken_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
    get_ntoken_balance->add_option("issuer", issuer, localized("The issuer of native token"));
    get_ntoken_balance->set_callback([&] {
-      auto result = call(get_native_token_balance_func, fc::mutable_variant_object("json", false)
-            ("account", accountName)
-            ("code", "yx.ntoken")
-            ("issuer", issuer.empty() ? fc::variant() : issuer)
-      );
+      try {
+         auto result = call(get_native_token_balance_func, fc::mutable_variant_object("json", false)
+                 ("account", accountName)
+                 ("code", "yx.ntoken")
+                 ("issuer", issuer.empty() ? fc::variant() : issuer)
+         );
 
-      std::cout << fc::json::to_pretty_string(result)
-                << std::endl;
+         std::cout << fc::json::to_pretty_string(result)
+                   << std::endl;
+      } catch (const fc::exception &ex) {
+         if (ex.code() == 3231001) { // == empty_token_exception
+            if (issuer.empty()) {
+               asset empty_asset{0, symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL)};
+               std::cout << fc::json::to_pretty_string(empty_asset)
+                         << std::endl;
+            } else {
+               yx_symbol _yx_symbol{symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL), name(issuer)};
+               yx_asset empty_token{asset{0, _yx_symbol.symbol}, _yx_symbol.issuer};
+               std::cout << fc::json::to_pretty_string(empty_token)
+                         << std::endl;
+            }
+         } else {
+            throw;
+         }
+      }
    });
 
    auto get_ntoken_stats = get_ntoken->add_subcommand("stats", localized("Retrieve the stats of for native token"), false);

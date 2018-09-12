@@ -16,6 +16,7 @@ import socket
 import errno
 
 from core_symbol import CORE_SYMBOL
+from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 from testUtils import Utils
 from testUtils import Account
 from Node import Node
@@ -75,7 +76,7 @@ class Cluster(object):
         self.defProducerAccounts={}
         self.defproduceraAccount=self.defProducerAccounts["defproducera"]= Account("defproducera")
         self.defproducerbAccount=self.defProducerAccounts["defproducerb"]= Account("defproducerb")
-        self.eosioAccount=self.defProducerAccounts["eosio"]= Account("eosio")
+        self.eosioAccount=self.defProducerAccounts["yosemite"]= Account("yosemite")
 
         self.defproduceraAccount.ownerPrivateKey=defproduceraPrvtKey
         self.defproduceraAccount.activePrivateKey=defproduceraPrvtKey
@@ -207,7 +208,7 @@ class Cluster(object):
             initAccountKeys(account, producerKeys[name])
             self.defProducerAccounts[name] = account
 
-        self.eosioAccount=self.defProducerAccounts["eosio"]
+        self.eosioAccount=self.defProducerAccounts["yosemite"]
         self.defproduceraAccount=self.defProducerAccounts["defproducera"]
         self.defproducerbAccount=self.defProducerAccounts["defproducerb"]
 
@@ -650,7 +651,7 @@ class Cluster(object):
         """Parse node config file for producers."""
 
         node="node_%02d" % (nodeNum)
-        configFile="etc/eosio/%s/config.ini" % (node)
+        configFile="etc/yosemite/%s/config.ini" % (node)
         if Utils.Debug: Utils.Print("Parsing config file %s" % configFile)
         configStr=None
         with open(configFile, 'r') as f:
@@ -669,7 +670,7 @@ class Cluster(object):
         """Parse cluster config file. Updates producer keys data members."""
 
         node="node_bios"
-        configFile="etc/eosio/%s/config.ini" % (node)
+        configFile="etc/yosemite/%s/config.ini" % (node)
         if Utils.Debug: Utils.Print("Parsing config file %s" % configFile)
         producerKeys=Cluster.parseProducerKeys(configFile, node)
         if producerKeys is None:
@@ -678,7 +679,7 @@ class Cluster(object):
 
         for i in range(0, totalNodes):
             node="node_%02d" % (i)
-            configFile="etc/eosio/%s/config.ini" % (node)
+            configFile="etc/yosemite/%s/config.ini" % (node)
             if Utils.Debug: Utils.Print("Parsing config file %s" % configFile)
 
             keys=Cluster.parseProducerKeys(configFile, node)
@@ -716,7 +717,7 @@ class Cluster(object):
         try:
             ignWallet=walletMgr.create("ignition")
 
-            eosioName="eosio"
+            eosioName="yosemite"
             eosioKeys=producerKeys[eosioName]
             eosioAccount=Account(eosioName)
             eosioAccount.ownerPrivateKey=eosioKeys["private"]
@@ -744,7 +745,6 @@ class Cluster(object):
             producerKeys.pop(eosioName)
             accounts=[]
             for name, keys in producerKeys.items():
-                initx = None
                 initx = Account(name)
                 initx.ownerPrivateKey=keys["private"]
                 initx.ownerPublicKey=keys["public"]
@@ -773,8 +773,8 @@ class Cluster(object):
                         setProdsStr=f.read()
 
                         Utils.Print("Setting producers.")
-                        opts="--permission eosio@active"
-                        myTrans=biosNode.pushMessage("eosio", "setprods", setProdsStr, opts)
+                        opts="--permission yosemite@active"
+                        myTrans=biosNode.pushMessage("yosemite", "setprods", setProdsStr, opts)
                         if myTrans is None or not myTrans[0]:
                             Utils.Print("ERROR: Failed to set producers.")
                             return None
@@ -798,9 +798,9 @@ class Cluster(object):
                     setProdsStr += ' ] }'
                     if Utils.Debug: Utils.Print("setprods: %s" % (setProdsStr))
                     Utils.Print("Setting producers: %s." % (", ".join(prodNames)))
-                    opts="--permission eosio@active"
+                    opts="--permission yosemite@active"
                     # pylint: disable=redefined-variable-type
-                    trans=biosNode.pushMessage("eosio", "setprods", setProdsStr, opts)
+                    trans=biosNode.pushMessage("yosemite", "setprods", setProdsStr, opts)
                     if trans is None or not trans[0]:
                         Utils.Print("ERROR: Failed to set producer %s." % (keys["name"]))
                         return None
@@ -812,11 +812,32 @@ class Cluster(object):
                     return None
 
                 # wait for block production handover (essentially a block produced by anyone but eosio).
-                lam = lambda: biosNode.getInfo(exitOnError=True)["head_block_producer"] != "eosio"
+                lam = lambda: biosNode.getInfo(exitOnError=True)["head_block_producer"] != "yosemite"
                 ret=Utils.waitForBool(lam)
                 if not ret:
                     Utils.Print("ERROR: Block production handover failed.")
                     return None
+
+            yxNativeTokenAccount = copy.deepcopy(eosioAccount)
+            yxNativeTokenAccount.name = "yx.ntoken"
+            trans = biosNode.createAccount(yxNativeTokenAccount, eosioAccount, 0)
+            if trans is None:
+                Utils.Print("ERROR: Failed to create account %s" % yxNativeTokenAccount.name)
+                return None
+
+            yxTokenAccount = copy.deepcopy(eosioAccount)
+            yxTokenAccount.name = "yx.token"
+            trans = biosNode.createAccount(yxTokenAccount, eosioAccount, 0)
+            if trans is None:
+                Utils.Print("ERROR: Failed to create account %s" % yxTokenAccount.name)
+                return None
+
+            yxTxFeeAccount = copy.deepcopy(eosioAccount)
+            yxTxFeeAccount.name = "yx.txfee"
+            trans = biosNode.createAccount(yxTxFeeAccount, eosioAccount, 0)
+            if trans is None:
+                Utils.Print("ERROR: Failed to create account %s" % yxTxFeeAccount.name)
+                return None
 
             eosioTokenAccount=copy.deepcopy(eosioAccount)
             eosioTokenAccount.name="eosio.token"
@@ -852,7 +873,55 @@ class Cluster(object):
                 Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
                 return None
 
-            contract="eosio.token"
+            contract = "yx.system"
+            contractDir = "contracts/%s" % contract
+            wasmFile = "%s.wasm" % contract
+            abiFile = "%s.abi" % contract
+            Utils.Print("Publish %s contract" % contract)
+            trans = biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            if trans is None:
+                Utils.Print("ERROR: Failed to publish contract %s." % contract)
+                return None
+
+            Node.validateTransaction(trans)
+
+            biosNode.setPriviledged(contract, eosioAccount)
+
+            contract = yxNativeTokenAccount.name
+            contractDir = "contracts/%s" % contract
+            wasmFile = "%s.wasm" % contract
+            abiFile = "%s.abi" % contract
+            Utils.Print("Publish %s contract" % contract)
+            trans = biosNode.publishContract(yxNativeTokenAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            if trans is None:
+                Utils.Print("ERROR: Failed to publish contract %s." % contract)
+                return None
+
+            biosNode.setPriviledged(contract, eosioAccount)
+
+            contract = yxTokenAccount.name
+            contractDir = "contracts/%s" % contract
+            wasmFile = "%s.wasm" % contract
+            abiFile = "%s.abi" % contract
+            Utils.Print("Publish %s contract" % contract)
+            trans = biosNode.publishContract(yxTokenAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            if trans is None:
+                Utils.Print("ERROR: Failed to publish contract %s." % contract)
+                return None
+
+            biosNode.setPriviledged(contract, eosioAccount)
+
+            contract = yxTxFeeAccount.name
+            contractDir = "contracts/%s" % contract
+            wasmFile = "%s.wasm" % contract
+            abiFile = "%s.abi" % contract
+            Utils.Print("Publish %s contract" % contract)
+            trans = biosNode.publishContract(yxTxFeeAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            if trans is None:
+                Utils.Print("ERROR: Failed to publish contract %s." % contract)
+                return None
+
+            contract=eosioTokenAccount.name
             contractDir="contracts/%s" % (contract)
             wasmFile="%s.wasm" % (contract)
             abiFile="%s.abi" % (contract)
@@ -907,17 +976,62 @@ class Cluster(object):
                             (expectedAmount, actualAmount))
                 return None
 
-            contract="eosio.system"
-            contractDir="contracts/%s" % (contract)
-            wasmFile="%s.wasm" % (contract)
-            abiFile="%s.abi" % (contract)
-            Utils.Print("Publish %s contract" % (contract))
-            trans=biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            # set yx.system transaction fees (turn off tx fee for test convenience)
+            biosNode.setTransactionFee("tf.newacc", "1000.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.regprod", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.regsysdep", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.regidauth", "0.0000 DKRW", eosioAccount)
+
+            # set yx.ntoken transaction fees
+            biosNode.setTransactionFee("tf.nissue", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.nredeem", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.transfer", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.ntransfer", "0.0000 DKRW", eosioAccount)
+
+            # set yx.token transaction fees
+            biosNode.setTransactionFee("tf.tcreate", "1000.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.tissue", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.tredeem", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.ttransfer", "10.0000 DKRW", eosioAccount)
+
+            # set KYC rule to yx.ntoken (turn off KYC for test convenience)
+            biosNode.setNativeTokenKycRule(0, 0, eosioAccount)
+            biosNode.setNativeTokenKycRule(1, 0, eosioAccount)
+
+            # create system depository account
+            sysdepoName = "d1"
+            sysdepoAccount = Account(sysdepoName)
+            sysdepoAccount.ownerPrivateKey = eosioKeys["private"]
+            sysdepoAccount.ownerPublicKey = eosioKeys["public"]
+            sysdepoAccount.activePrivateKey = eosioKeys["private"]
+            sysdepoAccount.activePublicKey = eosioKeys["public"]
+
+            trans = biosNode.createAccount(sysdepoAccount, eosioAccount, 0)
             if trans is None:
-                Utils.Print("ERROR: Failed to publish contract %s." % (contract))
+                Utils.Print("ERROR: Failed to create account %s" % sysdepoAccount.name)
                 return None
 
-            Node.validateTransaction(trans)
+            Utils.Print("Creating the system depository and identity authority: %s " % sysdepoName)
+            biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "sysdepo1.org", waitForTransBlock=True)
+            biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "sysdepo1.org", waitForTransBlock=True)
+
+            biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
+
+            Utils.Print("Wait for issue action transaction to become finalized.")
+            # biosNode.waitForTransInBlock(transId)
+            # guesstimating block finalization timeout. Two production rounds of 12 blocks per node, plus 60 seconds buffer
+            timeout = .5 * 12 * 2 * len(producerKeys) + 60
+            if not biosNode.waitForTransFinalization(transId, timeout=timeout):
+                Utils.Print("ERROR: Failed to validate transaction %s got rolled into a finalized block on server port %d." % (transId, biosNode.port))
+                return None
+
+            expectedAmount = "1000000000.0000 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+            Utils.Print("Verify yosemite issue, Expected: %s" % expectedAmount)
+            actualAmount = biosNode.getAccountTotalNativeTokenBalanceStr(eosioAccount.name)
+            if expectedAmount != actualAmount:
+                Utils.Print("ERROR: Issue verification failed. Excepted %s, actual: %s" %
+                            (expectedAmount, actualAmount))
+                return None
 
             initialFunds="1000000.0000 {0}".format(CORE_SYMBOL)
             Utils.Print("Transfer initial fund %s to individual accounts." % (initialFunds))
@@ -930,6 +1044,21 @@ class Cluster(object):
                 trans=biosNode.pushMessage(contract, action, data, opts)
                 if trans is None or not trans[0]:
                     Utils.Print("ERROR: Failed to transfer funds from %s to %s." % (eosioTokenAccount.name, name))
+                    return None
+
+                Node.validateTransaction(trans[1])
+
+            initialFunds = "1000000.0000 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+            Utils.Print("Transfer initial native fund %s to individual accounts." % initialFunds)
+            trans = None
+            contract = yxNativeTokenAccount.name
+            action = "transfer"
+            for name, keys in producerKeys.items():
+                data = "{\"from\":\"%s\",\"to\":\"%s\",\"amount\":\"%s\",\"memo\":\"%s\"}" % (eosioAccount.name, name, initialFunds, "init transfer")
+                opts = "--permission %s@active" % eosioAccount.name
+                trans = biosNode.pushMessage(contract, action, data, opts)
+                if trans is None or not trans[0]:
+                    Utils.Print("ERROR: Failed to transfer funds from %s to %s." % (yxNativeTokenAccount.name, name))
                     return None
 
                 Node.validateTransaction(trans[1])
@@ -1031,13 +1160,13 @@ class Cluster(object):
             Utils.Print("File %s not found." % (fileName))
 
     def dumpErrorDetails(self):
-        fileName="etc/eosio/node_bios/config.ini"
+        fileName="etc/yosemite/node_bios/config.ini"
         Cluster.dumpErrorDetailImpl(fileName)
         fileName="var/lib/node_bios/stderr.txt"
         Cluster.dumpErrorDetailImpl(fileName)
 
         for i in range(0, len(self.nodes)):
-            fileName="etc/eosio/node_%02d/config.ini" % (i)
+            fileName="etc/yosemite/node_%02d/config.ini" % (i)
             Cluster.dumpErrorDetailImpl(fileName)
             fileName="var/lib/node_%02d/stderr.txt" % (i)
             Cluster.dumpErrorDetailImpl(fileName)
@@ -1084,7 +1213,7 @@ class Cluster(object):
     def cleanup(self):
         for f in glob.glob("var/lib/node_*"):
             shutil.rmtree(f)
-        for f in glob.glob("etc/eosio/node_*"):
+        for f in glob.glob("etc/yosemite/node_*"):
             shutil.rmtree(f)
 
         if self.enableMongo:
