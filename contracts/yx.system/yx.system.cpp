@@ -54,6 +54,17 @@ namespace yosemitesys {
         set_privileged( account, ispriv );
     }
 
+    void system_contract::setprods( std::vector<eosio::producer_key> schedule ) {
+        (void)schedule; // schedule argument just forces the deserialization of the action data into vector<producer_key> (necessary check)
+        require_auth( _self );
+
+        constexpr size_t max_stack_buffer_size = 512;
+        size_t size = action_data_size();
+        char* buffer = (char*)( max_stack_buffer_size < size ? malloc(size) : alloca(size) );
+        read_action_data( buffer, size );
+        set_proposed_producers(buffer, size);
+    }
+
     /**
      *  Called after a new account is created. This code enforces resource-limits rules
      *  for new accounts as well as new account naming conventions.
@@ -100,7 +111,7 @@ EOSIO_ABI( yosemitesys::system_contract,
            // native.hpp (newaccount definition is actually in yx.system.cpp)
            (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)
            // yx.system.cpp
-           (setram)(setparams)(setpriv)
+           (setram)(setparams)(setpriv)(setprods)
            // yx.block_producer.cpp
            (onblock)(regproducer)(authproducer)(unregprod)(rmvproducer)(claimrewards)
            // yx.sys_depository.cpp

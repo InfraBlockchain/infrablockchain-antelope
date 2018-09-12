@@ -694,7 +694,7 @@ class Node(object):
         assert(isinstance(initialBalances, dict))
         assert(isinstance(transferAmount, int))
 
-        currentBalances=self.getEosBalances([source] + accounts)
+        currentBalances=self.getTotalNativeTokenBalances([source] + accounts)
         assert(currentBalances)
         assert(isinstance(currentBalances, dict))
         assert(len(initialBalances) == len(currentBalances))
@@ -715,15 +715,15 @@ class Node(object):
                             (expectedInitialBalance, initialBalance, key.name))
                 return False
 
-    def getEosBalances(self, accounts):
+    def getTotalNativeTokenBalances(self, accounts):
         """Returns a dictionary with account balances keyed by accounts"""
-        assert(accounts)
-        assert(isinstance(accounts, list))
+        assert accounts
+        assert (isinstance(accounts, list))
 
-        balances={}
+        balances = {}
         for account in accounts:
-            balance = self.getAccountEosBalance(account.name)
-            balances[account]=balance
+            balance = self.getAccountTotalNativeTokenBalance(account.name)
+            balances[account] = balance
 
         return balances
 

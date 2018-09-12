@@ -459,13 +459,13 @@ class Cluster(object):
 
         count=len(accounts)
         transferAmount=(count*amount)+amount
-        transferAmountStr=Node.currencyIntToStr(transferAmount, CORE_SYMBOL)
+        transferAmountStr=Node.currencyIntToStr(transferAmount, YOSEMITE_NATIVE_TOKEN_SYMBOL)
         node=self.nodes[0]
         fromm=source
         to=accounts[0]
         Utils.Print("Transfer %s units from account %s to %s on eos server port %d" % (
             transferAmountStr, fromm.name, to.name, node.port))
-        trans=node.transferFunds(fromm, to, transferAmountStr)
+        trans = node.transferNativeToken(fromm, to, transferAmountStr)
         transId=Node.getTransId(trans)
         if transId is None:
             return False
@@ -496,13 +496,13 @@ class Cluster(object):
                 return False
 
             transferAmount -= amount
-            transferAmountStr=Node.currencyIntToStr(transferAmount, CORE_SYMBOL)
+            transferAmountStr=Node.currencyIntToStr(transferAmount, YOSEMITE_NATIVE_TOKEN_SYMBOL)
             fromm=account
             to=accounts[i+1] if i < (count-1) else source
             Utils.Print("Transfer %s units from account %s to %s on eos server port %d." %
                     (transferAmountStr, fromm.name, to.name, node.port))
 
-            trans=node.transferFunds(fromm, to, transferAmountStr)
+            trans = node.transferNativeToken(fromm, to, transferAmountStr)
             transId=Node.getTransId(trans)
             if transId is None:
                 return False
@@ -548,7 +548,7 @@ class Cluster(object):
         receiving transferAmount*n SYS and forwarding x-transferAmount funds. Transfer actions are spread round-robin across the cluster to vaidate system cohesiveness."""
 
         if Utils.Debug: Utils.Print("Get initial system balances.")
-        initialBalances=self.nodes[0].getEosBalances([self.defproduceraAccount] + self.accounts)
+        initialBalances = self.nodes[0].getTotalNativeTokenBalances([self.defproduceraAccount] + self.accounts)
         assert(initialBalances)
         assert(isinstance(initialBalances, dict))
 
@@ -581,7 +581,7 @@ class Cluster(object):
         """create account, verify account and return transaction id"""
         assert(len(self.nodes) > 0)
         node=self.nodes[0]
-        trans=node.createInitializeAccount(account, creator, stakedDeposit, stakeNet=stakeNet, stakeCPU=stakeCPU, buyRAM=buyRAM, exitOnError=True)
+        trans=node.createAccount(account, creator, stakedDeposit, exitOnError=True)
         assert(node.verifyAccount(account))
         return trans
 
@@ -729,18 +729,6 @@ class Cluster(object):
                 Utils.Print("ERROR: Failed to import %s account keys into ignition wallet." % (eosioName))
                 return None
 
-            contract="eosio.bios"
-            contractDir="contracts/%s" % (contract)
-            wasmFile="%s.wasm" % (contract)
-            abiFile="%s.abi" % (contract)
-            Utils.Print("Publish %s contract" % (contract))
-            trans=biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
-            if trans is None:
-                Utils.Print("ERROR: Failed to publish contract %s." % (contract))
-                return None
-
-            Node.validateTransaction(trans)
-
             Utils.Print("Creating accounts: %s " % ", ".join(producerKeys.keys()))
             producerKeys.pop(eosioName)
             accounts=[]
@@ -757,13 +745,24 @@ class Cluster(object):
                 Node.validateTransaction(trans)
                 accounts.append(initx)
 
-            transId=Node.getTransId(trans)
-            if not biosNode.waitForTransInBlock(transId):
-                Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
-                return None
+                transId = Node.getTransId(trans)
+                if not biosNode.waitForTransInBlock(transId):
+                    Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
+                    return None
 
             Utils.Print("Validating system accounts within bootstrap")
             biosNode.validateAccounts(accounts)
+
+            # prepare yosemite system contract (+bios)
+            contract = "yx.system"
+            contractDir = "contracts/%s" % contract
+            wasmFile = "%s.wasm" % contract
+            abiFile = "%s.abi" % contract
+            Utils.Print("Publish %s contract" % contract)
+            trans = biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            if trans is None:
+                Utils.Print("ERROR: Failed to publish contract %s." % contract)
+                return None
 
             if not onlyBios:
                 if prodCount == -1:
@@ -839,53 +838,11 @@ class Cluster(object):
                 Utils.Print("ERROR: Failed to create account %s" % yxTxFeeAccount.name)
                 return None
 
-            eosioTokenAccount=copy.deepcopy(eosioAccount)
-            eosioTokenAccount.name="eosio.token"
-            trans=biosNode.createAccount(eosioTokenAccount, eosioAccount, 0)
-            if trans is None:
-                Utils.Print("ERROR: Failed to create account %s" % (eosioTokenAccount.name))
-                return None
-
-            eosioRamAccount=copy.deepcopy(eosioAccount)
-            eosioRamAccount.name="eosio.ram"
-            trans=biosNode.createAccount(eosioRamAccount, eosioAccount, 0)
-            if trans is None:
-                Utils.Print("ERROR: Failed to create account %s" % (eosioRamAccount.name))
-                return None
-
-            eosioRamfeeAccount=copy.deepcopy(eosioAccount)
-            eosioRamfeeAccount.name="eosio.ramfee"
-            trans=biosNode.createAccount(eosioRamfeeAccount, eosioAccount, 0)
-            if trans is None:
-                Utils.Print("ERROR: Failed to create account %s" % (eosioRamfeeAccount.name))
-                return None
-
-            eosioStakeAccount=copy.deepcopy(eosioAccount)
-            eosioStakeAccount.name="eosio.stake"
-            trans=biosNode.createAccount(eosioStakeAccount, eosioAccount, 0)
-            if trans is None:
-                Utils.Print("ERROR: Failed to create account %s" % (eosioStakeAccount.name))
-                return None
-
             Node.validateTransaction(trans)
             transId=Node.getTransId(trans)
             if not biosNode.waitForTransInBlock(transId):
                 Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
                 return None
-
-            contract = "yx.system"
-            contractDir = "contracts/%s" % contract
-            wasmFile = "%s.wasm" % contract
-            abiFile = "%s.abi" % contract
-            Utils.Print("Publish %s contract" % contract)
-            trans = biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
-            if trans is None:
-                Utils.Print("ERROR: Failed to publish contract %s." % contract)
-                return None
-
-            Node.validateTransaction(trans)
-
-            biosNode.setPriviledged(contract, eosioAccount)
 
             contract = yxNativeTokenAccount.name
             contractDir = "contracts/%s" % contract
@@ -919,61 +876,6 @@ class Cluster(object):
             trans = biosNode.publishContract(yxTxFeeAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
             if trans is None:
                 Utils.Print("ERROR: Failed to publish contract %s." % contract)
-                return None
-
-            contract=eosioTokenAccount.name
-            contractDir="contracts/%s" % (contract)
-            wasmFile="%s.wasm" % (contract)
-            abiFile="%s.abi" % (contract)
-            Utils.Print("Publish %s contract" % (contract))
-            trans=biosNode.publishContract(eosioTokenAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
-            if trans is None:
-                Utils.Print("ERROR: Failed to publish contract %s." % (contract))
-                return None
-
-            # Create currency0000, followed by issue currency0000
-            contract=eosioTokenAccount.name
-            Utils.Print("push create action to %s contract" % (contract))
-            action="create"
-            data="{\"issuer\":\"%s\",\"maximum_supply\":\"1000000000.0000 %s\",\"can_freeze\":\"0\",\"can_recall\":\"0\",\"can_whitelist\":\"0\"}" % (eosioTokenAccount.name, CORE_SYMBOL)
-            opts="--permission %s@active" % (contract)
-            trans=biosNode.pushMessage(contract, action, data, opts)
-            if trans is None or not trans[0]:
-                Utils.Print("ERROR: Failed to push create action to eosio contract.")
-                return None
-
-            Node.validateTransaction(trans[1])
-            transId=Node.getTransId(trans[1])
-            if not biosNode.waitForTransInBlock(transId):
-                Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
-                return None
-
-            contract=eosioTokenAccount.name
-            Utils.Print("push issue action to %s contract" % (contract))
-            action="issue"
-            data="{\"to\":\"%s\",\"quantity\":\"1000000000.0000 %s\",\"memo\":\"initial issue\"}" % (eosioAccount.name, CORE_SYMBOL)
-            opts="--permission %s@active" % (contract)
-            trans=biosNode.pushMessage(contract, action, data, opts)
-            if trans is None or not trans[0]:
-                Utils.Print("ERROR: Failed to push issue action to eosio contract.")
-                return None
-
-            Node.validateTransaction(trans[1])
-            Utils.Print("Wait for issue action transaction to become finalized.")
-            transId=Node.getTransId(trans[1])
-            # biosNode.waitForTransInBlock(transId)
-            # guesstimating block finalization timeout. Two production rounds of 12 blocks per node, plus 60 seconds buffer
-            timeout = .5 * 12 * 2 * len(producerKeys) + 60
-            if not biosNode.waitForTransFinalization(transId, timeout=timeout):
-                Utils.Print("ERROR: Failed to validate transaction %s got rolled into a finalized block on server port %d." % (transId, biosNode.port))
-                return None
-
-            expectedAmount="1000000000.0000 {0}".format(CORE_SYMBOL)
-            Utils.Print("Verify eosio issue, Expected: %s" % (expectedAmount))
-            actualAmount=biosNode.getAccountEosBalanceStr(eosioAccount.name)
-            if expectedAmount != actualAmount:
-                Utils.Print("ERROR: Issue verification failed. Excepted %s, actual: %s" %
-                            (expectedAmount, actualAmount))
                 return None
 
             # set yx.system transaction fees (turn off tx fee for test convenience)
@@ -1017,14 +919,6 @@ class Cluster(object):
 
             biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
 
-            Utils.Print("Wait for issue action transaction to become finalized.")
-            # biosNode.waitForTransInBlock(transId)
-            # guesstimating block finalization timeout. Two production rounds of 12 blocks per node, plus 60 seconds buffer
-            timeout = .5 * 12 * 2 * len(producerKeys) + 60
-            if not biosNode.waitForTransFinalization(transId, timeout=timeout):
-                Utils.Print("ERROR: Failed to validate transaction %s got rolled into a finalized block on server port %d." % (transId, biosNode.port))
-                return None
-
             expectedAmount = "1000000000.0000 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
             Utils.Print("Verify yosemite issue, Expected: %s" % expectedAmount)
             actualAmount = biosNode.getAccountTotalNativeTokenBalanceStr(eosioAccount.name)
@@ -1032,21 +926,6 @@ class Cluster(object):
                 Utils.Print("ERROR: Issue verification failed. Excepted %s, actual: %s" %
                             (expectedAmount, actualAmount))
                 return None
-
-            initialFunds="1000000.0000 {0}".format(CORE_SYMBOL)
-            Utils.Print("Transfer initial fund %s to individual accounts." % (initialFunds))
-            trans=None
-            contract=eosioTokenAccount.name
-            action="transfer"
-            for name, keys in producerKeys.items():
-                data="{\"from\":\"%s\",\"to\":\"%s\",\"quantity\":\"%s\",\"memo\":\"%s\"}" % (eosioAccount.name, name, initialFunds, "init transfer")
-                opts="--permission %s@active" % (eosioAccount.name)
-                trans=biosNode.pushMessage(contract, action, data, opts)
-                if trans is None or not trans[0]:
-                    Utils.Print("ERROR: Failed to transfer funds from %s to %s." % (eosioTokenAccount.name, name))
-                    return None
-
-                Node.validateTransaction(trans[1])
 
             initialFunds = "1000000.0000 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
             Utils.Print("Transfer initial native fund %s to individual accounts." % initialFunds)
