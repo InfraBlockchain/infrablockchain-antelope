@@ -1243,7 +1243,7 @@ class Node(object):
         if trans is None or not trans[0]:
             Utils.Print("ERROR: Failed to push issue action to %s contract." % contract)
             return None
-        Utils.Print(trans)
+
         return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)
 
     def setTransactionFee(self, actionName, nativeTokenAmount, yosemiteAccount, waitForTransBlock=False, exitOnError=True):

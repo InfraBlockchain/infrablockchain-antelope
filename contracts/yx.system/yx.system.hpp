@@ -95,8 +95,6 @@ namespace yosemitesys {
 
         void setpriv( account_name account, uint8_t ispriv );
 
-        void setprods( std::vector<eosio::producer_key> schedule );
-
 
         // Block Producers (yx.block_producer.cpp)
 

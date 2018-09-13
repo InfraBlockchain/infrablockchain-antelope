@@ -35,7 +35,7 @@ class Cluster(object):
     # pylint: disable=too-many-arguments
     # walletd [True|False] Is keosd running. If not load the wallet plugin
     def __init__(self, walletd=False, localCluster=True, host="localhost", port=8888, walletHost="localhost", walletPort=9899, enableMongo=False
-                 , mongoHost="localhost", mongoPort=27017, mongoDb="EOStest", defproduceraPrvtKey=None, defproducerbPrvtKey=None, staging=False):
+                 , mongoHost="127.0.0.1", mongoPort=27017, mongoDb="YosemiteTest", defproduceraPrvtKey=None, defproducerbPrvtKey=None, staging=False):
         """Cluster container.
         walletd [True|False] Is wallet keosd running. If not load the wallet plugin
         localCluster [True|False] Is cluster local to host.
@@ -729,9 +729,22 @@ class Cluster(object):
                 Utils.Print("ERROR: Failed to import %s account keys into ignition wallet." % (eosioName))
                 return None
 
+            contract="eosio.bios"
+            contractDir="contracts/%s" % (contract)
+            wasmFile="%s.wasm" % (contract)
+            abiFile="%s.abi" % (contract)
+            Utils.Print("Publish %s contract" % (contract))
+            trans=biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            if trans is None:
+                Utils.Print("ERROR: Failed to publish contract %s." % (contract))
+                return None
+
+            Node.validateTransaction(trans)
+
             Utils.Print("Creating accounts: %s " % ", ".join(producerKeys.keys()))
             producerKeys.pop(eosioName)
             accounts=[]
+            trans = None
             for name, keys in producerKeys.items():
                 initx = Account(name)
                 initx.ownerPrivateKey=keys["private"]
@@ -745,6 +758,7 @@ class Cluster(object):
                 Node.validateTransaction(trans)
                 accounts.append(initx)
 
+            if trans is not None:
                 transId = Node.getTransId(trans)
                 if not biosNode.waitForTransInBlock(transId):
                     Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
@@ -752,17 +766,6 @@ class Cluster(object):
 
             Utils.Print("Validating system accounts within bootstrap")
             biosNode.validateAccounts(accounts)
-
-            # prepare yosemite system contract (+bios)
-            contract = "yx.system"
-            contractDir = "contracts/%s" % contract
-            wasmFile = "%s.wasm" % contract
-            abiFile = "%s.abi" % contract
-            Utils.Print("Publish %s contract" % contract)
-            trans = biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
-            if trans is None:
-                Utils.Print("ERROR: Failed to publish contract %s." % contract)
-                return None
 
             if not onlyBios:
                 if prodCount == -1:
@@ -843,6 +846,18 @@ class Cluster(object):
             if not biosNode.waitForTransInBlock(transId):
                 Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
                 return None
+
+            contract = "yx.system"
+            contractDir = "contracts/%s" % contract
+            wasmFile = "%s.wasm" % contract
+            abiFile = "%s.abi" % contract
+            Utils.Print("Publish %s contract" % contract)
+            trans = biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
+            if trans is None:
+                Utils.Print("ERROR: Failed to publish contract %s." % contract)
+                return None
+
+            Node.validateTransaction(trans)
 
             contract = yxNativeTokenAccount.name
             contractDir = "contracts/%s" % contract
