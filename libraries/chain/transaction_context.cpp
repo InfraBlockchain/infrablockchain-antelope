@@ -27,7 +27,21 @@ namespace eosio { namespace chain {
       }
       trace->id = id;
       executed.reserve( trx.total_actions() );
-      EOS_ASSERT( trx.transaction_extensions.size() == 0, unsupported_feature, "we don't support any extensions yet" );
+      //EOS_ASSERT( trx.transaction_extensions.size() == 0, unsupported_feature, "we don't support any extensions yet" );
+
+      auto &tx_ext = trx.transaction_extensions;
+      // YOSEMITE "Transaction-as-a-vote" Transaction-Extention support
+      EOS_ASSERT( tx_ext.size() <= 1, unsupported_feature, "support only upto 1 transaction extension (transaction-as-a-vote)" );
+
+      if (tx_ext.size() > 0) {
+         auto tx_ext_item = *tx_ext.begin();
+         EOS_ASSERT( tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD, unsupported_feature, "support only transaction-as-a-vote transaction extension" );
+
+         try {
+            trace->trx_vote = yosemite_core::transaction_vote(
+                    fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
+         } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
+      }
    }
 
    void transaction_context::init(uint64_t initial_net_usage)
@@ -419,6 +433,21 @@ namespace eosio { namespace chain {
       }
 
       return std::make_tuple(account_net_limit, account_cpu_limit, greylisted_net, greylisted_cpu);
+   }
+
+   void transaction_context::add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount) {
+
+      if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->to.empty()) {
+         trace->trx_vote->amt += vote_amount;
+      }
+   }
+
+   bool transaction_context::has_transaction_vote() const {
+      return trace->trx_vote.valid() && trace->trx_vote->has_vote();
+   }
+
+   const yosemite_core::transaction_vote& transaction_context::get_transaction_vote() const {
+      return (*(trace->trx_vote));
    }
 
    void transaction_context::dispatch_action( action_trace& trace, const action& a, account_name receiver, bool context_free, uint32_t recurse_depth ) {

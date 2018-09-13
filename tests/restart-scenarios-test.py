@@ -18,7 +18,7 @@ import random
 # --kill-sig <kill signal [term|kill]>
 # --kill-count <nodeos instances to kill>
 # --dont-kill <Leave cluster running after test finishes>
-# --dump-error-details <Upon error print etc/eosio/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
+# --dump-error-details <Upon error print etc/yosemite/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
 # --keep-logs <Don't delete var/lib/node_* folders upon test completion>
 ###############################################################
 

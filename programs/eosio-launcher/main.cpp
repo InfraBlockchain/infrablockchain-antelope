@@ -570,7 +570,7 @@ launcher_def::initialize (const variables_map &vmap) {
     }
   }
 
-  config_dir_base = "etc/eosio";
+  config_dir_base = "etc/yosemite";
   data_dir_base = "var/lib";
   next_node = 0;
   ++prod_nodes; // add one for the bios node
@@ -818,12 +818,12 @@ launcher_def::bind_nodes () {
          node.name = inst.name;
          node.instance = &inst;
          auto kp = is_bios ?
-            private_key_type(string("5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3")) :
-            private_key_type::generate();
+            private_key_type(string("YPV_5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3")) :
+            private_key_type::generate<fc::ecc::yosemite_private_key_shim>();
          auto pubkey = kp.get_public_key();
          node.keys.emplace_back (move(kp));
          if (is_bios) {
-            string prodname = "eosio";
+            string prodname = "yosemite";
             node.producers.push_back(prodname);
             producer_set.schedule.push_back({prodname,pubkey});
          }
@@ -1187,7 +1187,7 @@ launcher_def::write_setprods_file() {
   }
    producer_set_def no_bios;
    for (auto &p : producer_set.schedule) {
-      if (p.producer_name != "eosio")
+      if (p.producer_name != "yosemite")
          no_bios.schedule.push_back(p);
    }
   auto str = fc::json::to_pretty_string( no_bios, fc::json::stringify_large_ints_and_doubles );
@@ -1228,7 +1228,7 @@ launcher_def::write_bios_boot () {
          }
          else if (key == "cacmd") {
             for (auto &p : producer_set.schedule) {
-               if (p.producer_name == "eosio") {
+               if (p.producer_name == "yosemite") {
                   continue;
                }
                brb << "cacmd " << p.producer_name
@@ -1468,7 +1468,7 @@ launcher_def::launch (eosd_def &instance, string &gts) {
   bfs::path reerr_sl = dd / "stderr.txt";
   bfs::path reerr_base = bfs::path("stderr." + launch_time + ".txt");
   bfs::path reerr = dd / reerr_base;
-  bfs::path pidf  = dd / "nodeos.pid";
+  bfs::path pidf  = dd / "yosemite.pid";
   host_def* host;
   try {
      host = deploy_config_files (*instance.node);
@@ -1480,7 +1480,7 @@ launcher_def::launch (eosd_def &instance, string &gts) {
   node_rt_info info;
   info.remote = !host->is_local();
 
-  string eosdcmd = "programs/nodeos/nodeos ";
+  string eosdcmd = "programs/yosemite/yosemite ";
   if (skip_transaction_signatures) {
     eosdcmd += "--skip-transaction-signatures ";
   }

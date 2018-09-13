@@ -89,8 +89,10 @@ namespace eosio { namespace client { namespace http {
    const string get_code_func = chain_func_base + "/get_code";
    const string get_abi_func = chain_func_base + "/get_abi";
    const string get_raw_code_and_abi_func = chain_func_base + "/get_raw_code_and_abi";
-   const string get_currency_balance_func = chain_func_base + "/get_currency_balance";
-   const string get_currency_stats_func = chain_func_base + "/get_currency_stats";
+   const string get_token_balance_func = chain_func_base + "/get_token_balance";
+   const string get_token_stats_func = chain_func_base + "/get_token_stats";
+   const string get_native_token_balance_func = chain_func_base + "/get_native_token_balance";
+   const string get_native_token_stats_func = chain_func_base + "/get_native_token_stats";
    const string get_producers_func = chain_func_base + "/get_producers";
    const string get_schedule_func = chain_func_base + "/get_producer_schedule";
    const string get_required_keys = chain_func_base + "/get_required_keys";
@@ -122,7 +124,7 @@ namespace eosio { namespace client { namespace http {
    const string wallet_remove_key = wallet_func_base + "/remove_key";
    const string wallet_create_key = wallet_func_base + "/create_key";
    const string wallet_sign_trx = wallet_func_base + "/sign_transaction";
-   const string keosd_stop = "/v1/keosd/stop";
+   const string keosd_stop = "/v1/keyos/stop";
 
    FC_DECLARE_EXCEPTION( connection_exception, 1100000, "Connection Exception" );
  }}}

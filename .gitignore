@@ -26,6 +26,8 @@ moc_*
 genesis.json
 hardfork.hpp
 
+contracts/yosemitelib/native_token_symbol.hpp
+
 libraries/utilities/git_revision.cpp
 libraries/egenesis/egenesis_brief.cpp
 libraries/egenesis/egenesis_full.cpp
@@ -82,3 +84,8 @@ var/lib/node_*
 .idea/
 *.iws
 .DS_Store
+
+yosemite_config/config_yosemite_testnet_boot_local.ini
+yosemite_bios/reset_yosemite_testnet_on_local.sh
+yosemite_bios/stop_yosemite_testnet_node_local.sh
+yosemite_bios/start_yosemite_testnet_node_local.sh

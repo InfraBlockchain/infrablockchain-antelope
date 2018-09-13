@@ -8,6 +8,8 @@
 #include <eosio/chain/action_receipt.hpp>
 #include <eosio/chain/block.hpp>
 
+#include <yosemite/chain/transaction_as_a_vote.hpp>
+
 namespace eosio { namespace chain {
 
    struct base_action_trace {
@@ -41,6 +43,12 @@ namespace eosio { namespace chain {
       bool                                       scheduled = false;
       vector<action_trace>                       action_traces; ///< disposable
 
+      /// YOSEMITE Proof-of-Transaction
+      /// tracking transaction vote amount generated from current transaction.
+      /// transaction votes collected from each transaction are accumulated in the (pending) 'block state' of each block.
+      /// this field is also used for transaction-vote logging in secondary log store
+      fc::optional<yosemite_core::transaction_vote> trx_vote;
+
       transaction_trace_ptr                      failed_dtrx_trace;
       fc::optional<fc::exception>                except;
       std::exception_ptr                         except_ptr;
@@ -51,8 +59,14 @@ namespace eosio { namespace chain {
 FC_REFLECT( eosio::chain::base_action_trace,
                     (receipt)(act)(elapsed)(cpu_usage)(console)(total_cpu_usage)(trx_id) )
 
+// [YOSEMITE] 'trx_id's in 'action_trace' are duplicated in the serialized 'transaction_trace'.
+// This causes wasted storage for the secondary database store (mongo_db_plugin)
+// When 'action_trace' is stored in secondary db, 'trx_id' field is added manually in secondary db
+//FC_REFLECT( eosio::chain::base_action_trace,
+//                      (receipt)(act)(elapsed)(cpu_usage)(console)(total_cpu_usage) )
+
 FC_REFLECT_DERIVED( eosio::chain::action_trace,
                     (eosio::chain::base_action_trace), (inline_traces) )
 
 FC_REFLECT( eosio::chain::transaction_trace, (id)(receipt)(elapsed)(net_usage)(scheduled)
-                                             (action_traces)(failed_dtrx_trace)(except) )
+                                             (action_traces)(trx_vote)(failed_dtrx_trace)(except) )

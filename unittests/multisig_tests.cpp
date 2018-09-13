@@ -395,8 +395,8 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_all_approve, eosio_msig_tester )
    // alice active     bob active   carol active
 
    set_authority(config::system_account_name, "active", authority(1,
-      vector<key_weight>{{get_private_key("eosio", "active").get_public_key(), 1}},
-      vector<permission_level_weight>{{{N(eosio.prods), config::active_name}, 1}}), "owner",
+      vector<key_weight>{{get_private_key("yosemite", "active").get_public_key(), 1}},
+      vector<permission_level_weight>{{{config::producers_account_name, config::active_name}, 1}}), "owner",
       { { config::system_account_name, "active" } }, { get_private_key( config::system_account_name, "active" ) });
 
    set_producers( {N(alice),N(bob),N(carol)} );
@@ -409,7 +409,7 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_all_approve, eosio_msig_tester )
    create_currency( N(eosio.token), config::system_account_name, core_from_string("10000000000.0000") );
    issue(config::system_account_name, core_from_string("1000000000.0000"));
    BOOST_REQUIRE_EQUAL( core_from_string("1000000000.0000"),
-                        get_balance("eosio") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
+                        get_balance("yosemite") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
 
    set_code( config::system_account_name, eosio_system_wast );
    set_abi( config::system_account_name, eosio_system_abi );
@@ -421,7 +421,7 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_all_approve, eosio_msig_tester )
    create_account_with_resources( N(carol1111111), config::system_account_name, core_from_string("1.0000"), false );
 
    BOOST_REQUIRE_EQUAL( core_from_string("1000000000.0000"),
-                        get_balance("eosio") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
+                        get_balance("yosemite") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
 
    vector<permission_level> perm = { { N(alice), config::active_name }, { N(bob), config::active_name },
       {N(carol), config::active_name} };
@@ -506,8 +506,8 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_major_approve, eosio_msig_tester
 
    // set up the link between (eosio active) and (eosio.prods active)
    set_authority(config::system_account_name, "active", authority(1,
-      vector<key_weight>{{get_private_key("eosio", "active").get_public_key(), 1}},
-      vector<permission_level_weight>{{{N(eosio.prods), config::active_name}, 1}}), "owner",
+      vector<key_weight>{{get_private_key("yosemite", "active").get_public_key(), 1}},
+      vector<permission_level_weight>{{{config::producers_account_name, config::active_name}, 1}}), "owner",
       { { config::system_account_name, "active" } }, { get_private_key( config::system_account_name, "active" ) });
 
    create_accounts( { N(apple) } );
@@ -520,7 +520,7 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_major_approve, eosio_msig_tester
 
    create_currency( N(eosio.token), config::system_account_name, core_from_string("10000000000.0000") );
    issue(config::system_account_name, core_from_string("1000000000.0000"));
-   BOOST_REQUIRE_EQUAL( core_from_string("1000000000.0000"), get_balance( "eosio" ) );
+   BOOST_REQUIRE_EQUAL( core_from_string("1000000000.0000"), get_balance( "yosemite" ) );
 
    set_code( config::system_account_name, eosio_system_wast );
    set_abi( config::system_account_name, eosio_system_abi );
@@ -532,7 +532,7 @@ BOOST_FIXTURE_TEST_CASE( update_system_contract_major_approve, eosio_msig_tester
    create_account_with_resources( N(carol1111111), config::system_account_name, core_from_string("1.0000"), false );
 
    BOOST_REQUIRE_EQUAL( core_from_string("1000000000.0000"),
-                        get_balance("eosio") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
+                        get_balance("yosemite") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
 
    vector<permission_level> perm = { { N(alice), config::active_name }, { N(bob), config::active_name },
       {N(carol), config::active_name}, {N(apple), config::active_name}};

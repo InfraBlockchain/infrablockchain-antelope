@@ -1,0 +1,92 @@
+{
+  "version": "eosio::abi/1.0",
+  "types": [
+   {
+      "new_type_name": "account_name",
+      "type": "name"
+   }
+  ],
+  "structs": [
+    {
+      "name": "setidinfo",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"identity_authority", "type":"account_name"},
+        {"name":"type", "type":"uint16"},
+        {"name":"kyc", "type":"uint16"},
+        {"name":"state", "type":"uint32"},
+        {"name":"data", "type":"string"}
+      ]
+    },
+    {
+      "name": "delidinfo",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"}
+      ]
+    },
+    {
+      "name": "settype",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"type", "type":"uint16"}
+      ]
+    },
+    {
+      "name": "setkyc",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"kyc", "type":"uint16"}
+      ]
+    },
+    {
+      "name": "setstate",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"state", "type":"uint32"}
+      ]
+    },
+    {
+      "name": "setdata",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"data", "type":"string"}
+      ]
+    },
+    {
+      "name": "identity_info",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"identity_authority", "type":"account_name"},
+        {"name":"type", "type":"uint16"},
+        {"name":"kyc", "type":"uint16"},
+        {"name":"state", "type":"uint32"},
+        {"name":"data", "type":"string"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "setidinfo", "type": "setidinfo", "ricardian_contract": "" },
+    { "name": "delidinfo", "type": "delidinfo", "ricardian_contract": "" },
+    { "name": "settype", "type": "settype", "ricardian_contract": "" },
+    { "name": "setkyc", "type": "setkyc", "ricardian_contract": "" },
+    { "name": "setstate", "type": "setstate", "ricardian_contract": "" },
+    { "name": "setdata", "type": "setdata", "ricardian_contract": "" }
+  ],
+  "tables": [
+    {
+      "name": "identity",
+      "type": "identity_info",
+      "index_type": "i64",
+      "key_names" : ["account"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "ricardian_clauses": []
+}

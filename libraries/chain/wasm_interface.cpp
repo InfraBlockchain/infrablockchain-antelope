@@ -12,6 +12,7 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -1336,6 +1337,24 @@ class transaction_api : public context_aware_api {
          fc::uint128_t sender_id(val>>64, uint64_t(val) );
          return context.cancel_deferred_transaction( (unsigned __int128)sender_id );
       }
+
+      /// YOSEMITE Core API
+      void cast_transaction_vote(uint32_t vote_amount) {
+          context.cast_transaction_vote(vote_amount);
+      }
+
+      /// YOSEMITE Core API
+      int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
+         auto trx_votes = context.get_transaction_votes_in_head_block();
+
+         auto s = trx_votes.size() * sizeof(struct yosemite_core::transaction_vote);
+         if (buffer_size == 0) return s;
+
+         auto copy_size = std::min( buffer_size, s );
+         memcpy( memory, trx_votes.data(), copy_size );
+
+         return copy_size;
+      }
 };
 
 
@@ -1832,6 +1851,8 @@ REGISTER_INTRINSICS(transaction_api,
    (send_context_free_inline,  void(int, int)               )
    (send_deferred,             void(int, int64_t, int, int, int32_t) )
    (cancel_deferred,           int(int)                     )
+   (cast_transaction_vote,     void(int)                    )
+   (read_head_block_trx_votes_data,     int(int, int)       )
 );
 
 REGISTER_INTRINSICS(context_free_api,

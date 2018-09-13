@@ -8,6 +8,7 @@ import datetime
 import json
 
 from core_symbol import CORE_SYMBOL
+from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 from testUtils import Utils
 from testUtils import Account
 
@@ -439,7 +440,7 @@ class Node(object):
 
         if stakedDeposit > 0:
             self.waitForTransInBlock(transId) # seems like account creation needs to be finlized before transfer can happen
-            trans = self.transferFunds(creatorAccount, account, "%0.04f %s" % (stakedDeposit/10000, CORE_SYMBOL), "init")
+            trans = self.transferNativeToken(creatorAccount, account, "%0.04f %s" % (stakedDeposit/10000, YOSEMITE_NATIVE_TOKEN_SYMBOL), "init")
             transId=Node.getTransId(trans)
 
         return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
@@ -487,6 +488,16 @@ class Node(object):
             print("transaction[rows][0][balance] not found. Transaction: %s" % (trans))
             raise
 
+    def getTableTotalNativeTokenBalance(self, scope):  # scope = account name
+        assert(isinstance(scope, str))
+        table = "ntaccountstt"
+        trans = self.getTable("yx.ntoken", scope, table, exitOnError=True)
+        try:
+            return trans["rows"][0]["amount"]
+        except (TypeError, KeyError) as _:
+            print("transaction[rows][0][balance] not found. Transaction: %s" % (trans))
+            raise
+
     def getCurrencyBalance(self, contract, account, symbol=CORE_SYMBOL, exitOnError=False):
         """returns raw output from get currency balance e.g. '99999.9950 CUR'"""
         assert(contract)
@@ -510,6 +521,26 @@ class Node(object):
         cmd="%s %s %s" % (cmdDesc, contract, symbol)
         msg="contract=%s, symbol=%s" % (contract, symbol);
         return self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+
+    def getTokenStats(self, symbol, exitOnError=False):
+        """returns Json output from get currency stats."""
+        assert symbol
+        assert (isinstance(symbol, str))
+        cmdDesc = "get token stats"
+        cmd = "%s %s" % (cmdDesc, symbol)
+        msg = "symbol=%s" % symbol
+        return self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+
+    def getTokenBalance(self, account, symbol, exitOnError=False):
+        """returns Json output from get currency balance."""
+        assert account
+        assert (isinstance(account, str))
+        assert symbol
+        assert (isinstance(symbol, str))
+        cmdDesc = "get token balance"
+        cmd = "%s %s %s" % (cmdDesc, account, symbol)
+        msg = "account=%s, symbol=%s" % (account, symbol)
+        return self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)["amount"]
 
     # Verifies account. Returns "get account" json return object
     def verifyAccount(self, account):
@@ -601,6 +632,38 @@ class Node(object):
 
         return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
 
+    # Trasfer native token. Returns "transfer" json return object
+    def transferNativeToken(self, source, destination, amountStr, memo="memo", force=False, waitForTransBlock=False, exitOnError=True):
+        assert isinstance(amountStr, str)
+        assert(source)
+        assert(isinstance(source, Account))
+        assert(destination)
+        assert(isinstance(destination, Account))
+
+        cmd = "%s %s -v transfer ntoken -j %s %s" % (Utils.EosClientPath, self.endpointArgs, source.name, destination.name)
+        cmdArr = cmd.split()
+        cmdArr.append(amountStr)
+        cmdArr.append(memo)
+        if force:
+            cmdArr.append("-f")
+        s = " ".join(cmdArr)
+        if Utils.Debug : Utils.Print("cmd: %s" % s)
+        try:
+            trans = Utils.runCmdArrReturnJson(cmdArr)
+        except subprocess.CalledProcessError as ex:
+            msg=ex.output.decode("utf-8")
+            Utils.Print("ERROR: Exception during funds transfer. %s" % (msg))
+            if exitOnError:
+                Utils.cmdError("could not transfer \"%s\" from %s to %s" % (amountStr, source, destination))
+                Utils.errorExit("Failed to transfer \"%s\" from %s to %s" % (amountStr, source, destination))
+            return None
+
+        if trans is None:
+            Utils.cmdError("could not transfer \"%s\" from %s to %s" % (amountStr, source, destination))
+            Utils.errorExit("Failed to transfer \"%s\" from %s to %s" % (amountStr, source, destination))
+
+        return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
+
     @staticmethod
     def currencyStrToInt(balanceStr):
         """Converts currency string of form "12.3456 SYS" to int 123456"""
@@ -631,7 +694,7 @@ class Node(object):
         assert(isinstance(initialBalances, dict))
         assert(isinstance(transferAmount, int))
 
-        currentBalances=self.getEosBalances([source] + accounts)
+        currentBalances=self.getTotalNativeTokenBalances([source] + accounts)
         assert(currentBalances)
         assert(isinstance(currentBalances, dict))
         assert(len(initialBalances) == len(currentBalances))
@@ -652,15 +715,15 @@ class Node(object):
                             (expectedInitialBalance, initialBalance, key.name))
                 return False
 
-    def getEosBalances(self, accounts):
+    def getTotalNativeTokenBalances(self, accounts):
         """Returns a dictionary with account balances keyed by accounts"""
-        assert(accounts)
-        assert(isinstance(accounts, list))
+        assert accounts
+        assert (isinstance(accounts, list))
 
-        balances={}
+        balances = {}
         for account in accounts:
-            balance = self.getAccountEosBalance(account.name)
-            balances[account]=balance
+            balance = self.getAccountTotalNativeTokenBalance(account.name)
+            balances[account] = balance
 
         return balances
 
@@ -738,6 +801,20 @@ class Node(object):
         """Returns SYS currency0000 account balance from cleos get table command. Returned balance is an integer e.g. 980311. """
         balanceStr=self.getAccountEosBalanceStr(scope)
         balance=Node.currencyStrToInt(balanceStr)
+        return balance
+
+    def getAccountTotalNativeTokenBalanceStr(self, scope):
+        """Returns SYS currency0000 account balance from cleos get table command. Returned balance is string following syntax "98.0311 DKRW". """
+        assert isinstance(scope, str)
+        amount = self.getTableTotalNativeTokenBalance(scope)
+        if Utils.Debug : Utils.Print("getTableTotalNativeTokenBalance %s %s" % (scope, amount))
+        assert isinstance(amount, str)
+        return amount
+
+    def getAccountTotalNativeTokenBalance(self, scope):
+        """Returns SYS currency0000 account balance from cleos get table command. Returned balance is an integer e.g. 980311. """
+        balanceStr = self.getAccountTotalNativeTokenBalanceStr(scope)
+        balance = Node.currencyStrToInt(balanceStr)
         return balance
 
     def getAccountCodeHash(self, account):
@@ -1093,3 +1170,136 @@ class Node(object):
         status="last getInfo returned None" if not self.infoValid else "at last call to getInfo"
         Utils.Print(" hbn   : %s (%s)" % (self.lastRetrievedHeadBlockNum, status))
         Utils.Print(" lib   : %s (%s)" % (self.lastRetrievedLIB, status))
+
+    def registerAndAuthorizeSystempDepository(self, sysdepo, sysdepoUrl, waitForTransBlock=False, exitOnError=True):
+        assert (sysdepo)
+        assert (isinstance(sysdepo, Account))
+        assert (sysdepoUrl)
+        assert (isinstance(sysdepoUrl, str))
+
+        cmdDesc = "system regsysdepo"
+        cmd = "%s -j %s %s" % (cmdDesc, sysdepo.name, sysdepoUrl)
+        msg = "sysdepo=%s" % sysdepo.name
+        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+
+        trans = self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
+        if trans is None:
+            Utils.cmdError("could not register \"%s\" as a system depository" % (sysdepo.name))
+            Utils.errorExit("Failed to register \"%s\" as a system depository" % (sysdepo.name))
+
+        cmdDesc = "system authsysdepo"
+        cmd = "%s -j %s" % (cmdDesc, sysdepo.name)
+        msg = "sysdepo=%s" % sysdepo.name
+        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+
+        if trans is None:
+            Utils.cmdError("could not authorize \"%s\" the system depository" % (sysdepo.name))
+            Utils.errorExit("Failed to authorize \"%s\" the system depository" % (sysdepo.name))
+
+        return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
+
+    def registerAndAuthorizeIdentityAuthority(self, idauth, idauthUrl, waitForTransBlock=False, exitOnError=True):
+        assert (idauth)
+        assert (isinstance(idauth, Account))
+        assert (idauthUrl)
+        assert (isinstance(idauthUrl, str))
+
+        cmdDesc = "system regidauth"
+        cmd = "%s -j %s %s" % (cmdDesc, idauth.name, idauthUrl)
+        msg = "idauth=%s" % idauth.name
+        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+
+        trans = self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
+        if trans is None:
+            Utils.cmdError("could not register \"%s\" as an identity authority" % (idauth.name))
+            Utils.errorExit("Failed to register \"%s\" as an identity authority" % (idauth.name))
+
+        cmdDesc = "system authidauth"
+        cmd = "%s -j %s" % (cmdDesc, idauth.name)
+        msg = "idauth=%s" % idauth.name
+        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+
+        if trans is None:
+            Utils.cmdError("could not authorize \"%s\" the identity authority" % (idauth.name))
+            Utils.errorExit("Failed to authorize \"%s\" the identity authority" % (idauth.name))
+
+        return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
+
+    def issueNativeToken(self, toAccount, sysDepoAccount, nativeTokenAmount, memo = "initial issue", waitForTransBlock=False, exitOnError=True):
+        assert toAccount
+        assert(isinstance(toAccount, str))
+        assert sysDepoAccount
+        assert(isinstance(sysDepoAccount, str))
+        assert nativeTokenAmount
+        assert(isinstance(nativeTokenAmount, str))
+
+        contract = "yx.ntoken"
+        Utils.Print("push issue action to %s contract" % contract)
+        action = "nissue"
+        data = "{\"to\":\"%s\",\"token\":{\"amount\":\"%s\",\"issuer\":\"%s\"},\"memo\":\"%s\"}" % \
+               (toAccount, nativeTokenAmount, sysDepoAccount, memo)
+        opts = "--permission %s@active" % sysDepoAccount
+        trans = self.pushMessage(contract, action, data, opts)
+        if trans is None or not trans[0]:
+            Utils.Print("ERROR: Failed to push issue action to %s contract." % contract)
+            return None
+
+        return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)
+
+    def setTransactionFee(self, actionName, nativeTokenAmount, yosemiteAccount, waitForTransBlock=False, exitOnError=True):
+        assert(actionName)
+        assert(isinstance(actionName, str))
+        assert(nativeTokenAmount)
+        assert(isinstance(nativeTokenAmount, str))
+        assert(yosemiteAccount)
+        assert(isinstance(yosemiteAccount, Account))
+
+        contract = "yx.txfee"
+        action = "settxfee"
+        Utils.Print("push %s action to %s contract" % (action, contract))
+        data = "[ \"%s\", \"%s\" ]" % (actionName, nativeTokenAmount)
+        opts = "--permission %s@active" % yosemiteAccount.name
+        trans = self.pushMessage(contract, action, data, opts)
+
+        if trans is None or not trans[0]:
+            Utils.Print("ERROR: Failed to push issue action to %s contract." % contract)
+            return None
+
+        return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)
+
+    def setNativeTokenKycRule(self, type, kyc, yosemiteAccount, waitForTransBlock=False, exitOnError=True):
+        assert(isinstance(type, int))
+        assert(isinstance(kyc, int))
+        assert yosemiteAccount
+        assert(isinstance(yosemiteAccount, Account))
+
+        contract = "yx.ntoken"
+        action = "setkycrule"
+        Utils.Print("push %s action to %s contract" % (action, contract))
+        data = "[ %s, %s ]" % (type, kyc)
+        opts = "--permission %s@active" % yosemiteAccount.name
+        trans = self.pushMessage(contract, action, data, opts)
+
+        if trans is None or not trans[0]:
+            Utils.Print("ERROR: Failed to push issue action to %s contract." % contract)
+            return None
+
+        return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)
+
+    def setPriviledged(self, account, yosemiteAccount, waitForTransBlock=False, exitOnError=True):
+        assert account
+        assert(isinstance(account, str))
+        assert yosemiteAccount
+        assert(isinstance(yosemiteAccount, Account))
+
+        action = "setpriv"
+        Utils.Print("push %s action to %s contract" % (action, yosemiteAccount.name))
+        data = "[ %s, %s ]" % (account, "1")
+        opts = "--permission %s@active" % yosemiteAccount.name
+        trans = self.pushMessage(yosemiteAccount.name, action, data, opts)
+
+        if trans is None or not trans[0]:
+            Utils.Print("ERROR: Failed to push issue action to %s contract." % yosemiteAccount.name)
+            return None
+
+        return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)

@@ -13,12 +13,12 @@
 
 pushd $EOSIO_HOME
 
-if [ ! -f programs/nodeos/nodeos ]; then
-    echo unable to locate binary for nodeos
+if [ ! -f programs/yosemite/yosemite ]; then
+    echo unable to locate binary for yosemite
     exit 1
 fi
 
-config_base=etc/eosio/node_
+config_base=etc/yosemite/node_
 if [ -z "$EOSIO_NODE" ]; then
     DD=`ls -d ${config_base}[012]?`
     ddcount=`echo $DD | wc -w`

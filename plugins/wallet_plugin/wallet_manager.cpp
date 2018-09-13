@@ -14,7 +14,7 @@ constexpr auto file_ext = ".wallet";
 constexpr auto password_prefix = "PW";
 
 std::string gen_password() {
-   auto key = private_key_type::generate();
+   auto key = private_key_type::generate<fc::ecc::private_key_shim>();
    return password_prefix + string(key);
 
 }
