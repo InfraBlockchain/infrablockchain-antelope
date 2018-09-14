@@ -18,7 +18,7 @@ steps:
 
   - command: |
       echo "+++ :hammer: Building" && \
-      echo 1 | ./eosio_build.sh && \
+      echo 1 | ./yosemite_build.sh && \
       echo "--- :compression: Compressing build directory" && \
       tar -pczf build.tar.gz build/ && \
       echo "--- :wastebasket: Cleaning build directory" && \
