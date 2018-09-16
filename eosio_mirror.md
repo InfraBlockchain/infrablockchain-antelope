@@ -15,6 +15,6 @@ git push https://github.com/YosemiteLabs/yosemite-public-blockchain master:eos-m
 
 ```console
 git pull --rebase
-git tag yosemite_eos_v1.0.10_merge
-git push origin yosemite_eos_v1.0.10_merge
+git tag eos_v1.0.10_merge
+git push origin eos_v1.0.10_merge
 ```
