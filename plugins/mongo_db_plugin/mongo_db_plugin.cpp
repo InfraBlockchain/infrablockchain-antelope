@@ -1432,9 +1432,9 @@ void mongo_db_plugin_impl::init() {
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : -1 })xxx" ));
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "act.account" : 1, "act.name" : 1, "receipt.recv_sequence" : -1 })xxx" ));
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "sender" : 1, "receipt.global_sequence" : -1 })xxx" ),
-                                     bsoncxx::from_json( R"xxx({ "sparse" : true })xxx" ));
+                                     bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "sender" : { "$exists" : true } } })xxx" )); //bsoncxx::from_json( R"xxx({ "sparse" : true })xxx" ));
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "sender" : 1, "act.account" : 1, "act.name" : 1, "receipt.global_sequence" : -1 })xxx" ),
-                                     bsoncxx::from_json( R"xxx({ "sparse" : true })xxx" ));
+                                     bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "sender" : { "$exists" : true } } })xxx" )); //bsoncxx::from_json( R"xxx({ "sparse" : true })xxx" ));
          //action_traces.create_index( bsoncxx::from_json( R"xxx({ "parent" : 1 })xxx" ));
 
          // pub_keys indexes
