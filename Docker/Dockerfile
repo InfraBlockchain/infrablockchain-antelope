@@ -1,5 +1,5 @@
 FROM eosio/builder as builder
-ARG branch=yosemite-master
+ARG branch=master
 ARG native_token_symbol=DKRW
 ARG native_token_precision=4
 
