@@ -11,14 +11,14 @@ namespace yosemite { namespace chain {
     const static char symbol_issuer_denominator = '@';
 
     struct yx_symbol {
-        symbol       symbol;
+        symbol       tsymbol;
         account_name issuer;
 
         yx_symbol() = default;
-        yx_symbol(eosio::chain::symbol s, name n) : symbol(s), issuer(n) {}
+        yx_symbol(eosio::chain::symbol s, name n) : tsymbol(s), issuer(n) {}
 
         eosio::chain::uint128_t to_uint128() const {
-            eosio::chain::uint128_t result(symbol.value());
+            eosio::chain::uint128_t result(tsymbol.value());
             result <<= 64;
             return result | issuer.value;
         }
@@ -37,7 +37,7 @@ namespace yosemite { namespace chain {
         }
 
         explicit operator string() const {
-            std::string result = symbol.to_string();
+            std::string result = tsymbol.to_string();
             result += symbol_issuer_denominator;
             result += issuer.to_string();
             return result;
@@ -48,14 +48,14 @@ namespace yosemite { namespace chain {
         }
 
         friend bool operator==(const yx_symbol &a, const yx_symbol &b) {
-            return std::tie(a.symbol, a.issuer) == std::tie(b.symbol, b.issuer);
+            return std::tie(a.tsymbol, a.issuer) == std::tie(b.tsymbol, b.issuer);
         }
 
         friend bool operator!=(const yx_symbol &a, const yx_symbol &b) {
-            return std::tie(a.symbol, a.issuer) != std::tie(b.symbol, b.issuer);
+            return std::tie(a.tsymbol, a.issuer) != std::tie(b.tsymbol, b.issuer);
         }
     };
 
 }} // namespace yosemite::chain
 
-FC_REFLECT(yosemite::chain::yx_symbol, (symbol)(issuer))
+FC_REFLECT(yosemite::chain::yx_symbol, (tsymbol)(issuer))

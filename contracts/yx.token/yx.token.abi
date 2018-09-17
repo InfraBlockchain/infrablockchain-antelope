@@ -10,7 +10,7 @@
       "name": "yx_symbol",
       "base": "",
       "fields": [
-        {"name":"symbol", "type":"symbol"},
+        {"name":"tsymbol", "type":"symbol"},
         {"name":"issuer", "type":"account_name"}
       ]
     },

@@ -1926,7 +1926,7 @@ int main( int argc, char** argv ) {
       } catch (const fc::exception &ex) {
          if (ex.code() == 3231001) { // == empty_token_exception
             yx_symbol _yx_symbol = yx_symbol::from_string(ysymbol);
-            yx_asset empty_token{asset{0, _yx_symbol.symbol}, _yx_symbol.issuer};
+            yx_asset empty_token{asset{0, _yx_symbol.tsymbol}, _yx_symbol.issuer};
             std::cout << fc::json::to_pretty_string(empty_token)
                       << std::endl;
          } else {
@@ -1974,7 +1974,7 @@ int main( int argc, char** argv ) {
                          << std::endl;
             } else {
                yx_symbol _yx_symbol{symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL), name(issuer)};
-               yx_asset empty_token{asset{0, _yx_symbol.symbol}, _yx_symbol.issuer};
+               yx_asset empty_token{asset{0, _yx_symbol.tsymbol}, _yx_symbol.issuer};
                std::cout << fc::json::to_pretty_string(empty_token)
                          << std::endl;
             }
