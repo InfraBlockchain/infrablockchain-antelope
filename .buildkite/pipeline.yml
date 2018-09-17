@@ -45,7 +45,7 @@ steps:
       buildkite-agent artifact upload "mongod.log" && \
       buildkite-agent artifact upload "build/genesis.json" && \
       buildkite-agent artifact upload "build/config.ini" && \
-      rm -rf /data/job/*
+      rm -rf /data/job/build && rm -rf /data/job/mongod.log
     retry:
       automatic:
         limit: 1
@@ -70,7 +70,7 @@ steps:
       buildkite-agent artifact upload "mongod.log" && \
       buildkite-agent artifact upload "build/genesis.json" && \
       buildkite-agent artifact upload "build/config.ini" && \
-      rm -rf /data/job/*
+      rm -rf /data/job/build && rm -rf /data/job/mongod.log
     retry:
       automatic:
         limit: 1
