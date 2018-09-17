@@ -742,6 +742,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
    using namespace bsoncxx::types;
    using bsoncxx::builder::basic::make_document;
    using bsoncxx::builder::basic::kvp;
+   using bsoncxx::builder::basic::sub_array;
 
    if( executed && atrace.receipt.receiver == chain::config::system_account_name ) {
       update_account( atrace.act );
@@ -780,8 +781,19 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       action_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
       action_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
 
-      if (parent_global_sequence > 0) {
-          action_traces_doc.append( kvp( "parent", b_int64{static_cast<int64_t>(parent_global_sequence)} ) );
+      if (parent_global_sequence == 0) {
+         // YOSEMITE mongo_db_plugin can support searching for 'sent' actions filtered by sender accounts,
+         // by saving 'sender' list (accounts who signed the original transaction)
+         // only for non-inline top-level actions (having no parent action) in transactions,
+         // and providing mongodb index for ('sender', 'global_sequence')
+         auto& action_authorization = atrace.act.authorization;
+         action_traces_doc.append(kvp( "sender", [&action_authorization](sub_array child) {
+             for(const auto& permission : action_authorization) {
+                child.append(permission.actor.to_string());
+             }
+         } ));
+      } else {
+         action_traces_doc.append( kvp( "parent", b_int64{static_cast<int64_t>(parent_global_sequence)} ) );
       }
 
       // Actions having same global action sequence number can be 'upsert'ed several times when temporary chain fork occurs
@@ -1416,9 +1428,10 @@ void mongo_db_plugin_impl::init() {
          // action traces indexes
          auto action_traces = mongo_conn[db_name][action_traces_col];
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "trx_id" : 1 })xxx" ));
-         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : 1 })xxx" ), mongocxx::options::index().unique(true) );
-         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : 1 })xxx" ));
-         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "act.account" : 1, "act.name" : 1, "receipt.recv_sequence" : 1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : -1 })xxx" ), mongocxx::options::index().unique(true) );
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : -1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "act.account" : 1, "act.name" : 1, "receipt.recv_sequence" : -1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "sender" : 1, "receipt.global_sequence" : 1 })xxx" ));
          //action_traces.create_index( bsoncxx::from_json( R"xxx({ "parent" : 1 })xxx" ));
 
          // pub_keys indexes
