@@ -315,7 +315,7 @@ try:
     Print("push create action to yx.token contract")
     contract = "yx.token"
     action = "create"
-    data = "{\"ysymbol\":{\"symbol\":\"4,CUR\",\"issuer\":\"currency1111\"},\"can_set_options\":0}"
+    data = "{\"ysymbol\":{\"tsymbol\":\"4,CUR\",\"issuer\":\"currency1111\"},\"can_set_options\":0}"
     opts = "--permission currency1111@active"
     trans = node.pushMessage(contract, action, data, opts)
     try:
