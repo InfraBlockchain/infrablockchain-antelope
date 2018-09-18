@@ -23,6 +23,7 @@ namespace yosemite { namespace identity {
         eosio_assert( data.size() < 256, "data too long" );
 
         require_auth( identity_authority );
+        require_recipient( account );
 
         // self == YOSEMITE_IDENTITY_ACCOUNT
         identity_idx identity_table(get_self(),get_self());
@@ -60,6 +61,7 @@ namespace yosemite { namespace identity {
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
         require_auth( existing_id_auth );
+        require_recipient( account );
 
         identity_table.erase(id_it);
     }
@@ -76,9 +78,11 @@ namespace yosemite { namespace identity {
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
-        require_auth( existing_id_auth );
 
         eosio_assert( id_it->type != type, "same type value" );
+
+        require_auth( existing_id_auth );
+        require_recipient( account );
 
         identity_table.modify( id_it, 0, [&]( identity_info& info ){
             info.type  = type;
@@ -97,9 +101,11 @@ namespace yosemite { namespace identity {
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
-        require_auth( existing_id_auth );
 
         eosio_assert( id_it->kyc != kyc, "same kyc value" );
+
+        require_auth( existing_id_auth );
+        require_recipient( account );
 
         identity_table.modify( id_it, 0, [&]( identity_info& info ){
             info.kyc  = kyc;
@@ -118,9 +124,11 @@ namespace yosemite { namespace identity {
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
-        require_auth( existing_id_auth );
 
         eosio_assert( id_it->state != state, "same state value" );
+
+        require_auth( existing_id_auth );
+        require_recipient( account );
 
         identity_table.modify( id_it, 0, [&]( identity_info& info ){
             info.state  = state;
@@ -139,9 +147,11 @@ namespace yosemite { namespace identity {
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
                       "existing identity authority is not authorized identity authority");
-        require_auth( existing_id_auth );
 
         eosio_assert( id_it->data != data, "same data value" );
+
+        require_auth( existing_id_auth );
+        require_recipient( account );
 
         identity_table.modify( id_it, 0, [&]( identity_info& info ){
             info.data  = data;
