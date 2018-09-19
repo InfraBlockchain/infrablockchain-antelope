@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE( forking ) try {
 
 
    auto cr = c.push_action( N(eosio.token), N(create), N(eosio.token), mutable_variant_object()
-              ("issuer",       "eosio" )
+              ("issuer",       "yosemite" )
               ("maximum_supply", core_from_string("10000000.0000"))
       );
 

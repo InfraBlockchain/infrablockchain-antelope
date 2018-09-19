@@ -117,6 +117,7 @@ public:
 
 BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
 
+/*
     BOOST_FIXTURE_TEST_CASE(regdepon_tests, yx_ntoken_tester) try {
 
         auto token = createn(N(d1));
@@ -129,5 +130,6 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
         produce_blocks(1);
 
     } FC_LOG_AND_RETHROW()
+*/
 
 BOOST_AUTO_TEST_SUITE_END()

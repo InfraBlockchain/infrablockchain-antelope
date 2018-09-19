@@ -12,6 +12,7 @@
 #include <eosiolib/datastream.hpp>
 #include <eosiolib/print.hpp>
 #include <eosiolib/compiler_builtins.h>
+#include <musl/upstream/include/bits/stdint.h>
 #include "test_api.hpp"
 
 void test_action::read_action_normal() {
@@ -226,7 +227,7 @@ void test_action::test_assert_code() {
    eosio_assert_code( false, code );
 }
 
-void test_action::test_ram_billing_in_notify(uint64_t receiver, uint64_t code, uint64_t action) {
+void test_action::test_ram_billing_in_notify(uint64_t receiver, uint64_t code, uint64_t /*action*/) {
    uint128_t tmp = 0;
    uint32_t total = read_action_data(&tmp, sizeof(uint128_t));
    eosio_assert( total == sizeof(uint128_t), "total == sizeof(uint128_t)");

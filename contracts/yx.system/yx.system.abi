@@ -16,7 +16,7 @@
       "new_type_name": "weight_type",
       "type": "uint16"
    }],
-   "____comment": "eosio.bios structs: set_account_limits, setpriv, set_global_limits, producer_key, set_producers, require_auth are provided so abi available for deserialization in future.",
+   "____comment": "eosio.bios structs: set_account_limits, setpriv, set_global_limits, producer_key, require_auth are provided so abi available for deserialization in future.",
    "structs": [{
       "name": "permission_level",
       "base": "",
@@ -323,12 +323,6 @@
         {"name":"block_signing_key",  "type":"public_key"}
       ]
     },{
-      "name": "set_producers",
-      "base": "",
-      "fields": [
-        {"name":"schedule",   "type":"producer_key[]"}
-      ]
-    },{
       "name": "require_auth",
       "base": "",
       "fields": [
@@ -393,10 +387,6 @@
    },{
       "name": "setglimits",
       "type": "set_global_limits",
-      "ricardian_contract": ""
-   },{
-      "name": "setprods",
-      "type": "set_producers",
       "ricardian_contract": ""
    },{
       "name": "reqauth",

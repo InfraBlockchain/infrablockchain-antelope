@@ -1,6 +1,6 @@
 # Run in docker
 
-Simple and fast setup of EOS.IO on Docker is also available.
+Simple and fast setup of YOSEMITE on Docker is also available.
 
 ## Install Dependencies
 
@@ -12,24 +12,24 @@ Simple and fast setup of EOS.IO on Docker is also available.
 - At least 7GB RAM (Docker -> Preferences -> Advanced -> Memory -> 7GB or above)
 - If the build below fails, make sure you've adjusted Docker Memory settings and try again.
 
-## Build eos image
+## Build yosemite image
 
 ```bash
-git clone https://github.com/EOSIO/eos.git --recursive  --depth 1
-cd eos/Docker
-docker build . -t eosio/eos
+git clone https://github.com/YosemiteLabs/yosemite-public-blockchain --recursive  --depth 1
+cd yosemite-public-blockchain/Docker
+docker build . -t yosemitex/yosemite
 ```
 
-The above will build off the most recent commit to the master branch by default. If you would like to target a specific branch/tag, you may use a build argument. For example, if you wished to generate a docker image based off of the v1.2.4 tag, you could do the following:
+The above will build off the most recent commit to the master branch by default. If you would like to target a specific branch/tag, you may use a build argument. For example, if you wished to generate a docker image based off of the v1.2.5 tag, you could do the following:
 
 ```bash
-docker build -t eosio/eos:v1.2.4 --build-arg branch=v1.2.4 .
+docker build -t yosemitex/yosemite:v1.2.5 --build-arg branch=v1.2.5 .
 ```
 
 By default, the symbol in eosio.system is set to SYS. You can override this using the symbol argument while building the docker image.
 
 ```bash
-docker build -t eosio/eos --build-arg symbol=<symbol> .
+docker build -t yosemitex/yosemite --build-arg symbol=<symbol> .
 ```
 
 ## Start nodeos docker container only

@@ -91,6 +91,7 @@ Options:
 #include <eosio/chain/trace.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/chain/contract_types.hpp>
+#include <yosemite/chain/native_token_symbol.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 
 #pragma push_macro("N")
@@ -1207,6 +1208,120 @@ struct canceldelay_subcommand {
    }
 };
 
+struct register_sysdepo_subcommand {
+   string sysdepo_account;
+   string url;
+   uint16_t location = 0;
+
+    register_sysdepo_subcommand(CLI::App* actionRoot) {
+      auto subcommand = actionRoot->add_subcommand("regsysdepo", localized("Register as a system depository"));
+      subcommand->add_option("account", sysdepo_account, localized("The account to register as the system depository"))->required();
+      subcommand->add_option("url", url, localized("The url to the web service which is provided by the system depository"))->required();
+      //subcommand->add_option("location", location, localized("reserved value"));
+      add_standard_transaction_options(subcommand);
+
+      subcommand->set_callback([this] {
+         const auto permission = permission_level{sysdepo_account, config::active_name};
+         fc::variant payload = fc::mutable_variant_object()
+                  ("depository", sysdepo_account)
+                  ("url", url)
+                  ("location", location);
+         send_actions({create_action({permission}, config::system_account_name, N(regsysdepo), payload)});
+      });
+   }
+};
+
+struct authorize_sysdepo_subcommand {
+   string sysdepo_account;
+
+    authorize_sysdepo_subcommand(CLI::App* actionRoot) {
+      auto subcommand = actionRoot->add_subcommand("authsysdepo", localized("Authorize the registered system depository by block producers"));
+      subcommand->add_option("account", sysdepo_account, localized("The account which is registered as the system depository"))->required();
+      add_standard_transaction_options(subcommand);
+
+      subcommand->set_callback([this] {
+         const auto permission = permission_level{config::system_account_name, config::active_name};
+         fc::variant payload = fc::mutable_variant_object()
+                  ("depository", sysdepo_account);
+         send_actions({create_action({permission}, config::system_account_name, N(authsysdepo), payload)});
+      });
+   }
+};
+
+struct remove_sysdepo_subcommand {
+   string sysdepo_account;
+
+    remove_sysdepo_subcommand(CLI::App* actionRoot) {
+      auto subcommand = actionRoot->add_subcommand("rmvsysdepo", localized("Deauthorize the system depository by block producers"));
+      subcommand->add_option("account", sysdepo_account, localized("The account which is registered as the system depository"))->required();
+      add_standard_transaction_options(subcommand);
+
+      subcommand->set_callback([this] {
+         const auto permission = permission_level{config::system_account_name, config::active_name};
+         fc::variant payload = fc::mutable_variant_object()
+                  ("depository", sysdepo_account);
+         send_actions({create_action({permission}, config::system_account_name, N(rmvsysdepo), payload)});
+      });
+   }
+};
+
+struct register_idauth_subcommand {
+    string idauth_account;
+    string url;
+    uint16_t location = 0;
+
+    register_idauth_subcommand(CLI::App* actionRoot) {
+        auto subcommand = actionRoot->add_subcommand("regidauth", localized("Register as an identity authority"));
+        subcommand->add_option("account", idauth_account, localized("The account to register as the identity authority"))->required();
+        subcommand->add_option("url", url, localized("The url to the web service which is provided by the identity authority"))->required();
+        //subcommand->add_option("location", location, localized("reserved value"));
+        add_standard_transaction_options(subcommand);
+
+        subcommand->set_callback([this] {
+            const auto permission = permission_level{idauth_account, config::active_name};
+            fc::variant payload = fc::mutable_variant_object()
+                    ("identity_authority", idauth_account)
+                    ("url", url)
+                    ("location", location);
+            send_actions({create_action({permission}, config::system_account_name, N(regidauth), payload)});
+        });
+    }
+};
+
+struct authorize_idauth_subcommand {
+    string idauth_account;
+
+    authorize_idauth_subcommand(CLI::App* actionRoot) {
+        auto subcommand = actionRoot->add_subcommand("authidauth", localized("Authorize the registered identity authority by block producers"));
+        subcommand->add_option("account", idauth_account, localized("The account which is registered as the identity authority"))->required();
+        add_standard_transaction_options(subcommand);
+
+        subcommand->set_callback([this] {
+            const auto permission = permission_level{config::system_account_name, config::active_name};
+            fc::variant payload = fc::mutable_variant_object()
+                    ("identity_authority", idauth_account);
+            send_actions({create_action({permission}, config::system_account_name, N(authidauth), payload)});
+        });
+    }
+};
+
+struct remove_idauth_subcommand {
+    string idauth_account;
+
+    remove_idauth_subcommand(CLI::App* actionRoot) {
+        auto subcommand = actionRoot->add_subcommand("rmvidauth", localized("Deauthorize the identity authority by block producers"));
+        subcommand->add_option("account", idauth_account, localized("The account which is registered as the identity authority"))->required();
+        add_standard_transaction_options(subcommand);
+
+        subcommand->set_callback([this] {
+            const auto permission = permission_level{config::system_account_name, config::active_name};
+            fc::variant payload = fc::mutable_variant_object()
+                    ("identity_authority", idauth_account);
+            send_actions({create_action({permission}, config::system_account_name, N(rmvidauth), payload)});
+        });
+    }
+};
+
 void get_account( const string& accountName, bool json_format ) {
    auto json = call(get_account_func, fc::mutable_variant_object("account_name", accountName));
    auto res = json.as<eosio::chain_apis::read_only::get_account_results>();
@@ -1799,14 +1914,25 @@ int main( int argc, char** argv ) {
    get_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
    get_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
    get_balance->set_callback([&] {
-      auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
-         ("account", accountName)
-         ("code", "yx.token")
-         ("ysymbol", ysymbol)
-      );
+      try {
+         auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
+                 ("account", accountName)
+                 ("code", "yx.token")
+                 ("ysymbol", ysymbol)
+         );
 
-      std::cout << fc::json::to_pretty_string(result)
-                << std::endl;
+         std::cout << fc::json::to_pretty_string(result)
+                   << std::endl;
+      } catch (const fc::exception &ex) {
+         if (ex.code() == 3231001) { // == empty_token_exception
+            yx_symbol _yx_symbol = yx_symbol::from_string(ysymbol);
+            yx_asset empty_token{asset{0, _yx_symbol.tsymbol}, _yx_symbol.issuer};
+            std::cout << fc::json::to_pretty_string(empty_token)
+                      << std::endl;
+         } else {
+            throw;
+         }
+      }
    });
 
    auto get_token_stats = get_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
@@ -1831,14 +1957,31 @@ int main( int argc, char** argv ) {
    get_ntoken_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
    get_ntoken_balance->add_option("issuer", issuer, localized("The issuer of native token"));
    get_ntoken_balance->set_callback([&] {
-      auto result = call(get_native_token_balance_func, fc::mutable_variant_object("json", false)
-            ("account", accountName)
-            ("code", "yx.ntoken")
-            ("issuer", issuer.empty() ? fc::variant() : issuer)
-      );
+      try {
+         auto result = call(get_native_token_balance_func, fc::mutable_variant_object("json", false)
+                 ("account", accountName)
+                 ("code", "yx.ntoken")
+                 ("issuer", issuer.empty() ? fc::variant() : issuer)
+         );
 
-      std::cout << fc::json::to_pretty_string(result)
-                << std::endl;
+         std::cout << fc::json::to_pretty_string(result)
+                   << std::endl;
+      } catch (const fc::exception &ex) {
+         if (ex.code() == 3231001) { // == empty_token_exception
+            if (issuer.empty()) {
+               asset empty_asset{0, symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL)};
+               std::cout << fc::json::to_pretty_string(empty_asset)
+                         << std::endl;
+            } else {
+               yx_symbol _yx_symbol{symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL), name(issuer)};
+               yx_asset empty_token{asset{0, _yx_symbol.tsymbol}, _yx_symbol.issuer};
+               std::cout << fc::json::to_pretty_string(empty_token)
+                         << std::endl;
+            }
+         } else {
+            throw;
+         }
+      }
    });
 
    auto get_ntoken_stats = get_ntoken->add_subcommand("stats", localized("Retrieve the stats of for native token"), false);
@@ -2806,6 +2949,14 @@ int main( int argc, char** argv ) {
 #endif
    auto claimRewards = claimrewards_subcommand(system);
    auto cancelDelay = canceldelay_subcommand(system);
+
+   auto regSysdepo = register_sysdepo_subcommand(system);
+   auto authSysdepo = authorize_sysdepo_subcommand(system);
+   auto removeSysdepo = remove_sysdepo_subcommand(system);
+
+   auto regIdauth = register_idauth_subcommand(system);
+   auto authIdauth = authorize_idauth_subcommand(system);
+   auto removeIdauth = remove_idauth_subcommand(system);
 
    try {
        app.parse(argc, argv);

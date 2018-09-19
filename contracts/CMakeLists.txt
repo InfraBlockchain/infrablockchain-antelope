@@ -24,6 +24,7 @@ add_subdirectory(test_api_multi_index)
 add_subdirectory(test_ram_limit)
 add_subdirectory(noop) # For internal test
 add_subdirectory(eosio.bios) # For internal test
+add_subdirectory(integration_test) # For internal test
 
 add_subdirectory(yosemitelib)
 add_subdirectory(yx.system)

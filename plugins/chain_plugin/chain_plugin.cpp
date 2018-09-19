@@ -1229,7 +1229,7 @@ read_only::get_token_stats_result read_only::get_token_stats(const read_only::ge
    yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
 
    const auto &d = db.db();
-   const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, target_symbol.symbol.value(), N(tstats)));
+   const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, target_symbol.tsymbol.value(), N(tstats)));
    EOS_ASSERT(table_id, chain::token_not_found_exception, "Token is not created.");
 
    const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, target_symbol.issuer.value));

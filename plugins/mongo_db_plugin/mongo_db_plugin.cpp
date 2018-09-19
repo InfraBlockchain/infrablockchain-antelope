@@ -109,7 +109,7 @@ public:
    void purge_abi_cache();
 
    bool add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                          const uint32_t& block_num, const std::chrono::milliseconds& block_time, bool executed, uint64_t parent_global_sequence /*const std::string& trx_id, const std::chrono::milliseconds& now*/ );
+                          const uint32_t& block_num, const std::chrono::milliseconds& block_time, /*bool executed,*/ uint64_t parent_global_sequence /*const std::string& trx_id, const std::chrono::milliseconds& now*/ );
 
    void update_account(const chain::action& act);
 
@@ -737,13 +737,14 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
 
 bool
 mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                                        const uint32_t& block_num, const std::chrono::milliseconds& block_time, bool executed, uint64_t parent_global_sequence /*const std::string& trx_id, const std::chrono::milliseconds& now*/ )
+                                        const uint32_t& block_num, const std::chrono::milliseconds& block_time, /*bool executed,*/ uint64_t parent_global_sequence /*const std::string& trx_id, const std::chrono::milliseconds& now*/ )
 {
    using namespace bsoncxx::types;
    using bsoncxx::builder::basic::make_document;
    using bsoncxx::builder::basic::kvp;
+   using bsoncxx::builder::basic::sub_array;
 
-   if( executed && atrace.receipt.receiver == chain::config::system_account_name ) {
+   if( /*executed &&*/ atrace.receipt.receiver == chain::config::system_account_name ) {
       update_account( atrace.act );
    }
 
@@ -780,8 +781,19 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       action_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
       action_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
 
-      if (parent_global_sequence > 0) {
-          action_traces_doc.append( kvp( "parent", b_int64{static_cast<int64_t>(parent_global_sequence)} ) );
+      if (parent_global_sequence == 0) {
+         // YOSEMITE mongo_db_plugin can support searching for 'sent' actions filtered by sender accounts,
+         // by saving 'sender' list (accounts who signed the original transaction)
+         // only for non-inline top-level actions (having no parent action) in transactions,
+         // and providing mongodb index for ('sender', 'global_sequence')
+         auto& action_authorization = atrace.act.authorization;
+         action_traces_doc.append(kvp( "sender", [&action_authorization](sub_array child) {
+             for(const auto& permission : action_authorization) {
+                child.append(permission.actor.to_string());
+             }
+         } ));
+      } else {
+         action_traces_doc.append( kvp( "parent", b_int64{static_cast<int64_t>(parent_global_sequence)} ) );
       }
 
       // Actions having same global action sequence number can be 'upsert'ed several times when temporary chain fork occurs
@@ -802,7 +814,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
    }
 
    for( const auto& iline_atrace : atrace.inline_traces ) {
-      added |= add_action_trace( bulk_action_traces, iline_atrace, block_num, block_time, executed, global_sequence /*trx_id, now*/ );
+      added |= add_action_trace( bulk_action_traces, iline_atrace, block_num, block_time, /*executed,*/ global_sequence /*trx_id, now*/ );
    }
 
    return added;
@@ -832,31 +844,35 @@ void mongo_db_plugin_impl::_process_applied_transaction( const transaction_trace
    mongocxx::options::bulk_write bulk_opts;
    bulk_opts.ordered(false);
    mongocxx::bulk_write bulk_action_traces = action_traces.create_bulk_write(bulk_opts);
-   bool write_atraces = false;
+
    bool executed = t->receipt.valid() && t->receipt->status == chain::transaction_receipt_header::executed;
 
    string trx_id = t->id.str();
 
-   for( const auto& atrace : t->action_traces ) {
-      try {
-         write_atraces |= add_action_trace( bulk_action_traces, atrace, block_num, block_time, executed, 0 /*trx_id, now*/ );
-      } catch(...) {
-         handle_mongo_exception("add action traces", __LINE__);
+   if (executed) {
+       bool write_atraces = false;
+      for( const auto& atrace : t->action_traces ) {
+        try {
+           write_atraces |= add_action_trace( bulk_action_traces, atrace, block_num, block_time, /*executed,*/ 0 /*trx_id, now*/ );
+        } catch(...) {
+           handle_mongo_exception("add action traces", __LINE__);
+        }
       }
-   }
 
-   if( write_atraces ) {
-      try {
-         if( !bulk_action_traces.execute() ) {
-            EOS_ASSERT( false, chain::mongo_db_insert_fail, "Bulk action traces insert failed for transaction trace: ${id}", ("id", t->id));
-         }
-      } catch(...) {
-         handle_mongo_exception("action traces insert", __LINE__);
+      if( write_atraces ) {
+        try {
+           if( !bulk_action_traces.execute() ) {
+              EOS_ASSERT( false, chain::mongo_db_insert_fail, "Bulk action traces insert failed for transaction trace: ${id}", ("id", t->id));
+           }
+        } catch(...) {
+           handle_mongo_exception("action traces insert", __LINE__);
+        }
       }
+
+      if( !write_atraces ) return; //< do not insert transaction_trace if all action_traces filtered out
    }
 
    if( !start_block_reached || !store_transaction_traces ) return;
-   if( !write_atraces ) return; //< do not insert transaction_trace if all action_traces filtered out
 
    // transaction trace insert
 
@@ -891,8 +907,10 @@ void mongo_db_plugin_impl::_process_applied_transaction( const transaction_trace
    // 'createdAt' timestamp can be retrieved from mongodb ObjectId.getTimestamp()
    //trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
 
-   trans_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
-   trans_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
+   if (executed) {
+      trans_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
+      trans_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
+   }
 
    // merge 'trans_traces' document to the document stored in 'trans' collection
    try {
@@ -1408,7 +1426,8 @@ void mongo_db_plugin_impl::init() {
          trans.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
          //trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ));
          // implicit transactions having system actions like 'onblock' should be filtered in block explorer
-         trans.create_index( bsoncxx::from_json( R"xxx({ "implicit" : 1, "bTime" : -1 })xxx" ));
+         trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ),
+                             bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "$and" : [ { "implicit" : false }, { "bTime" : { "$exists" : true } } ] } })xxx" ) );
 
          //auto trans_trace = mongo_conn[db_name][trans_traces_col];
          //trans_trace.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
@@ -1416,9 +1435,13 @@ void mongo_db_plugin_impl::init() {
          // action traces indexes
          auto action_traces = mongo_conn[db_name][action_traces_col];
          action_traces.create_index( bsoncxx::from_json( R"xxx({ "trx_id" : 1 })xxx" ));
-         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : 1 })xxx" ), mongocxx::options::index().unique(true) );
-         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : 1 })xxx" ));
-         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "act.account" : 1, "act.name" : 1, "receipt.recv_sequence" : 1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.global_sequence" : -1 })xxx" ), mongocxx::options::index().unique(true) );
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "receipt.recv_sequence" : -1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "receipt.receiver" : 1, "act.account" : 1, "act.name" : 1, "receipt.recv_sequence" : -1 })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "sender" : 1, "receipt.global_sequence" : -1 })xxx" ),
+                                     bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "sender" : { "$exists" : true } } })xxx" )); //bsoncxx::from_json( R"xxx({ "sparse" : true })xxx" ));
+         action_traces.create_index( bsoncxx::from_json( R"xxx({ "sender" : 1, "act.account" : 1, "act.name" : 1, "receipt.global_sequence" : -1 })xxx" ),
+                                     bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "sender" : { "$exists" : true } } })xxx" )); //bsoncxx::from_json( R"xxx({ "sparse" : true })xxx" ));
          //action_traces.create_index( bsoncxx::from_json( R"xxx({ "parent" : 1 })xxx" ));
 
          // pub_keys indexes
