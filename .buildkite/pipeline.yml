@@ -6,7 +6,7 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":ubuntu: Build"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-builder"
     plugins:
       docker#v1.4.0:
@@ -22,7 +22,7 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":ubuntu: 18.04 Build"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-builder"
     plugins:
       docker#v1.4.0:
@@ -38,7 +38,7 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":fedora: Build"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-builder"
     artifact_paths: "build.tar.gz"
     plugins:
@@ -54,7 +54,7 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":centos: Build"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-builder"
     plugins:
       docker#v1.4.0:
@@ -70,7 +70,7 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":aws: Build"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-builder"
     artifact_paths: "build.tar.gz"
     plugins:
@@ -92,7 +92,7 @@ steps:
         limit: 1
     label: ":ubuntu: Tests"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
@@ -117,7 +117,7 @@ steps:
         limit: 1
     label: ":ubuntu: 18.04 Tests"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
@@ -142,7 +142,7 @@ steps:
         limit: 1
     label: ":fedora: Tests"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
@@ -167,7 +167,7 @@ steps:
         limit: 1
     label: ":centos: Tests"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
@@ -192,7 +192,7 @@ steps:
         limit: 1
     label: ":aws: Tests"
     agents:
-      queue: "builder"
+      - "queue=builder"
       - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
