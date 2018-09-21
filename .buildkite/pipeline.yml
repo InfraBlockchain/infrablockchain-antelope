@@ -6,7 +6,8 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":ubuntu: Build"
     agents:
-    - "role=linux-builder"
+      queue: 'builder'
+      - "role=linux-builder"
     plugins:
       docker#v1.4.0:
         image: "eosio/ci:ubuntu"
@@ -21,7 +22,8 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":ubuntu: 18.04 Build"
     agents:
-    - "role=linux-builder"
+      queue: 'builder'
+      - "role=linux-builder"
     plugins:
       docker#v1.4.0:
         image: "eosio/ci:ubuntu18"
@@ -36,7 +38,8 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":fedora: Build"
     agents:
-    - "role=linux-builder"
+      queue: 'builder'
+      - "role=linux-builder"
     artifact_paths: "build.tar.gz"
     plugins:
       docker#v1.4.0:
@@ -51,7 +54,8 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":centos: Build"
     agents:
-    - "role=linux-builder"
+      queue: 'builder'
+      - "role=linux-builder"
     plugins:
       docker#v1.4.0:
         image: "eosio/ci:centos"
@@ -66,7 +70,8 @@ steps:
       tar -pczf build.tar.gz build/
     label: ":aws: Build"
     agents:
-    - "role=linux-builder"
+      queue: 'builder'
+      - "role=linux-builder"
     artifact_paths: "build.tar.gz"
     plugins:
       docker#v1.4.0:
@@ -87,7 +92,8 @@ steps:
         limit: 1
     label: ":ubuntu: Tests"
     agents:
-    - "role=linux-tester"
+      queue: 'builder'
+      - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
     - "build/genesis.json"
@@ -111,7 +117,8 @@ steps:
         limit: 1
     label: ":ubuntu: 18.04 Tests"
     agents:
-    - "role=linux-tester"
+      queue: 'builder'
+      - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
     - "build/genesis.json"
@@ -135,7 +142,8 @@ steps:
         limit: 1
     label: ":fedora: Tests"
     agents:
-    - "role=linux-tester"
+      queue: 'builder'
+      - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
     - "build/genesis.json"
@@ -159,7 +167,8 @@ steps:
         limit: 1
     label: ":centos: Tests"
     agents:
-    - "role=linux-tester"
+      queue: 'builder'
+      - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
     - "build/genesis.json"
@@ -183,7 +192,8 @@ steps:
         limit: 1
     label: ":aws: Tests"
     agents:
-    - "role=linux-tester"
+      queue: 'builder'
+      - "role=linux-tester"
     artifact_paths:
     - "mongod.log"
     - "build/genesis.json"
