@@ -128,11 +128,15 @@ namespace yosemite { namespace native_token {
             if (balance_holder.token.amount <= amount.amount) {
                 to_balance = balance_holder.token.amount;
                 amount.amount -= to_balance;
-                zeroedout_depos.push_back(balance_holder.token.issuer);
+                if (from == payer) {
+                    zeroedout_depos.push_back(balance_holder.token.issuer);
+                }
             } else {
                 to_balance = amount.amount;
                 amount.amount = 0;
-                remained_ntoken = yx_asset{balance_holder.token.amount - to_balance, native_token_symbol};
+                if (from == payer) {
+                    remained_ntoken = yx_asset{balance_holder.token.amount - to_balance, native_token_symbol};
+                }
             }
 
             if (from == payer) {
@@ -147,7 +151,12 @@ namespace yosemite { namespace native_token {
 
             if (amount.amount == 0) {
                 if (!called_by_system_contract) {
-                    charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER, zeroedout_depos, remained_ntoken);
+                    if (from == payer) {
+                        charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER, zeroedout_depos,
+                                               remained_ntoken);
+                    } else{
+                        charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER);
+                    }
                 }
                 break;
             }
