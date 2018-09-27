@@ -14,7 +14,6 @@ add_subdirectory(eosio.sudo)
 add_subdirectory(multi_index_test)
 add_subdirectory(eosio.system) # For internal test
 add_subdirectory(stltest)
-add_subdirectory(exchange) # For internal test
 add_subdirectory(test.inline)
 add_subdirectory(asserter) # For internal test
 add_subdirectory(test_api)
