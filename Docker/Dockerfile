@@ -24,5 +24,4 @@ ENV EOSIO_ROOT=/opt/yosemite
 ENV YOSEMITE_ROOT=/opt/yosemite
 RUN chmod +x /opt/yosemite/bin/yosemited.sh
 ENV LD_LIBRARY_PATH /usr/local/lib
-VOLUME /opt/yosemite/bin/data-dir
 ENV PATH /opt/yosemite/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

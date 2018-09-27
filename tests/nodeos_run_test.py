@@ -22,8 +22,8 @@ from core_symbol import CORE_SYMBOL
 from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 
 args = TestHelper.parse_args({"--host","--port","--prod-count","--defproducera_prvt_key","--defproducerb_prvt_key","--mongodb"
-                              ,"--dump-error-details","--dont-launch","--keep-logs","-v","--leave-running","--only-bios","--clean-run"
-                              ,"--sanity-test","--p2p-plugin"})
+                                 ,"--dump-error-details","--dont-launch","--keep-logs","-v","--leave-running","--only-bios","--clean-run"
+                                 ,"--sanity-test","--p2p-plugin"})
 server=args.host
 port=args.port
 debug=args.v
@@ -285,7 +285,7 @@ try:
 
     node.waitForTransInBlock(transId)
 
-    transaction=node.getTransaction(transId, exitOnError=True, delayedRetry=False)
+    transaction=node.getTransaction(trans, exitOnError=True, delayedRetry=False)
 
     typeVal=None
     amountVal=None
@@ -418,7 +418,7 @@ try:
             raw=True)
 
     Print("Test for block decoded packed transaction (issue 2932)")
-    blockId=node.getBlockIdByTransId(transId)
+    blockId=node.getBlockIdByTransId(trans[1])
     assert(blockId)
     block=node.getBlock(blockId, exitOnError=True)
 
