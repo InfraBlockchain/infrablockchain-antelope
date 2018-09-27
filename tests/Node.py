@@ -45,7 +45,7 @@ class Node(object):
         self.mongoDb=mongoDb
         self.endpointHttp="http://%s:%d" % (self.host, self.port)
         self.endpointArgs="--url %s" % (self.endpointHttp)
-        self.miscEosClientArgs="--no-auto-keosd"
+        self.miscEosClientArgs="--no-auto-keyos"
         self.mongoEndpointArgs=""
         self.infoValid=None
         self.lastRetrievedHeadBlockNum=None
