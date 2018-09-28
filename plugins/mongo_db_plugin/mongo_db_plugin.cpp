@@ -1464,8 +1464,9 @@ void mongo_db_plugin_impl::init() {
             trans.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
             //trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ));
             // implicit transactions having system actions like 'onblock' should be filtered in block explorer
-            trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ),
-                                bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "$and" : [ { "implicit" : false }, { "bTime" : { "$exists" : true } } ] } })xxx" ) );
+            trans.create_index( bsoncxx::from_json( R"xxx({ "implicit" : 1, "bTime" : -1 })xxx" ));
+            //trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ),
+            //                    bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "$and" : [ { "implicit" : false }, { "bTime" : { "$exists" : true } } ] } })xxx" ) );
 
             //auto trans_trace = mongo_conn[db_name][trans_traces_col];
             //trans_trace.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
