@@ -301,6 +301,10 @@ namespace eosio { namespace testing {
       }
 
       bool validate() { return true; }
+
+      void log_to_console(const string &message) {
+          std::cerr << message << std::endl;
+      }
    };
 
    class validating_tester : public base_tester {

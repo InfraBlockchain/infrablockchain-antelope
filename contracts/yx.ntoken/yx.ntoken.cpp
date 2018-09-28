@@ -99,7 +99,7 @@ namespace yosemite { namespace native_token {
     void ntoken::wptransfer(account_name from, account_name to, eosio::asset amount, account_name payer, const string &memo) {
         bool called_by_system_contract = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
         if (!called_by_system_contract) {
-            eosio_assert(static_cast<uint32_t>(amount.is_valid()), "invalid amount");
+            eosio_assert(static_cast<uint32_t>(yx_asset{amount, 0}.is_valid()), "invalid amount");
             eosio_assert(static_cast<uint32_t>(amount.amount > 0), "must transfer positive amount");
             eosio_assert(static_cast<uint32_t>(amount.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
                          "only native token is supported; use yx.token::transfer instead");
@@ -174,9 +174,9 @@ namespace yosemite { namespace native_token {
         bool called_by_system_contract = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
         if (!called_by_system_contract) {
             eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
-            eosio_assert(static_cast<uint32_t>(token.amount > 0), "negative token is not allowed");
+            eosio_assert(static_cast<uint32_t>(token.amount > 0), "must transfer positive amount");
             eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
-                         "cannot transfer non-native token with this operation or wrong precision is specified");
+                         "only native token is supported; use yx.token::transfer instead");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
