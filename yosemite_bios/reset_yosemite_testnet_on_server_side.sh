@@ -221,11 +221,11 @@ sleep 2
 
 { print_section_title "Install Native Token Contract"; } 2>/dev/null
 
-slee 2
+sleep 2
 $YOSEMITE_CLI set contract yx.ntoken $YOSEMITE_CONTRACTS_DIR/yx.ntoken/
-slee 2
+sleep 2
 $YOSEMITE_CLI push action yosemite setpriv '["yx.ntoken",1]' -p yosemite@active
-slee 2
+sleep 2
 
 $YOSEMITE_CLI push action yx.ntoken setkycrule "{\"type\":0, \"kyc\":$(echo 'ibase=2; 1111' | bc)}" -p yosemite@active
 $YOSEMITE_CLI push action yx.ntoken setkycrule "{\"type\":1, \"kyc\":$(echo 'ibase=2; 1111' | bc)}" -p yosemite@active
@@ -233,11 +233,11 @@ $YOSEMITE_CLI push action yx.ntoken setkycrule "{\"type\":1, \"kyc\":$(echo 'iba
 
 { print_section_title "Install User Token Contract"; } 2>/dev/null
 
-slee 2
+sleep 2
 $YOSEMITE_CLI set contract yx.token $YOSEMITE_CONTRACTS_DIR/yx.token/
-slee 2
+sleep 2
 $YOSEMITE_CLI push action yosemite setpriv '["yx.token",1]' -p yosemite@active
-slee 2
+sleep 2
 
 
 { print_section_title "Install DContract Contract"; } 2>/dev/null
@@ -309,7 +309,7 @@ $YOSEMITE_CLI push action yosemite authproducer '["producer.h"]' -p yosemite@act
 $YOSEMITE_CLI push action yosemite authproducer '["producer.i"]' -p yosemite@active
 $YOSEMITE_CLI push action yosemite authproducer '["producer.j"]' -p yosemite@active
 
-sleep 180
+sleep 150
 tail -n 300 $YOSEMITE_NODE_LOG_FILE
 
 
