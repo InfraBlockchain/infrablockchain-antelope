@@ -100,30 +100,6 @@ steps:
   timeout: 60
 - command: |
     echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: Build" && \
-    tar -zxf build.tar.gz && \
-    echo "--- :m: Starting MongoDB" && \
-    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
-    echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
-  retry:
-    automatic:
-      limit: 1
-  label: ":ubuntu: NP Tests"
-  agents:
-    - "queue=builder"
-    - "role=linux-tester"
-  artifact_paths:
-    - "mongod.log"
-    - "build/genesis.json"
-    - "build/config.ini"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:ubuntu"
-      workdir: /data/job
-  timeout: 60
-- command: |
-    echo "--- :arrow_down: Downloading build directory" && \
     buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: 18.04 Build" && \
     tar -zxf build.tar.gz && \
     echo "--- :m: Starting MongoDB" && \
@@ -134,30 +110,6 @@ steps:
     automatic:
       limit: 1
   label: ":ubuntu: 18.04 Tests"
-  agents:
-    - "queue=builder"
-    - "role=linux-tester"
-  artifact_paths:
-    - "mongod.log"
-    - "build/genesis.json"
-    - "build/config.ini"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:ubuntu18"
-      workdir: /data/job
-  timeout: 60
-- command: |
-    echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: 18.04 Build" && \
-    tar -zxf build.tar.gz && \
-    echo "--- :m: Starting MongoDB" && \
-    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
-    echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
-  retry:
-    automatic:
-      limit: 1
-  label: ":ubuntu: 18.04 NP Tests"
   agents:
     - "queue=builder"
     - "role=linux-tester"
@@ -196,30 +148,6 @@ steps:
   timeout: 60
 - command: |
     echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":fedora: Build" && \
-    tar -zxf build.tar.gz && \
-    echo "--- :m: Starting MongoDB" && \
-    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
-    echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
-  retry:
-    automatic:
-      limit: 1
-  label: ":fedora: NP Tests"
-  agents:
-    - "queue=builder"
-    - "role=linux-tester"
-  artifact_paths:
-    - "mongod.log"
-    - "build/genesis.json"
-    - "build/config.ini"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:fedora"
-      workdir: /data/job
-  timeout: 60
-- command: |
-    echo "--- :arrow_down: Downloading build directory" && \
     buildkite-agent artifact download "build.tar.gz" . --step ":centos: Build" && \
     tar -zxf build.tar.gz && \
     echo "--- :m: Starting MongoDB" && \
@@ -244,30 +172,6 @@ steps:
   timeout: 60
 - command: |
     echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":centos: Build" && \
-    tar -zxf build.tar.gz && \
-    echo "--- :m: Starting MongoDB" && \
-    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
-    echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
-  retry:
-    automatic:
-      limit: 1
-  label: ":centos: NP Tests"
-  agents:
-    - "queue=builder"
-    - "role=linux-tester"
-  artifact_paths:
-    - "mongod.log"
-    - "build/genesis.json"
-    - "build/config.ini"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:centos"
-      workdir: /data/job
-  timeout: 60
-- command: |
-    echo "--- :arrow_down: Downloading build directory" && \
     buildkite-agent artifact download "build.tar.gz" . --step ":aws: Build" && \
     tar -zxf build.tar.gz && \
     echo "--- :m: Starting MongoDB" && \
@@ -278,30 +182,6 @@ steps:
     automatic:
       limit: 1
   label: ":aws: Tests"
-  agents:
-    - "queue=builder"
-    - "role=linux-tester"
-  artifact_paths:
-    - "mongod.log"
-    - "build/genesis.json"
-    - "build/config.ini"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:amazonlinux"
-      workdir: /data/job
-  timeout: 60
-- command: |
-    echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":aws: Build" && \
-    tar -zxf build.tar.gz && \
-    echo "--- :m: Starting MongoDB" && \
-    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
-    echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
-  retry:
-    automatic:
-      limit: 1
-  label: ":aws: NP Tests"
   agents:
     - "queue=builder"
     - "role=linux-tester"
