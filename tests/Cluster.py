@@ -864,7 +864,7 @@ class Cluster(object):
             return None
 
         p = re.compile('error', re.IGNORECASE)
-        bootlog="eosio-ignition-wd/bootlog.txt"
+        bootlog="yosemite-ignition-wd/bootlog.txt"
         with open(bootlog) as bootFile:
             for line in bootFile:
                 if p.search(line):
@@ -893,7 +893,7 @@ class Cluster(object):
                 Utils.Print("ERROR: Failed to create ignition wallet.")
                 return None
 
-            eosioName="eosio"
+            eosioName="yosemite"
             eosioKeys=producerKeys[eosioName]
             eosioAccount=Account(eosioName)
             eosioAccount.ownerPrivateKey=eosioKeys["private"]
@@ -906,27 +906,24 @@ class Cluster(object):
                 Utils.Print("ERROR: Failed to import %s account keys into ignition wallet." % (eosioName))
                 return None
 
-            initialFunds="1000000.0000 {0}".format(CORE_SYMBOL)
-            Utils.Print("Transfer initial fund %s to individual accounts." % (initialFunds))
-            trans=None
-            contract="eosio.token"
-            action="transfer"
-            for name, keys in producerKeys.items():
-                data="{\"from\":\"eosio\",\"to\":\"%s\",\"quantity\":\"%s\",\"memo\":\"%s\"}" % (name, initialFunds, "init transfer")
-                opts="--permission eosio@active"
-                if name != "eosio":
-                    trans=biosNode.pushMessage(contract, action, data, opts)
-                    if trans is None or not trans[0]:
-                        Utils.Print("ERROR: Failed to transfer funds from eosio.token to %s." % (name))
-                        return None
+            # create system depository account
+            sysdepoName = "d1"
+            sysdepoAccount = Account(sysdepoName)
+            sysdepoAccount.ownerPrivateKey = eosioKeys["private"]
+            sysdepoAccount.ownerPublicKey = eosioKeys["public"]
+            sysdepoAccount.activePrivateKey = eosioKeys["private"]
+            sysdepoAccount.activePublicKey = eosioKeys["public"]
 
-                Node.validateTransaction(trans[1])
-
-            Utils.Print("Wait for last transfer transaction to become finalized.")
-            transId=Node.getTransId(trans[1])
-            if not biosNode.waitForTransInBlock(transId):
-                Utils.Print("ERROR: Failed to validate transaction %s got rolled into a block on server port %d." % (transId, biosNode.port))
+            trans = biosNode.createAccount(sysdepoAccount, eosioAccount, 0)
+            if trans is None:
+                Utils.Print("ERROR: Failed to create account %s" % sysdepoAccount.name)
                 return None
+
+            Utils.Print("Creating the system depository and identity authority: %s " % sysdepoName)
+            biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "d1.org", waitForTransBlock=True)
+            biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "d1.org", waitForTransBlock=True)
+
+            biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
 
             Utils.Print("Cluster bootstrap done.")
         finally:
@@ -1183,8 +1180,8 @@ class Cluster(object):
                 return None
 
             Utils.Print("Creating the system depository and identity authority: %s " % sysdepoName)
-            biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "sysdepo1.org", waitForTransBlock=True)
-            biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "sysdepo1.org", waitForTransBlock=True)
+            biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "d1.org", waitForTransBlock=True)
+            biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "d1.org", waitForTransBlock=True)
 
             biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
 

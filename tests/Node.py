@@ -582,7 +582,7 @@ class Node(object):
         cmdDesc = "get token stats"
         cmd = "%s %s" % (cmdDesc, symbol)
         msg = "symbol=%s" % symbol
-        return self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+        return self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
 
     def getTokenBalance(self, account, symbol, exitOnError=False):
         """returns Json output from get currency balance."""
@@ -593,7 +593,7 @@ class Node(object):
         cmdDesc = "get token balance"
         cmd = "%s %s %s" % (cmdDesc, account, symbol)
         msg = "account=%s, symbol=%s" % (account, symbol)
-        return self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)["amount"]
+        return self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)["amount"]
 
     # Verifies account. Returns "get account" json return object
     def verifyAccount(self, account):
@@ -1325,7 +1325,7 @@ class Node(object):
         cmdDesc = "system regsysdepo"
         cmd = "%s -j %s %s" % (cmdDesc, sysdepo.name, sysdepoUrl)
         msg = "sysdepo=%s" % sysdepo.name
-        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+        trans = self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
 
         trans = self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
         if trans is None:
@@ -1335,7 +1335,7 @@ class Node(object):
         cmdDesc = "system authsysdepo"
         cmd = "%s -j %s" % (cmdDesc, sysdepo.name)
         msg = "sysdepo=%s" % sysdepo.name
-        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+        trans = self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
 
         if trans is None:
             Utils.cmdError("could not authorize \"%s\" the system depository" % (sysdepo.name))
@@ -1352,7 +1352,7 @@ class Node(object):
         cmdDesc = "system regidauth"
         cmd = "%s -j %s %s" % (cmdDesc, idauth.name, idauthUrl)
         msg = "idauth=%s" % idauth.name
-        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+        trans = self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
 
         trans = self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
         if trans is None:
@@ -1362,7 +1362,7 @@ class Node(object):
         cmdDesc = "system authidauth"
         cmd = "%s -j %s" % (cmdDesc, idauth.name)
         msg = "idauth=%s" % idauth.name
-        trans = self.processCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+        trans = self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
 
         if trans is None:
             Utils.cmdError("could not authorize \"%s\" the identity authority" % (idauth.name))
