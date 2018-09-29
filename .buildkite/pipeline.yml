@@ -93,9 +93,33 @@ steps:
     - "queue=builder"
     - "role=linux-tester"
   artifact_paths:
-  - "mongod.log"
-  - "build/genesis.json"
-  - "build/config.ini"
+    - "mongod.log"
+    - "build/genesis.json"
+    - "build/config.ini"
+  plugins:
+    docker#v1.4.0:
+      image: "eosio/ci:ubuntu"
+      workdir: /data/job
+  timeout: 60
+- command: |
+    echo "--- :arrow_down: Downloading build directory" && \
+    buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: Build" && \
+    tar -zxf build.tar.gz && \
+    echo "--- :m: Starting MongoDB" && \
+    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
+    echo "+++ :microscope: Running tests" && \
+    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
+  retry:
+    automatic:
+      limit: 1
+  label: ":ubuntu: NP Tests"
+  agents:
+    - "queue=builder"
+    - "role=linux-tester"
+  artifact_paths:
+    - "mongod.log"
+    - "build/genesis.json"
+    - "build/config.ini"
   plugins:
     docker#v1.4.0:
       image: "eosio/ci:ubuntu"
