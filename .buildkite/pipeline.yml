@@ -74,6 +74,9 @@ steps:
       image: "eosio/ci:amazonlinux"
       workdir: /data/job
   timeout: 60
+
+- wait
+
 - command: |
     echo "--- :arrow_down: Downloading build directory" && \
     buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: Build" && \
