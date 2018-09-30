@@ -90,21 +90,14 @@ try:
     testeraAccount.name="testera11111"
     currencyAccount=accounts[1]
     currencyAccount.name="currency1111"
-    exchangeAccount=accounts[2]
-    exchangeAccount.name="exchange1111"
 
     PRV_KEY1=testeraAccount.ownerPrivateKey
     PUB_KEY1=testeraAccount.ownerPublicKey
     PRV_KEY2=currencyAccount.ownerPrivateKey
     PUB_KEY2=currencyAccount.ownerPublicKey
-    PRV_KEY3=exchangeAccount.activePrivateKey
-    PUB_KEY3=exchangeAccount.activePublicKey
 
-    testeraAccount.activePrivateKey=currencyAccount.activePrivateKey=PRV_KEY3
-    testeraAccount.activePublicKey=currencyAccount.activePublicKey=PUB_KEY3
-
-    exchangeAccount.ownerPrivateKey=PRV_KEY2
-    exchangeAccount.ownerPublicKey=PUB_KEY2
+    testeraAccount.activePrivateKey=currencyAccount.activePrivateKey=PRV_KEY2
+    testeraAccount.activePublicKey=currencyAccount.activePublicKey=PUB_KEY2
 
     Print("Stand up %s" % (WalletdName))
     walletMgr.killall(allInstances=killAll)
@@ -209,11 +202,8 @@ try:
     Print("Create new account %s via %s" % (currencyAccount.name, cluster.eosioAccount.name))
     transId=node.createAccount(currencyAccount, cluster.eosioAccount, stakedDeposit=5000, exitOnError=True)
 
-    Print("Create new account %s via %s" % (exchangeAccount.name, cluster.eosioAccount.name))
-    transId=node.createAccount(exchangeAccount, cluster.eosioAccount, waitForTransBlock=True, exitOnError=True)
-
     Print("Validating accounts after user accounts creation")
-    accounts=[testeraAccount, currencyAccount, exchangeAccount]
+    accounts=[testeraAccount, currencyAccount]
     cluster.validateAccounts(accounts)
 
     Print("Verify account %s" % (testeraAccount))
@@ -244,7 +234,7 @@ try:
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
     Print("Validating accounts after some user trasactions")
-    accounts=[testeraAccount, currencyAccount, exchangeAccount]
+    accounts=[testeraAccount, currencyAccount]
     cluster.validateAccounts(accounts)
 
     Print("Locking all wallets.")
@@ -599,7 +589,7 @@ try:
             #errorExit("FAILURE - Assert in var/lib/node_00/stderr.txt")
 
     Print("Validating accounts at end of test")
-    accounts=[testeraAccount, currencyAccount, exchangeAccount]
+    accounts=[testeraAccount, currencyAccount]
     cluster.validateAccounts(accounts)
 
     testSuccessful=True
