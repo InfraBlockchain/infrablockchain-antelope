@@ -910,8 +910,8 @@ struct register_producer_subcommand {
    uint16_t loc = 0;
 
    register_producer_subcommand(CLI::App* actionRoot) {
-      auto register_producer = actionRoot->add_subcommand("regproducer", localized("Register a new producer"));
-      register_producer->add_option("account", producer_str, localized("The account to register as a producer"))->required();
+      auto register_producer = actionRoot->add_subcommand("regproducer", localized("Register a new block producer"));
+      register_producer->add_option("account", producer_str, localized("The account to register as a block producer"))->required();
       register_producer->add_option("producer_key", producer_key_str, localized("The producer's public key"))->required();
       register_producer->add_option("url", url, localized("url where info about producer can be found"), true);
       register_producer->add_option("location", loc, localized("relative location for purpose of nearest neighbor scheduling"), true);
@@ -926,6 +926,23 @@ struct register_producer_subcommand {
 
          auto regprod_var = regproducer_variant(producer_str, producer_key, url, loc );
          send_actions({create_action({permission_level{producer_str,config::active_name}}, config::system_account_name, N(regproducer), regprod_var)});
+      });
+   }
+};
+
+struct authorize_producer_subcommand {
+   string producer_str;
+
+   authorize_producer_subcommand(CLI::App* actionRoot) {
+      auto register_producer = actionRoot->add_subcommand("authproducer", localized("Authorize the new block producer"));
+      register_producer->add_option("account", producer_str, localized("The account registered as a block producer"))->required();
+      add_standard_transaction_options(register_producer);
+
+      register_producer->set_callback([this] {
+         auto authprod_var = fc::mutable_variant_object()
+               ("producer", producer_str);
+         send_actions({create_action(
+               {permission_level{config::system_account_name, config::active_name}}, config::system_account_name, N(authproducer), authprod_var)});
       });
    }
 };
@@ -2388,7 +2405,7 @@ int main( int argc, char** argv ) {
          localized("Transfer native token from account to account; if an issuer is not specified, native token issued by several issuers could be transferred"), false);
    ntoken_transfer->add_option("sender", sender, localized("The account sending naitve token"))->required();
    ntoken_transfer->add_option("recipient", recipient, localized("The account receiving naitve token"))->required();
-   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 10000.0000 DKRW)"))->required();
+   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 10000.00 DKRW)"))->required();
    ntoken_transfer->add_option("memo", memo, localized("The memo for the transfer"));
    ntoken_transfer->add_option("--issuer", issuer, localized("The issuer account who issues the native token"));
    ntoken_transfer->add_option("--payer", payer, localized("The account who pays transfer fee"));
@@ -3005,6 +3022,7 @@ int main( int argc, char** argv ) {
    auto createAccountSystem = create_account_subcommand( system, false /*simple*/ );
    auto registerProducer = register_producer_subcommand(system);
    auto unregisterProducer = unregister_producer_subcommand(system);
+   auto authoroizeProducer = authorize_producer_subcommand(system);
 
    auto listProducers = list_producers_subcommand(system);
 

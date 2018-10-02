@@ -59,7 +59,7 @@ cacmd () {
     programs/clyos/clyos  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount yosemite "$@" >> $logfile 2>&1
     ecmd system regproducer $1 $2
     ecmd push action yosemite authproducer "[\"$1\"]" -p yosemite
-    ecmd push action yx.ntoken nissue "{\"to\":\"$1\", \"token\":{\"amount\":\"1000000.0000 DKRW\",\"issuer\":\"sysdepo1\"}, \"memo\":\"my memo\"}" -p sysdepo1
+    ecmd push action yx.ntoken nissue "{\"to\":\"$1\", \"token\":{\"amount\":\"1000000.00 DKRW\",\"issuer\":\"sysdepo1\"}, \"memo\":\"my memo\"}" -p sysdepo1
 }
 
 sleep 2
@@ -122,31 +122,31 @@ ecmd push action yosemite regsysdepo '["sysdepo2","http://sysdepo2.org",1]' -p s
 ecmd push action yosemite authsysdepo '["sysdepo2"]' -p yosemite 
 
 # yx.system (turn off tx fee for test convenience)
-ecmd push action yx.txfee settxfee '["tf.newacc","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.regprod","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.regsysdep","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.regidauth","0.0000 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.newacc","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.regprod","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.regsysdep","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.regidauth","0.00 DKRW"]' -p yosemite
 
 # yx.ntoken
-ecmd push action yx.txfee settxfee '["tf.nissue","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.nredeem","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.transfer","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.ntransfer","0.0000 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.nissue","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.nredeem","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.transfer","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.ntransfer","0.00 DKRW"]' -p yosemite
 
 # yx.token
-ecmd push action yx.txfee settxfee '["tf.tcreate","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.tissue","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.tredeem","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.ttransfer","0.0000 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.tcreate","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.tissue","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.tredeem","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.ttransfer","0.00 DKRW"]' -p yosemite
 
 # yx.dcontract
-ecmd push action yx.txfee settxfee '["tf.dccreate","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcaddsign","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcsign","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcupadd","0.0000 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcremove","0.0000 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dccreate","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcaddsign","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcsign","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcupadd","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcremove","0.00 DKRW"]' -p yosemite
 
-ecmd push action yx.ntoken nissue '{"to":"yosemite", "token":{"amount":"1000000000.0000 DKRW","issuer":"sysdepo1"}, "memo":"my memo"}' -p sysdepo1
+ecmd push action yx.ntoken nissue '{"to":"yosemite", "token":{"amount":"1000000000.00 DKRW","issuer":"sysdepo1"}, "memo":"my memo"}' -p sysdepo1
 
 # Manual deployers, add a series of lines below this block that looks like:
 #    cacmd $PRODNAME[0] $OWNERKEY[0] $ACTIVEKEY[0]

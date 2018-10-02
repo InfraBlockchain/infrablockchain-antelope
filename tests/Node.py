@@ -460,7 +460,7 @@ class Node(object):
 
 
     # Create & initialize account and return creation transactions. Return transaction json object
-    def createInitializeAccount(self, account, creatorAccount, stakedDeposit=1000, waitForTransBlock=False, stakeNet=100, stakeCPU=100, buyRAM=10000, exitOnError=False):
+    def createInitializeAccount(self, account, creatorAccount, stakedDeposit=10, waitForTransBlock=False, stakeNet=100, stakeCPU=100, buyRAM=10000, exitOnError=False):
         cmdDesc="system newaccount"
         cmd='%s -j %s %s %s %s --stake-net "%s %s" --stake-cpu "%s %s" --buy-ram "%s %s"' % (
             cmdDesc, creatorAccount.name, account.name, account.ownerPublicKey,
@@ -476,7 +476,7 @@ class Node(object):
 
         return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
 
-    def createAccount(self, account, creatorAccount, stakedDeposit=1000, waitForTransBlock=False, exitOnError=False):
+    def createAccount(self, account, creatorAccount, stakedDeposit=10, waitForTransBlock=False, exitOnError=False):
         """Create account and return creation transactions. Return transaction json object.
         waitForTransBlock: wait on creation transaction id to appear in a block."""
         cmdDesc="create account"
@@ -488,7 +488,7 @@ class Node(object):
 
         if stakedDeposit > 0:
             self.waitForTransInBlock(transId) # seems like account creation needs to be finlized before transfer can happen
-            trans = self.transferNativeToken(creatorAccount, account, "%0.04f %s" % (stakedDeposit/10000, YOSEMITE_NATIVE_TOKEN_SYMBOL), "init")
+            trans = self.transferNativeToken(creatorAccount, account, "%0.02f %s" % (stakedDeposit/100, YOSEMITE_NATIVE_TOKEN_SYMBOL), "init")
             transId=Node.getTransId(trans)
 
         return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
@@ -721,7 +721,7 @@ class Node(object):
         assert(isinstance(balanceStr, str))
         balanceStr=balanceStr.split()[0]
         #balance=int(decimal.Decimal(balanceStr[1:])*10000)
-        balance=int(decimal.Decimal(balanceStr)*10000)
+        balance=int(decimal.Decimal(balanceStr)*100)
 
         return balance
 
@@ -730,7 +730,7 @@ class Node(object):
         """Converts currency int of form 123456 to string "12.3456 SYS" where SYS is symbol string"""
         assert(isinstance(balance, int))
         assert(isinstance(symbol, str))
-        balanceStr="%.04f %s" % (balance/10000.0, symbol)
+        balanceStr="%.02f %s" % (balance/100.0, symbol)
 
         return balanceStr
 
@@ -984,6 +984,15 @@ class Node(object):
         cmdDesc="system regproducer"
         cmd="%s -j %s %s %s %s" % (
             cmdDesc, producer.name, producer.activePublicKey, url, location)
+        msg="producer=%s" % (producer.name);
+        trans=self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
+
+        return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
+
+    def authproducer(self, producer, waitForTransBlock=False, exitOnError=False):
+        cmdDesc="system authproducer"
+        cmd="%s -j %s" % (
+            cmdDesc, producer.name)
         msg="producer=%s" % (producer.name);
         trans=self.processCleosCmd(cmd, cmdDesc, exitOnError=exitOnError, exitMsg=msg)
 

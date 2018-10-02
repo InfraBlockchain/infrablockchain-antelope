@@ -7,7 +7,7 @@ namespace yosemite { namespace non_native_token {
 
     void token::create(const yx_symbol &ysymbol, uint16_t can_set_options) {
         eosio_assert(static_cast<uint32_t>(ysymbol.is_valid()), "invalid ysymbol name");
-        eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 4), "token precision must be equal or larger than 4");
+        eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 2), "token precision must be equal or larger than 2");
         eosio_assert(static_cast<uint32_t>(!ysymbol.is_native(false)), "cannot create the native token with this action");
         eosio_assert(static_cast<uint32_t>(can_set_options <= TOKEN_CAN_SET_OPTIONS_MAX), "invalid can_set_options");
 

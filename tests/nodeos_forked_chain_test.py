@@ -23,6 +23,7 @@ import signal
 Print=Utils.Print
 
 from core_symbol import CORE_SYMBOL
+from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 
 def analyzeBPs(bps0, bps1, expectDivergence):
     start=0
@@ -197,6 +198,7 @@ try:
         else:
             for prod in node.producers:
                 trans=node.regproducer(cluster.defProducerAccounts[prod], "http::/mysite.com", 0, waitForTransBlock=False, exitOnError=True)
+                trans=node.authproducer(cluster.defProducerAccounts[prod], waitForTransBlock=False, exitOnError=True)
 
             prodNodes.append(node)
             producers.extend(node.producers)
@@ -208,23 +210,10 @@ try:
     # create accounts via eosio as otherwise a bid is needed
     for account in accounts:
         Print("Create new account %s via %s" % (account.name, cluster.eosioAccount.name))
-        trans=node.createInitializeAccount(account, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=False, stakeNet=1000, stakeCPU=1000, buyRAM=1000, exitOnError=True)
-        transferAmount="100000000.0000 {0}".format(CORE_SYMBOL)
+        trans=node.createAccount(account, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=False, exitOnError=True)
+        transferAmount="100000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
         Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, account.name))
-        node.transferFunds(cluster.eosioAccount, account, transferAmount, "test transfer")
-        trans=node.delegatebw(account, 20000000.0000, 20000000.0000, exitOnError=True)
-
-
-    # ***   vote using accounts   ***
-
-    #verify nodes are in sync and advancing
-    cluster.waitOnClusterSync(blockAdvancing=5)
-    index=0
-    for account in accounts:
-        Print("Vote for producers=%s" % (producers))
-        trans=prodNodes[index % len(prodNodes)].vote(account, producers)
-        index+=1
-
+        node.transferNativeToken(cluster.eosioAccount, account, transferAmount, "test transfer")
 
     # ***   Identify a block where production is stable   ***
 

@@ -12,7 +12,7 @@
 # Decision Points Before Creating Token
 You must consider the decision points carefully because it cannot be changed once created.
 1. About precision
-   * The minimum precision is 4. It's enough to use in most cases.
+   * The minimum precision is 2. It's enough to use in most cases.
    * For backing crypto-currencies like BTC or ETH, you might need 8.
 1. About options
    * Once the token is created, you cannot change the ways you handle the token. Generally the options of the token are for token management.
@@ -24,13 +24,13 @@ You must consider the decision points carefully because it cannot be changed onc
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.0000 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.00 DKRW"}}' -p yosemite
 ```
 
 # Actions
@@ -81,17 +81,17 @@ clyos push action yx.token issue '{"to":"user2","token":{"amount":"100000.0000 B
 #      yx.token <= yx.token::transfer           {"from":"d2","to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}
 #            d2 <= yx.token::transfer           {"from":"d2","to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}
 #         user2 <= yx.token::transfer           {"from":"d2","to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 * Case 2. If the to account is the token depository itself, there is no `transfer` inline action.
 ```
 #      yx.token <= yx.token::issue              {"to":"d2","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 ## redeem

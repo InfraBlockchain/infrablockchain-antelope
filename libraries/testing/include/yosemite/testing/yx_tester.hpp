@@ -39,6 +39,8 @@ namespace yosemite { namespace testing {
 
 class yx_tester : public tester {
 public:
+   const string zero_ntoken = asset{0, symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL}}.to_string();
+
    abi_serializer abi_ser_system;
    abi_serializer abi_ser_txfee;
    abi_serializer abi_ser_identity;
@@ -71,23 +73,23 @@ public:
       BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt3.abi, abi), true);
       abi_ser_txfee.set_abi(abi, abi_serializer_max_time);
 
-      set_tx_fee("tf.newacc", "0.0000 DKRW");
-      set_tx_fee("tf.regprod", "0.0000 DKRW");
-      set_tx_fee("tf.regsysdep", "0.0000 DKRW");
-      set_tx_fee("tf.regidauth", "0.0000 DKRW");
+      set_tx_fee("tf.newacc", zero_ntoken);
+      set_tx_fee("tf.regprod", zero_ntoken);
+      set_tx_fee("tf.regsysdep", zero_ntoken);
+      set_tx_fee("tf.regidauth", zero_ntoken);
 
-      set_tx_fee("tf.nissue", "0.0000 DKRW");
-      set_tx_fee("tf.nredeem", "1000.0000 DKRW");
-      set_tx_fee("tf.ntransfer", "100.0000 DKRW");
-      set_tx_fee("tf.transfer", "100.0000 DKRW");
+      set_tx_fee("tf.nissue", zero_ntoken);
+      set_tx_fee("tf.nredeem", asset{100000, symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL}}.to_string());
+      set_tx_fee("tf.ntransfer", asset{10000, symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL}}.to_string());
+      set_tx_fee("tf.transfer", asset{10000, symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL}}.to_string());
 
-      set_tx_fee("tf.tcreate", "0.0000 DKRW");
-      set_tx_fee("tf.tissue", "0.0000 DKRW");
-      set_tx_fee("tf.tredeem", "0.0000 DKRW");
-      set_tx_fee("tf.ttransfer", "0.0000 DKRW");
-      set_tx_fee("tf.tsetkyc", "0.0000 DKRW");
-      set_tx_fee("tf.tsetopts", "0.0000 DKRW");
-      set_tx_fee("tf.tfreezeac", "0.0000 DKRW");
+      set_tx_fee("tf.tcreate", zero_ntoken);
+      set_tx_fee("tf.tissue", zero_ntoken);
+      set_tx_fee("tf.tredeem", zero_ntoken);
+      set_tx_fee("tf.ttransfer", zero_ntoken);
+      set_tx_fee("tf.tsetkyc", zero_ntoken);
+      set_tx_fee("tf.tsetopts", zero_ntoken);
+      set_tx_fee("tf.tfreezeac", zero_ntoken);
 
       produce_blocks();
 
@@ -124,6 +126,14 @@ public:
       prepare_identity_authority(N(d1));
 
       produce_blocks();
+   }
+
+   string to_asset_string(share_type a, uint64_t symbol_value = YOSEMITE_NATIVE_TOKEN_SYMBOL) {
+      return asset{a, symbol{symbol_value}}.to_string();
+   }
+
+   string to_yx_asset_string(share_type a, const string &issuer, uint64_t symbol_value = YOSEMITE_NATIVE_TOKEN_SYMBOL) {
+      return yx_asset{asset{a, symbol{symbol_value}}, issuer}.to_string();
    }
 
    action_result push_action(const action_name &name, const variant_object &data, const account_name &signer,

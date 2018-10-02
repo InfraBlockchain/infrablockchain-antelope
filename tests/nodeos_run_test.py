@@ -18,7 +18,6 @@ import re
 Print=Utils.Print
 errorExit=Utils.errorExit
 cmdError=Utils.cmdError
-from core_symbol import CORE_SYMBOL
 from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 
 args = TestHelper.parse_args({"--host","--port","--prod-count","--defproducera_prvt_key","--defproducerb_prvt_key","--mongodb"
@@ -200,7 +199,7 @@ try:
     transId=node.createAccount(testeraAccount, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=False, exitOnError=True)
 
     Print("Create new account %s via %s" % (currencyAccount.name, cluster.eosioAccount.name))
-    transId=node.createAccount(currencyAccount, cluster.eosioAccount, stakedDeposit=5000, exitOnError=True)
+    transId=node.createAccount(currencyAccount, cluster.eosioAccount, stakedDeposit=50, exitOnError=True)
 
     Print("Validating accounts after user accounts creation")
     accounts=[testeraAccount, currencyAccount]
@@ -210,7 +209,7 @@ try:
     if not node.verifyAccount(testeraAccount):
         errorExit("FAILURE - account creation failed.", raw=True)
 
-    transferAmount="97.5321 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="97.53 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (transferAmount, defproduceraAccount.name, testeraAccount.name))
     node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer")
 
@@ -221,12 +220,12 @@ try:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
-    transferAmount="0.0100 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="0.01 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Force transfer funds %s from account %s to %s" % (
         transferAmount, defproduceraAccount.name, testeraAccount.name))
     node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer", force=True)
 
-    expectedAmount="97.5421 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    expectedAmount="97.54 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Verify transfer, Expected: %s" % expectedAmount)
     actualAmount=node.getAccountTotalNativeTokenBalanceStr(testeraAccount.name)
     if expectedAmount != actualAmount:
@@ -247,20 +246,20 @@ try:
         cmdError("%s wallet unlock" % (ClientName))
         errorExit("Failed to unlock wallet %s" % (testWallet.name))
 
-    transferAmount="97.5311 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="97.53 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (
         transferAmount, testeraAccount.name, currencyAccount.name))
     trans=node.transferNativeToken(testeraAccount, currencyAccount, transferAmount, "test transfer a->b")
     transId=Node.getTransId(trans)
 
-    expectedAmount="98.0311 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL) # 5000 initial deposit
+    expectedAmount="98.03 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL) # 50.00 initial deposit
     Print("Verify transfer, Expected: %s" % (expectedAmount))
     actualAmount=node.getAccountTotalNativeTokenBalanceStr(currencyAccount.name)
     if expectedAmount != actualAmount:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
-    node.issueNativeToken(currencyAccount.name, "d1", "100000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, "currency1111 issue", waitForTransBlock=True)
+    node.issueNativeToken(currencyAccount.name, "d1", "100000.00 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, "currency1111 issue", waitForTransBlock=True)
 
     Print("Validate last action for account %s" % (testeraAccount.name))
     actions=node.getActions(testeraAccount, -1, -1, exitOnError=True)
@@ -286,18 +285,18 @@ try:
             typeVal=  transaction["traces"][0]["act"]["name"]
             key="[traces][0][act][data][quantity]"
             amountVal=transaction["traces"][0]["act"]["data"]["amount"]
-            amountVal=int(decimal.Decimal(amountVal.split()[0])*10000)
+            amountVal=int(decimal.Decimal(amountVal.split()[0])*100)
         else:
             key="[actions][0][name]"
             typeVal=  transaction["actions"][0]["name"]
             key="[actions][0][data][quantity]"
             amountVal=transaction["actions"][0]["data"]["amount"]
-            amountVal=int(decimal.Decimal(amountVal.split()[0])*10000)
+            amountVal=int(decimal.Decimal(amountVal.split()[0])*100)
     except (TypeError, KeyError) as e:
         Print("transaction%s not found. Transaction: %s" % (key, transaction))
         raise
 
-    if typeVal != "transfer" or amountVal != 975311:
+    if typeVal != "transfer" or amountVal != 9753:
         errorExit("FAILURE - validating transaction failed: %s %s %s" % (transId, typeVal, amountVal), raw=True)
 
     Print("yx.token Tests")

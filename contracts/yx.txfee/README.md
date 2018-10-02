@@ -62,49 +62,49 @@ Transaction fees can be updated by the active block producers
 
 ```bash
 // yx.system
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.newacc", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regprod", "3000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regidauth", "2000000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.newacc", "1000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regprod", "3000000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regidauth", "2000000.00 DKRW" ]' -p yosemite@active
 
 // yx.ntoken
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nissue", "0.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nredeem", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.transfer", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.ntransfer", "200.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nissue", "0.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nredeem", "1000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.transfer", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.ntransfer", "200.00 DKRW" ]' -p yosemite@active
 
 // yx.token
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tcreate", "10000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tissue", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tredeem", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.ttransfer", "100.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tcreate", "10000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tissue", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tredeem", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.ttransfer", "100.00 DKRW" ]' -p yosemite@active
 
 // yx.dcontract
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dccreate", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcaddsign", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcsign", "300.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcupadd", "50.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcremove", "0.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dccreate", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcaddsign", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcsign", "300.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcupadd", "50.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.dcremove", "0.00 DKRW" ]' -p yosemite@active
 
 $YOSEMITE_CLYOS get table -l 100 yx.txfee yx.txfee txfees
 {
   "rows": [{
       "operation": "tf.dcaddsign",
-      "fee": 1000000
+      "fee": 10000
     },{
 ...
     },{
       "operation": "tf.newacc",
-      "fee": 10000000
+      "fee": 100000
     },{
       "operation": "tf.nissue",
       "fee": 0
     },{
       "operation": "tf.nredeem",
-      "fee": 10000000
+      "fee": 100000
     },{
       "operation": "tf.ntransfer",
-      "fee": 2000000
+      "fee": 20000
     },{
 ...
 }

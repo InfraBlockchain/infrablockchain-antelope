@@ -449,29 +449,29 @@ Setup Initial Transaction Fees
 ---
 ```bash
 // yx.system
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.newacc", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regprod", "3000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regidauth", "2000000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.newacc", "1000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regprod", "3000000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regidauth", "2000000.00 DKRW" ]' -p yosemite@active
 
 // yx.ntoken
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nissue", "0.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nredeem", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.transfer", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ntransfer", "200.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nissue", "0.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nredeem", "1000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.transfer", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ntransfer", "200.00 DKRW" ]' -p yosemite@active
 
 // yx.token
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tcreate", "10000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tissue", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tredeem", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ttransfer", "100.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tcreate", "10000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tissue", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tredeem", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ttransfer", "100.00 DKRW" ]' -p yosemite@active
 
 // yx.dcontract
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dccreate", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcaddsign", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcsign", "300.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcupadd", "50.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcremove", "0.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dccreate", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcaddsign", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcsign", "300.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcupadd", "50.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcremove", "0.00 DKRW" ]' -p yosemite@active
 
 $YOSEMITE_CLI get table -l 100 yx.txfee yx.txfee txfees
 $YOSEMITE_CLI get table -L tf.transfer -l 1 yx.txfee yx.txfee txfees
@@ -579,19 +579,19 @@ $YOSEMITE_CLI create account yosemite com YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ
 
 // Only suffix account can create accounts having arbitrary prefix with the same suffix name
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"com\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"1f32i7t23\"}" -p idauth1@active
-$YOSEMITE_CLI push action yx.ntoken nissue '["com",{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"nissue com"]' -p sysdepo1@active
+$YOSEMITE_CLI push action yx.ntoken nissue '["com",{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"nissue com"]' -p sysdepo1@active
 executed transaction: c9fb1c0cf6c6c9d73e377bcfd405802e129f85cf86a68a57bc15f91d252e1924  136 bytes  3565 us
-#     yx.ntoken <= yx.ntoken::nissue            {"to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"memo":"nissue com"}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"memo":"nis...
-#      sysdepo1 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"memo":"nis...
-#           com <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"memo":"nis...
+#     yx.ntoken <= yx.ntoken::nissue            {"to":"com","token":{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"memo":"nissue com"}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"memo":"nis...
+#      sysdepo1 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"memo":"nis...
+#           com <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"memo":"nis...
 $YOSEMITE_CLI create account com acquire.com YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh -p com@active
 executed transaction: 9268f4e3b7e44caaf1a7c3528ff44ce6e9cfdb8d6dfcf33aa2cc44d7a6c5604a  200 bytes  4900 us
 #      yosemite <= yosemite::newaccount         {"creator":"com","name":"acquire.com","owner":{"threshold":1,"keys":[{"key":"YOS5UbAi7wTM1wpFNp81bgh...
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"com","token":"1000.0000 DKRW"}
-#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.0000 DKRW","issuer":"sysdepo1"}}
-#           com <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.0000 DKRW","issuer":"sysdepo1"}}
-#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.0000 DKRW","issuer":"sysdepo1"}}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"com","token":"1000.00 DKRW"}
+#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.00 DKRW","issuer":"sysdepo1"}}
+#           com <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.00 DKRW","issuer":"sysdepo1"}}
+#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.00 DKRW","issuer":"sysdepo1"}}
 
 $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntaccounts
 $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntstats
@@ -628,50 +628,50 @@ Native Token Issue / Transfer
 
 ```bash
 
-$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount2",{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
+$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount2",{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
 executed transaction: 5d60dada4af867696f4bf43842c9820218da2fbb8166d2c3d83f32bd7c07ad89  136 bytes  3767 us
-#     yx.ntoken <= yx.ntoken::nissue            {"to":"useraccount2","token":{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"memo":"nissue test"}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"useraccount2","token":{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"me...
-#      sysdepo1 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"useraccount2","token":{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"me...
-#  useraccount2 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"useraccount2","token":{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"me..
+#     yx.ntoken <= yx.ntoken::nissue            {"to":"useraccount2","token":{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"memo":"nissue test"}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"useraccount2","token":{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"me...
+#      sysdepo1 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"useraccount2","token":{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"me...
+#  useraccount2 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"useraccount2","token":{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"me..
 
-$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount3",{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
+$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount3",{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
 
 // unable to issue to blacklisted account
-//$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount1",{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
+//$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount1",{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
 
 
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount2", "useraccount3", "10000.0000 DKRW", "memo" ]' -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount2", "useraccount3", "10000.00 DKRW", "memo" ]' -p useraccount2
 executed transaction: 0bf46f27f6689de95d875e2ad9f6f5428b139f377a5790313e618de371150dc5  136 bytes  7379 us
-#     yx.ntoken <= yx.ntoken::transfer          {"from":"useraccount2","to":"useraccount3","amount":"10000.0000 DKRW","memo":"memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"useraccount2","token":"100.0000 DKRW"}
-#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.0000 DKRW","issuer":"sysdepo1"}}
-#  useraccount2 <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.0000 DKRW","issuer":"sysdepo1"}}
-#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.0000 DKRW","issuer":"sysdepo1"}}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
-#  useraccount2 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
-#  useraccount3 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
+#     yx.ntoken <= yx.ntoken::transfer          {"from":"useraccount2","to":"useraccount3","amount":"10000.00 DKRW","memo":"memo"}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"useraccount2","token":"100.00 DKRW"}
+#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.00 DKRW","issuer":"sysdepo1"}}
+#  useraccount2 <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.00 DKRW","issuer":"sysdepo1"}}
+#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.00 DKRW","issuer":"sysdepo1"}}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
+#  useraccount2 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
+#  useraccount3 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
 
-$YOSEMITE_CLI push action yx.ntoken ntransfer '[ "useraccount2", "useraccount3", {"amount":"10000.0000 DKRW","issuer":"sysdepo1"}, "memo" ]' -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken ntransfer '[ "useraccount2", "useraccount3", {"amount":"10000.00 DKRW","issuer":"sysdepo1"}, "memo" ]' -p useraccount2
 executed transaction: f443593e42ff28e1515a26d87d9b0b476849954ceb77ef1057e8dd07a857cea8  144 bytes  4947 us
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
-#  useraccount2 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
-#  useraccount3 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"useraccount2","token":"200.0000 DKRW"}
-#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"200.0000 DKRW","issuer":"sysdepo1"}}
-#  useraccount2 <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"200.0000 DKRW","issuer":"sysdepo1"}}
-#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"200.0000 DKRW","issuer":"sysdepo1"}}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
+#  useraccount2 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
+#  useraccount3 <= yx.ntoken::ntransfer         {"from":"useraccount2","to":"useraccount3","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"useraccount2","token":"200.00 DKRW"}
+#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"200.00 DKRW","issuer":"sysdepo1"}}
+#  useraccount2 <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"200.00 DKRW","issuer":"sysdepo1"}}
+#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"200.00 DKRW","issuer":"sysdepo1"}}
 
-$YOSEMITE_CLI push action yx.ntoken wptransfer '[ "useraccount3", "useraccount2", "10000.0000 DKRW", "useraccount2", "memo" ]' -p useraccount3 -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken wptransfer '[ "useraccount3", "useraccount2", "10000.00 DKRW", "useraccount2", "memo" ]' -p useraccount3 -p useraccount2
 executed transaction: 8f7e234e837021535c8eb9302ed3052307e972ac9da001de7db35c80714f846f  168 bytes  7554 us
-#     yx.ntoken <= yx.ntoken::wptransfer        {"from":"useraccount3","to":"useraccount2","amount":"10000.0000 DKRW","payer":"useraccount2","memo":...
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"useraccount2","token":"100.0000 DKRW"}
-#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.0000 DKRW","issuer":"sysdepo1"}}
-#  useraccount2 <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.0000 DKRW","issuer":"sysdepo1"}}
-#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.0000 DKRW","issuer":"sysdepo1"}}
-#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"useraccount3","to":"useraccount2","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
-#  useraccount3 <= yx.ntoken::wpntransfer       {"from":"useraccount3","to":"useraccount2","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
-#  useraccount2 <= yx.ntoken::wpntransfer       {"from":"useraccount3","to":"useraccount2","token":{"amount":"10000.0000 DKRW","issuer":"sysdepo1"},...
+#     yx.ntoken <= yx.ntoken::wptransfer        {"from":"useraccount3","to":"useraccount2","amount":"10000.00 DKRW","payer":"useraccount2","memo":...
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"useraccount2","token":"100.00 DKRW"}
+#     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.00 DKRW","issuer":"sysdepo1"}}
+#  useraccount2 <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.00 DKRW","issuer":"sysdepo1"}}
+#      yx.txfee <= yx.ntoken::feetransfer       {"payer":"useraccount2","token":{"amount":"100.00 DKRW","issuer":"sysdepo1"}}
+#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"useraccount3","to":"useraccount2","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
+#  useraccount3 <= yx.ntoken::wpntransfer       {"from":"useraccount3","to":"useraccount2","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
+#  useraccount2 <= yx.ntoken::wpntransfer       {"from":"useraccount3","to":"useraccount2","token":{"amount":"10000.00 DKRW","issuer":"sysdepo1"},...
 
 $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntstats
 $YOSEMITE_CLI get table yx.ntoken useraccount1 ntaccounts
@@ -691,10 +691,10 @@ $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"producer.c\", \"
 $YOSEMITE_CLI push action yosemite claimrewards '["producer.c"]' -p producer.c@active
 executed transaction: 96c1b0e367c4bbc85801242dc5a8ba33de274c4aee6ce898ac0b9008c8ca655c  104 bytes  4891 us
 #      yosemite <= yosemite::claimrewards       {"owner":"producer.c"}
-#     yx.ntoken <= yx.ntoken::transfer          {"from":"yx.txfee","to":"producer.c","amount":"247.8260 DKRW","memo":""}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"yx.txfee","to":"producer.c","token":{"amount":"247.8260 DKRW","issuer":"sysdepo1"},"memo":"...
-#      yx.txfee <= yx.ntoken::ntransfer         {"from":"yx.txfee","to":"producer.c","token":{"amount":"247.8260 DKRW","issuer":"sysdepo1"},"memo":"...
-#    producer.c <= yx.ntoken::ntransfer         {"from":"yx.txfee","to":"producer.c","token":{"amount":"247.8260 DKRW","issuer":"sysdepo1"},"memo":"...
+#     yx.ntoken <= yx.ntoken::transfer          {"from":"yx.txfee","to":"producer.c","amount":"247.82 DKRW","memo":""}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"yx.txfee","to":"producer.c","token":{"amount":"247.82 DKRW","issuer":"sysdepo1"},"memo":"...
+#      yx.txfee <= yx.ntoken::ntransfer         {"from":"yx.txfee","to":"producer.c","token":{"amount":"247.82 DKRW","issuer":"sysdepo1"},"memo":"...
+#    producer.c <= yx.ntoken::ntransfer         {"from":"yx.txfee","to":"producer.c","token":{"amount":"247.82 DKRW","issuer":"sysdepo1"},"memo":"...
 
 $YOSEMITE_CLI get table yosemite yosemite producers
 
@@ -716,7 +716,7 @@ Options:
   -v,--trx-vote TEXT          transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)
 ...
   
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "10000.0000 DKRW", "memo" ]' -p useraccount3 -v producer.f
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "10000.00 DKRW", "memo" ]' -p useraccount3 -v producer.f
 $YOSEMITE_CLI get table yosemite yosemite producers
 ```
 
@@ -732,22 +732,22 @@ $YOSEMITE_CLI_TESTNET get actions yx.ntoken 0 9
 #    3   2018-08-17T06:32:57.500     yx.ntoken::setkycrule => yx.ntoken     1ebd6b37... {"type":1,"kyc":15}...
 #    4   2018-08-17T06:36:10.000      yosemite::updateauth => yosemite      dc14ff64... {"account":"yx.ntoken","permission":"owner","parent":"","aut...
 #    5   2018-08-17T06:36:10.000      yosemite::updateauth => yosemite      d153eff4... {"account":"yx.ntoken","permission":"active","parent":"owner...
-#    6   2018-08-17T06:36:11.500         yx.ntoken::nissue => yx.ntoken     eb2f8abc... {"to":"com","token":{"amount":"5000000.0000 DKRW","issuer":"...
+#    6   2018-08-17T06:36:11.500         yx.ntoken::nissue => yx.ntoken     eb2f8abc... {"to":"com","token":{"amount":"5000000.00 DKRW","issuer":"...
 #    7   2018-08-17T06:36:11.500      yx.ntoken::ntransfer => yx.ntoken     eb2f8abc... {"from":"sysdepo1","to":"com","token":{"amount":"5000000.000...
-#    8   2018-08-17T06:36:11.500         yx.ntoken::payfee => yx.ntoken     d59e98ad... {"payer":"com","token":{"amount":"1000.0000 DKRW","issuer":"...
-#    9   2018-08-17T06:36:14.000         yx.ntoken::nissue => yx.ntoken     e91aaf07... {"to":"useraccount2","token":{"amount":"100000.0000 DKRW","i...
+#    8   2018-08-17T06:36:11.500         yx.ntoken::payfee => yx.ntoken     d59e98ad... {"payer":"com","token":{"amount":"1000.00 DKRW","issuer":"...
+#    9   2018-08-17T06:36:14.000         yx.ntoken::nissue => yx.ntoken     e91aaf07... {"to":"useraccount2","token":{"amount":"100000.00 DKRW","i...
 
 $YOSEMITE_CLI_TESTNET get actions yx.ntoken 10 9
 #  seq  when                              contract::action => receiver      trx id...   args
 ================================================================================================================
 #   10   2018-08-17T06:36:14.000      yx.ntoken::ntransfer => yx.ntoken     e91aaf07... {"from":"sysdepo1","to":"useraccount2","token":{"amount":"10...
-#   11   2018-08-17T06:36:14.000         yx.ntoken::nissue => yx.ntoken     ad9e02d1... {"to":"useraccount3","token":{"amount":"100000.0000 DKRW","i...
+#   11   2018-08-17T06:36:14.000         yx.ntoken::nissue => yx.ntoken     ad9e02d1... {"to":"useraccount3","token":{"amount":"100000.00 DKRW","i...
 #   12   2018-08-17T06:36:14.000      yx.ntoken::ntransfer => yx.ntoken     ad9e02d1... {"from":"sysdepo1","to":"useraccount3","token":{"amount":"10...
 #   13   2018-08-17T06:36:14.000       yx.ntoken::transfer => yx.ntoken     eadb558f... {"from":"useraccount2","to":"useraccount3","amount":"10000.0...
 #   14   2018-08-17T06:36:14.000      yx.ntoken::ntransfer => yx.ntoken     eadb558f... {"from":"useraccount2","to":"useraccount3","token":{"amount"...
-#   15   2018-08-17T06:36:14.000         yx.ntoken::payfee => yx.ntoken     eadb558f... {"payer":"useraccount2","token":{"amount":"100.0000 DKRW","i...
+#   15   2018-08-17T06:36:14.000         yx.ntoken::payfee => yx.ntoken     eadb558f... {"payer":"useraccount2","token":{"amount":"100.00 DKRW","i...
 #   16   2018-08-17T06:36:14.000      yx.ntoken::ntransfer => yx.ntoken     c15fabd8... {"from":"useraccount2","to":"useraccount3","token":{"amount"...
-#   17   2018-08-17T06:36:14.000         yx.ntoken::payfee => yx.ntoken     c15fabd8... {"payer":"useraccount2","token":{"amount":"200.0000 DKRW","i...
+#   17   2018-08-17T06:36:14.000         yx.ntoken::payfee => yx.ntoken     c15fabd8... {"payer":"useraccount2","token":{"amount":"200.00 DKRW","i...
 #   18   2018-08-17T06:36:14.000     yx.ntoken::wptransfer => yx.ntoken     12e702db... {"from":"useraccount3","to":"useraccount2","amount":"10000.0...
 #   19   2018-08-17T06:36:14.000    yx.ntoken::wpntransfer => yx.ntoken     12e702db... {"from":"useraccount3","to":"useraccount2","token":{"amount"...
 
@@ -757,7 +757,7 @@ $YOSEMITE_CLI_TESTNET get actions yx.ntoken -1 -1
 ================================================================================================================
 #  seq  when                              contract::action => receiver      trx id...   args
 ================================================================================================================
-#   31   2018-08-17T06:36:19.500         yx.ntoken::payfee => yx.ntoken     a5b8539d... {"payer":"useraccount3","token":{"amount":"100.0000 DKRW","i...
+#   31   2018-08-17T06:36:19.500         yx.ntoken::payfee => yx.ntoken     a5b8539d... {"payer":"useraccount3","token":{"amount":"100.00 DKRW","i...
 ```
 
 Get transaction data
@@ -802,7 +802,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
           "data": {
             "to": "useraccount2",
             "token": {
-              "amount": "100000.0000 DKRW",
+              "amount": "100000.00 DKRW",
               "issuer": "sysdepo1"
             },
             "memo": "nissue test"
@@ -845,7 +845,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
         "data": {
           "to": "useraccount2",
           "token": {
-            "amount": "100000.0000 DKRW",
+            "amount": "100000.00 DKRW",
             "issuer": "sysdepo1"
           },
           "memo": "nissue test"
@@ -889,7 +889,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
               "from": "sysdepo1",
               "to": "useraccount2",
               "token": {
-                "amount": "100000.0000 DKRW",
+                "amount": "100000.00 DKRW",
                 "issuer": "sysdepo1"
               },
               "memo": "nissue test"
@@ -933,7 +933,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
                   "from": "sysdepo1",
                   "to": "useraccount2",
                   "token": {
-                    "amount": "100000.0000 DKRW",
+                    "amount": "100000.00 DKRW",
                     "issuer": "sysdepo1"
                   },
                   "memo": "nissue test"
@@ -978,7 +978,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
                   "from": "sysdepo1",
                   "to": "useraccount2",
                   "token": {
-                    "amount": "100000.0000 DKRW",
+                    "amount": "100000.00 DKRW",
                     "issuer": "sysdepo1"
                   },
                   "memo": "nissue test"
@@ -1027,7 +1027,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
           "from": "sysdepo1",
           "to": "useraccount2",
           "token": {
-            "amount": "100000.0000 DKRW",
+            "amount": "100000.00 DKRW",
             "issuer": "sysdepo1"
           },
           "memo": "nissue test"
@@ -1071,7 +1071,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
               "from": "sysdepo1",
               "to": "useraccount2",
               "token": {
-                "amount": "100000.0000 DKRW",
+                "amount": "100000.00 DKRW",
                 "issuer": "sysdepo1"
               },
               "memo": "nissue test"
@@ -1116,7 +1116,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
               "from": "sysdepo1",
               "to": "useraccount2",
               "token": {
-                "amount": "100000.0000 DKRW",
+                "amount": "100000.00 DKRW",
                 "issuer": "sysdepo1"
               },
               "memo": "nissue test"
@@ -1163,7 +1163,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
           "from": "sysdepo1",
           "to": "useraccount2",
           "token": {
-            "amount": "100000.0000 DKRW",
+            "amount": "100000.00 DKRW",
             "issuer": "sysdepo1"
           },
           "memo": "nissue test"
@@ -1208,7 +1208,7 @@ $YOSEMITE_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b
           "from": "sysdepo1",
           "to": "useraccount2",
           "token": {
-            "amount": "100000.0000 DKRW",
+            "amount": "100000.00 DKRW",
             "issuer": "sysdepo1"
           },
           "memo": "nissue test"

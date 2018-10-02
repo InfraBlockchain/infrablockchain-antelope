@@ -923,7 +923,7 @@ class Cluster(object):
             biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "d1.org", waitForTransBlock=True)
             biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "d1.org", waitForTransBlock=True)
 
-            biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
+            biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.00 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
 
             Utils.Print("Cluster bootstrap done.")
         finally:
@@ -1145,22 +1145,22 @@ class Cluster(object):
                 return None
 
             # set yx.system transaction fees (turn off tx fee for test convenience)
-            biosNode.setTransactionFee("tf.newacc", "1000.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.regprod", "0.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.regsysdep", "0.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.regidauth", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.newacc", "1000.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.regprod", "0.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.regsysdep", "0.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.regidauth", "0.00 DKRW", eosioAccount)
 
             # set yx.ntoken transaction fees
-            biosNode.setTransactionFee("tf.nissue", "0.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.nredeem", "0.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.transfer", "0.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.ntransfer", "0.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.nissue", "0.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.nredeem", "0.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.transfer", "0.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.ntransfer", "0.00 DKRW", eosioAccount)
 
             # set yx.token transaction fees
-            biosNode.setTransactionFee("tf.tcreate", "1000.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.tissue", "0.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.tredeem", "0.0000 DKRW", eosioAccount)
-            biosNode.setTransactionFee("tf.ttransfer", "10.0000 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.tcreate", "1000.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.tissue", "0.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.tredeem", "0.00 DKRW", eosioAccount)
+            biosNode.setTransactionFee("tf.ttransfer", "10.00 DKRW", eosioAccount)
 
             # set KYC rule to yx.ntoken (turn off KYC for test convenience)
             biosNode.setNativeTokenKycRule(0, 0, eosioAccount)
@@ -1183,9 +1183,9 @@ class Cluster(object):
             biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "d1.org", waitForTransBlock=True)
             biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "d1.org", waitForTransBlock=True)
 
-            biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
+            biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.00 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
 
-            expectedAmount = "1000000000.0000 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+            expectedAmount = "1000000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
             Utils.Print("Verify yosemite issue, Expected: %s" % expectedAmount)
             actualAmount = biosNode.getAccountTotalNativeTokenBalanceStr(eosioAccount.name)
             if expectedAmount != actualAmount:
@@ -1193,7 +1193,7 @@ class Cluster(object):
                             (expectedAmount, actualAmount))
                 return None
 
-            initialFunds = "1000000.0000 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+            initialFunds = "1000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
             Utils.Print("Transfer initial native fund %s to individual accounts." % initialFunds)
             trans = None
             contract = yxNativeTokenAccount.name

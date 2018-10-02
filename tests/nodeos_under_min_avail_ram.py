@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from core_symbol import CORE_SYMBOL
+from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 from Cluster import Cluster
 from WalletMgr import WalletMgr
 from Node import Node
@@ -122,22 +123,20 @@ try:
     # create accounts via eosio as otherwise a bid is needed
     for account in accounts:
         Print("Create new account %s via %s" % (account.name, cluster.eosioAccount.name))
-        trans = nodes[0].createAccount(account, cluster.eosioAccount, stakedDeposit=500000, waitForTransBlock=False,
+        trans = nodes[0].createAccount(account, cluster.eosioAccount, stakedDeposit=5000, waitForTransBlock=False,
                                        exitOnError=True)
-        transferAmount="70000000.0000 {0}".format(CORE_SYMBOL)
+        transferAmount="70000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
         Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, account.name))
         nodes[0].transferNativeToken(cluster.eosioAccount, account, transferAmount, "test transfer")
-        trans=nodes[0].delegatebw(account, 1000000.0000, 68000000.0000, exitOnError=True)
 
     contractAccount=cluster.createAccountKeys(1)[0]
     contractAccount.name="contracttest"
     walletMgr.importKey(contractAccount, testWallet)
     Print("Create new account %s via %s" % (contractAccount.name, cluster.eosioAccount.name))
-    trans=nodes[0].createAccount(contractAccount, cluster.eosioAccount, stakedDeposit=500000, waitForTransBlock=False, exitOnError=True)
-    transferAmount="90000000.0000 {0}".format(CORE_SYMBOL)
+    trans=nodes[0].createAccount(contractAccount, cluster.eosioAccount, stakedDeposit=5000, waitForTransBlock=False, exitOnError=True)
+    transferAmount="90000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, contractAccount.name))
     nodes[0].transferNativeToken(cluster.eosioAccount, contractAccount, transferAmount, "test transfer")
-    trans=nodes[0].delegatebw(contractAccount, 1000000.0000, 88000000.0000, exitOnError=True)
 
     contractDir="contracts/integration_test"
     wasmFile="integration_test.wasm"

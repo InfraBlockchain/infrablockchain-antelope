@@ -14,22 +14,22 @@
 
 ## Format of Token
 * The structure of token includes precision, symbol, and the issuer.
-* 4,DKRW@d1
-   * 4 : precision (the number of bits used to hold the fractional part in the concept of floating-point numbers, .0000)
+* 2,DKRW@d1
+   * 2 : precision (the number of bits used to hold the fractional part in the concept of floating-point numbers, .00)
    * DKRW : symbol
    * d1 : account name of the issuer
-* Different issuer results in different tokens. For example, 4,DKRW@d1 and 4,DKRW@d2 are different.
+* Different issuer results in different tokens. For example, 2,DKRW@d1 and 2,DKRW@d2 are different.
 * Different precision results in different tokens. For example, 4,BTC@d3 and 8,BTC@d3 are different.
 
 ### Format of Token Amount
-* 1234.5678 DKRW
-   * If token's symbol and precision is 4,DKRW, then the amount should be written to reflect token's precision. e.g. 1.0000 DKRW
+* 1234.56 DKRW
+   * If token's symbol and precision is 2,DKRW, then the amount should be written to reflect token's precision. e.g. 1.00 DKRW
 * In the Yosemite software, the amount 1234.5678 is saved in 64-bit integer as 12345678.
-* The maximum amount defined by the software is 2^62-1(=4611686018427387903). In such case, up to 461168601842738.7903 DKRW is usuable.
+* The maximum amount defined by the software is 2^62-1(=4611686018427387903). In such case, up to 46116860184273879.03 DKRW is usuable.
 
 ### Conventions of Token
 * precision
-   * minumum : 4, maximum : 18
+   * minumum : 2, maximum : 18
 * symbol : from [Naming Convention of Symbols](https://developers.eos.io/eosio-cpp/docs/naming-conventions#section-symbols)
    * Must be capitalized alpha characters between A and Z
    * Must be 7 characters or less
@@ -39,17 +39,17 @@
    * Must be 12 characters
 
 # Yosemite Native Token
-* From the usage perspective, DKRW is DKRW regardless of whether it's 4,DKRW@d1 or 4,DKRW@d2.
+* From the usage perspective, DKRW is DKRW regardless of whether it's 2,DKRW@d1 or 2,DKRW@d2.
 * For the native token, YosemiteChain defines its symbol and precision at the Yosemite software release to conform to such perspective.
-   * In the specific YosemiteChain network for the Korea market, 4,DKRW is the native token. There can't be 8,DKRW.
+   * In the specific YosemiteChain network for the Korea market, 2,DKRW is the native token. There can't be 4,DKRW.
    * It also means there would be the Yosemite software with 8,DKRW as the native token. But it's the totally different network with that software.
-   * There would be the Yosemite software with 4,DUSD or 4,EUR. These softwares can be made with CMake build options, YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME and YOSEMITE_NATIVE_TOKEN_PRECISION. Refer to [root CMakeLists.txt](../CMakeLists.txt) file.
+   * There would be the Yosemite software with 2,DUSD or 2,EUR. These softwares can be made with CMake build options, YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME and YOSEMITE_NATIVE_TOKEN_PRECISION. Refer to [root CMakeLists.txt](../CMakeLists.txt) file.
    * **Note that only this Yosemite contract, `yx.ntoken`, manages the native token.**
-      * YosemiteChain has a plan to provide the general smart contract platform in the near future. At that time, one of the Yostemite accounts would make the smart contract which is named to `xx.ntoken` and it would manage 4,DKRW. But 4,DKRW managed by `xx.token` is just the non-native token.
+      * YosemiteChain has a plan to provide the general smart contract platform in the near future. At that time, one of the Yostemite accounts would make the smart contract which is named to `xx.ntoken` and it would manage 2,DKRW. But 2,DKRW managed by `xx.token` is just the non-native token.
 * In spite of importance of alignment with the usage perspective, it would be undesirable if there were only one issuer of the native token. Above all, it might not be what blockchain users want that the native token is controlled by one entity, which it's definitely centralized.
 * YosemiteChain allows multiple issuers for the native token. Native token issuer, which is named to the system depository, is registered by [yx.system](../../contracts/yx.system/).
 * This Yosemite contract manages the native token issued by multiple issuers to be viewed as the same token, which are actually different each other at the software level.
-   * For example, even though the account user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2 at the software level, this Yosemite contract shows the person or the DApp provider who owns the account user1 2000.0000 DRKW.
+   * For example, even though the account user1 has 1000.00 DKRW@d1 and 1000.00 DKRW@d2 at the software level, this Yosemite contract shows the person or the DApp provider who owns the account user1 2000.00 DRKW.
 
 # What You Can Do With This Yosemite Contract
 * Only system depositories can issue and redeem the native token.
@@ -58,8 +58,8 @@
      * The active block producers must authrorize it as the system depository.
 * One system depository can allow redemption of other system depositories. Fore more information, refer to `nredeem` action.
 * Blockchain users can transfer the native token regardless of depositories. There would be two general cases.
-  1. When user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2, total 2000.0000 DKRW, and transfers 2000.0000 DKRW to user2, user2 will have 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2.
-  1. When user1 has 1000.0000 DKRW@d1 and 1000.0000 DKRW@d2, total 2000.0000 DKRW, and transfers 1500.0000 DKRW to user2, user2 will have 1000.0000 DKRW@d1 and 500.0000 DKRW@d2 or 500.0000 DKRW@d1 and 1000.0000 DKRW@d2 randomly but 1500.0000 DKRW in total.
+  1. When user1 has 1000.00 DKRW@d1 and 1000.00 DKRW@d2, total 2000.00 DKRW, and transfers 2000.00 DKRW to user2, user2 will have 1000.00 DKRW@d1 and 1000.00 DKRW@d2.
+  1. When user1 has 1000.00 DKRW@d1 and 1000.00 DKRW@d2, total 2000.00 DKRW, and transfers 1500.00 DKRW to user2, user2 will have 1000.00 DKRW@d1 and 500.00 DKRW@d2 or 500.00 DKRW@d1 and 1000.00 DKRW@d2 randomly but 1500.00 DKRW in total.
 * Blockchain users can transfer the native token designating the specific depository.
 
 # Management Actions
@@ -67,10 +67,10 @@
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.0000 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.00 DKRW"}}' -p yosemite
 ```
 
 ## setkycrule : setting KYC vector
@@ -92,9 +92,9 @@ clyos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p yosemite
 Issue native token to an account by the system depository
 
 * d1 must be the system depository registered and authroized by [yx.system](../../contracts/yx.system/).
-* In this example, 4,DKRW is the native token.
+* In this example, 2,DKRW is the native token.
 ```
-clyos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.0000 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
+clyos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.00 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
 ```
 
 ### parameters of nissue
@@ -106,17 +106,17 @@ clyos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.000
 
 ### inline actions and notifications of nissue
 * Case 1. If the to account is different from the issuer, nissue does the inline action for `ntransfer`.
-   * Note that in this example the transaction fee of nissue is set to 0.0000 DKRW, so the inline action for `payfee` is now shown.
+   * Note that in this example the transaction fee of nissue is set to 0.00 DKRW, so the inline action for `payfee` is now shown.
    * In the example below, the `yx.ntoken <= yx.ntoken::ntransfer` part is the `ntrasfer` inline action. `d1 <= yx.ntoken::ntransfer` and `user1 <= yx.ntoken::ntransfer` parts are notifications of the inline action.
 ```
-#     yx.ntoken <= yx.ntoken::nissue            {"to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#            d1 <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#         user1 <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::nissue            {"to":"user1","token":{"amount":"100000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#            d1 <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#         user1 <= yx.ntoken::ntransfer         {"from":"d1","to":"user1","token":{"amount":"100000.00 DKRW","issuer":"d1"},"memo":"my memo"}
 ```
 * Case 2. If the to account is the system depository itself, there is no `ntransfer` inline action.
 ```
-#     yx.ntoken <= yx.ntoken::nissue            {"to":"d1","token":{"amount":"100000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::nissue            {"to":"d1","token":{"amount":"100000.00 DKRW","issuer":"d1"},"memo":"my memo"}
 ```
 
 ## nredeem
@@ -124,12 +124,12 @@ Redeem(burn) native token from an account by the system depository
 
 * At first, the account transfers the native token to the system depository.
 ```
-clyos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
+clyos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.00 DKRW","memo":"my memo"}' -p user1
 ```
    * The account user1 can send the native token issued by other system depositories like d2 to the system depository d1. In such case, d1 will call the transfer action to d2 to redeem the native token from d2 at any time. It's natural to request redemption between system depositories.
 * Then the system depository checks the transfer action is irreversible and calls nredeem action.
 ```
-clyos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
+clyos push action yx.ntoken nredeem '{"token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
 ```
 
 ### parameters of nredeem
@@ -139,13 +139,13 @@ clyos push action yx.ntoken nredeem '{"token":{"amount":"10000.0000 DKRW","issue
 1. memo : the additional data set by the action caller
 
 ### inline actions and notifications of nredeem
-* For all actions which requires the fee bigger than 0.0000 DKRW, the inline action for `payfee` is executed.
+* For all actions which requires the fee bigger than 0.00 DKRW, the inline action for `payfee` is executed.
 * The `payfee` action is notified to the payer acount and yx.txfee account.
 ```
-#     yx.ntoken <= yx.ntoken::nredeem           {"token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d1","token":{"amount":"1000.0000 DKRW","issuer":"d1"}}
-#            d1 <= yx.ntoken::payfee            {"payer":"d1","token":{"amount":"1000.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"d1","token":{"amount":"1000.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::nredeem           {"token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d1","token":{"amount":"1000.00 DKRW","issuer":"d1"}}
+#            d1 <= yx.ntoken::payfee            {"payer":"d1","token":{"amount":"1000.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"d1","token":{"amount":"1000.00 DKRW","issuer":"d1"}}
 ```
 
 ## transfer
@@ -153,7 +153,7 @@ Transfer the native token regardless of the system depository
 
 * The native token issued by any system depositories can be transferred.
 ```
-clyos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}' -p user1
+clyos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.00 DKRW","memo":"my memo"}' -p user1
 ```
 ### parameters of transfer
 1. from : account name to transfer from
@@ -163,30 +163,30 @@ clyos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"100
 
 ### inline actions and notifications of transfer
 * Case 1. If the `from` account has the enough amount for the specific depository, only one inline action for `ntransfer` is executed.
-   * In this example, user1 has more than or equal to 10000.0000 DKRW@d1 in its account.
+   * In this example, user1 has more than or equal to 10000.00 DKRW@d1 in its account.
 ```
-#     yx.ntoken <= yx.ntoken::transfer          {"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
-#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::transfer          {"from":"user1","to":"user2","amount":"10000.00 DKRW","memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.00 DKRW","issuer":"d1"}}
+#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.00 DKRW","issuer":"d1"}}
 ```
 * Case 2. There's two or more inline actions for `ntransfer`.
-   * In this example, user1 has 7000.0000 DKRW@d1 and 4000.0000 DKRW@d2 in its account. d2 is another system depository.
-   * There are two `ntransfer` inline actions and `payfee` inline action is executed with 20.0000 DKRW@d2.
+   * In this example, user1 has 7000.00 DKRW@d1 and 4000.00 DKRW@d2 in its account. d2 is another system depository.
+   * There are two `ntransfer` inline actions and `payfee` inline action is executed with 20.00 DKRW@d2.
 ```
-#     yx.ntoken <= yx.ntoken::transfer          {"from":"user1","to":"user2","amount":"10000.0000 DKRW","memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"7000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"7000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"7000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"3000.0000 DKRW","issuer":"d2"},"memo":"my memo"}
-#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"3000.0000 DKRW","issuer":"d2"},"memo":"my memo"}
-#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"3000.0000 DKRW","issuer":"d2"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.0000 DKRW","issuer":"d2"}}
-#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.0000 DKRW","issuer":"d2"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.0000 DKRW","issuer":"d2"}}
+#     yx.ntoken <= yx.ntoken::transfer          {"from":"user1","to":"user2","amount":"10000.00 DKRW","memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"7000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"7000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"7000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"3000.00 DKRW","issuer":"d2"},"memo":"my memo"}
+#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"3000.00 DKRW","issuer":"d2"},"memo":"my memo"}
+#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"3000.00 DKRW","issuer":"d2"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.00 DKRW","issuer":"d2"}}
+#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.00 DKRW","issuer":"d2"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.00 DKRW","issuer":"d2"}}
 ```
 
 ## wptransfer
@@ -196,7 +196,7 @@ Transfer the native token regardless of the system depository with the designate
 * 'wp' means 'with payer'.
 * It requires the signature of the fee payer account.
 ```
-clyos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"10000.0000 DKRW","payer":"servprovider","memo":"my memo"}' -p user1 servprovider
+clyos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"10000.00 DKRW","payer":"servprovider","memo":"my memo"}' -p user1 servprovider
 ```
 
 ### parameters of wptransfer
@@ -209,20 +209,20 @@ clyos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"1
 ### inline actions and notifications of wptransfer
 * You can see that `payer` of `payfee` inline action is the servprovider account.
 ```
-#     yx.ntoken <= yx.ntoken::wptransfer        {"from":"user1","to":"user2","amount":"10000.0000 DKRW","payer":"servprovider","memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user1 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user2 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovide...
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
-#  servprovider <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::wptransfer        {"from":"user1","to":"user2","amount":"10000.00 DKRW","payer":"servprovider","memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
+#         user1 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
+#         user2 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.00 DKRW","issuer":"d1"}}
+#  servprovider <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.00 DKRW","issuer":"d1"}}
 ```
 
 ## ntransfer
 Transfer the native token designating the system depository
 
 ```
-clyos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
+clyos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
 ```
 
 ### parameters of ntransfer
@@ -234,15 +234,15 @@ clyos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"am
 1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of ntransfer
-* There would be no inline action other than `payfee` inline action when the fee is set to more than 0.0000 DKRW.
-* In this example, the fee is set to 10.0000 DKRW. So the `payfee` inline action is shown.
+* There would be no inline action other than `payfee` inline action when the fee is set to more than 0.00 DKRW.
+* In this example, the fee is set to 10.00 DKRW. So the `payfee` inline action is shown.
 ```
-#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.0000 DKRW","issuer":"d1"}}
-#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#         user1 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#         user2 <= yx.ntoken::ntransfer         {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
+#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
 ```
 
 ### wpntransfer
@@ -250,7 +250,7 @@ Transfer the native token designating the system depository with the designated 
 
 * The purpose and requirement of this action is the same with `wptransfer` action.
 ```
-clyos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovider","memo":"my memo"}' -p user1 servprovider
+clyos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovider","memo":"my memo"}' -p user1 servprovider
 ```
 
 ### parameters of wpntransfer
@@ -263,16 +263,16 @@ clyos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"
 1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of wpntransfer
-* There would be no inline action other than `payfee` inline action when the fee is set to more than 0.0000 DKRW.
-* In this example, the fee is set to 10.0000 DKRW. So the `payfee` inline action is shown.
+* There would be no inline action other than `payfee` inline action when the fee is set to more than 0.00 DKRW.
+* In this example, the fee is set to 10.00 DKRW. So the `payfee` inline action is shown.
 * You can see that `payer` of `payfee` inline action is the servprovider account.
 ```
-#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user1 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user2 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.0000 DKRW","issuer":"d1"},"payer":"servprovide...
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.0000 DKRW","issuer":"d1"}}
-#  servprovider <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
+#         user1 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
+#         user2 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.00 DKRW","issuer":"d1"}}
+#  servprovider <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.00 DKRW","issuer":"d1"}}
 ```
 
 # Tables
@@ -289,7 +289,7 @@ clyos get table yx.ntoken d1 ntstats
 {
   "rows": [{
       "key": "basicstats",
-      "supply": "3516990.0000 DKRW",
+      "supply": "3516990.00 DKRW",
       "options": 0
     }
   ],
@@ -304,17 +304,17 @@ Get the native token balance of the user for all system depositories
 clyos get table yx.ntoken user1 ntaccounts
 ```
 ### Result of ntaccounts
-* The user1 account has 50000.0000 DKRW@d1 and 1000.0000 DKRW@d2.
+* The user1 account has 50000.00 DKRW@d1 and 1000.00 DKRW@d2.
 ```
 {
   "rows": [{
       "token": {
-        "amount": "50000.0000 DKRW",
+        "amount": "50000.00 DKRW",
         "issuer": "d1"
       }
     },{
       "token": {
-        "amount": "1000.0000 DKRW",
+        "amount": "1000.00 DKRW",
         "issuer": "d2"
       }
     }
@@ -333,7 +333,7 @@ clyos get table yx.ntoken user1 ntaccountstt
 ```
 {
   "rows": [{
-      "amount": 51000.0000 DKRW
+      "amount": 51000.00 DKRW
     }
   ],
   "more": false
