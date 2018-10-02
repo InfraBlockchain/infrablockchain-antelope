@@ -4,21 +4,6 @@ steps:
     echo 1 | ./yosemite_build.sh && \
     echo "--- :compression: Compressing build directory" && \
     tar -pczf build.tar.gz build/
-  label: ":ubuntu: Build"
-  agents:
-    - "queue=builder"
-    - "role=linux-builder"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:ubuntu"
-      workdir: /data/job
-  artifact_paths: "build.tar.gz"
-  timeout: 60
-- command: |
-    echo "+++ :hammer: Building" && \
-    echo 1 | ./yosemite_build.sh && \
-    echo "--- :compression: Compressing build directory" && \
-    tar -pczf build.tar.gz build/
   label: ":ubuntu: 18.04 Build"
   agents:
     - "queue=builder"
@@ -28,21 +13,6 @@ steps:
       image: "eosio/ci:ubuntu18"
       workdir: /data/job
   artifact_paths: "build.tar.gz"
-  timeout: 60
-- command: |
-    echo "+++ :hammer: Building" && \
-    echo 1 | ./yosemite_build.sh && \
-    echo "--- :compression: Compressing build directory" && \
-    tar -pczf build.tar.gz build/
-  label: ":fedora: Build"
-  agents:
-    - "queue=builder"
-    - "role=linux-builder"
-  artifact_paths: "build.tar.gz"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:fedora"
-      workdir: /data/job
   timeout: 60
 - command: |
     echo "+++ :hammer: Building" && \
@@ -59,72 +29,9 @@ steps:
       workdir: /data/job
   artifact_paths: "build.tar.gz"
   timeout: 60
-- command: |
-    echo "+++ :hammer: Building" && \
-    echo 1 | ./yosemite_build.sh && \
-    echo "--- :compression: Compressing build directory" && \
-    tar -pczf build.tar.gz build/
-  label: ":aws: Build"
-  agents:
-    - "queue=builder"
-    - "role=linux-builder"
-  artifact_paths: "build.tar.gz"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:amazonlinux"
-      workdir: /data/job
-  timeout: 60
 
 - wait
 
-- command: |
-    echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: Build" && \
-    tar -zxf build.tar.gz && \
-    echo "--- :m: Starting MongoDB" && \
-    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
-    echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -j8 -LE _tests --output-on-failure
-  retry:
-    automatic:
-      limit: 1
-  label: ":ubuntu: Tests"
-  agents:
-    - "queue=builder"
-    - "role=linux-tester"
-  artifact_paths:
-    - "mongod.log"
-    - "build/genesis.json"
-    - "build/config.ini"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:ubuntu"
-      workdir: /data/job
-  timeout: 60
-- command: |
-    echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: Build" && \
-    tar -zxf build.tar.gz && \
-    echo "--- :m: Starting MongoDB" && \
-    $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
-    echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
-  retry:
-    automatic:
-      limit: 1
-  label: ":ubuntu: NP Tests"
-  agents:
-    - "queue=builder"
-    - "role=linux-tester"
-  artifact_paths:
-    - "mongod.log"
-    - "build/genesis.json"
-    - "build/config.ini"
-  plugins:
-    docker#v1.4.0:
-      image: "eosio/ci:ubuntu"
-      workdir: /data/job
-  timeout: 60
 - command: |
     echo "--- :arrow_down: Downloading build directory" && \
     buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: 18.04 Build" && \
@@ -151,16 +58,16 @@ steps:
   timeout: 60
 - command: |
     echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":fedora: Build" && \
+    buildkite-agent artifact download "build.tar.gz" . --step ":ubuntu: 18.04 Build" && \
     tar -zxf build.tar.gz && \
     echo "--- :m: Starting MongoDB" && \
     $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
     echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -j8 -LE _tests --output-on-failure
+    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
   retry:
     automatic:
       limit: 1
-  label: ":fedora: Tests"
+  label: ":ubuntu: 18.04 NP Tests"
   agents:
     - "queue=builder"
     - "role=linux-tester"
@@ -170,7 +77,7 @@ steps:
     - "build/config.ini"
   plugins:
     docker#v1.4.0:
-      image: "eosio/ci:fedora"
+      image: "eosio/ci:ubuntu18"
       workdir: /data/job
   timeout: 60
 - command: |
@@ -199,16 +106,16 @@ steps:
   timeout: 60
 - command: |
     echo "--- :arrow_down: Downloading build directory" && \
-    buildkite-agent artifact download "build.tar.gz" . --step ":aws: Build" && \
+    buildkite-agent artifact download "build.tar.gz" . --step ":centos: Build" && \
     tar -zxf build.tar.gz && \
     echo "--- :m: Starting MongoDB" && \
     $(which mongod) --fork --logpath "$(pwd)"/mongod.log && \
     echo "+++ :microscope: Running tests" && \
-    cd /data/job/build && ctest -j8 -LE _tests --output-on-failure
+    cd /data/job/build && ctest -L nonparallelizable_tests --output-on-failure
   retry:
     automatic:
       limit: 1
-  label: ":aws: Tests"
+  label: ":centos: NP Tests"
   agents:
     - "queue=builder"
     - "role=linux-tester"
@@ -218,6 +125,6 @@ steps:
     - "build/config.ini"
   plugins:
     docker#v1.4.0:
-      image: "eosio/ci:amazonlinux"
+      image: "eosio/ci:centos"
       workdir: /data/job
   timeout: 60
