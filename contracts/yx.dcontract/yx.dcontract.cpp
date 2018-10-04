@@ -13,13 +13,17 @@ namespace yosemite {
                                                identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc) {
         eosio_assert(static_cast<uint32_t>(!signers.empty()), "signers cannot be empty");
         eosio_assert(static_cast<uint32_t>(signers.size() <= MAX_SIGNERS), "too many signers");
+        bool for_create = duplicates.empty();
 
         for (auto signer : signers) {
             eosio_assert(static_cast<uint32_t>(is_account(signer)), "signer account does not exist");
             auto result = duplicates.insert(signer);
             eosio_assert(static_cast<uint32_t>(result.second), "duplicated signer account exists");
-            eosio_assert(static_cast<uint32_t>(identity::is_account_type(signer, signer_type)), "signer is not the required account type");
-            eosio_assert(static_cast<uint32_t>(identity::has_all_kyc_status(signer, signer_kyc)), "signer does not have required KYC status");
+
+            if (!for_create) {
+                eosio_assert(static_cast<uint32_t>(identity::is_account_type(signer, signer_type)), "signer is not the required account type");
+                eosio_assert(static_cast<uint32_t>(identity::has_all_kyc_status(signer, signer_kyc)), "signer does not have required KYC status");
+            }
         }
     }
 
