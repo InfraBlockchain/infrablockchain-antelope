@@ -9,21 +9,14 @@
 namespace yosemite {
     static const int MAX_SIGNERS = 32;
 
-    void digital_contract::check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates,
-                                               identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc) {
+    void digital_contract::check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates) {
         eosio_assert(static_cast<uint32_t>(!signers.empty()), "signers cannot be empty");
         eosio_assert(static_cast<uint32_t>(signers.size() <= MAX_SIGNERS), "too many signers");
-        bool for_create = duplicates.empty();
 
         for (auto signer : signers) {
             eosio_assert(static_cast<uint32_t>(is_account(signer)), "signer account does not exist");
             auto result = duplicates.insert(signer);
             eosio_assert(static_cast<uint32_t>(result.second), "duplicated signer account exists");
-
-            if (!for_create) {
-                eosio_assert(static_cast<uint32_t>(identity::is_account_type(signer, signer_type)), "signer is not the required account type");
-                eosio_assert(static_cast<uint32_t>(identity::has_all_kyc_status(signer, signer_kyc)), "signer does not have required KYC status");
-            }
         }
     }
 
@@ -36,7 +29,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(expiration > time_point_sec(now() + 60)), "digital contract is expired or expiration time is too close to now");
         eosio_assert(static_cast<uint32_t>(options == 0), "options is currently reserved");
         flat_set<account_name> empty_duplicates;
-        check_signers_param(signers, empty_duplicates, signer_type, signer_kyc);
+        check_signers_param(signers, empty_duplicates);
 
         require_auth(dc_id.creator);
 
@@ -67,7 +60,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(info.expiration > time_point_sec(now())), "digital contract is expired");
         // check duplicated signer
         flat_set<account_name> duplicates{info.signers.begin(), info.signers.end()};
-        check_signers_param(signers, duplicates, info.signer_type, info.signer_kyc);
+        check_signers_param(signers, duplicates);
         eosio_assert(static_cast<uint32_t>(info.signers.size() + signers.size() <= MAX_SIGNERS), "too many signers in total");
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
@@ -92,6 +85,9 @@ namespace yosemite {
         auto index = std::distance(info.signers.begin(), itr);
         eosio_assert(static_cast<uint32_t>(std::find(info.done_signers.begin(), info.done_signers.end(), index) == info.done_signers.end()),
                      "digital contract is already signed by the signer");
+        // account type, KYC check
+        eosio_assert(static_cast<uint32_t>(identity::is_account_type(signer, info.signer_type)), "signer is not the required account type");
+        eosio_assert(static_cast<uint32_t>(identity::has_all_kyc_status(signer, info.signer_kyc)), "signer does not have required KYC status");
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             i.done_signers.push_back(static_cast<uint8_t>(index));

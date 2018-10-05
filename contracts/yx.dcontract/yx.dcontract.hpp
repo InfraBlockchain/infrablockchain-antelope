@@ -47,8 +47,7 @@ namespace yosemite {
         void remove(const dcid &dc_id);
 
     private:
-        void check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates,
-                                 identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc);
+        void check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates);
     };
 
     /* scope = creator */
