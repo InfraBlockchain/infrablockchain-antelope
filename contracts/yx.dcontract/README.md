@@ -44,7 +44,7 @@ clyos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.00 DKR
 Create a digital contract
 
 ```
-clyos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequence":1},"conhash":"123456","adddochash":"","signers":["user1", "user2"],"expiration":"2018-08-31T02:49:57","signer_type":0,"signer_kyc":0,"signer_type":0,"signer_kyc":0,"options":0}' -p servprovider
+clyos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequence":1},"conhash":"123456","adddochash":"","signers":["user1", "user2"],"expiration":"2018-08-31T02:49:57","signer_type":0,"signer_kyc":0,"options":0}' -p servprovider
 ```
 
 ### parameters of create
