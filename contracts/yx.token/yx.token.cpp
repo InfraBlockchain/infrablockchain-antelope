@@ -18,8 +18,7 @@ namespace yosemite { namespace non_native_token {
         eosio_assert(static_cast<uint32_t>(tstats == stats_table.end()), "already created");
 
         stats_table.emplace(get_self(), [&](auto &s) {
-            s.issuer = ysymbol.issuer;
-            s.supply = asset{0, ysymbol.value};
+            s.supply = yx_asset{0, ysymbol};
             s.can_set_options = can_set_options;
             s.kyc_rules.clear();
             s.kyc_rule_flags.clear();
