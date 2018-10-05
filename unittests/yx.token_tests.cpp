@@ -160,24 +160,13 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
 
       symbol _symbol = symbol::from_string("4,ETH");
       auto stats = get_stats(_symbol.value(), N(tkprovider));
-      REQUIRE_MATCHING_OBJECT(stats, mvo()
-            ("issuer", "tkprovider")
-            ("supply", "0.0000 ETH")
-            ("can_set_options", 0)
-            ("options", 0)
-            ("kyc_rules", vector<uint8_t>{})
-            ("kyc_rule_flags", vector<uint16_t>{})
-      );
+      string str;
+      fc::from_variant(stats["supply"], str);
+      BOOST_REQUIRE_EQUAL("0.0000 ETH@tkprovider", str);
 
       stats = get_stats(_symbol.value(), N(tkprovider2));
-      REQUIRE_MATCHING_OBJECT(stats, mvo()
-            ("issuer", "tkprovider2")
-            ("supply", "0.0000 ETH")
-            ("can_set_options", 0)
-            ("options", 0)
-            ("kyc_rules", vector<uint8_t>{})
-            ("kyc_rule_flags", vector<uint16_t>{})
-      );
+      fc::from_variant(stats["supply"], str);
+      BOOST_REQUIRE_EQUAL("0.0000 ETH@tkprovider2", str);
    } FC_LOG_AND_RETHROW()
 
    BOOST_FIXTURE_TEST_CASE(issue_test, yx_token_tester) try {
@@ -192,8 +181,9 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
 
       /*
       auto accounts = get_accounts(N(user1), N(tkprovider));
-      log_to_console(accounts["token"].as_string());
-      BOOST_REQUIRE_EQUAL(accounts["token"].as_string(), "10000.0000 ETH@tkprovider");
+      string str;
+      fc::from_variant(accounts["token"], str);
+      BOOST_REQUIRE_EQUAL("10000.0000 ETH@tkprovider", str);
       */
 
       produce_blocks(1);
@@ -258,14 +248,9 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
 
       symbol _symbol = symbol::from_string("4,ETH");
       auto stats = get_stats(_symbol.value(), N(tkprovider));
-      REQUIRE_MATCHING_OBJECT(stats, mvo()
-            ("issuer", "tkprovider")
-            ("supply", "2000.0000 ETH")
-            ("can_set_options", 0)
-            ("options", 0)
-            ("kyc_rules", vector<uint8_t>{})
-            ("kyc_rule_flags", vector<uint16_t>{})
-      );
+      string str;
+      fc::from_variant(stats["supply"], str);
+      BOOST_REQUIRE_EQUAL("2000.0000 ETH@tkprovider", str);
 
       result = redeem_with_simple_result("-1.0000 ETH@tkprovider", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must be positive token", result);

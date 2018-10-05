@@ -109,8 +109,7 @@
       "name": "stats_type",
       "base": "",
       "fields": [
-        {"name":"issuer", "type":"account_name"},
-        {"name":"supply", "type":"asset"},
+        {"name":"supply", "type":"yx_asset"},
         {"name":"can_set_options", "type":"uint16"},
         {"name":"options", "type":"uint16"},
         {"name":"kyc_rules", "type":"uint8[]"},

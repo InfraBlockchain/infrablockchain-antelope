@@ -207,8 +207,10 @@ clyos get table yx.token 4,BTC tstats
 ```
 {
   "rows": [{
-      "issuer": "d2",
-      "supply": "800000.0000 BTC",
+      "supply": {
+        "amount": "800000.0000 BTC",
+        "issuer": "d2"
+      },
       "options": 0,
       "kyc_rules": [],
       "kyc_rule_flags": []
@@ -225,7 +227,7 @@ clyos get table yx.token user2 taccounts
 ```
 
 ### results of taccounts
-1. id : This is just for internal managing purpose. 
+1. id : just for internal managing purpose 
 1. token : yx_asset type which are token amount and issuer
 1. amount : balance of the account
 ```
