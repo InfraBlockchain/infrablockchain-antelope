@@ -1294,7 +1294,6 @@ read_only::get_token_stats_result read_only::get_token_stats(const read_only::ge
    fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
    read_only::get_token_stats_result result;
 
-   fc::raw::unpack(ds, result.issuer);
    fc::raw::unpack(ds, result.supply);
    fc::raw::unpack(ds, result.can_set_options);
    fc::raw::unpack(ds, result.options);

@@ -4,6 +4,7 @@
  */
 #pragma once
 #include <eosio/chain/symbol.hpp>
+#include <eosio/chain/exceptions.hpp>
 
 namespace yosemite { namespace chain {
     using namespace eosio::chain;
@@ -57,12 +58,5 @@ namespace yosemite { namespace chain {
     };
 
 }} // namespace yosemite::chain
-
-namespace fc {
-   inline void to_variant(const yosemite::chain::yx_symbol& var, fc::variant& vo) { vo = var.to_string(); }
-   inline void from_variant(const fc::variant& var, yosemite::chain::yx_symbol& vo) {
-      vo = yosemite::chain::yx_symbol::from_string(var.get_string());
-   }
-}
 
 FC_REFLECT(yosemite::chain::yx_symbol, (tsymbol)(issuer))

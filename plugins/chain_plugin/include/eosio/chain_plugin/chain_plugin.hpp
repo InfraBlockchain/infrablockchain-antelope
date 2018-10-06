@@ -341,8 +341,7 @@ public:
    };
 
    struct get_token_stats_result {
-      account_name issuer;
-      asset supply;
+      yx_asset supply;
       uint16_t can_set_options;
       uint16_t options;
       vector<uint8_t> kyc_rule_types;
@@ -727,7 +726,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(ma
 
 FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (code)(account)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_params, (code)(ysymbol));
-FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (issuer)(supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_balance_params, (account)(issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_params, (issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_result, (supply)(options));

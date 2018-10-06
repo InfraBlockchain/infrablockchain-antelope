@@ -332,6 +332,7 @@ try:
     try:
         assert row0
         assert (row0["token"]["amount"] == "100000.0000 CUR")
+        assert (row0["token"]["issuer"] == "currency1111")
     except (AssertionError, KeyError) as _:
         Print("ERROR: Failed get table row assertion. %s" % (row0))
         raise
@@ -340,7 +341,8 @@ try:
     ysymbolCUR = "4,CUR@currency1111"
     res = node.getTokenStats(ysymbolCUR, exitOnError=True)
     try:
-        assert(res["supply"] == "100000.0000 CUR")
+        assert(res["supply"]["amount"] == "100000.0000 CUR")
+        assert(res["supply"]["issuer"] == "currency1111")
     except (AssertionError, KeyError) as _:
         Print("ERROR: Failed get currecy stats assertion. %s" % res)
         raise
