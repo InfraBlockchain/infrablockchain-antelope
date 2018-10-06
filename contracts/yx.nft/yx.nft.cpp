@@ -57,7 +57,7 @@ namespace yosemite { namespace non_native_token {
       eosio_assert(static_cast<uint32_t>(sender_token->owner == from), "from account does not own token with specified ID");
 
       if (!is_auth_by_sysaccount) {
-         //TODO:transfer rule check
+         check_transfer_rules(from, to, sender_token->value);
       }
 
       const auto &st = *sender_token;
