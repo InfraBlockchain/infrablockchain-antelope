@@ -67,7 +67,7 @@
       ]
     },
     {
-      "name": "account",
+      "name": "accounts_type",
       "base": "",
       "fields": [{
           "name": "balance",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "name": "stats",
+      "name": "stats_type",
       "base": "",
       "fields": [
         {
@@ -85,7 +85,7 @@
         }
       ]
     },{
-      "name": "token",
+      "name": "tokens_type",
       "base": "",
       "fields": [{
           "name": "id",
@@ -129,20 +129,20 @@
     }
   ],
   "tables": [{
-      "name": "accounts",
-      "type": "account",
+      "name": "taccounts",
+      "type": "accounts_type",
       "index_type": "i64",
       "key_names" : ["currency"],
       "key_types" : ["uint64"]
     },{
-      "name": "stat",
-      "type": "stats",
+      "name": "tstats",
+      "type": "stats_type",
       "index_type": "i64",
       "key_names": [ "currency"],
       "key_types": [ "uint64" ]
     },{
-      "name": "token",
-      "type": "token",
+      "name": "tokens",
+      "type": "tokens_type",
       "index_type": "i64",
       "key_names": [ "id" ],
       "key_types": [ "id_type" ]

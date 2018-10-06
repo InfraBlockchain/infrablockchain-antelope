@@ -9,10 +9,6 @@
 #include <yosemitelib/yx_asset.hpp>
 #include <string>
 
-namespace eosiosystem {
-   class system_contract;
-}
-
 namespace yosemite {
    using std::string;
    typedef uint128_t uuid;
@@ -45,15 +41,14 @@ namespace yosemite {
       void redeem(account_name owner, id_type token_id);
 
 
-      // @abi table accounts i64
+      // @abi table taccounts i64
       struct account {
-
-         asset balance;
+         yx_asset balance;
 
          uint64_t primary_key() const { return balance.symbol.name(); }
       };
 
-      // @abi table stat i64
+      // @abi table tstats i64
       struct stats {
          yx_asset supply;
 
@@ -62,13 +57,13 @@ namespace yosemite {
          account_name get_issuer() const { return supply.issuer; }
       };
 
-      // @abi table token i64
+      // @abi table tokens i64
       struct token {
          id_type id;          // Unique 64 bit identifier,
          uri_type uri;        // RFC 3986
          account_name owner;  // token owner
-         asset value;         // token value (1 SYS)
-         string name;    // token name
+         yx_asset value;      // token value (1 XXX)
+         string name;         // token name
 
          id_type primary_key() const { return id; }
 
@@ -95,9 +90,9 @@ namespace yosemite {
          }
       };
 
-      using account_index = eosio::multi_index<N(accounts), account>;
+      using accounts_index = eosio::multi_index<N(taccounts), account>;
 
-      using currency_index = eosio::multi_index<N(stat), stats,
+      using stats_index = eosio::multi_index<N(tstats), stats,
             indexed_by<N(byissuer), const_mem_fun<stats, account_name, &stats::get_issuer> > >;
 
       using token_index = eosio::multi_index<N(token), token,
@@ -106,8 +101,6 @@ namespace yosemite {
             indexed_by<N(byname), const_mem_fun<token, uint64_t, &token::get_name> > >;
 
    private:
-      friend eosiosystem::system_contract;
-
       token_index tokens;
 
       void mint(account_name owner, account_name ram_payer, asset value, string uri, string name);

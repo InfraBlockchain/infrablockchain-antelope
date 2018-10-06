@@ -14,15 +14,13 @@ namespace yosemite {
       eosio_assert(static_cast<uint32_t>(ysymbol.precision() == 0), "non-fungible token doesn't support precision");
       require_auth(ysymbol.issuer);
 
-      // Check if currency with symbol already exists
-      currency_index currency_table(_self, symbol.name());
-      auto existing_currency = currency_table.find(symbol.name());
-      eosio_assert(existing_currency == currency_table.end(), "token with symbol already exists");
+      // Check if token already exists
+      stats_index stats_table(get_self(), ysymbol.value);
+      const auto &tstats = stats_table.find(ysymbol.issuer);
+      eosio_assert(tstats == stats_table.end(), "already created");
 
-      // Create new currency
-      currency_table.emplace(_self, [&](auto &currency) {
-         currency.supply = supply;
-         currency.issuer = issuer;
+      stats_table.emplace(get_self(), [&](auto &s) {
+         s.supply = yx_asset{0, ysymbol};
       });
    }
 
@@ -46,9 +44,9 @@ namespace yosemite {
 
       // Ensure currency has been created
       auto symbol_name = symbol.name();
-      currency_index currency_table(_self, symbol_name);
-      auto existing_currency = currency_table.find(symbol_name);
-      eosio_assert(existing_currency != currency_table.end(),
+      stats_index stats_table(_self, symbol_name);
+      auto existing_currency = stats_table.find(symbol_name);
+      eosio_assert(existing_currency != stats_table.end(),
                    "token with symbol does not exist. create token before issue");
       const auto &st = *existing_currency;
 
@@ -220,20 +218,20 @@ namespace yosemite {
 
    void nft::sub_supply(asset quantity) {
       auto symbol_name = quantity.symbol.name();
-      currency_index currency_table(_self, symbol_name);
-      auto current_currency = currency_table.find(symbol_name);
+      stats_index stats_table(_self, symbol_name);
+      auto current_currency = stats_table.find(symbol_name);
 
-      currency_table.modify(current_currency, 0, [&](auto &currency) {
+      stats_table.modify(current_currency, 0, [&](auto &currency) {
          currency.supply -= quantity;
       });
    }
 
    void nft::add_supply( /// namespace eosioasset quantity) {
       auto symbol_name = quantity.symbol.name();
-      currency_index currency_table(_self, symbol_name);
-      auto current_currency = currency_table.find(symbol_name);
+      stats_index stats_table(_self, symbol_name);
+      auto current_currency = stats_table.find(symbol_name);
 
-      currency_table.modify(current_currency, 0, [&](auto &currency) {
+      stats_table.modify(current_currency, 0, [&](auto &currency) {
          currency.supply += quantity;
       });
    }
