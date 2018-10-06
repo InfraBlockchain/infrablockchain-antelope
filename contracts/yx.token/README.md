@@ -41,7 +41,7 @@ Create a (non-native) token with its symbol and precision
 * The token creator naturally becomes the token depository.
 * Enabling the setting of options cannot be done any more after creation, because the owners of the token should know about what options can be set and it must not be changed after they own.
 ```
-clyos push action yx.token create '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
+clyos push action yx.token create '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
 ```
 
 ### parameters of create
@@ -150,8 +150,8 @@ Set the KYC vector for send or receive
 
 * SET_KYC_RULE flag of can_set_options must be set at token creation time.
 ```
-clyos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "type":0, "kyc":4}' -p d2
-clyos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "type":1, "kyc":4}' -p d2
+clyos push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":0, "kyc":4}' -p d2
+clyos push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":1, "kyc":4}' -p d2
 ```
 
 ### parameters of setkycrule
@@ -168,7 +168,7 @@ set or add token options
    * FREEZE_TOKEN_TRANSFER flag of can_set_options must be set at token creation time.
 
 ```
-clyos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "reset":1}' -p d2
+clyos push action yx.token setoptions '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "options":1, "reset":1}' -p d2
 ```
 
 ### parameters of setoptions
@@ -185,8 +185,8 @@ Freeze an account which has the token by its issuer
 
 * FREEZE_ACCOUNT flag of can_set_options must be set at token creation time.
 ```
-clyos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "accs":["user1","user2"], "freeze":1}' -p d2
-clyos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "accs":["user2"], "freeze":0}' -p d2
+clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user1","user2"], "freeze":1}' -p d2
+clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user2"], "freeze":0}' -p d2
 ```
 
 ### parameters of freezeacc

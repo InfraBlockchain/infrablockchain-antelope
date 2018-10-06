@@ -160,13 +160,13 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
 
       symbol _symbol = symbol::from_string("4,ETH");
       auto stats = get_stats(_symbol.value(), N(tkprovider));
-      string str;
-      fc::from_variant(stats["supply"], str);
-      BOOST_REQUIRE_EQUAL("0.0000 ETH@tkprovider", str);
+      BOOST_REQUIRE_EQUAL("0.0000 ETH", stats["supply"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("tkprovider", stats["supply"]["issuer"].get_string());
 
       stats = get_stats(_symbol.value(), N(tkprovider2));
-      fc::from_variant(stats["supply"], str);
-      BOOST_REQUIRE_EQUAL("0.0000 ETH@tkprovider2", str);
+      BOOST_REQUIRE_EQUAL("0.0000 ETH", stats["supply"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("tkprovider2", stats["supply"]["issuer"].get_string());
+
    } FC_LOG_AND_RETHROW()
 
    BOOST_FIXTURE_TEST_CASE(issue_test, yx_token_tester) try {
@@ -248,9 +248,8 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
 
       symbol _symbol = symbol::from_string("4,ETH");
       auto stats = get_stats(_symbol.value(), N(tkprovider));
-      string str;
-      fc::from_variant(stats["supply"], str);
-      BOOST_REQUIRE_EQUAL("2000.0000 ETH@tkprovider", str);
+      BOOST_REQUIRE_EQUAL("2000.0000 ETH", stats["supply"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("tkprovider", stats["supply"]["issuer"].get_string());
 
       result = redeem_with_simple_result("-1.0000 ETH@tkprovider", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must be positive token", result);

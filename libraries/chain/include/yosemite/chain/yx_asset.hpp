@@ -50,11 +50,4 @@ namespace yosemite { namespace chain {
 
 }} // namespace yosemite::chain
 
-namespace fc {
-   inline void to_variant(const yosemite::chain::yx_asset& var, fc::variant& vo) { vo = var.to_string(); }
-   inline void from_variant(const fc::variant& var, yosemite::chain::yx_asset& vo) {
-      vo = yosemite::chain::yx_asset::from_string(var.get_string());
-   }
-}
-
 FC_REFLECT(yosemite::chain::yx_asset, (amount)(issuer))
