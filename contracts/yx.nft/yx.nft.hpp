@@ -8,11 +8,11 @@
 #include <string>
 
 namespace yosemite { namespace non_native_token {
-   using std::string;
-   typedef uint128_t uuid;
-   typedef uint64_t id_type;
-   typedef string uri_type;
    using namespace eosio;
+   using std::string;
+   using uuid = uint128_t;
+   using id_type = uint64_t;
+   using uri_type = string;
 
    class nft : public token {
    public:

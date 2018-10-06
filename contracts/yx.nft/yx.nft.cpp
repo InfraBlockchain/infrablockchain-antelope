@@ -33,8 +33,7 @@ namespace yosemite { namespace non_native_token {
       }
 
       if (to != token.issuer) {
-         INLINE_ACTION_SENDER(nft, transfer)
-               (get_self(),
+         SEND_INLINE_ACTION(*this, transfer,
                 {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                 {token.issuer, to, token, memo});
       }
@@ -44,17 +43,22 @@ namespace yosemite { namespace non_native_token {
 
    // @abi action
    void nft::transferid(account_name from, account_name to, id_type id, const string &memo) {
-      eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
-      eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-      require_auth(from);
-      eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+      bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+      if (!is_auth_by_sysaccount) {
+         eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
+         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+         require_auth(from);
+         eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+      }
 
       // Ensure token ID exists
       auto sender_token = tokens.find(id);
       eosio_assert(static_cast<uint32_t>(sender_token != tokens.end()), "token with specified ID does not exist");
       eosio_assert(static_cast<uint32_t>(sender_token->owner == from), "from account does not own token with specified ID");
 
-      //TODO:transfer rule check
+      if (!is_auth_by_sysaccount) {
+         //TODO:transfer rule check
+      }
 
       const auto &st = *sender_token;
 
@@ -70,12 +74,17 @@ namespace yosemite { namespace non_native_token {
       sub_token_balance(from, st.value);
       add_token_balance(to, st.value);
 
-      //TODO:transaction fee
+      if (!is_auth_by_sysaccount) {
+         //TODO:transaction fee
+      }
    }
 
    // @abi action
    void nft::transfer(account_name from, account_name to, const yx_asset &token, const string &memo) {
-      check_transfer_parameters(from, to, token, memo);
+      bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+      if (!is_auth_by_sysaccount) {
+         check_transfer_parameters(from, to, token, memo);
+      }
       eosio_assert(static_cast<uint32_t>(token.amount == 1), "token amount must be 1");
       check_transfer_rules(from, to, token);
 
@@ -95,7 +104,11 @@ namespace yosemite { namespace non_native_token {
       require_recipient(from);
       require_recipient(to);
 
-      SEND_INLINE_ACTION(*this, transferid, { from, N(active) }, { from, to, id, memo });
+      SEND_INLINE_ACTION(*this, transferid, {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}}, { from, to, id, memo });
+
+      if (!is_auth_by_sysaccount) {
+         //TODO:transaction fee
+      }
    }
 
    void nft::mint(account_name owner, const yx_asset &value, const string &uri, const string &name) {
@@ -133,7 +146,7 @@ namespace yosemite { namespace non_native_token {
       //TODO:transaction fee
    }
 
-   void nft::inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t can_set_options) {
+   void nft::inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t /*can_set_options*/) {
       eosio_assert(static_cast<uint32_t>(ysymbol.precision() == 0), "non-fungible token doesn't support precision");
    }
 
