@@ -4,61 +4,28 @@
  */
 #pragma once
 
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/asset.hpp>
-#include <yosemitelib/yx_asset.hpp>
+#include <yosemitelib/token.hpp>
 #include <string>
 
-namespace yosemite {
+namespace yosemite { namespace non_native_token {
    using std::string;
    typedef uint128_t uuid;
    typedef uint64_t id_type;
    typedef string uri_type;
    using namespace eosio;
 
-   class nft : public contract {
+   class nft : public token {
    public:
-      nft(account_name self) : contract(self), tokens(_self, _self) {}
+      explicit nft(account_name self) : token(self), tokens(self, self) {}
 
-      void create(const yx_symbol &ysymbol, uint16_t can_set_options);
-
-      void issue(account_name to,
-                 asset quantity,
-                 vector<string> uris,
-                 string name,
-                 string memo);
-
-      void transferid(account_name from,
-                      account_name to,
-                      id_type id,
-                      string memo);
-
-      void transfer(account_name from,
-                    account_name to,
-                    asset quantity,
-                    string memo);
-
+      void issue(account_name to, const yx_asset &token, const vector<string> &uris, const string &name,
+                 const string &memo);
       void redeem(account_name owner, id_type token_id);
-
-
-      // @abi table taccounts i64
-      struct account {
-         yx_asset balance;
-
-         uint64_t primary_key() const { return balance.symbol.name(); }
-      };
-
-      // @abi table tstats i64
-      struct stats {
-         yx_asset supply;
-
-         uint64_t primary_key() const { return supply.symbol.name(); }
-
-         account_name get_issuer() const { return supply.issuer; }
-      };
+      void transferid(account_name from, account_name to, id_type id, const string &memo);
+      void transfer(account_name from, account_name to, const yx_asset &token, const string &memo) override;
 
       // @abi table tokens i64
-      struct token {
+      struct nftoken {
          id_type id;          // Unique 64 bit identifier,
          uri_type uri;        // RFC 3986
          account_name owner;  // token owner
@@ -66,15 +33,10 @@ namespace yosemite {
          string name;         // token name
 
          id_type primary_key() const { return id; }
-
          account_name get_owner() const { return owner; }
-
          string get_uri() const { return uri; }
-
          asset get_value() const { return value; }
-
          uint64_t get_symbol() const { return value.symbol.name(); }
-
          uint64_t get_name() const { return string_to_name(name.c_str()); }
 
          uuid get_global_id() const {
@@ -90,28 +52,18 @@ namespace yosemite {
          }
       };
 
-      using accounts_index = eosio::multi_index<N(taccounts), account>;
+      using token_index = eosio::multi_index<N(nftokens), nftoken,
+            indexed_by<N(byowner), const_mem_fun<nftoken, account_name, &nftoken::get_owner> >,
+            indexed_by<N(bysymbol), const_mem_fun<nftoken, uint64_t, &nftoken::get_symbol> >,
+            indexed_by<N(byname), const_mem_fun<nftoken, uint64_t, &nftoken::get_name> > >;
 
-      using stats_index = eosio::multi_index<N(tstats), stats,
-            indexed_by<N(byissuer), const_mem_fun<stats, account_name, &stats::get_issuer> > >;
-
-      using token_index = eosio::multi_index<N(token), token,
-            indexed_by<N(byowner), const_mem_fun<token, account_name, &token::get_owner> >,
-            indexed_by<N(bysymbol), const_mem_fun<token, uint64_t, &token::get_symbol> >,
-            indexed_by<N(byname), const_mem_fun<token, uint64_t, &token::get_name> > >;
+   protected:
+      void inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t can_set_options) override;
 
    private:
       token_index tokens;
 
-      void mint(account_name owner, account_name ram_payer, asset value, string uri, string name);
-
-      void sub_balance(account_name owner, asset value);
-
-      void add_balance(account_name owner, asset value, account_name ram_payer);
-
-      void sub_supply(asset quantity);
-
-      void add_supply(asset quantity);
+      void mint(account_name owner, const yx_asset &value, const string &uri, const string &name);
    };
 
-} /// namespace eosio
+}}

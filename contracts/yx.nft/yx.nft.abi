@@ -57,88 +57,64 @@
     {
       "name": "redeem",
       "base": "",
-      "fields": [{
-          "name": "owner",
-          "type": "name"
-        },{
-          "name": "token_id",
-          "type": "id_type"
-        }
+      "fields": [
+        {"name":"owner", "type":"name"},
+        {"name":"token_id", "type":"id_type"}
       ]
     },
     {
       "name": "accounts_type",
       "base": "",
-      "fields": [{
-          "name": "balance",
-          "type": "yx_asset"
-        }
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"options", "type":"uint16"}
       ]
     },
     {
       "name": "stats_type",
       "base": "",
       "fields": [
-        {
-          "name": "supply",
-          "type": "yx_asset"
-        }
+        {"name":"supply", "type":"yx_asset"},
+        {"name":"can_set_options", "type":"uint16"},
+        {"name":"options", "type":"uint16"},
+        {"name":"kyc_rules", "type":"uint8[]"},
+        {"name":"kyc_rule_flags", "type":"uint16[]"}
       ]
-    },{
+    },
+    {
       "name": "tokens_type",
       "base": "",
-      "fields": [{
-          "name": "id",
-          "type": "id_type"
-        },{
-          "name": "uri",
-          "type": "uri_type"
-        },{
-          "name": "owner",
-          "type": "account_name"
-        },{
-          "name": "value",
-          "type": "yx_asset"
-        },{
-          "name": "name",
-          "type": "string"
-        }
+      "fields": [
+        {"name":"id", "type":"id_type"},
+        {"name":"uri", "type":"uri_type"},
+        {"name":"owner", "type":"account_name"},
+        {"name":"value", "type":"yx_asset"},
+        {"name":"name", "type":"string"}
       ]
     }
   ],
-  "actions": [{
-      "name": "create",
-      "type": "create",
-      "ricardian_contract": ""
-    },{
-      "name": "issue",
-      "type": "issue",
-      "ricardian_contract": ""
-    },{
-      "name": "transferid",
-      "type": "transferid",
-      "ricardian_contract": ""
-    },{
-      "name": "transfer",
-      "type": "transfer",
-      "ricardian_contract": ""
-    },{
-      "name": "redeem",
-      "type": "redeem",
-      "ricardian_contract": ""
-    }
+  "actions": [
+    { "name": "create", "type": "create", "ricardian_contract": "" },
+    { "name": "issue", "type": "issue", "ricardian_contract": "" },
+    { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
+    { "name": "transferid", "type": "transferid", "ricardian_contract": "" },
+    { "name": "transfer", "type": "wptransfer", "ricardian_contract": "" },
+    { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
+    { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
+    { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "taccounts",
       "type": "accounts_type",
       "index_type": "i64",
-      "key_names" : ["currency"],
+      "key_names" : ["id"],
       "key_types" : ["uint64"]
     },{
       "name": "tstats",
       "type": "stats_type",
       "index_type": "i64",
-      "key_names": [ "currency"],
+      "key_names": [ "issuer"],
       "key_types": [ "uint64" ]
     },{
       "name": "tokens",

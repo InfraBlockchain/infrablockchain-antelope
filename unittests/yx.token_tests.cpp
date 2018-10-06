@@ -8,6 +8,7 @@ public:
       init_yosemite_contracts();
 
       create_accounts({N(tkprovider), N(tkprovider2)});
+      produce_blocks();
    }
 
    fc::variant get_stats(int64_t token_symbol, const account_name &issuer) {

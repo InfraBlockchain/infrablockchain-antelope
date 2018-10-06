@@ -20,6 +20,8 @@
 #include <yx.token/yx.token.abi.hpp>
 #include <yx.dcontract/yx.dcontract.wast.hpp>
 #include <yx.dcontract/yx.dcontract.abi.hpp>
+#include <yx.nft/yx.nft.wast.hpp>
+#include <yx.nft/yx.nft.abi.hpp>
 
 #include <Runtime/Runtime.h>
 
@@ -46,6 +48,7 @@ public:
    abi_serializer abi_ser_identity;
    abi_serializer abi_ser_ntoken;
    abi_serializer abi_ser_token;
+   abi_serializer abi_ser_nft;
 
    void init_yosemite_contracts() {
       produce_blocks(2);
@@ -121,6 +124,15 @@ public:
       auto &accnt5 = control->db().get<account_object, by_name>(YOSEMITE_USER_TOKEN_ACCOUNT);
       BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt5.abi, abi), true);
       abi_ser_token.set_abi(abi, abi_serializer_max_time);
+
+      prepare_system_depository(N(d1));
+      prepare_identity_authority(N(d1));
+
+      produce_blocks();
+
+      auto &accnt_nft = control->db().get<account_object, by_name>(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT);
+      BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt_nft.abi, abi), true);
+      abi_ser_nft.set_abi(abi, abi_serializer_max_time);
 
       prepare_system_depository(N(d1));
       prepare_identity_authority(N(d1));

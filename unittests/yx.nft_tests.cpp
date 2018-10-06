@@ -1,51 +1,25 @@
-#include <boost/test/unit_test.hpp>
-#include <eosio/testing/tester.hpp>
-#include <eosio/chain/abi_serializer.hpp>
+#include <yosemite/testing/yx_tester.hpp>
 
-#include <eosio.nft/eosio.nft.wast.hpp>
-#include <eosio.nft/eosio.nft.abi.hpp>
-
-#include <Runtime/Runtime.h>
-
-#include <fc/variant_object.hpp>
-
-using namespace eosio::testing;
-using namespace eosio;
-using namespace eosio::chain;
-using namespace eosio::testing;
-using namespace fc;
-using namespace std;
-
-using mvo = fc::mutable_variant_object;
+using namespace yosemite::testing;
 
 typedef uint64_t id_type;
 typedef string uri_type;
 
-class nft_tester : public tester {
+class nft_tester : public yx_tester {
 public:
 
    nft_tester() {
-      produce_blocks( 2 );
+      init_yosemite_contracts();
 
-      create_accounts( { N(alice), N(bob), N(carol), N(eosio.nft) } );
-      produce_blocks( 2 );
-
-      set_code( N(eosio.nft), eosio_nft_wast );
-      set_abi( N(eosio.nft), eosio_nft_abi );
-
+      create_accounts({ N(alice), N(bob), N(carol)});
       produce_blocks();
-
-      const auto& accnt = control->db().get<account_object,by_name>( N(eosio.nft) );
-      abi_def abi;
-      BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt.abi, abi), true);
-      abi_ser.set_abi(abi, abi_serializer_max_time);
    }
 
    action_result push_action( const account_name& signer, const action_name &name, const variant_object &data ) {
       string action_type_name = abi_ser.get_action_type(name);
 
       action act;
-      act.account = N(eosio.nft);
+      act.account = N(yx.nft);
       act.name    = name;
       act.data    = abi_ser.variant_to_binary( action_type_name, data, abi_serializer_max_time );
 
@@ -57,7 +31,7 @@ public:
    {
       auto symb = eosio::chain::symbol::from_string(symbolname);
       auto symbol_code = symb.to_symbol_code().value;
-      vector<char> data = get_row_by_account( N(eosio.nft), symbol_code, N(stat), symbol_code );
+      vector<char> data = get_row_by_account( N(yx.nft), symbol_code, N(stat), symbol_code );
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "stats", data, abi_serializer_max_time );
    }
 
@@ -65,13 +39,13 @@ public:
    {
       auto symb = eosio::chain::symbol::from_string(symbolname);
       auto symbol_code = symb.to_symbol_code().value;
-      vector<char> data = get_row_by_account( N(eosio.nft), acc, N(accounts), symbol_code );
+      vector<char> data = get_row_by_account( N(yx.nft), acc, N(accounts), symbol_code );
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "account", data, abi_serializer_max_time );
    }
 
    fc::variant get_token(id_type token_id) 
    {
-      vector<char> data = get_row_by_account( N(eosio.nft), N(eosio.nft), N(token), token_id );
+      vector<char> data = get_row_by_account( N(yx.nft), N(yx.nft), N(token), token_id );
       FC_ASSERT(!data.empty(), "empty token");
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "token", data, abi_serializer_max_time );
    }
@@ -79,7 +53,7 @@ public:
    action_result create( account_name issuer,
                 string symbol ) {
 
-      return push_action( N(eosio.nft), N(create), mvo()
+      return push_action( N(yx.nft), N(create), mvo()
            ( "issuer", issuer)
            ( "symbol", symbol)
       );
