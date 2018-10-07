@@ -5,6 +5,10 @@
 
 namespace yosemite { namespace non_native_token {
 
+   void yx_token::inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t /*can_set_options*/) {
+      eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 2), "token precision must be equal or larger than 2");
+   }
+
    void yx_token::issue(const account_name &to, const yx_asset &token, const string &memo) {
       check_issue_parameters(to, token, memo);
 
@@ -48,10 +52,6 @@ namespace yosemite { namespace non_native_token {
       sub_token_balance(token.issuer, token);
 
       charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
-   }
-
-   void yx_token::inner_check_create_parameters(const yx_symbol &/*ysymbol*/, uint16_t /*can_set_options*/) {
-      /* do nothing */
    }
 
    void yx_token::transfer(account_name from, account_name to, const yx_asset &token, const string &memo) {

@@ -63,7 +63,6 @@ namespace yosemite { namespace non_native_token {
    private:
       token_index tokens;
 
-      void mint(account_name owner, const yx_asset &value, const string &uri, const string &name);
    };
 
 }}

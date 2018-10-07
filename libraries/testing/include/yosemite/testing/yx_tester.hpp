@@ -54,7 +54,7 @@ public:
       produce_blocks(2);
 
       create_accounts({N(d1), N(user1), N(user2), YOSEMITE_NATIVE_TOKEN_ACCOUNT, YOSEMITE_TX_FEE_ACCOUNT,
-                       YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_USER_TOKEN_ACCOUNT});
+                       YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_USER_TOKEN_ACCOUNT, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT});
       produce_blocks(2);
 
       set_code(config::system_account_name, yx_system_wast);
@@ -125,8 +125,10 @@ public:
       BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt5.abi, abi), true);
       abi_ser_token.set_abi(abi, abi_serializer_max_time);
 
-      prepare_system_depository(N(d1));
-      prepare_identity_authority(N(d1));
+      produce_blocks();
+
+      set_code(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, yx_nft_wast);
+      set_abi(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, yx_nft_abi);
 
       produce_blocks();
 
@@ -223,7 +225,7 @@ public:
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
-      result = set_id_info(N(d1), N(d1), 0, 15, 0, "");
+      result = set_id_info(idauth, idauth, 0, 15, 0, "");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
    }
@@ -242,6 +244,7 @@ public:
          );
          return success();
       } catch (const fc::exception &ex) {
+         log_to_console(ex.to_detail_string());
          return error(ex.top_message());
       }
    }

@@ -8,6 +8,10 @@ namespace yosemite { namespace non_native_token {
    using std::string;
    using eosio::asset;
 
+   void nft::inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t /*can_set_options*/) {
+      eosio_assert(static_cast<uint32_t>(ysymbol.precision() == 0), "non-fungible token doesn't support precision");
+   }
+
    // @abi action
    void nft::issue(account_name to, const yx_asset &token, const vector<string> &uris, const string &name,
                    const string &memo) {
@@ -15,11 +19,11 @@ namespace yosemite { namespace non_native_token {
       eosio_assert(static_cast<uint32_t>(name.size() <= 32), "name has more than 32 bytes");
       eosio_assert(static_cast<uint32_t>(!name.empty()), "name is empty");
       eosio_assert(static_cast<uint32_t>(token.amount == uris.size()), "mismatch between the number of tokens and uris provided");
+      eosio_assert(static_cast<uint32_t>(uris.size() <= 16), "the number of uris cannot exceed 16"); // == the number of inline actions
 
       stats stats_table(get_self(), token.symbol.value);
       const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
 
-      // Increase supply
       stats_table.modify(tstats, 0, [&](auto &s) {
          s.supply.amount += token.amount;
          eosio_assert(static_cast<uint32_t>(s.supply.amount > 0 && s.supply.amount <= asset::max_amount),
@@ -29,13 +33,23 @@ namespace yosemite { namespace non_native_token {
       // Mint nfts
       const yx_symbol &ysymbol = token.get_yx_symbol();
       for (auto const &uri: uris) {
-         mint(to, yx_asset{1, ysymbol}, uri, name);
-      }
+         yx_asset _token_issued = yx_asset{1, ysymbol};
+         id_type mint_id = tokens.available_primary_key();
+         tokens.emplace(get_self(), [&](auto &_token) {
+            _token.id = mint_id;
+            _token.uri = uri;
+            _token.owner = token.issuer;
+            _token.value = _token_issued;
+            _token.name = name;
+         });
 
-      if (to != token.issuer) {
-         SEND_INLINE_ACTION(*this, transfer,
-                {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                {token.issuer, to, token, memo});
+         add_token_balance(token.issuer, _token_issued);
+
+         if (to != token.issuer) {
+            SEND_INLINE_ACTION(*this, transferid,
+                               {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                               {token.issuer, to, mint_id, memo});
+         }
       }
 
       //TODO:transaction fee
@@ -111,16 +125,6 @@ namespace yosemite { namespace non_native_token {
       }
    }
 
-   void nft::mint(account_name owner, const yx_asset &value, const string &uri, const string &name) {
-      tokens.emplace(get_self(), [&](auto &_token) {
-         _token.id = tokens.available_primary_key();
-         _token.uri = uri;
-         _token.owner = owner;
-         _token.value = value;
-         _token.name = name;
-      });
-   }
-
    // @abi action
    void nft::redeem(account_name owner, id_type token_id) {
       require_auth(owner);
@@ -144,10 +148,6 @@ namespace yosemite { namespace non_native_token {
       sub_token_balance(owner, burn_token->value);
 
       //TODO:transaction fee
-   }
-
-   void nft::inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t /*can_set_options*/) {
-      eosio_assert(static_cast<uint32_t>(ysymbol.precision() == 0), "non-fungible token doesn't support precision");
    }
 
 }}

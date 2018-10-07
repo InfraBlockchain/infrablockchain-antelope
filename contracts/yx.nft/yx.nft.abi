@@ -63,6 +63,33 @@
       ]
     },
     {
+      "name": "setkycrule",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
+      ]
+    },
+    {
+      "name": "setoptions",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"options", "type":"uint16"},
+        {"name":"reset", "type":"uint8"}
+      ]
+    },
+    {
+      "name": "freezeacc",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"accs", "type":"account_name[]"},
+        {"name":"freeze", "type":"uint8"}
+      ]
+    },
+    {
       "name": "accounts_type",
       "base": "",
       "fields": [
@@ -83,7 +110,7 @@
       ]
     },
     {
-      "name": "tokens_type",
+      "name": "nftokens_type",
       "base": "",
       "fields": [
         {"name":"id", "type":"id_type"},
@@ -99,7 +126,7 @@
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transferid", "type": "transferid", "ricardian_contract": "" },
-    { "name": "transfer", "type": "wptransfer", "ricardian_contract": "" },
+    { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
     { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
     { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }
@@ -117,8 +144,8 @@
       "key_names": [ "issuer"],
       "key_types": [ "uint64" ]
     },{
-      "name": "tokens",
-      "type": "tokens_type",
+      "name": "nftokens",
+      "type": "nftokens_type",
       "index_type": "i64",
       "key_names": [ "id" ],
       "key_types": [ "id_type" ]
