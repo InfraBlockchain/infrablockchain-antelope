@@ -176,6 +176,7 @@ namespace yosemite { namespace non_native_token {
       eosio_assert(static_cast<uint32_t>(!token.is_native(false)), "cannot issue the native token with this action");
       eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
       require_auth(token.issuer);
+      eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
    }
 
    void token::check_transfer_parameters(account_name from, account_name to, const yx_asset &token, const string &memo) {

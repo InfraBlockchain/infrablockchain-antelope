@@ -16,6 +16,7 @@ namespace yosemite { namespace non_native_token {
    void nft::issue(account_name to, const yx_asset &token, const vector<string> &uris, const string &name,
                    const string &memo) {
       check_issue_parameters(to, token, memo);
+      eosio_assert(static_cast<uint32_t>(token.get_yx_symbol().precision() == 0), "non-fungible token doesn't support precision");
       eosio_assert(static_cast<uint32_t>(name.size() <= 32), "name has more than 32 bytes");
       eosio_assert(static_cast<uint32_t>(!name.empty()), "name is empty");
       eosio_assert(static_cast<uint32_t>(token.amount == uris.size()), "mismatch between the number of tokens and uris provided");
@@ -99,7 +100,7 @@ namespace yosemite { namespace non_native_token {
       if (!is_auth_by_sysaccount) {
          check_transfer_parameters(from, to, token, memo);
       }
-      eosio_assert(static_cast<uint32_t>(token.amount == 1), "token amount must be 1");
+      eosio_assert(static_cast<uint32_t>(token.amount == 1), "token amount must be 1 with no precision"); // it checks precision, too
       check_transfer_rules(from, to, token);
 
       auto symbl = tokens.get_index<N(bysymbol)>();
@@ -132,7 +133,7 @@ namespace yosemite { namespace non_native_token {
       // Find token to burn
       auto burn_token = tokens.find(token_id);
       eosio_assert(static_cast<uint32_t>(burn_token != tokens.end()), "token with id does not exist");
-      eosio_assert(static_cast<uint32_t>(burn_token->owner == owner), "token not owned by specifed owner");
+      eosio_assert(static_cast<uint32_t>(burn_token->owner == owner), "token not owned by specified owner");
 
       stats stats_table(get_self(), burn_token->value.symbol.value);
       const auto &tstats = stats_table.get(burn_token->value.issuer, "token is not yet created");

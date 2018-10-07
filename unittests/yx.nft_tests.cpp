@@ -91,6 +91,20 @@ public:
       );
    }
 
+   action_result transfer(account_name from,
+                          account_name to,
+                          const string &token,
+                          string memo) {
+      auto _token = yx_asset::from_string(token);
+      return push_action(N(transfer), mvo()
+                               ("from", from)
+                               ("to", to)
+                               ("token", _token)
+                               ("memo", memo),
+                         from, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
+      );
+   }
+
    action_result redeem(account_name owner, id_type token_id) {
       return push_action(N(redeem), mvo()
                                ("owner", owner)
@@ -102,7 +116,7 @@ public:
 
 BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
-   BOOST_FIXTURE_TEST_CASE( create_tests, nft_tester ) try {
+   BOOST_FIXTURE_TEST_CASE(create_tests, nft_tester) try {
       yx_symbol _ysymbol = yx_symbol::from_string("0,NFT@alice");
 
       auto result = create("0,NFT@alice", 0);
@@ -123,7 +137,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
    } FC_LOG_AND_RETHROW()
 
-   BOOST_FIXTURE_TEST_CASE ( issue_multi_tests, nft_tester ) try {
+   BOOST_FIXTURE_TEST_CASE (issue_multi_tests, nft_tester) try {
 
       yx_symbol _ysymbol = yx_symbol::from_string("0,TKN@alice");
 
@@ -160,7 +174,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
    } FC_LOG_AND_RETHROW()
 
-   BOOST_FIXTURE_TEST_CASE( issue_tests, nft_tester ) try {
+   BOOST_FIXTURE_TEST_CASE(issue_tests, nft_tester) try {
 
       yx_symbol _ysymbol = yx_symbol::from_string("0,TKN@alice");
 
@@ -179,13 +193,12 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       BOOST_REQUIRE_EQUAL("alice", stats["supply"]["issuer"].get_string());
 
       auto tokenval = get_token(0);
-      REQUIRE_MATCHING_OBJECT( tokenval, mvo()
-         ("id", "0")
-         ("uri", "uri")
-         ("owner", "bob")
-         ("value", "1 TKN")
-         ("name", "nft1")
-      );
+      BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
+      BOOST_REQUIRE_EQUAL("uri", tokenval["uri"]);
+      BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
+      BOOST_REQUIRE_EQUAL("nft1", tokenval["name"]);
+      BOOST_REQUIRE_EQUAL("1 TKN", tokenval["value"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("alice", tokenval["value"]["issuer"].get_string());
 
       /*
       auto bob_balance = get_account(N(bob), "0,TKN");
@@ -198,7 +211,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
                           issue(N(dummy), "1 TKN@alice", uris, "nft1", "my memo")
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("quantity must be a whole number"),
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("non-fungible token doesn't support precision"),
                           issue(N(alice), "1.05 TKN@alice", uris, "nft1", "my memo")
       );
 
@@ -211,15 +224,15 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
                           issue(N(alice), "1 TKN@alice", uris, "nft1", memo)
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token with symbol does not exist, create token before issue"),
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token is not yet created"),
                           issue(N(alice), "1 TTT@alice", uris, "nft1", "my memo")
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("must issue positive quantity of NFTs"),
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("must be positive token"),
                           issue(N(alice), "-1 TKN@alice", uris, "nft1", "my memo")
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between number of tokens and uris provided"),
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between the number of tokens and uris provided"),
                           issue(N(alice), "2 TKN@alice", uris, "nft1", "my memo")
       );
 
@@ -244,131 +257,173 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
    } FC_LOG_AND_RETHROW()
 
-/*
-BOOST_FIXTURE_TEST_CASE( transfer_tests, nft_tester ) try {
+   BOOST_FIXTURE_TEST_CASE(transfer_tests, nft_tester) try {
+      auto result = create("0,NFT@alice", 0);
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
 
-   auto token = create( N(alice), string("NFT"));
-   produce_blocks(1);
+      vector<string> uris = {"uri"};
 
-   vector<string> uris = {"uri", "uri2", "uri3"};
+      result = issue(N(alice), "1 NFT@alice", uris, "nft1", "my memo");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
 
-   issue( N(alice), N(alice), asset::from_string("3 NFT"), uris, "nft1", "hola" );
+      auto tokenval = get_token(0);
+      BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
+      BOOST_REQUIRE_EQUAL("uri", tokenval["uri"]);
+      BOOST_REQUIRE_EQUAL("alice", tokenval["owner"]);
+      BOOST_REQUIRE_EQUAL("nft1", tokenval["name"]);
+      BOOST_REQUIRE_EQUAL("1 NFT", tokenval["value"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("alice", tokenval["value"]["issuer"].get_string());
 
-   transferid( N(alice), N(bob), 0, "send token 0 to bob" );
+      result = transfer(N(alice), N(bob), "1 NFT@alice", "send a token to bob");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
 
+      tokenval = get_token(0);
+      BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
+      BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
 
-   transferid( N(alice), N(bob), 1, "send token 1 to bob" );
+      result = transfer(N(alice), N(bob), "1 NFT@alice", "error transfer");
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token is not found or is not owned by from account"), result);
 
+      result = transfer(N(alice), N(bob), "1.00 NFT@alice", "error transfer");
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token amount must be 1 with no precision"), result);
 
-   auto alice_balance = get_account(N(alice), "0,NFT");
-   REQUIRE_MATCHING_OBJECT( alice_balance, mvo()
-      ("balance", "1 NFT")
-   );
+   } FC_LOG_AND_RETHROW()
 
-   auto bob_balance = get_account(N(bob), "0,NFT");
-   REQUIRE_MATCHING_OBJECT( bob_balance, mvo()
-      ("balance", "2 NFT")
-   );
+   BOOST_FIXTURE_TEST_CASE(transferid_tests, nft_tester) try {
+      auto result = create("0,NFT@alice", 0);
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
 
-   auto tokenval = get_token(1);
-   REQUIRE_MATCHING_OBJECT( tokenval, mvo()
-        ("id", "1")
-        ("uri", "uri2")
-	("owner", "bob")
-	("value", "1 NFT")
-	("name", "nft1")
-   );
-   
+      vector<string> uris = {"uri", "uri2", "uri3"};
 
-   transferid (N(bob), N(carol), 1, "send token 1 to carol");
+      result = issue(N(alice), "3 NFT@alice", uris, "nft1", "my memo");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
 
-   auto bob_balance1 = get_account(N(bob), "0,NFT");
-   REQUIRE_MATCHING_OBJECT( bob_balance1, mvo()
-        ("balance", "1 NFT")		   
-   );
-   
-   auto carol_balance = get_account(N(carol), "0,NFT");
-   REQUIRE_MATCHING_OBJECT( carol_balance, mvo()
-        ("balance", "1 NFT")
-   );
-   
-   auto tokenval_1 = get_token(1);
-   REQUIRE_MATCHING_OBJECT( tokenval_1, mvo()
-      	("id", "1")
-      	("uri", "uri2")
-	("owner", "carol")
-	("value", "1 NFT")
-	("name", "nft1")
-   );
-   
-   BOOST_REQUIRE_EQUAL( wasm_assert_msg( "sender does not own token with specified ID" ),
-      transferid( N(alice), N(carol), 0, "send from non-owner" )
-   );	
+      result = transferid(N(alice), N(bob), 0, "send token 0 to bob");
+      BOOST_REQUIRE_EQUAL("", result);
+      result = transferid(N(alice), N(bob), 1, "send token 1 to bob");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
 
-   BOOST_REQUIRE_EQUAL( wasm_assert_msg( "cannot transferid to self" ),
-      transferid( N(alice), N(alice), 1, "send to the issuer" )
-   );
+      /*
+      auto alice_balance = get_account(N(alice), "0,NFT");
+      REQUIRE_MATCHING_OBJECT( alice_balance, mvo()
+         ("balance", "1 NFT")
+      );
 
-   BOOST_REQUIRE_EQUAL( wasm_assert_msg( "to account does not exist" ),
-      transferid( N(alice), N(dummy), 1, "send to non-existing" )
-   );
+      auto bob_balance = get_account(N(bob), "0,NFT");
+      REQUIRE_MATCHING_OBJECT( bob_balance, mvo()
+         ("balance", "2 NFT")
+      );
+      */
 
-   BOOST_REQUIRE_EQUAL( wasm_assert_msg( "token with specified ID does not exist" ),
-      transferid( N(alice), N(bob), 3, "no token id" )
-   );
+      auto tokenval = get_token(1);
+      BOOST_REQUIRE_EQUAL(1, tokenval["id"]);
+      BOOST_REQUIRE_EQUAL("uri2", tokenval["uri"]);
+      BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
+      BOOST_REQUIRE_EQUAL("nft1", tokenval["name"]);
+      BOOST_REQUIRE_EQUAL("1 NFT", tokenval["value"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("alice", tokenval["value"]["issuer"].get_string());
 
-   string memo;
-   for(auto i=0; i<100; i++)
-   {
-      memo += "longmemo";
-   }
+      result = transferid(N(bob), N(carol), 1, "send token 1 to carol");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
 
-   BOOST_REQUIRE_EQUAL( wasm_assert_msg( "memo has more than 256 bytes" ),
-      transferid( N(alice), N(bob), 1, memo )
-   );
+      /*
+      auto bob_balance1 = get_account(N(bob), "0,NFT");
+      REQUIRE_MATCHING_OBJECT( bob_balance1, mvo()
+           ("balance", "1 NFT")
+      );
 
+      auto carol_balance = get_account(N(carol), "0,NFT");
+      REQUIRE_MATCHING_OBJECT( carol_balance, mvo()
+           ("balance", "1 NFT")
+      );
+      */
 
-} FC_LOG_AND_RETHROW()
+      auto tokenval_1 = get_token(1);
+      BOOST_REQUIRE_EQUAL(1, tokenval_1["id"]);
+      BOOST_REQUIRE_EQUAL("uri2", tokenval_1["uri"]);
+      BOOST_REQUIRE_EQUAL("carol", tokenval_1["owner"]);
+      BOOST_REQUIRE_EQUAL("nft1", tokenval_1["name"]);
+      BOOST_REQUIRE_EQUAL("1 NFT", tokenval_1["value"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("alice", tokenval_1["value"]["issuer"].get_string());
 
-BOOST_FIXTURE_TEST_CASE( burn_tests, nft_tester ) try {
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("from account does not own token with specified ID"),
+                          transferid(N(alice), N(carol), 0, "send from non-owner")
+      );
 
-	auto token = create( N(alice), string("NFT"));
-    	
-	produce_blocks(1);
-	
-        vector<string> uris = {"uri1", "uri2"};
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("from and to account cannot be the same"),
+                          transferid(N(alice), N(alice), 1, "send to the issuer")
+      );
 
-	issue( N(alice), N(alice), asset::from_string("2 NFT"), uris, "nft1", "issue 2 tokens" );
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("to account does not exist"),
+                          transferid(N(alice), N(dummy), 1, "send to non-existing")
+      );
 
-	burn( N(alice), 1);
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token with specified ID does not exist"),
+                          transferid(N(alice), N(bob), 3, "no token id")
+      );
 
-	auto stats = get_stats("0,NFT");
-	REQUIRE_MATCHING_OBJECT( stats, mvo()
-          ("supply", "1 NFT")
-	  ("issuer", "alice")
-	);				       
+      string memo;
+      for (auto i = 0; i < 100; i++) {
+         memo += "longmemo";
+      }
 
-        auto alice_balance = get_account(N(alice), "0,NFT");
-	REQUIRE_MATCHING_OBJECT( alice_balance, mvo()
-          ("balance", "1 NFT")
-	);
-       
-	BOOST_REQUIRE_EQUAL( wasm_assert_msg( "token with id does not exist" ),
-	   burn( N(alice), 100200 )
-	);
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("memo has more than 256 bytes"),
+                          transferid(N(alice), N(bob), 1, memo)
+      );
+   } FC_LOG_AND_RETHROW()
 
-        BOOST_REQUIRE_EQUAL( wasm_assert_msg( "token not owned by account" ),
-	   burn( N(bob), 0 )
-	);
+   BOOST_FIXTURE_TEST_CASE(redeem_tests, nft_tester) try {
 
-	burn( N(alice), 0);
-	auto stats2 = get_stats("0,NFT");
-	REQUIRE_MATCHING_OBJECT( stats2, mvo()
-		("supply", "0 NFT")
-		("issuer", "alice")
-	);
-	
+      yx_symbol _ysymbol = yx_symbol::from_string("0,NFT@alice");
 
-} FC_LOG_AND_RETHROW()
-*/
+      auto result = create("0,NFT@alice", 0);
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
+
+      vector<string> uris = {"uri1", "uri2"};
+
+      result = issue(N(alice), "2 NFT@alice", uris, "nft1", "issue 2 tokens");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
+
+      result = redeem(N(alice), 1);
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
+
+      auto stats = get_stats(_ysymbol.tsymbol.value(), N(alice));
+      BOOST_REQUIRE_EQUAL("1 NFT", stats["supply"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("alice", stats["supply"]["issuer"].get_string());
+
+      /*
+      auto alice_balance = get_account(N(alice), "0,NFT");
+      REQUIRE_MATCHING_OBJECT(alice_balance, mvo()
+            ("balance", "1 NFT")
+      );
+      */
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token with id does not exist"),
+                          redeem(N(alice), 100200)
+      );
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token not owned by specified owner"),
+                          redeem(N(bob), 0)
+      );
+
+      result = redeem(N(alice), 0);
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
+
+      auto stats2 = get_stats(_ysymbol.tsymbol.value(), N(alice));
+      BOOST_REQUIRE_EQUAL("0 NFT", stats2["supply"]["amount"].get_string());
+      BOOST_REQUIRE_EQUAL("alice", stats2["supply"]["issuer"].get_string());
+
+   } FC_LOG_AND_RETHROW()
+
 BOOST_AUTO_TEST_SUITE_END()
