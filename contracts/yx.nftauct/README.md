@@ -1,5 +1,5 @@
 # Abtract
-* This Yosemite contract provides the infrastructure for creation of digital contracts and digital signing service for them.
+* This Yosemite contract provides the infrastructure for auction platform of non-fungible tokens.
 * The name is `yx.dcontract`.
 
 # Digital Signing

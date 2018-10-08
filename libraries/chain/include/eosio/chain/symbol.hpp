@@ -153,11 +153,6 @@ namespace eosio {
          account_name contract;
       };
 
-      struct yx_symbol {
-         symbol       symbol;
-         account_name issuer;
-      };
-
       inline bool operator== (const symbol& lhs, const symbol& rhs)
       {
          return lhs.value() == rhs.value();
@@ -197,5 +192,4 @@ namespace fc {
 FC_REFLECT(eosio::chain::symbol_code, (value))
 FC_REFLECT(eosio::chain::symbol, (m_value))
 FC_REFLECT(eosio::chain::extended_symbol, (sym)(contract))
-FC_REFLECT(eosio::chain::yx_symbol, (symbol)(issuer))
 

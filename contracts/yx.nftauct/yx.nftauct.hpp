@@ -28,9 +28,9 @@ namespace yosemite {
         EOSLIB_SERIALIZE(itemid, (creator)(sequence))
     };
 
-    class auction : public contract {
+    class ntf_auction : public contract {
     public:
-        explicit auction(account_name self) : contract(self) {
+        explicit ntf_auction(account_name self) : contract(self) {
         }
 
         void create(const itemid &item_id, const yx_asset &start_price, const asset &end_price, const asset &min_inc_price,
@@ -64,5 +64,5 @@ namespace yosemite {
         uint64_t primary_key() const { return sequence; }
     };
 
-    typedef eosio::multi_index<N(aucitems), auction_item_info> auction_items_index;
+    using auction_items_index = eosio::multi_index<N(nftauctitems), auction_item_info>;
 }

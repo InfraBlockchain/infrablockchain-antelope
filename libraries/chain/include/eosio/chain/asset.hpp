@@ -102,14 +102,6 @@ struct extended_asset  {
   name contract;
 };
 
-struct yx_asset {
-    yx_asset() = default;
-    yx_asset(asset a, name n) : amount(a), issuer(n) {}
-
-    asset amount;
-    name issuer;
-};
-
 bool  operator <  (const asset& a, const asset& b);
 bool  operator <= (const asset& a, const asset& b);
 
@@ -124,4 +116,3 @@ inline void from_variant(const fc::variant& var, eosio::chain::asset& vo) {
 
 FC_REFLECT(eosio::chain::asset, (amount)(sym))
 FC_REFLECT(eosio::chain::extended_asset, (quantity)(contract) )
-FC_REFLECT(eosio::chain::yx_asset, (amount)(issuer))

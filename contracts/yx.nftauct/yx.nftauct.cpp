@@ -1,38 +1,33 @@
 /**
- *  @copyright defined in LICENSE.txt
+ * @copyright defined in yosemite-public-blockchain/LICENSE
  */
 
-#include "yx.auction.hpp"
+#include "yx.nftauct.hpp"
 #include <eosiolib/transaction.hpp>
 #include <yosemitelib/native_token.hpp>
-#include <yosemitelib/non_native_token.hpp>
+#include <yosemitelib/token.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 
 namespace yosemite {
+   using namespace yosemite::native_token;
+
     static const uint32_t MIN_EXPIRATION_IN_SEC = 10 * 60; // 10 minutes
     static const uint32_t MAX_EXPIRATION_IN_SEC = 30 * 24 * 3600; // 30 days
     static const uint32_t MIN_EXPECTED_BID_TURNS = 10;
 
-    void auction::create(const itemid &item_id,
-                         const yx_asset &start_price,
-                         const asset &end_price, // expected winning price which completes the auction automatically
-                         const asset &min_inc_price,
-                         const string &iteminfo,
-                         const time_point_sec &expiration, uint8_t options) {
-        wpcreate(item_id, start_price, end_price, min_inc_price, iteminfo, expiration, options, item_id.creator);
-    }
-
-    void auction::wpcreate(const itemid &item_id,
-                           const yx_asset &start_price,
-                           const asset &end_price, // expected winning price which completes the auction automatically
-                           const asset &min_inc_price,
-                           const string &iteminfo,
-                           const time_point_sec &expiration, uint8_t options, account_name payer) {
+    void ntf_auction::create(const itemid &item_id,
+                             const yx_asset &start_price,
+                             const asset &end_price, // expected winning price which completes the auction automatically
+                             const asset &min_inc_price,
+                             const string &iteminfo,
+                             const time_point_sec &expiration, uint8_t options) {
         require_auth(item_id.creator);
         eosio_assert(static_cast<uint32_t>(start_price.is_valid()), "invalid start_price");
         eosio_assert(static_cast<uint32_t>(start_price.amount > 0), "start_price must be positive");
         if (!start_price.is_native(false)) {
-            eosio_assert(static_cast<uint32_t>(ytoken::does_token_exist(start_price.get_yx_symbol())), "token does not exist");
+            eosio_assert(static_cast<uint32_t>(
+                  yosemite::non_native_token::does_token_exist(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, start_price.get_yx_symbol())),
+                  "token does not exist");
         }
         eosio_assert(static_cast<uint32_t>(end_price.is_valid()), "invalid end_price");
         eosio_assert(static_cast<uint32_t>(end_price.amount >= 0), "end_price must be non-negative");
@@ -73,7 +68,7 @@ namespace yosemite {
             i.options = options;
         });
 
-        charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_AUCTION_CREATE);
+        charge_transaction_fee(item_id.creator, YOSEMITE_TX_FEE_OP_NAME_AUCTION_CREATE);
 
         // create deferred transaction to call complete
         action deferred_act{};
@@ -87,11 +82,7 @@ namespace yosemite {
         tx.send(item_id.to_uint128(), get_self());
     }
 
-    void auction::bid(const itemid &item_id, account_name bidder, const yx_asset &token) {
-        wpbid(item_id, bidder, token, bidder);
-    }
-
-    void auction::wpbid(const itemid &item_id, account_name bidder, const yx_asset &bid_price, account_name payer) {
+    void ntf_auction::bid(const itemid &item_id, account_name bidder, const yx_asset &bid_price) {
         require_auth(bidder);
         eosio_assert(static_cast<uint32_t>(bid_price.is_valid()), "invalid bid_price");
         eosio_assert(static_cast<uint32_t>(bid_price.amount > 0), "bid_price must be positive");
@@ -124,10 +115,10 @@ namespace yosemite {
         //escrow bid_price from bidder to this contract
         transfer_token_as_inline(bidder, get_self(), bid_price);
 
-        charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_AUCTION_BID);
+        charge_transaction_fee(item_id.creator, YOSEMITE_TX_FEE_OP_NAME_AUCTION_BID);
     }
 
-    void auction::transfer_token_as_inline(account_name from, account_name to, const yx_asset &token) {
+    void ntf_auction::transfer_token_as_inline(account_name from, account_name to, const yx_asset &token) {
         if (token.is_native()) {
             if (token.issuer == 0) {
                 INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
@@ -139,13 +130,13 @@ namespace yosemite {
                          {from, to, token, ""});
             }
         } else {
-            INLINE_ACTION_SENDER(yosemite::token, transfer)
+            INLINE_ACTION_SENDER(yosemite::non_native_token::token, transfer)
                     (YOSEMITE_USER_TOKEN_ACCOUNT, {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                      {from, to, token, ""});
         }
     }
 
-    void auction::complete(const itemid &item_id) {
+    void ntf_auction::complete(const itemid &item_id) {
         require_auth(get_self());
 
         auction_items_index aucitems_idx{get_self(), item_id.creator};
@@ -163,7 +154,7 @@ namespace yosemite {
         transfer_token_as_inline(get_self(), item_id.creator, last_bid_token);
     }
 
-    void auction::remove(const itemid &item_id) {
+    void ntf_auction::remove(const itemid &item_id) {
         require_auth(item_id.creator);
 
         auction_items_index aucitems_idx{get_self(), item_id.creator};
@@ -177,5 +168,5 @@ namespace yosemite {
     }
 }
 
-EOSIO_ABI(yosemite::auction, (create)(wpcreate)(bid)(wpbid)(complete)
+EOSIO_ABI(yosemite::ntf_auction, (create)(bid)(complete)(remove)
 )

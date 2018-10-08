@@ -1,14 +1,14 @@
 file(GLOB ABI_FILES "*.abi")
 configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
 
-add_wast_executable(TARGET yx.auction
+add_wast_executable(TARGET yx.nftauct
   INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}"
   LIBRARIES libc++ libc eosiolib
   DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 if ($ENV{CLION_IDE})
-    set(CONTRACT_MODULE_NAME "yx.auction")
+    set(CONTRACT_MODULE_NAME "yx.nftauct")
     message(STATUS "CLION - contracts/${CONTRACT_MODULE_NAME}")
     file(GLOB HEADERS "*.hpp" "*.h")
     file(GLOB SOURCES "*.cpp")
