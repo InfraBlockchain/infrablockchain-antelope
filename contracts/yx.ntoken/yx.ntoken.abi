@@ -1,4 +1,5 @@
 {
+  "version": "eosio::abi/1.0",
   "types": [
     {
       "new_type_name": "account_name",
@@ -93,15 +94,14 @@
       "name": "account_total_type",
       "base": "",
       "fields": [
-        {"name":"amount", "type":"int64"}
+        {"name":"amount", "type":"asset"}
       ]
     },
     {
       "name": "account_type",
       "base": "",
       "fields": [
-        {"name":"depository", "type":"account_name"},
-        {"name":"amount", "type":"int64"},
+        {"name":"token", "type":"yx_asset"}
       ]
     },
     {
@@ -109,7 +109,7 @@
       "base": "",
       "fields": [
         {"name":"key", "type":"name"},
-        {"name":"supply", "type":"int64"},
+        {"name":"supply", "type":"asset"},
         {"name":"options", "type":"uint8"}
       ]
     },
@@ -136,8 +136,8 @@
       "name": "ntaccounts",
       "type": "account_type",
       "index_type": "i64",
-      "key_names" : ["owner"],
-      "key_types" : ["uint64"]
+      "key_names" : [],
+      "key_types" : []
     },{
       "name": "ntaccountstt",
       "type": "account_total_type",

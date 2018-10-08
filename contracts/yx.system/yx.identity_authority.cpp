@@ -36,7 +36,7 @@ namespace yosemitesys {
 
         // charge transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            yosemite::charge_transaction_fee(identity_authority, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_ID_AUTH);
+            yosemite::native_token::charge_transaction_fee(identity_authority, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_ID_AUTH);
         }
     }
 
@@ -46,6 +46,7 @@ namespace yosemitesys {
         auto idauth = _identity_authorities.find( identity_authority );
 
         eosio_assert( idauth != _identity_authorities.end(), "not found registered identity authority" );
+        eosio_assert( !idauth->is_authorized, "identity authority is already authorized" );
 
         _identity_authorities.modify( idauth, 0, [&]( identity_authority_info& info ){
             info.is_authorized = true;
@@ -53,15 +54,16 @@ namespace yosemitesys {
     }
 
     void system_contract::rmvidauth( const account_name identity_authority ) {
-       require_auth( _self );
+        require_auth( _self );
 
-       auto idauth = _identity_authorities.find( identity_authority );
+        auto idauth = _identity_authorities.find( identity_authority );
 
-       eosio_assert( idauth != _identity_authorities.end(), "not found registered identity authority" );
+        eosio_assert( idauth != _identity_authorities.end(), "not found registered identity authority" );
+        eosio_assert( idauth->is_authorized, "identity authority is already unauthorized" );
 
-        _identity_authorities.modify( idauth, 0, [&]( identity_authority_info& info ){
-           info.is_authorized = false;
-       });
+         _identity_authorities.modify( idauth, 0, [&]( identity_authority_info& info ){
+            info.is_authorized = false;
+        });
     }
 
 } //namespace yosemitesys

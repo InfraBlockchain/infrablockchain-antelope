@@ -268,6 +268,8 @@ namespace eosio { namespace chain {
                                     3080006, "Transaction took too long" )
       FC_DECLARE_DERIVED_EXCEPTION( greylist_net_usage_exceeded, resource_exhausted_exception,
                                     3080007, "Transaction exceeded the current greylisted account network usage limit" )
+      FC_DECLARE_DERIVED_EXCEPTION( greylist_cpu_usage_exceeded, resource_exhausted_exception,
+                                    3080008, "Transaction exceeded the current greylisted account CPU usage limit" )
       FC_DECLARE_DERIVED_EXCEPTION( leeway_deadline_exception, deadline_exception,
                                     3081001, "Transaction reached the deadline set due to leeway on account CPU limits" )
 
@@ -331,6 +333,8 @@ namespace eosio { namespace chain {
                                     3110005, "Missing Chain Plugin" )
       FC_DECLARE_DERIVED_EXCEPTION( plugin_config_exception,               plugin_exception,
                                     3110006, "Incorrect plugin configuration" )
+      FC_DECLARE_DERIVED_EXCEPTION( missing_history_plugin_exception,             plugin_exception,
+                                    3110007, "Missing History Plugin" )
 
 
    FC_DECLARE_DERIVED_EXCEPTION( wallet_exception, chain_exception,
@@ -414,6 +418,10 @@ namespace eosio { namespace chain {
                                     3015013, "Unpack data exception" )
       FC_DECLARE_DERIVED_EXCEPTION( pack_exception,                     abi_exception,
                                     3015014, "Pack data exception" )
+      FC_DECLARE_DERIVED_EXCEPTION( duplicate_abi_variant_def_exception,  abi_exception,
+                                    3015015, "Duplicate variant definition in the ABI" )
+      FC_DECLARE_DERIVED_EXCEPTION( unsupported_abi_version_exception,  abi_exception,
+                                    3015016, "ABI has an unsupported version" )
 
    FC_DECLARE_DERIVED_EXCEPTION( contract_exception,           chain_exception,
                                  3160000, "Contract exception" )
@@ -504,4 +512,17 @@ namespace eosio { namespace chain {
                                     3230002, "Database API Exception" )
       FC_DECLARE_DERIVED_EXCEPTION( arithmetic_exception,   contract_api_exception,
                                     3230003, "Arithmetic Exception" )
+      FC_DECLARE_DERIVED_EXCEPTION(token_not_found_exception, contract_api_exception,
+                                   3231000, "Token is not created")
+      FC_DECLARE_DERIVED_EXCEPTION(empty_token_exception, contract_api_exception,
+                                   3231001, "Account doesn't have the token")
+      FC_DECLARE_DERIVED_EXCEPTION(native_token_not_found_exception, contract_api_exception,
+                                   3231002, "Unknown system depository or it has never issued")
+
+   FC_DECLARE_DERIVED_EXCEPTION( event_notification_exception, chain_exception,
+                                 3250000, "event notification plugin exception" )
+
+      FC_DECLARE_DERIVED_EXCEPTION( duplicated_tx_id_exception, chain_exception,
+                                    3250001, "transaction id for tx_irreversibility check is duplicated" )
+
 } } // eosio::chain

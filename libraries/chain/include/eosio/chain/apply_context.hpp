@@ -6,6 +6,7 @@
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/contract_table_objects.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <fc/utility.hpp>
 #include <sstream>
 #include <algorithm>
@@ -480,6 +481,14 @@ class apply_context {
       bool cancel_deferred_transaction( const uint128_t& sender_id, account_name sender );
       bool cancel_deferred_transaction( const uint128_t& sender_id ) { return cancel_deferred_transaction(sender_id, receiver); }
 
+   /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+   public:
+
+      /// contribute transaction voting from an action in current transaction
+      void cast_transaction_vote(uint32_t vote_amount);
+
+      /// get transaction vote data accumulated in the head block (previous block)
+      vector<yosemite_core::transaction_vote> get_transaction_votes_in_head_block();
 
    /// Authorization methods:
    public:
@@ -572,6 +581,8 @@ class apply_context {
       uint64_t next_recv_sequence( account_name receiver );
       uint64_t next_auth_sequence( account_name actor );
 
+      void add_ram_usage( account_name account, int64_t ram_delta );
+
    private:
 
       void validate_referenced_accounts( const transaction& t )const;
@@ -607,6 +618,7 @@ class apply_context {
       vector<action>                      _inline_actions; ///< queued inline messages
       vector<action>                      _cfa_inline_actions; ///< queued inline messages
       std::ostringstream                  _pending_console_output;
+      flat_set<account_delta>             _account_ram_deltas; ///< flat_set of account_delta so json is an array of objects
 
       //bytes                               _cached_trx;
 };

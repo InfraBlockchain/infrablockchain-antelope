@@ -126,7 +126,7 @@ struct yubihsm_wallet_impl {
       return _keys.emplace(pub_key, key_id).first;
    }
 
-   void unlock(const string& password) {
+   void unlock(const string password) {
       yh_rc rc;
       uint8_t context[YH_CONTEXT_LEN] = {0};
 
@@ -200,7 +200,7 @@ struct yubihsm_wallet_impl {
       });
    }
 
-   optional<signature_type> try_sign_digest(const digest_type d, const public_key_type public_key) {
+   optional<signature_type> try_sign_digest(const digest_type d, const public_key_type &public_key) {
       auto it = _keys.find(public_key);
       if(it == _keys.end())
          return optional<signature_type>{};
@@ -284,7 +284,7 @@ yubihsm_wallet::yubihsm_wallet(const string& connector, const uint16_t authkey) 
 yubihsm_wallet::~yubihsm_wallet() {
 }
 
-private_key_type yubihsm_wallet::get_private_key(public_key_type pubkey) const {
+private_key_type yubihsm_wallet::get_private_key(const public_key_type &pubkey) const {
    FC_THROW_EXCEPTION(chain::wallet_exception, "Obtaining private key for a key stored in YubiHSM is impossible");
 }
 
@@ -296,13 +296,13 @@ void yubihsm_wallet::lock() {
    my->lock();
 }
 
-void yubihsm_wallet::unlock(string password) {
+void yubihsm_wallet::unlock(const string &password) {
    my->unlock(password);
 }
-void yubihsm_wallet::check_password(string password) {
+void yubihsm_wallet::check_password(const string &password) {
    //just leave this as a noop for now; remove_key from wallet_mgr calls through here
 }
-void yubihsm_wallet::set_password(string password) {
+void yubihsm_wallet::set_password(const string &password) {
    FC_THROW_EXCEPTION(chain::wallet_exception, "YubiHSM wallet cannot have a password set");
 }
 
@@ -315,20 +315,20 @@ flat_set<public_key_type> yubihsm_wallet::list_public_keys() {
    return keys;
 }
 
-bool yubihsm_wallet::import_key(string wif_key) {
+bool yubihsm_wallet::import_key(const string &wif_key) {
    FC_THROW_EXCEPTION(chain::wallet_exception, "It is not possible to import a key in to the YubiHSM wallet");
 }
 
-string yubihsm_wallet::create_key(string key_type) {
+string yubihsm_wallet::create_key(const string &key_type) {
    return (string)my->create();
 }
 
-bool yubihsm_wallet::remove_key(string key) {
+bool yubihsm_wallet::remove_key(const string &key) {
    FC_ASSERT(!is_locked());
    return true;
 }
 
-optional<signature_type> yubihsm_wallet::try_sign_digest(const digest_type digest, const public_key_type public_key) {
+optional<signature_type> yubihsm_wallet::try_sign_digest(const digest_type &digest, const public_key_type &public_key) {
    return my->try_sign_digest(digest, public_key);
 }
 

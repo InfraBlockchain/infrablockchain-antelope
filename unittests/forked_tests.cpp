@@ -164,13 +164,13 @@ BOOST_AUTO_TEST_CASE( forking ) try {
 
 
    auto cr = c.push_action( N(eosio.token), N(create), N(eosio.token), mutable_variant_object()
-              ("issuer",       "eosio" )
+              ("issuer",       "yosemite" )
               ("maximum_supply", core_from_string("10000000.0000"))
       );
 
    wdump((fc::json::to_pretty_string(cr)));
 
-   cr = c.push_action( N(eosio.token), N(issue), N(eosio), mutable_variant_object()
+   cr = c.push_action( N(eosio.token), N(issue), config::system_account_name, mutable_variant_object()
               ("to",       "dan" )
               ("quantity", core_from_string("100.0000"))
               ("memo", "")
@@ -452,6 +452,11 @@ BOOST_AUTO_TEST_CASE( read_modes ) try {
    push_blocks(c, head);
    BOOST_REQUIRE_EQUAL(head_block_num, head.control->fork_db_head_block_num());
    BOOST_REQUIRE_EQUAL(head_block_num, head.control->head_block_num());
+
+   tester read_only(false, db_read_mode::READ_ONLY);
+   push_blocks(c, read_only);
+   BOOST_REQUIRE_EQUAL(head_block_num, read_only.control->fork_db_head_block_num());
+   BOOST_REQUIRE_EQUAL(head_block_num, read_only.control->head_block_num());
 
    tester irreversible(true, db_read_mode::IRREVERSIBLE);
    push_blocks(c, irreversible);

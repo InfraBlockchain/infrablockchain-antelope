@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace yosemite {
+namespace yosemite { namespace identity {
 
     /**
      * For each blockchain account, Identity Authority can manage below information
@@ -32,4 +32,4 @@ namespace yosemite {
         void setstate(account_name account, uint32_t state);
         void setdata(account_name account, const std::string& data);
     };
-}
+}}

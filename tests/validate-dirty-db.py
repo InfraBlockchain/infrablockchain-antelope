@@ -14,10 +14,7 @@ import signal
 
 
 Print=Utils.Print
-
-def errorExit(msg="", errorCode=1):
-    Print("ERROR:", msg)
-    exit(errorCode)
+errorExit=Utils.errorExit
 
 args = TestHelper.parse_args({"--keep-logs","--dump-error-details","-v","--leave-running","--clean-run"})
 debug=args.v
@@ -41,7 +38,7 @@ testSuccessful=False
 def runNodeosAndGetOutput(myTimeout=3):
     """Startup nodeos, wait for timeout (before forced shutdown) and collect output. Stdout, stderr and return code are returned in a dictionary."""
     Print("Launching nodeos process.")
-    cmd="programs/nodeos/nodeos --config-dir etc/eosio/node_bios --data-dir var/lib/node_bios --verbose-http-errors --http-validate-host=false"
+    cmd="programs/yosemite/yosemite --config-dir etc/yosemite/node_bios --data-dir var/lib/node_bios --verbose-http-errors --http-validate-host=false"
     Print("cmd: %s" % (cmd))
     proc=subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if debug: Print("Nodeos process launched.")
@@ -81,8 +78,6 @@ try:
         errorExit("Failed to stand up eos cluster.")
 
     node=cluster.getNode(0)
-    if node is None:
-        errorExit("Cluster in bad state, received None node")
 
     Print("Kill cluster nodes.")
     cluster.killall(allInstances=killAll)

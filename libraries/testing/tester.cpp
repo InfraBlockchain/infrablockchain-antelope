@@ -100,6 +100,8 @@ namespace eosio { namespace testing {
             cfg.wasm_runtime = chain::wasm_interface::vm_type::binaryen;
          else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--wavm"))
             cfg.wasm_runtime = chain::wasm_interface::vm_type::wavm;
+         else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--wabt"))
+            cfg.wasm_runtime = chain::wasm_interface::vm_type::wabt;
          else
             cfg.wasm_runtime = chain::wasm_interface::vm_type::binaryen;
       }
@@ -826,7 +828,7 @@ namespace eosio { namespace testing {
    transaction_trace_ptr base_tester::set_producers(const vector<account_name>& producer_names) {
       auto schedule = get_producer_keys( producer_names );
 
-      return push_action( N(eosio), N(setprods), N(eosio),
+      return push_action( config::system_account_name, N(setprods), config::system_account_name,
                           fc::mutable_variant_object()("schedule", schedule));
    }
 

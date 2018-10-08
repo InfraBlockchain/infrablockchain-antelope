@@ -8,19 +8,22 @@ add_subdirectory(eosiolib)
 add_subdirectory(musl)
 add_subdirectory(libc++)
 
-add_subdirectory(eosio.bios) # For internal test
 add_subdirectory(eosio.token) # For internal test
 add_subdirectory(eosio.msig)
 add_subdirectory(eosio.sudo)
-
 add_subdirectory(multi_index_test)
+add_subdirectory(eosio.system) # For internal test
 add_subdirectory(stltest)
 add_subdirectory(test.inline)
+add_subdirectory(asserter) # For internal test
 add_subdirectory(test_api)
 add_subdirectory(test_api_mem)
 add_subdirectory(test_api_db)
 add_subdirectory(test_api_multi_index)
 add_subdirectory(test_ram_limit)
+add_subdirectory(noop) # For internal test
+add_subdirectory(eosio.bios) # For internal test
+add_subdirectory(integration_test) # For internal test
 
 add_subdirectory(yosemitelib)
 add_subdirectory(yx.system)
@@ -29,4 +32,5 @@ add_subdirectory(yx.identity)
 add_subdirectory(yx.ntoken)
 add_subdirectory(yx.token)
 add_subdirectory(yx.dcontract)
+add_subdirectory(yx.nft)
 add_subdirectory(yx.auction)

@@ -12,7 +12,7 @@ if [ -z "$biosport" ]; then
     biosport=9776
 fi
 
-wddir=eosio-ignition-wd
+wddir=yosemite-ignition-wd
 wdaddr=localhost:8899
 wdurl=http://$wdaddr
 # Manual deployers, add a line below this block that looks like:
@@ -37,16 +37,16 @@ echo Initializing ignition sequence  at $(date) | tee $logfile
 
 echo "http-server-address = $wdaddr" > $wddir/config.ini
 
-programs/keosd/keosd --config-dir $wddir --data-dir $wddir 2> $wddir/wdlog.txt &
+programs/keyos/keyos --config-dir $wddir --data-dir $wddir 2> $wddir/wdlog.txt &
 echo $$ > ignition_wallet.pid
-echo keosd log in $wddir/wdlog.txt >> $logfile
+echo keyos log in $wddir/wdlog.txt >> $logfile
 sleep 1
 
 ecmd () {
     echo ===== Start: $step ============ >> $logfile
-    echo executing: cleos --wallet-url $wdurl --url http://$bioshost:$biosport $* | tee -a $logfile
+    echo executing: clyos --wallet-url $wdurl --url http://$bioshost:$biosport "$@" | tee -a $logfile
     echo ----------------------- >> $logfile
-    programs/cleos/cleos  --wallet-url $wdurl --url http://$bioshost:$biosport $* >> $logfile 2>&1
+    programs/clyos/clyos  --wallet-url $wdurl --url http://$bioshost:$biosport "$@" >> $logfile 2>&1
     echo ==== End: $step ============== >> $logfile
     step=$(($step + 1))
 }
@@ -56,15 +56,16 @@ wcmd () {
 }
 
 cacmd () {
-    programs/cleos/cleos  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount --transfer --stake-net "10000000.0000 SYS" --stake-cpu "10000000.0000 SYS"  --buy-ram "10000000.0000 SYS" eosio $* >> $logfile 2>&1
+    programs/clyos/clyos  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount yosemite "$@" >> $logfile 2>&1
     ecmd system regproducer $1 $2
-    ecmd system voteproducer prods $1 $1
+    ecmd push action yosemite authproducer "[\"$1\"]" -p yosemite
+    ecmd push action yx.ntoken nissue "{\"to\":\"$1\", \"token\":{\"amount\":\"1000000.00 DKRW\",\"issuer\":\"sysdepo1\"}, \"memo\":\"my memo\"}" -p sysdepo1
 }
 
 sleep 2
 ecmd get info
 
-wcmd create -n ignition
+wcmd create --to-console -n ignition
 
 # Manual deployers, add a line below this block that looks like:
 #    wcmd import -n ignition --private-key $PRODKEY[0]
@@ -75,39 +76,77 @@ wcmd create -n ignition
 # ------ DO NOT ALTER THE NEXT LINE -------
 ###INSERT prodkeys
 
-ecmd set contract eosio contracts/eosio.bios contracts/eosio.bios/eosio.bios.wast contracts/eosio.bios/eosio.bios.abi
+ecmd set contract yosemite contracts/eosio.bios eosio.bios.wasm eosio.bios.abi
 
 # Create required system accounts
-ecmd create key
+ecmd create key --to-console
 pubsyskey=`grep "^Public key:" $logfile | tail -1 | sed "s/^Public key://"`
 prisyskey=`grep "^Private key:" $logfile | tail -1 | sed "s/^Private key://"`
-echo eosio.* keys: $prisyskey $pubsyskey >> $logfile
+echo yx.* keys: $prisyskey $pubsyskey >> $logfile
 wcmd import -n ignition --private-key $prisyskey
-ecmd create account eosio eosio.bpay $pubsyskey $pubsyskey
-ecmd create account eosio eosio.msig $pubsyskey $pubsyskey
-ecmd create account eosio eosio.names $pubsyskey $pubsyskey
-ecmd create account eosio eosio.ram $pubsyskey $pubsyskey
-ecmd create account eosio eosio.ramfee $pubsyskey $pubsyskey
-ecmd create account eosio eosio.saving $pubsyskey $pubsyskey
-ecmd create account eosio eosio.stake $pubsyskey $pubsyskey
-ecmd create account eosio eosio.token $pubsyskey $pubsyskey
-ecmd create account eosio eosio.vpay $pubsyskey $pubsyskey
-ecmd create account eosio eosio.sudo $pubsyskey $pubsyskey
+ecmd create account yosemite yx.identity $pubsyskey $pubsyskey
+ecmd create account yosemite yx.msig $pubsyskey $pubsyskey
+ecmd create account yosemite yx.ntoken $pubsyskey $pubsyskey
+ecmd create account yosemite yx.token $pubsyskey $pubsyskey
+ecmd create account yosemite yx.dcontract $pubsyskey $pubsyskey
+ecmd create account yosemite yx.txfee $pubsyskey $pubsyskey
+ecmd create account yosemite yx.sudo $pubsyskey $pubsyskey
+ecmd create account yosemite sysdepo1 $pubsyskey $pubsyskey
+ecmd create account yosemite sysdepo2 $pubsyskey $pubsyskey
+ecmd create account yosemite idauth1 $pubsyskey $pubsyskey
+ecmd create account yosemite idauth2 $pubsyskey $pubsyskey
 
-ecmd set contract eosio.token contracts/eosio.token contracts/eosio.token/eosio.token.wast contracts/eosio.token/eosio.token.abi
-ecmd set contract eosio.msig contracts/eosio.msig contracts/eosio.msig/eosio.msig.wast contracts/eosio.msig/eosio.msig.abi
-ecmd set contract eosio.sudo contracts/eosio.sudo contracts/eosio.sudo/eosio.sudo.wast contracts/eosio.sudo/eosio.sudo.abi
+ecmd set contract yx.txfee contracts/yx.txfee yx.txfee.wasm yx.txfee.abi
+ecmd set contract yx.identity contracts/yx.identity yx.identity.wasm yx.identity.abi
+ecmd set contract yx.ntoken contracts/yx.ntoken yx.ntoken.wasm yx.ntoken.abi
+ecmd set contract yx.token contracts/yx.token yx.token.wasm yx.token.abi
+ecmd set contract yx.dcontract contracts/yx.dcontract yx.dcontract.wasm yx.dcontract.abi
+ecmd set contract yx.msig contracts/eosio.msig eosio.msig.wasm eosio.msig.abi
+ecmd set contract yx.sudo contracts/eosio.sudo eosio.sudo.wasm eosio.sudo.abi
 
-echo ===== Start: $step ============ >> $logfile
-echo executing: cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token create '[ "eosio", "10000000000.0000 SYS" ]' -p eosio.token | tee -a $logfile
-echo executing: cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token issue '[ "eosio", "1000000000.0000 SYS", "memo" ]' -p eosio | tee -a $logfile
-echo ----------------------- >> $logfile
-programs/cleos/cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token create '[ "eosio", "10000000000.0000 SYS" ]' -p eosio.token >> $logfile 2>&1
-programs/cleos/cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token issue '[ "eosio", "1000000000.0000 SYS", "memo" ]' -p eosio >> $logfile 2>&1
-echo ==== End: $step ============== >> $logfile
-step=$(($step + 1))
+ecmd push action yosemite setpriv '["yx.ntoken",1]' -p yosemite
+ecmd push action yx.ntoken setkycrule '{"type":0,"kyc":0}' -p yosemite
+ecmd push action yx.ntoken setkycrule '{"type":1,"kyc":0}' -p yosemite
+ecmd push action yosemite setpriv '["yx.token",1]' -p yosemite
+ecmd push action yosemite setpriv '["yx.dcontract",1]' -p yosemite
 
-ecmd set contract eosio contracts/eosio.system contracts/eosio.system/eosio.system.wast contracts/eosio.system/eosio.system.abi
+ecmd set contract yosemite contracts/yx.system yx.system.wasm yx.system.abi
+
+ecmd push action yosemite regidauth '["idauth1","http://idauth1.org",1]' -p idauth1 -p yosemite 
+ecmd push action yosemite authidauth '["idauth1"]' -p yosemite 
+ecmd push action yosemite regidauth '["idauth2","http://idauth2.org",1]' -p idauth2 -p yosemite 
+ecmd push action yosemite authidauth '["idauth2"]' -p yosemite 
+ecmd push action yosemite regsysdepo '["sysdepo1","http://sysdepo1.org",1]' -p sysdepo1 -p yosemite 
+ecmd push action yosemite authsysdepo '["sysdepo1"]' -p yosemite 
+ecmd push action yosemite regsysdepo '["sysdepo2","http://sysdepo2.org",1]' -p sysdepo2 -p yosemite 
+ecmd push action yosemite authsysdepo '["sysdepo2"]' -p yosemite 
+
+# yx.system (turn off tx fee for test convenience)
+ecmd push action yx.txfee settxfee '["tf.newacc","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.regprod","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.regsysdep","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.regidauth","0.00 DKRW"]' -p yosemite
+
+# yx.ntoken
+ecmd push action yx.txfee settxfee '["tf.nissue","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.nredeem","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.transfer","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.ntransfer","0.00 DKRW"]' -p yosemite
+
+# yx.token
+ecmd push action yx.txfee settxfee '["tf.tcreate","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.tissue","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.tredeem","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.ttransfer","0.00 DKRW"]' -p yosemite
+
+# yx.dcontract
+ecmd push action yx.txfee settxfee '["tf.dccreate","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcaddsign","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcsign","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcupadd","0.00 DKRW"]' -p yosemite
+ecmd push action yx.txfee settxfee '["tf.dcremove","0.00 DKRW"]' -p yosemite
+
+ecmd push action yx.ntoken nissue '{"to":"yosemite", "token":{"amount":"1000000000.00 DKRW","issuer":"sysdepo1"}, "memo":"my memo"}' -p sysdepo1
 
 # Manual deployers, add a series of lines below this block that looks like:
 #    cacmd $PRODNAME[0] $OWNERKEY[0] $ACTIVEKEY[0]
@@ -119,4 +158,4 @@ ecmd set contract eosio contracts/eosio.system contracts/eosio.system/eosio.syst
 # ------ DO NOT ALTER THE NEXT LINE -------
 ###INSERT cacmd
 
-pkill -15 keosd
+pkill -15 keyos

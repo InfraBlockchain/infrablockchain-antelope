@@ -1,10 +1,11 @@
 /**
- *  @copyright defined in LICENSE.txt
+ *  @copyright defined in LICENSE
  */
 
 #pragma once
 
 #include <eosiolib/time.hpp>
+#include <yosemitelib/identity.hpp>
 #include <string>
 
 namespace yosemite {
@@ -37,7 +38,8 @@ namespace yosemite {
         }
 
         void create(const dcid &dc_id, const string &conhash, const string &adddochash,
-                    const vector<account_name> &signers, const time_point_sec &expiration, uint8_t options);
+                    const vector<account_name> &signers, const time_point_sec &expiration,
+                    identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc, uint8_t options);
         void addsigners(const dcid &dc_id, const vector<account_name> &signers);
         void sign(const dcid &dc_id, account_name signer, const string &signerinfo);
         /** Updates the additional document hash */
@@ -45,15 +47,17 @@ namespace yosemite {
         void remove(const dcid &dc_id);
 
     private:
-        void check_signers_param(const vector<account_name> &signers, flat_set<account_name> &duplicates);
+        void check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates);
     };
 
     /* scope = creator */
     struct dcontract_info {
         uint64_t sequence = 0; /* provided sequence by the creator */
         string conhash{};
-        vector<char> adddochash{};
+        string adddochash{};
         time_point_sec expiration{};
+        identity::identity_type_t signer_type;
+        identity::identity_kyc_t signer_kyc;
         uint8_t options = 0;
         vector<account_name> signers{};
         vector<uint8_t> done_signers{}; // includes the indices to signers vector
@@ -65,11 +69,11 @@ namespace yosemite {
     /* scope = signer */
     struct dcontract_signer_info {
         uint64_t id = 0; // just primary key
-        uint128_t dc_id_s{}; // dc_id which is serialized to 128 bit
-        vector<char> signerinfo{};
+        dcid dc_id{};
+        string signerinfo{};
 
         uint64_t primary_key() const { return id; }
-        uint128_t by_dc_id_s() const { return dc_id_s; }
+        uint128_t by_dc_id_s() const { return dc_id.to_uint128(); }
     };
 
     typedef eosio::multi_index<N(dcontracts), dcontract_info> dcontract_index;

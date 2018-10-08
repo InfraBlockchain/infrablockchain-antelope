@@ -36,7 +36,7 @@ namespace yosemitesys {
 
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            yosemite::charge_transaction_fee(depository, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_SYS_DEPO);
+            yosemite::native_token::charge_transaction_fee(depository, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_SYS_DEPO);
         }
     }
 
@@ -46,6 +46,7 @@ namespace yosemitesys {
         auto depo = _sys_depositories.find( depository );
 
         eosio_assert( depo != _sys_depositories.end(), "not found registered system depository" );
+        eosio_assert( !depo->is_authorized, "system depository is already authorized" );
 
         _sys_depositories.modify( depo, 0, [&]( sys_depository_info& info ){
             info.is_authorized = true;
@@ -53,15 +54,16 @@ namespace yosemitesys {
     }
 
     void system_contract::rmvsysdepo( const account_name depository ) {
-       require_auth( _self );
+        require_auth( _self );
 
-       auto depo = _sys_depositories.find( depository );
+        auto depo = _sys_depositories.find( depository );
 
-       eosio_assert( depo != _sys_depositories.end(), "not found registered system depository" );
+        eosio_assert( depo != _sys_depositories.end(), "not found registered system depository" );
+        eosio_assert( depo->is_authorized, "system depository is already unauthorized" );
 
-       _sys_depositories.modify( depo, 0, [&]( sys_depository_info& info ){
-           info.is_authorized = false;
-       });
+        _sys_depositories.modify( depo, 0, [&]( sys_depository_info& info ){
+            info.is_authorized = false;
+        });
     }
 
 } //namespace yosemitesys

@@ -34,7 +34,7 @@ class StressNetwork:
         ta.name = self.randAcctName()
         acc1 = copy.copy(ta)
         print("creating new account %s" % (ta.name))
-        tr = node.createAccount(ta, eosio, stakedDeposit=0, waitForTransBlock=True)
+        tr = node.createAccount(ta, eosio, stakedDeposit=0, waitForTransBlock=True, exitOnError=True)
         trid = node.getTransId(tr)
         if trid is None:
             return ([], "", 0.0, "failed to create account")
@@ -43,17 +43,17 @@ class StressNetwork:
         ta.name = self.randAcctName()
         acc2 = copy.copy(ta)
         print("creating new account %s" % (ta.name))
-        tr = node.createAccount(ta, eosio, stakedDeposit=0, waitForTransBlock=True)
+        tr = node.createAccount(ta, eosio, stakedDeposit=0, waitForTransBlock=True, exitOnError=True)
         trid = node.getTransId(tr)
         if trid is None:
             return ([], "", 0.0, "failed to create account")
         print("transaction id %s" % (trid))
 
         print("issue currency0000 into %s" % (acc1.name))
-        contract="eosio"
+        contract="yosemite"
         action="issue"
         data="{\"to\":\"" + acc1.name + "\",\"quantity\":\"1000000.0000 "+CORE_SYMBOL+"\"}"
-        opts="--permission eosio@active"
+        opts="--permission yosemite@active"
         tr=node.pushMessage(contract, action, data, opts)
         trid = node.getTransId(tr[1])
         if trid is None:

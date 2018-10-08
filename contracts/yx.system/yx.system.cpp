@@ -86,7 +86,7 @@ namespace yosemitesys {
 
             if (!yosemite::is_authorized_identity_authority(creator)) {
                 // system depositories are exempted for new account transaction fee
-                yosemite::charge_transaction_fee(creator, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT);
+                yosemite::native_token::charge_transaction_fee(creator, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT);
             }
         }
 

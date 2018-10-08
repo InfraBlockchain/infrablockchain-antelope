@@ -30,18 +30,6 @@ class read_only {
          : history(history) {}
 
 
-      /*
-      struct get_transaction_params {
-         chain::transaction_id_type  transaction_id;
-      };
-      struct get_transaction_results {
-         chain::transaction_id_type  transaction_id;
-         fc::variant                 transaction;
-      };
-      get_transaction_results get_transaction(const get_transaction_params& params) const;
-      */
-
-
       struct get_actions_params {
          chain::account_name account_name;
          optional<int32_t>   pos; /// a absolute sequence positon -1 is the end/last action
@@ -67,8 +55,9 @@ class read_only {
 
 
       struct get_transaction_params {
-         transaction_id_type           id;
+         string                        id;
          optional<uint32_t>            block_num_hint;
+         optional<bool>                simplified; /* get_transaction_result::id, block_num, block_time, last_irreversible_block are only given */
       };
 
       struct get_transaction_result {
@@ -81,7 +70,7 @@ class read_only {
       };
 
       get_transaction_result get_transaction( const get_transaction_params& )const;
-      
+
 
 
 
@@ -120,13 +109,13 @@ class read_only {
 
 /**
  *  This plugin tracks all actions and keys associated with a set of configured accounts. It enables
- *  wallets to paginate queries for history.  
+ *  wallets to paginate queries for history.
  *
  *  An action will be included in the account's history if any of the following:
  *     - receiver
  *     - any account named in auth list
  *
- *  A key will be linked to an account if the key is referneced in authorities of updateauth or newaccount 
+ *  A key will be linked to an account if the key is referneced in authorities of updateauth or newaccount
  */
 class history_plugin : public plugin<history_plugin> {
    public:
@@ -153,7 +142,7 @@ FC_REFLECT( eosio::history_apis::read_only::get_actions_params, (account_name)(p
 FC_REFLECT( eosio::history_apis::read_only::get_actions_result, (actions)(last_irreversible_block)(time_limit_exceeded_error) )
 FC_REFLECT( eosio::history_apis::read_only::ordered_action_result, (global_action_seq)(account_action_seq)(block_num)(block_time)(action_trace) )
 
-FC_REFLECT( eosio::history_apis::read_only::get_transaction_params, (id)(block_num_hint) )
+FC_REFLECT( eosio::history_apis::read_only::get_transaction_params, (id)(block_num_hint)(simplified) )
 FC_REFLECT( eosio::history_apis::read_only::get_transaction_result, (id)(trx)(block_time)(block_num)(last_irreversible_block)(traces) )
 /*
 FC_REFLECT(eosio::history_apis::read_only::get_transaction_params, (transaction_id) )

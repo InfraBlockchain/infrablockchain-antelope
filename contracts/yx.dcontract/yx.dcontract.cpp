@@ -1,5 +1,5 @@
 /**
- *  @copyright defined in LICENSE.txt
+ *  @copyright defined in LICENSE
  */
 
 #include "yx.dcontract.hpp"
@@ -9,8 +9,7 @@
 namespace yosemite {
     static const int MAX_SIGNERS = 32;
 
-    void digital_contract::check_signers_param(const vector<account_name> &signers,
-                                               flat_set<account_name> &duplicates) {
+    void digital_contract::check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates) {
         eosio_assert(static_cast<uint32_t>(!signers.empty()), "signers cannot be empty");
         eosio_assert(static_cast<uint32_t>(signers.size() <= MAX_SIGNERS), "too many signers");
 
@@ -22,7 +21,8 @@ namespace yosemite {
     }
 
     void digital_contract::create(const dcid &dc_id, const string &conhash, const string &adddochash,
-                                  const vector<account_name> &signers, const time_point_sec &expiration, uint8_t options) {
+                                  const vector<account_name> &signers, const time_point_sec &expiration,
+                                  identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc, uint8_t options) {
         eosio_assert(static_cast<uint32_t>(!conhash.empty()), "conhash cannot be empty");
         eosio_assert(static_cast<uint32_t>(conhash.size() <= 256), "conhash is too long");
         eosio_assert(static_cast<uint32_t>(adddochash.size() <= 256), "additional conhash is too long");
@@ -40,13 +40,15 @@ namespace yosemite {
         dcontract_idx.emplace(get_self(), [&](auto &i) {
             i.sequence = dc_id.sequence;
             i.conhash = conhash;
-            std::copy(adddochash.begin(), adddochash.end(), std::back_inserter(i.adddochash));
+            i.adddochash = adddochash;
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
             i.expiration = expiration;
+            i.signer_type = signer_type;
+            i.signer_kyc = signer_kyc;
             i.options = options;
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE);
     }
 
     void digital_contract::addsigners(const dcid &dc_id, const vector<account_name> &signers) {
@@ -56,16 +58,16 @@ namespace yosemite {
         const auto &info = dcontract_idx.get(dc_id.sequence, "digital contract does not exist");
         eosio_assert(static_cast<uint32_t>(!info.is_signed()), "digital contract is already signed by at least one signer");
         eosio_assert(static_cast<uint32_t>(info.expiration > time_point_sec(now())), "digital contract is expired");
-        eosio_assert(static_cast<uint32_t>(info.signers.size() + signers.size() <= MAX_SIGNERS), "too many signers in total");
         // check duplicated signer
         flat_set<account_name> duplicates{info.signers.begin(), info.signers.end()};
         check_signers_param(signers, duplicates);
+        eosio_assert(static_cast<uint32_t>(info.signers.size() + signers.size() <= MAX_SIGNERS), "too many signers in total");
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS);
     }
 
     void digital_contract::sign(const dcid &dc_id, account_name signer, const string &signerinfo) {
@@ -83,6 +85,9 @@ namespace yosemite {
         auto index = std::distance(info.signers.begin(), itr);
         eosio_assert(static_cast<uint32_t>(std::find(info.done_signers.begin(), info.done_signers.end(), index) == info.done_signers.end()),
                      "digital contract is already signed by the signer");
+        // account type, KYC check
+        eosio_assert(static_cast<uint32_t>(identity::is_account_type(signer, info.signer_type)), "signer is not the required account type");
+        eosio_assert(static_cast<uint32_t>(identity::has_all_kyc_status(signer, info.signer_kyc)), "signer does not have required KYC status");
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             i.done_signers.push_back(static_cast<uint8_t>(index));
@@ -91,11 +96,11 @@ namespace yosemite {
         dcontract_signer_index dc_signer_index{get_self(), signer};
         dc_signer_index.emplace(get_self(), [&](auto &i) {
             i.id = dc_signer_index.available_primary_key();
-            i.dc_id_s = dc_id.to_uint128();
-            std::copy(signerinfo.begin(), signerinfo.end(), std::back_inserter(i.signerinfo));
+            i.dc_id = dc_id;
+            i.signerinfo = signerinfo;
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
     }
 
     void digital_contract::upadddochash(const dcid &dc_id, const string &adddochash) {
@@ -108,10 +113,10 @@ namespace yosemite {
 
         dcontract_idx.modify(info, 0, [&](auto &i) {
             i.adddochash.clear();
-            std::copy(adddochash.begin(), adddochash.end(), std::back_inserter(i.adddochash));
+            i.adddochash = adddochash;
         });
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH);
     }
 
     void digital_contract::remove(const dcid &dc_id) {
@@ -131,7 +136,7 @@ namespace yosemite {
 
         dcontract_idx.erase(info);
 
-        charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE);
+        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE);
     }
 }
 

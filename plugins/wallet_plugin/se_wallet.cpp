@@ -186,7 +186,7 @@ struct se_wallet_impl {
       return pub;
    }
 
-   optional<signature_type> try_sign_digest(const digest_type d, const public_key_type public_key) {
+   optional<signature_type> try_sign_digest(const digest_type d, const public_key_type &public_key) {
       auto it = _keys.find(public_key);
       if(it == _keys.end())
          return optional<signature_type>{};
@@ -195,7 +195,7 @@ struct se_wallet_impl {
       BIGNUM *r = BN_new(), *s = BN_new();
       CFErrorRef error = nullptr;
 
-      CFDataRef digestData = CFDataCreateWithBytesNoCopy(nullptr, (UInt8*)d.data(), d.data_size(), kCFAllocatorNull);
+      CFDataRef digestData = CFDataCreateWithBytesNoCopy(nullptr, (UInt8*)d.data(), d.data_size(), kCFAllocatorNull); // digest_type is copied because raw pointer is passed to another library
       CFDataRef signature = SecKeyCreateSignature(it->second, kSecKeyAlgorithmECDSASignatureDigestX962SHA256, digestData, &error);
       if(error) {
          string error_string = string_for_cferror(error);
@@ -234,14 +234,14 @@ struct se_wallet_impl {
       return final_signature;
    }
 
-   bool remove_key(string public_key) {
+   bool remove_key(const string &public_key) {
       auto it = _keys.find(public_key_type{public_key});
       if(it == _keys.end())
          FC_THROW_EXCEPTION(chain::wallet_exception, "Given key to delete not found in Secure Enclave wallet");
 
       promise<bool> prom;
       future<bool> fut = prom.get_future();
-      macos_user_auth(auth_callback, &prom, CFSTR("remove a key from your EOSIO wallet"));
+      macos_user_auth(auth_callback, &prom, CFSTR("remove a key from your wallet"));
       if(!fut.get())
          FC_THROW_EXCEPTION(chain::wallet_invalid_password_exception, "Local user authentication failed");
 
@@ -316,7 +316,7 @@ se_wallet::se_wallet() : my(new detail::se_wallet_impl()) {
 se_wallet::~se_wallet() {
 }
 
-private_key_type se_wallet::get_private_key(public_key_type pubkey) const {
+private_key_type se_wallet::get_private_key(const public_key_type &pubkey) const {
    FC_THROW_EXCEPTION(chain::wallet_exception, "Obtaining private key for a key stored in Secure Enclave is impossible");
 }
 
@@ -328,18 +328,18 @@ void se_wallet::lock() {
    my->locked = true;
 }
 
-void se_wallet::unlock(string password) {
+void se_wallet::unlock(const string &password) {
    promise<bool> prom;
    future<bool> fut = prom.get_future();
-   macos_user_auth(detail::auth_callback, &prom, CFSTR("unlock your EOSIO wallet"));
+   macos_user_auth(detail::auth_callback, &prom, CFSTR("unlock your wallet"));
    if(!fut.get())
       FC_THROW_EXCEPTION(chain::wallet_invalid_password_exception, "Local user authentication failed");
    my->locked = false;
 }
-void se_wallet::check_password(string password) {
+void se_wallet::check_password(const string &password) {
    //just leave this as a noop for now; remove_key from wallet_mgr calls through here
 }
-void se_wallet::set_password(string password) {
+void se_wallet::set_password(const string &password) {
    FC_THROW_EXCEPTION(chain::wallet_exception, "Secure Enclave wallet cannot have a password set");
 }
 
@@ -352,20 +352,20 @@ flat_set<public_key_type> se_wallet::list_public_keys() {
    return keys;
 }
 
-bool se_wallet::import_key(string wif_key) {
+bool se_wallet::import_key(const string &wif_key) {
    FC_THROW_EXCEPTION(chain::wallet_exception, "It is not possible to import a key in to the Secure Enclave wallet");
 }
 
-string se_wallet::create_key(string key_type) {
+string se_wallet::create_key(const string &key_type) {
    return (string)my->create();
 }
 
-bool se_wallet::remove_key(string key) {
+bool se_wallet::remove_key(const string &key) {
    EOS_ASSERT(!is_locked(), wallet_locked_exception, "You can not remove a key from a locked wallet");
    return my->remove_key(key);
 }
 
-optional<signature_type> se_wallet::try_sign_digest(const digest_type digest, const public_key_type public_key) {
+optional<signature_type> se_wallet::try_sign_digest(const digest_type &digest, const public_key_type &public_key) {
    return my->try_sign_digest(digest, public_key);
 }
 

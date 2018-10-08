@@ -593,22 +593,22 @@ BOOST_AUTO_TEST_CASE(transaction_test) { try {
    variant pretty_trx = fc::mutable_variant_object()
       ("actions", fc::variants({
          fc::mutable_variant_object()
-            ("account", "eosio")
+            ("account", "yosemite")
             ("name", "reqauth")
             ("authorization", fc::variants({
                fc::mutable_variant_object()
-                  ("actor", "eosio")
+                  ("actor", "yosemite")
                   ("permission", "active")
             }))
             ("data", fc::mutable_variant_object()
-               ("from", "eosio")
+               ("from", "yosemite")
             )
          })
       )
       // lets also push a context free action, the multi chain test will then also include a context free action
       ("context_free_actions", fc::variants({
          fc::mutable_variant_object()
-            ("account", "eosio")
+            ("account", "yosemite")
             ("name", "nonce")
             ("data", fc::raw::pack(std::string("dummy")))
          })
@@ -621,9 +621,9 @@ BOOST_AUTO_TEST_CASE(transaction_test) { try {
    trx.expiration = fc::time_point::now();
    trx.validate();
    BOOST_CHECK_EQUAL(0, trx.signatures.size());
-   ((const signed_transaction &)trx).sign( test.get_private_key( N(eosio), "active" ), test.control->get_chain_id());
+   ((const signed_transaction &)trx).sign( test.get_private_key( config::system_account_name, "active" ), test.control->get_chain_id());
    BOOST_CHECK_EQUAL(0, trx.signatures.size());
-   trx.sign( test.get_private_key( N(eosio), "active" ), test.control->get_chain_id()  );
+   trx.sign( test.get_private_key( config::system_account_name, "active" ), test.control->get_chain_id()  );
    BOOST_CHECK_EQUAL(1, trx.signatures.size());
    trx.validate();
 

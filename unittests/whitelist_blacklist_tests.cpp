@@ -45,6 +45,8 @@ class whitelist_blacklist_tester {
                cfg.wasm_runtime = chain::wasm_interface::vm_type::binaryen;
             else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--wavm"))
                cfg.wasm_runtime = chain::wasm_interface::vm_type::wavm;
+            else if(boost::unit_test::framework::master_test_suite().argv[i] == std::string("--wabt"))
+               cfg.wasm_runtime = chain::wasm_interface::vm_type::wabt;
             else
                cfg.wasm_runtime = chain::wasm_interface::vm_type::binaryen;
          }
@@ -123,7 +125,7 @@ BOOST_AUTO_TEST_SUITE(whitelist_blacklist_tests)
 
 BOOST_AUTO_TEST_CASE( actor_whitelist ) { try {
    whitelist_blacklist_tester<> test;
-   test.actor_whitelist = {N(eosio), N(eosio.token), N(alice)};
+   test.actor_whitelist = {config::system_account_name, N(eosio.token), N(alice)};
    test.init();
 
    test.transfer( N(eosio.token), N(alice), "1000.00 TOK" );
@@ -190,7 +192,7 @@ BOOST_AUTO_TEST_CASE( actor_blacklist ) { try {
 
 BOOST_AUTO_TEST_CASE( contract_whitelist ) { try {
    whitelist_blacklist_tester<> test;
-   test.contract_whitelist = {N(eosio), N(eosio.token), N(bob)};
+   test.contract_whitelist = {config::system_account_name, N(eosio.token), N(bob)};
    test.init();
 
    test.transfer( N(eosio.token), N(alice), "1000.00 TOK" );
@@ -288,7 +290,7 @@ BOOST_AUTO_TEST_CASE( contract_blacklist ) { try {
 
 BOOST_AUTO_TEST_CASE( action_blacklist ) { try {
    whitelist_blacklist_tester<> test;
-   test.contract_whitelist = {N(eosio), N(eosio.token), N(bob), N(charlie)};
+   test.contract_whitelist = {config::system_account_name, N(eosio.token), N(bob), N(charlie)};
    test.action_blacklist = {{N(charlie), N(create)}};
    test.init();
 
@@ -329,10 +331,10 @@ BOOST_AUTO_TEST_CASE( blacklist_eosio ) { try {
    whitelist_blacklist_tester<tester> tester1;
    tester1.init();
    tester1.chain->produce_blocks();
-   tester1.chain->set_code(N(eosio), eosio_token_wast);
+   tester1.chain->set_code(config::system_account_name, eosio_token_wast);
    tester1.chain->produce_blocks();
    tester1.shutdown();
-   tester1.contract_blacklist = {N(eosio)};
+   tester1.contract_blacklist = {config::system_account_name};
    tester1.init(false);
 
    whitelist_blacklist_tester<tester> tester2;
@@ -422,7 +424,7 @@ BOOST_AUTO_TEST_CASE( blacklist_onerror ) { try {
    tester1.chain->produce_blocks();
    tester1.shutdown();
 
-   tester1.action_blacklist = {{N(eosio), N(onerror)}};
+   tester1.action_blacklist = {{config::system_account_name, N(onerror)}};
    tester1.init(false);
 
    tester1.chain->push_action( N(bob), N(defercall), N(alice), mvo()
@@ -433,7 +435,7 @@ BOOST_AUTO_TEST_CASE( blacklist_onerror ) { try {
    );
 
    BOOST_CHECK_EXCEPTION( tester1.chain->produce_blocks(), fc::exception,
-                          fc_exception_message_is("action 'eosio::onerror' is on the action blacklist")
+                          fc_exception_message_is("action 'yosemite::onerror' is on the action blacklist")
                         );
 
 } FC_LOG_AND_RETHROW() }

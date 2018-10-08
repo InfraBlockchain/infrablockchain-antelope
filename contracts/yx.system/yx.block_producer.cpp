@@ -4,8 +4,13 @@
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
+#include <yosemitelib/transaction_vote.h>
 
+#include <eosiolib/system.h>
+#include <eosiolib/memory.hpp>
 #include <eosiolib/dispatcher.hpp>
+
+#include <cmath>
 
 namespace yosemitesys {
 
@@ -18,6 +23,14 @@ namespace yosemitesys {
     const uint64_t useconds_per_day      = 24 * 3600 * uint64_t(1000000);
 //    const uint64_t useconds_per_year     = seconds_per_year*1000000ll;
 
+    const int64_t    vote_weight_timestamp_epoch = 1514764800ll;  // 01/01/2018 @ 12:00am (UTC)
+    const uint32_t   seconds_per_week = 24 * 3600 * 7;
+
+
+    double weighted_vote( uint32_t vote ) {
+        double weight = int64_t( now() - vote_weight_timestamp_epoch ) / double( seconds_per_week * 52 );
+        return double(vote) * std::pow( 2, weight );
+    }
 
     void system_contract::onblock( block_timestamp timestamp, account_name producer ) {
         using namespace eosio;
@@ -36,6 +49,41 @@ namespace yosemitesys {
             });
         }
 
+        /// read tran transaction votes sum data for each vote-to(candidate) account,
+        /// accumulated from the transactions in the previous block right before current pending block
+        uint32_t tx_votes_packed_size = read_head_block_trx_votes_data(nullptr, 0);
+
+        if (tx_votes_packed_size > 0) {
+
+            int cnt = tx_votes_packed_size / sizeof(struct yosemite_transaction_vote);
+
+            /// allocate buffer memory through memory manager
+            char* buf_tx_votes_data_packed = static_cast<char*>(malloc(tx_votes_packed_size));
+            eosio_assert( buf_tx_votes_data_packed != nullptr, "malloc failed for tx votes packed data" );
+
+            read_head_block_trx_votes_data(buf_tx_votes_data_packed, tx_votes_packed_size);
+            yosemite_transaction_vote* votes_arr = reinterpret_cast<struct yosemite_transaction_vote *>(buf_tx_votes_data_packed);
+
+            for (int i = 0; i < cnt; i++) {
+                yosemite_transaction_vote &trx_vote = votes_arr[i];
+
+                auto prod_vote = _producers.find( trx_vote.to );
+
+                if (prod_vote != _producers.end()) {
+                    _producers.modify( prod_vote, 0, [&]( producer_info& info ){
+                        double trx_vote_amount = static_cast<double>(trx_vote.amount);
+                        info.total_votes += trx_vote_amount;
+                        _gstate.total_producer_vote += trx_vote_amount;
+                        double weighted_vote_amount = weighted_vote(trx_vote.amount);
+                        info.total_votes_weight += weighted_vote_amount;
+                        _gstate.total_producer_vote_weight += weighted_vote_amount;
+                    });
+                }
+            }
+
+            free(buf_tx_votes_data_packed);
+        }
+
         /// only update block producers once every minute, block_timestamp is in half seconds
         if( timestamp.slot - _gstate.last_producer_schedule_update.slot > 120 ) {
             update_elected_producers( timestamp );
@@ -50,7 +98,7 @@ namespace yosemitesys {
         std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
         top_producers.reserve(YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT);
 
-        for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && 0 <= it->total_votes && it->active() && it->is_trusted_seed; ++it ) {
+        for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && 0 <= it->total_votes_weight && it->active() && it->is_trusted_seed; ++it ) {
             top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
         }
 
@@ -96,6 +144,7 @@ namespace yosemitesys {
             _producers.emplace( producer, [&]( producer_info& info ){
                 info.owner           = producer;
                 info.total_votes     = 0;
+                info.total_votes_weight = 0;
                 info.producer_key    = producer_key;
                 info.is_active       = true;
                 info.is_trusted_seed = false;
@@ -106,7 +155,7 @@ namespace yosemitesys {
 
         // pay transaction fee if not signed by system contract owner
         if (!has_auth(_self)) {
-            yosemite::charge_transaction_fee(producer, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER);
+            yosemite::native_token::charge_transaction_fee(producer, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER);
         }
     }
 
@@ -143,6 +192,7 @@ namespace yosemitesys {
     }
 
     using namespace eosio;
+    using namespace yosemite;
     void system_contract::claimrewards( const account_name& owner ) {
         require_auth(owner);
 
@@ -150,7 +200,7 @@ namespace yosemitesys {
         eosio_assert( prod.active(), "producer does not have an active key" );
         eosio_assert( prod.is_trusted_seed, "producer is not trusted seed producer" );
 
-        int64_t tx_fee_accumulated = yosemite::get_total_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT);
+        int64_t tx_fee_accumulated = native_token::get_total_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT);
         eosio_assert( tx_fee_accumulated > 0, "no tx fee accumulated");
 
         auto ct = current_time();
@@ -170,7 +220,7 @@ namespace yosemitesys {
         });
 
         if( producer_per_block_pay > 0 ) {
-            INLINE_ACTION_SENDER(yosemite::ntoken, transfer)
+            INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
                     (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {YOSEMITE_SYSTEM_ACCOUNT, N(active)},
                      { YOSEMITE_TX_FEE_ACCOUNT, owner, asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), "producer pay" });
         }

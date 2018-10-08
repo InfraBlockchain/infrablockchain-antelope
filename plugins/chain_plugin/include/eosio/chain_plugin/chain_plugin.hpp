@@ -14,8 +14,13 @@
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/abi_serializer.hpp>
 #include <eosio/chain/plugin_interface.hpp>
+#include <eosio/chain/types.hpp>
+
+#include <yosemite/chain/yx_symbol.hpp>
+#include <yosemite/chain/yx_asset.hpp>
 
 #include <boost/container/flat_set.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include <fc/static_variant.hpp>
 
@@ -24,17 +29,22 @@ namespace fc { class variant; }
 namespace eosio {
    using chain::controller;
    using std::unique_ptr;
+   using std::pair;
    using namespace appbase;
    using chain::name;
    using chain::uint128_t;
    using chain::public_key_type;
+   using chain::transaction;
+   using chain::transaction_id_type;
    using fc::optional;
    using boost::container::flat_set;
    using chain::asset;
    using chain::authority;
    using chain::account_name;
+   using chain::action_name;
    using chain::abi_def;
    using chain::abi_serializer;
+   using namespace yosemite::chain;
 
 namespace chain_apis {
 struct empty{};
@@ -69,6 +79,8 @@ public:
    read_only(const controller& db, const fc::microseconds& abi_serializer_max_time)
       : db(db), abi_serializer_max_time(abi_serializer_max_time) {}
 
+   void validate() const {}
+
    using get_info_params = empty;
 
    struct get_info_results {
@@ -88,6 +100,8 @@ public:
       uint64_t                block_net_limit = 0;
       //string                  recent_slots;
       //double                  participation_rate = 0;
+      optional<string>        server_version_string;
+      chain::symbol           native_token_symbol;
    };
    get_info_results get_info(const get_info_params&) const;
 
@@ -143,6 +157,15 @@ public:
       bool code_as_wasm = false;
    };
 
+   struct get_code_hash_results {
+      name                   account_name;
+      fc::sha256             code_hash;
+   };
+
+   struct get_code_hash_params {
+      name account_name;
+   };
+
    struct get_abi_results {
       name                   account_name;
       optional<abi_def>      abi;
@@ -162,10 +185,24 @@ public:
       name                   account_name;
    };
 
+   struct get_raw_abi_params {
+      name                   account_name;
+      optional<fc::sha256>   abi_hash;
+   };
+
+   struct get_raw_abi_results {
+      name                   account_name;
+      fc::sha256             code_hash;
+      fc::sha256             abi_hash;
+      optional<chain::blob>  abi;
+   };
+
 
    get_code_results get_code( const get_code_params& params )const;
+   get_code_hash_results get_code_hash( const get_code_hash_params& params )const;
    get_abi_results get_abi( const get_abi_params& params )const;
    get_raw_code_and_abi_results get_raw_code_and_abi( const get_raw_code_and_abi_params& params)const;
+   get_raw_abi_results get_raw_abi( const get_raw_abi_params& params)const;
 
 
 
@@ -203,6 +240,10 @@ public:
 
    get_required_keys_result get_required_keys( const get_required_keys_params& params)const;
 
+   using get_transaction_id_params = transaction;
+   using get_transaction_id_result = transaction_id_type;
+
+   get_transaction_id_result get_transaction_id( const get_transaction_id_params& params)const;
 
    struct get_block_params {
       string block_num_or_id;
@@ -227,6 +268,7 @@ public:
       uint32_t    limit = 10;
       string      key_type;  // type of key specified by index_position
       string      index_position; // 1 - primary (first), 2 - secondary index (in order defined by multi_index), 3 - third index, etc
+      string      encode_type{"dec"}; //dec, hex , default=dec
     };
 
    struct get_table_rows_result {
@@ -236,6 +278,27 @@ public:
 
    get_table_rows_result get_table_rows( const get_table_rows_params& params )const;
 
+   struct get_table_by_scope_params {
+      name        code; // mandatory
+      name        table = 0; // optional, act as filter
+      string      lower_bound; // lower bound of scope, optional
+      string      upper_bound; // upper bound of scope, optional
+      uint32_t    limit = 10;
+   };
+   struct get_table_by_scope_result_row {
+      name        code;
+      name        scope;
+      name        table;
+      name        payer;
+      uint32_t    count;
+   };
+   struct get_table_by_scope_result {
+      vector<get_table_by_scope_result_row> rows;
+      string      more; ///< fill lower_bound with this value to fetch more rows
+   };
+
+   get_table_by_scope_result get_table_by_scope( const get_table_by_scope_params& params )const;
+
    struct get_currency_balance_params {
       name             code;
       name             account;
@@ -244,11 +307,25 @@ public:
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
 
+   struct get_token_balance_params {
+      name code;
+      name account;
+      string ysymbol;
+   };
+
+   yx_asset get_token_balance(const get_token_balance_params &params) const;
+
+   struct get_native_token_balance_params {
+      name account;
+      optional<name> issuer;
+   };
+
+   asset get_native_token_balance(const get_native_token_balance_params &params) const;
+
    struct get_currency_stats_params {
       name           code;
       string         symbol;
    };
-
 
    struct get_currency_stats_result {
       asset          supply;
@@ -257,6 +334,33 @@ public:
    };
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
+
+   struct get_token_stats_params {
+      name code;
+      string ysymbol;
+   };
+
+   struct get_token_stats_result {
+      yx_asset supply;
+      uint16_t can_set_options;
+      uint16_t options;
+      vector<uint8_t> kyc_rule_types;
+      vector<uint16_t> kyc_rule_flags;
+   };
+
+   get_token_stats_result get_token_stats(const get_token_stats_params &params) const;
+
+   struct get_native_token_stats_params {
+      account_name issuer;
+   };
+
+   struct get_native_token_stats_result {
+      uint64_t key; //internal value which can be ignored
+      asset supply;
+      uint8_t options;
+   };
+
+   get_native_token_stats_result get_native_token_stats(const get_native_token_stats_params &params) const;
 
    struct get_producers_params {
       bool        json = false;
@@ -443,6 +547,7 @@ public:
             }
 
             if (++count == p.limit || fc::time_point::now() > end) {
+               ++itr;
                break;
             }
          }
@@ -453,6 +558,8 @@ public:
       return result;
    }
 
+   chain::symbol extract_core_symbol()const;
+
    friend struct resolver_factory<read_only>;
 };
 
@@ -460,8 +567,8 @@ class read_write {
    controller& db;
    const fc::microseconds abi_serializer_max_time;
 public:
-   read_write(controller& db, const fc::microseconds& abi_serializer_max_time)
-         : db(db), abi_serializer_max_time(abi_serializer_max_time) {}
+   read_write(controller& db, const fc::microseconds& abi_serializer_max_time);
+   void validate() const;
 
    using push_block_params = chain::signed_block;
    using push_block_results = empty;
@@ -481,6 +588,65 @@ public:
 
    friend resolver_factory<read_write>;
 };
+
+ //support for --key_types [sha256,ripemd160] and --encoding [dec/hex]
+ constexpr const char i64[]       = "i64";
+ constexpr const char i128[]      = "i128";
+ constexpr const char i256[]      = "i256";
+ constexpr const char float64[]   = "float64";
+ constexpr const char float128[]  = "float128";
+ constexpr const char sha256[]    = "sha256";
+ constexpr const char ripemd160[] = "ripemd160";
+ constexpr const char dec[]       = "dec";
+ constexpr const char hex[]       = "hex";
+
+
+ template<const char*key_type , const char *encoding=chain_apis::dec>
+ struct keytype_converter ;
+
+ template<>
+ struct keytype_converter<chain_apis::sha256, chain_apis::hex> {
+     using input_type = chain::checksum256_type;
+     using index_type = chain::index256_index;
+     static auto function() {
+        return [](const input_type& v) {
+            chain::key256_t k;
+            k[0] = ((uint128_t *)&v._hash)[0]; //0-127
+            k[1] = ((uint128_t *)&v._hash)[1]; //127-256
+            return k;
+        };
+     }
+ };
+
+ //key160 support with padding zeros in the end of key256
+ template<>
+ struct keytype_converter<chain_apis::ripemd160, chain_apis::hex> {
+     using input_type = chain::checksum160_type;
+     using index_type = chain::index256_index;
+     static auto function() {
+        return [](const input_type& v) {
+            chain::key256_t k;
+            memset(k.data(), 0, sizeof(k));
+            memcpy(k.data(), v._hash, sizeof(v._hash));
+            return k;
+        };
+     }
+ };
+
+ template<>
+ struct keytype_converter<chain_apis::i256> {
+     using input_type = boost::multiprecision::uint256_t;
+     using index_type = chain::index256_index;
+     static auto function() {
+        return [](const input_type v) {
+            chain::key256_t k;
+            k[0] = ((uint128_t *)&v)[0]; //0-127
+            k[1] = ((uint128_t *)&v)[1]; //127-256
+            return k;
+        };
+     }
+ };
+
 } // namespace chain_apis
 
 class chain_plugin : public plugin<chain_plugin> {
@@ -541,18 +707,29 @@ private:
 FC_REFLECT( eosio::chain_apis::permission, (perm_name)(parent)(required_auth) )
 FC_REFLECT(eosio::chain_apis::empty, )
 FC_REFLECT(eosio::chain_apis::read_only::get_info_results,
-(server_version)(chain_id)(head_block_num)(last_irreversible_block_num)(last_irreversible_block_id)(head_block_id)(head_block_time)(head_block_producer)(virtual_block_cpu_limit)(virtual_block_net_limit)(block_cpu_limit)(block_net_limit) )
+(server_version)(chain_id)(head_block_num)(last_irreversible_block_num)(last_irreversible_block_id)(head_block_id)(head_block_time)(head_block_producer)(virtual_block_cpu_limit)(virtual_block_net_limit)(block_cpu_limit)(block_net_limit)(server_version_string)(native_token_symbol) )
 FC_REFLECT(eosio::chain_apis::read_only::get_block_params, (block_num_or_id))
 FC_REFLECT(eosio::chain_apis::read_only::get_block_header_state_params, (block_num_or_id))
 
 FC_REFLECT( eosio::chain_apis::read_write::push_transaction_results, (transaction_id)(processed) )
 
-FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more) );
+
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
+
+FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (code)(account)(ysymbol));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_params, (code)(ysymbol));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
+FC_REFLECT(eosio::chain_apis::read_only::get_native_token_balance_params, (account)(issuer));
+FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_params, (issuer));
+FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_result, (supply)(options));
 
 FC_REFLECT( eosio::chain_apis::read_only::get_producers_params, (json)(lower_bound)(limit) )
 FC_REFLECT( eosio::chain_apis::read_only::get_producers_result, (rows)(total_producer_vote_weight)(more) );
@@ -568,12 +745,16 @@ FC_REFLECT( eosio::chain_apis::read_only::get_account_results,
             (core_liquid_balance)(ram_quota)(net_weight)(cpu_weight)(net_limit)(cpu_limit)(ram_usage)(permissions)
             (total_resources)(self_delegated_bandwidth)(refund_request)(voter_info) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_results, (account_name)(code_hash)(wast)(wasm)(abi) )
+FC_REFLECT( eosio::chain_apis::read_only::get_code_hash_results, (account_name)(code_hash) )
 FC_REFLECT( eosio::chain_apis::read_only::get_abi_results, (account_name)(abi) )
 FC_REFLECT( eosio::chain_apis::read_only::get_account_params, (account_name) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_params, (account_name)(code_as_wasm) )
+FC_REFLECT( eosio::chain_apis::read_only::get_code_hash_params, (account_name) )
 FC_REFLECT( eosio::chain_apis::read_only::get_abi_params, (account_name) )
 FC_REFLECT( eosio::chain_apis::read_only::get_raw_code_and_abi_params, (account_name) )
 FC_REFLECT( eosio::chain_apis::read_only::get_raw_code_and_abi_results, (account_name)(wasm)(abi) )
+FC_REFLECT( eosio::chain_apis::read_only::get_raw_abi_params, (account_name)(abi_hash) )
+FC_REFLECT( eosio::chain_apis::read_only::get_raw_abi_results, (account_name)(code_hash)(abi_hash)(abi) )
 FC_REFLECT( eosio::chain_apis::read_only::producer_info, (producer_name) )
 FC_REFLECT( eosio::chain_apis::read_only::abi_json_to_bin_params, (code)(action)(args) )
 FC_REFLECT( eosio::chain_apis::read_only::abi_json_to_bin_result, (binargs) )

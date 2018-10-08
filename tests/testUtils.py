@@ -1,27 +1,32 @@
 import subprocess
 import time
 import os
+from collections import deque
 from collections import namedtuple
 import inspect
 import json
 import shlex
 from sys import stdout
+from sys import exit
+import traceback
 
 ###########################################################################################
 class Utils:
     Debug=False
     FNull = open(os.devnull, 'w')
 
-    EosClientPath="programs/cleos/cleos"
+    EosClientPath="programs/clyos/clyos"
 
-    EosWalletName="keosd"
-    EosWalletPath="programs/keosd/"+ EosWalletName
+    EosWalletName="keyos"
+    EosWalletPath="programs/keyos/"+ EosWalletName
 
-    EosServerName="nodeos"
-    EosServerPath="programs/nodeos/"+ EosServerName
+    EosServerName="yosemite"
+    EosServerPath="programs/yosemite/"+ EosServerName
 
-    EosLauncherPath="programs/eosio-launcher/eosio-launcher"
+    EosLauncherPath="programs/yoslauncher/yoslauncher"
     MongoPath="mongo"
+    ShuttingDown=False
+    CheckOutputDeque=deque(maxlen=10)
 
     @staticmethod
     def Print(*args, **kwargs):
@@ -74,22 +79,24 @@ class Utils:
         assert(isinstance(cmd, list))
         popen=subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (output,error)=popen.communicate()
+        Utils.CheckOutputDeque.append((output,error,cmd))
         if popen.returncode != 0:
             raise subprocess.CalledProcessError(returncode=popen.returncode, cmd=cmd, output=error)
         return output.decode("utf-8")
 
     @staticmethod
     def errorExit(msg="", raw=False, errorCode=1):
+        if Utils.ShuttingDown:
+            Utils.Print("ERROR:" if not raw else "", " errorExit called during shutdown, ignoring.  msg=", msg)
+            return
         Utils.Print("ERROR:" if not raw else "", msg)
+        traceback.print_stack(limit=-1)
         exit(errorCode)
 
     @staticmethod
-    def cmdError(name, cmdCode=0, exitNow=False):
+    def cmdError(name, cmdCode=0):
         msg="FAILURE - %s%s" % (name, ("" if cmdCode == 0 else (" returned error code %d" % cmdCode)))
-        if exitNow:
-            Utils.errorExit(msg, True)
-        else:
-            Utils.Print(msg)
+        Utils.Print(msg)
 
     @staticmethod
     def waitForObj(lam, timeout=None):
@@ -182,3 +189,17 @@ class Account(object):
         return "Name: %s" % (self.name)
 
 ###########################################################################################
+
+def addEnum(enumClassType, type):
+    setattr(enumClassType, type, enumClassType(type))
+
+def unhandledEnumType(type):
+    raise RuntimeError("No case defined for type=%s" % (type.type))
+
+class EnumType:
+
+    def __init__(self, type):
+        self.type=type
+
+    def __str__(self):
+        return self.type

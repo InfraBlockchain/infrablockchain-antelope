@@ -6,9 +6,11 @@
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/yx_asset.hpp>
+#include <yosemitelib/identity.hpp>
 
-namespace yosemite {
+/* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
 
+namespace yosemite { namespace native_token {
     static const uint64_t NTOKEN_TOTAL_BALANCE_KEY = N(totalbal);
 
     using namespace eosio;
@@ -28,14 +30,14 @@ namespace yosemite {
         void ntransfer(account_name from, account_name to, const yx_asset &token, const string &memo);
         void wpntransfer(account_name from, account_name to, const yx_asset &token, account_name payer, const string &memo);
         void payfee(account_name payer, yx_asset token);
-        void setkycrule(uint8_t type, uint16_t kyc);
+        void setkycrule(uint8_t type, identity::identity_kyc_t kyc);
 
     private:
 
         /* native token stats per depository, scope = depository */
         struct native_token_stats {
             uint64_t key = 0;
-            int64_t supply = 0;
+            asset supply;
             uint8_t options = 0; // frozen, ...
 
             uint64_t primary_key() const { return key; }
@@ -51,7 +53,7 @@ namespace yosemite {
 
         struct kyc_rule {
             uint8_t type = 0; // == ntoken_kyc_rule_type
-            uint16_t kyc_flags = 0; // from yosemitelib/identity.hpp
+            identity::identity_kyc_t kyc_flags = 0; // from yosemitelib/identity.hpp
 
             uint64_t primary_key() const { return type; }
         };
@@ -67,15 +69,14 @@ namespace yosemite {
 
     /* scope = owner */
     struct native_balance_holder {
-        account_name depository{};
-        int64_t amount = 0;
+        yx_asset token;
 
-        uint64_t primary_key() const { return depository; }
+        uint64_t primary_key() const { return token.issuer; }
     };
 
     /* scope = owner */
     struct total_balance {
-        int64_t amount = 0;
+        asset amount;
 
         uint64_t primary_key() const { return NTOKEN_TOTAL_BALANCE_KEY; }
     };
@@ -86,7 +87,7 @@ namespace yosemite {
     int64_t get_total_native_token_balance(const account_name &owner) {
         accounts_native_total accounts_total_table(YOSEMITE_NATIVE_TOKEN_ACCOUNT, owner);
         const auto &balance_holder = accounts_total_table.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
-        return balance_holder.amount;
+        return balance_holder.amount.amount;
     }
 
     void charge_transaction_fee(account_name payer, uint64_t operation,
@@ -94,14 +95,16 @@ namespace yosemite {
                                 const yx_asset &remained_ntoken = {}) {
         auto tx_fee = yosemite::get_transaction_fee(operation);
         if (tx_fee.amount > 0) {
+            require_auth(payer);
+
             accounts_native accounts_table_native(YOSEMITE_NATIVE_TOKEN_ACCOUNT, payer);
             for (auto &balance_holder : accounts_table_native) {
-                if (std::find(zeroedout_depos.begin(), zeroedout_depos.end(), balance_holder.depository) != zeroedout_depos.end()) {
+                if (std::find(zeroedout_depos.begin(), zeroedout_depos.end(), balance_holder.token.issuer) != zeroedout_depos.end()) {
                     continue;
                 }
 
                 eosio::asset to_send{0, YOSEMITE_NATIVE_TOKEN_SYMBOL};
-                if (balance_holder.depository == remained_ntoken.issuer) {
+                if (balance_holder.token.issuer == remained_ntoken.issuer) {
                     if (remained_ntoken.amount >= tx_fee.amount) {
                         to_send.amount = tx_fee.amount;
                         tx_fee.amount = 0;
@@ -110,18 +113,18 @@ namespace yosemite {
                         tx_fee.amount -= remained_ntoken.amount;
                     }
                 } else {
-                    if (balance_holder.amount >= tx_fee.amount) {
+                    if (balance_holder.token.amount >= tx_fee.amount) {
                         to_send.amount = tx_fee.amount;
                         tx_fee.amount = 0;
                     } else {
-                        to_send.amount = balance_holder.amount;
-                        tx_fee.amount -= balance_holder.amount;
+                        to_send.amount = balance_holder.token.amount;
+                        tx_fee.amount -= balance_holder.token.amount;
                     }
                 }
 
-                INLINE_ACTION_SENDER(yosemite::ntoken, payfee)
+                INLINE_ACTION_SENDER(ntoken, payfee)
                         (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         {payer, yx_asset(to_send, balance_holder.depository)});
+                         {payer, yx_asset(to_send, balance_holder.token.issuer)});
 
                 if (tx_fee.amount == 0) {
                     break;
@@ -131,6 +134,6 @@ namespace yosemite {
             eosio_assert(static_cast<uint32_t>(tx_fee.amount == 0), "payer account cannot afford transaction fee");
         }
     }
-}
+}}
 
 #endif // YX_NATIVE_TOKEN_HPP

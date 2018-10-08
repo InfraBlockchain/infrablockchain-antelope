@@ -1,4 +1,5 @@
 {
+  "version": "eosio::abi/1.0",
   "types": [
     {
       "new_type_name": "account_name",
@@ -10,7 +11,7 @@
       "name": "yx_symbol",
       "base": "",
       "fields": [
-        {"name":"symbol", "type":"symbol"},
+        {"name":"tsymbol", "type":"symbol"},
         {"name":"issuer", "type":"account_name"}
       ]
     },
@@ -83,7 +84,7 @@
       "fields": [
         {"name":"ysymbol", "type":"yx_symbol"},
         {"name":"options", "type":"uint16"},
-        {"name":"overwrite", "type":"uint8"}
+        {"name":"reset", "type":"uint8"}
       ]
     },
     {
@@ -100,8 +101,7 @@
       "base": "",
       "fields": [
         {"name":"id", "type":"uint64"},
-        {"name":"yx_symbol_serialized", "type":"uint128"},
-        {"name":"amount", "type":"int64"},
+        {"name":"token", "type":"yx_asset"},
         {"name":"options", "type":"uint16"}
       ]
     },
@@ -109,11 +109,10 @@
       "name": "stats_type",
       "base": "",
       "fields": [
-        {"name":"issuer", "type":"account_name"},
-        {"name":"supply", "type":"uint64"},
+        {"name":"supply", "type":"yx_asset"},
         {"name":"can_set_options", "type":"uint16"},
         {"name":"options", "type":"uint16"},
-        {"name":"kyc_rule_types", "type":"uint8[]"},
+        {"name":"kyc_rules", "type":"uint8[]"},
         {"name":"kyc_rule_flags", "type":"uint16[]"}
       ]
     }

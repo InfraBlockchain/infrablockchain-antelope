@@ -66,12 +66,12 @@ verifyErrorCode()
 
 killAll()
 {
-  programs/eosio-launcher/eosio-launcher -k 15
+  programs/yoslauncher/yoslauncher -k 15
 }
 
 cleanup()
 {
-    rm -rf etc/eosio/node_*
+    rm -rf etc/yosemite/node_*
     rm -rf var/lib/node_*
 }
 
@@ -79,7 +79,7 @@ cleanup()
 # result stored in HEAD_BLOCK_NUM
 getHeadBlockNum()
 {
-  INFO="$(programs/cleos/cleos get info)"
+  INFO="$(programs/clyos/clyos get info)"
   verifyErrorCode "cleos get info"
   HEAD_BLOCK_NUM="$(echo "$INFO" | awk '/head_block_num/ {print $2}')"
   # remove trailing coma
@@ -114,7 +114,7 @@ cleanup
 # stand up nodeos cluster
 launcherOpts="-p $pnodes -n $total_nodes -s $topo -d $delay"
 echo Launcher options: --nodeos \"--plugin eosio::wallet_api_plugin\" $launcherOpts
-programs/eosio-launcher/eosio-launcher --nodeos "--plugin eosio::wallet_api_plugin" $launcherOpts
+programs/yoslauncher/yoslauncher --nodeos "--plugin eosio::wallet_api_plugin" $launcherOpts
 sleep 7
 
 startPort=8888
@@ -126,21 +126,21 @@ echo endPort: $endPort
 port2=$startPort
 while [ $port2  -ne $endport ]; do
     echo Request block 1 from node on port $port2
-    TRANS_INFO="$(programs/cleos/cleos --port $port2 get block 1)"
+    TRANS_INFO="$(programs/clyos/clyos --port $port2 get block 1)"
     verifyErrorCode "cleos get block"
     port2=`expr $port2 + 1`
 done
 
 # create 3 keys
-KEYS="$(programs/cleos/cleos create key)"
+KEYS="$(programs/clyos/clyos create key)"
 verifyErrorCode "cleos create key"
 PRV_KEY1="$(echo "$KEYS" | awk '/Private/ {print $3}')"
 PUB_KEY1="$(echo "$KEYS" | awk '/Public/ {print $3}')"
-KEYS="$(programs/cleos/cleos create key)"
+KEYS="$(programs/clyos/clyos create key)"
 verifyErrorCode "cleos create key"
 PRV_KEY2="$(echo "$KEYS" | awk '/Private/ {print $3}')"
 PUB_KEY2="$(echo "$KEYS" | awk '/Public/ {print $3}')"
-KEYS="$(programs/cleos/cleos create key)"
+KEYS="$(programs/clyos/clyos create key)"
 verifyErrorCode "cleos create key"
 PRV_KEY3="$(echo "$KEYS" | awk '/Private/ {print $3}')"
 PUB_KEY3="$(echo "$KEYS" | awk '/Public/ {print $3}')"
@@ -150,20 +150,20 @@ fi
 
 
 # create wallet for inita
-PASSWORD_INITA="$(programs/cleos/cleos wallet create --name inita)"
+PASSWORD_INITA="$(programs/clyos/clyos wallet create --name inita)"
 verifyErrorCode "cleos wallet create"
 # strip out password from output
 PASSWORD_INITA="$(echo "$PASSWORD_INITA" | awk '/PW/ {print $1}')"
 # remove leading/trailing quotes
 PASSWORD_INITA=${PASSWORD_INITA#\"}
 PASSWORD_INITA=${PASSWORD_INITA%\"}
-programs/cleos/cleos wallet import --name inita --private-key $INITA_PRV_KEY
+programs/clyos/clyos wallet import --name inita --private-key $INITA_PRV_KEY
 verifyErrorCode "cleos wallet import"
-programs/cleos/cleos wallet import --name inita --private-key $PRV_KEY1
+programs/clyos/clyos wallet import --name inita --private-key $PRV_KEY1
 verifyErrorCode "cleos wallet import"
-programs/cleos/cleos wallet import --name inita --private-key $PRV_KEY2
+programs/clyos/clyos wallet import --name inita --private-key $PRV_KEY2
 verifyErrorCode "cleos wallet import"
-programs/cleos/cleos wallet import --name inita --private-key $PRV_KEY3
+programs/clyos/clyos wallet import --name inita --private-key $PRV_KEY3
 verifyErrorCode "cleos wallet import"
 
 #
@@ -172,11 +172,11 @@ verifyErrorCode "cleos wallet import"
 
 # create new account
 echo Creating account testera
-ACCOUNT_INFO="$(programs/cleos/cleos create account inita testera $PUB_KEY1 $PUB_KEY3)"
+ACCOUNT_INFO="$(programs/clyos/clyos create account inita testera $PUB_KEY1 $PUB_KEY3)"
 verifyErrorCode "cleos create account"
 waitForNextBlock
 # verify account created
-ACCOUNT_INFO="$(programs/cleos/cleos get account testera)"
+ACCOUNT_INFO="$(programs/clyos/clyos get account testera)"
 verifyErrorCode "cleos get account"
 count=`echo $ACCOUNT_INFO | grep -c "staked_balance"`
 if [ $count == 0 ]; then
@@ -189,7 +189,7 @@ echo Producing node port: $pPort
 while [ $port  -ne $endport ]; do
 
     echo Sending transfer request to node on port $port.
-    TRANSFER_INFO="$(programs/cleos/cleos transfer inita testera 975321 "test transfer")"
+    TRANSFER_INFO="$(programs/clyos/clyos transfer inita testera 975321 "test transfer")"
     verifyErrorCode "cleos transfer"
     getTransactionId "$TRANSFER_INFO"
     echo Transaction id: $TRANS_ID
@@ -200,7 +200,7 @@ while [ $port  -ne $endport ]; do
     port2=$startPort
     while [ $port2  -ne $endport ]; do
 	echo Verifying transaction exists on node on port $port2
-   TRANS_INFO="$(programs/cleos/cleos --port $port2 get transaction $TRANS_ID)"
+   TRANS_INFO="$(programs/clyos/clyos --port $port2 get transaction $TRANS_ID)"
    verifyErrorCode "cleos get transaction trans_id of <$TRANS_INFO> from node on port $port2"
 	port2=`expr $port2 + 1`
     done
