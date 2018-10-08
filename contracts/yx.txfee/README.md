@@ -21,39 +21,7 @@ $YOSEMITE_CLYOS set contract yx.txfee $YOSEMITE_CONTRACTS_DIR/yx.txfee/ -p yx.tx
 
 YOSEMITE Transaction Fee Operation Names
 ---
-
-```c
-
-// yx.system
-#define YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT     N(tf.newacc)
-#define YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER    N(tf.regprod)
-#define YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_SYS_DEPO    N(tf.regsysdep)
-#define YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_ID_AUTH     N(tf.regidauth)
-
-// yx.ntoken
-#define YOSEMITE_TX_FEE_OP_NAME_NTOKEN_ISSUE           N(tf.nissue)
-#define YOSEMITE_TX_FEE_OP_NAME_NTOKEN_REDEEM          N(tf.nredeem)
-#define YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER        N(tf.transfer)  // = wptransfer
-#define YOSEMITE_TX_FEE_OP_NAME_NTOKEN_NTRANSFER       N(tf.ntransfer) // = wpntransfer
-
-// yx.token
-#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE           N(tf.tcreate)
-#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE            N(tf.tissue)
-#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM           N(tf.tredeem)
-#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER         N(tf.ttransfer)  // = wptransfer
-#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE       N(tf.tsetkyc)
-#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS       N(tf.tsetopts)
-
-// yx.dcontract
-#define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE       N(tf.dccreate)
-#define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS   N(tf.dcaddsign)
-#define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN         N(tf.dcsign)
-#define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH N(tf.dcupadd)
-#define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE       N(tf.dcremove)
-
-```
-
-@see https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/yosemite-master/contracts/yosemitelib/transaction_fee.hpp
+[`yosemitelib/transaction_fee.hpp`](../../contracts/yosemitelib/transaction_fee.hpp)
 
 Setup Transaction Fees
 ---
@@ -61,19 +29,19 @@ Setup Transaction Fees
 Transaction fees can be updated by the active block producers
 
 ```bash
-// yx.system
+# yx.system
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.newacc", "1000.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regprod", "3000000.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.regidauth", "2000000.00 DKRW" ]' -p yosemite@active
 
-// yx.ntoken
+# yx.ntoken
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nissue", "0.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.nredeem", "1000.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.transfer", "100.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.ntransfer", "200.00 DKRW" ]' -p yosemite@active
 
-// yx.token
+# yx.token, yx.nft
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tcreate", "10000.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tissue", "500.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLYOS push action yx.txfee settxfee '[ "tf.tredeem", "500.00 DKRW" ]' -p yosemite@active

@@ -2,6 +2,7 @@
  *  @file
  *  @copyright defined in yosemite-public-blockchain/LICENSE
  */
+#include <yosemitelib/transaction_fee.hpp>
 #include "yx.nft.hpp"
 
 namespace yosemite { namespace non_native_token {
@@ -53,7 +54,32 @@ namespace yosemite { namespace non_native_token {
          }
       }
 
-      //TODO:transaction fee
+      charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
+   }
+
+   // @abi action
+   void nft::redeem(account_name owner, id_type token_id) {
+      require_auth(owner);
+
+      // Find token to burn
+      auto burn_token = tokens.find(token_id);
+      eosio_assert(static_cast<uint32_t>(burn_token != tokens.end()), "token with id does not exist");
+      eosio_assert(static_cast<uint32_t>(burn_token->owner == owner), "token not owned by specified owner");
+
+      stats stats_table(get_self(), burn_token->value.symbol.value);
+      const auto &tstats = stats_table.get(burn_token->value.issuer, "token is not yet created");
+
+      // Remove token from tokens table
+      tokens.erase(burn_token);
+
+      stats_table.modify(tstats, 0, [&](auto &s) {
+         s.supply.amount -= burn_token->value.amount;
+      });
+
+      // Lower balance from owner
+      sub_token_balance(owner, burn_token->value);
+
+      charge_fee(burn_token->value.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
    }
 
    // @abi action
@@ -90,7 +116,7 @@ namespace yosemite { namespace non_native_token {
       add_token_balance(to, st.value);
 
       if (!is_auth_by_sysaccount) {
-         //TODO:transaction fee
+         charge_fee(from, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
       }
    }
 
@@ -122,33 +148,8 @@ namespace yosemite { namespace non_native_token {
       SEND_INLINE_ACTION(*this, transferid, {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}}, { from, to, id, memo });
 
       if (!is_auth_by_sysaccount) {
-         //TODO:transaction fee
+         charge_fee(from, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
       }
-   }
-
-   // @abi action
-   void nft::redeem(account_name owner, id_type token_id) {
-      require_auth(owner);
-
-      // Find token to burn
-      auto burn_token = tokens.find(token_id);
-      eosio_assert(static_cast<uint32_t>(burn_token != tokens.end()), "token with id does not exist");
-      eosio_assert(static_cast<uint32_t>(burn_token->owner == owner), "token not owned by specified owner");
-
-      stats stats_table(get_self(), burn_token->value.symbol.value);
-      const auto &tstats = stats_table.get(burn_token->value.issuer, "token is not yet created");
-
-      // Remove token from tokens table
-      tokens.erase(burn_token);
-
-      stats_table.modify(tstats, 0, [&](auto &s) {
-         s.supply.amount -= burn_token->value.amount;
-      });
-
-      // Lower balance from owner
-      sub_token_balance(owner, burn_token->value);
-
-      //TODO:transaction fee
    }
 
 }}
