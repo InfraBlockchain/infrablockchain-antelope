@@ -1,14 +1,14 @@
 file(GLOB ABI_FILES "*.abi")
 configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
 
-add_wast_executable(TARGET yx.token
-  INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}"
+add_wast_executable(TARGET yx.nft
+  INCLUDE_FOLDERS ${STANDARD_INCLUDE_FOLDERS}
   LIBRARIES libc++ libc eosiolib yosemitelib
   DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 if ($ENV{CLION_IDE})
-    set(CONTRACT_MODULE_NAME "yx.token")
+    set(CONTRACT_MODULE_NAME "yx.nft")
     message( STATUS "CLION - contracts/${CONTRACT_MODULE_NAME}" )
     file(GLOB HEADERS "*.hpp" "*.h")
     file(GLOB SOURCES "*.cpp")

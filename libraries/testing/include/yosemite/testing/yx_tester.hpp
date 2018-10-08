@@ -20,6 +20,8 @@
 #include <yx.token/yx.token.abi.hpp>
 #include <yx.dcontract/yx.dcontract.wast.hpp>
 #include <yx.dcontract/yx.dcontract.abi.hpp>
+#include <yx.nft/yx.nft.wast.hpp>
+#include <yx.nft/yx.nft.abi.hpp>
 
 #include <Runtime/Runtime.h>
 
@@ -46,12 +48,13 @@ public:
    abi_serializer abi_ser_identity;
    abi_serializer abi_ser_ntoken;
    abi_serializer abi_ser_token;
+   abi_serializer abi_ser_nft;
 
    void init_yosemite_contracts() {
       produce_blocks(2);
 
       create_accounts({N(d1), N(user1), N(user2), YOSEMITE_NATIVE_TOKEN_ACCOUNT, YOSEMITE_TX_FEE_ACCOUNT,
-                       YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_USER_TOKEN_ACCOUNT});
+                       YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_USER_TOKEN_ACCOUNT, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT});
       produce_blocks(2);
 
       set_code(config::system_account_name, yx_system_wast);
@@ -121,6 +124,17 @@ public:
       auto &accnt5 = control->db().get<account_object, by_name>(YOSEMITE_USER_TOKEN_ACCOUNT);
       BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt5.abi, abi), true);
       abi_ser_token.set_abi(abi, abi_serializer_max_time);
+
+      produce_blocks();
+
+      set_code(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, yx_nft_wast);
+      set_abi(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, yx_nft_abi);
+
+      produce_blocks();
+
+      auto &accnt_nft = control->db().get<account_object, by_name>(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT);
+      BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt_nft.abi, abi), true);
+      abi_ser_nft.set_abi(abi, abi_serializer_max_time);
 
       prepare_system_depository(N(d1));
       prepare_identity_authority(N(d1));
@@ -211,7 +225,7 @@ public:
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
-      result = set_id_info(N(d1), N(d1), 0, 15, 0, "");
+      result = set_id_info(idauth, idauth, 0, 15, 0, "");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
    }
@@ -230,6 +244,7 @@ public:
          );
          return success();
       } catch (const fc::exception &ex) {
+         log_to_console(ex.to_detail_string());
          return error(ex.top_message());
       }
    }
