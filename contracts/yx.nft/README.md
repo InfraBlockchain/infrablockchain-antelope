@@ -22,7 +22,8 @@
 * The precision of NFT is always 0.
 
 ### Format of Token Amount
-* 1234 MYNFT@nftissuer
+* 1 MYNFT@nftissuer
+* The amount of NFT is always 1.
 
 
 # Management Actions
