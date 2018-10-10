@@ -25,8 +25,8 @@ public:
       return data.empty() ? fc::variant() : abi_ser_nft.binary_to_variant("accounts_type", data, abi_serializer_max_time);
    }
 
-   fc::variant get_token(id_type token_id) {
-      vector<char> data = get_row_by_account(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, N(nftokens), token_id);
+   fc::variant get_token(id_type token_id, account_name issuer) {
+      vector<char> data = get_row_by_account(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, issuer, N(nftokens), token_id);
       FC_ASSERT(!data.empty(), "empty token");
       return data.empty() ? fc::variant() : abi_ser_nft.binary_to_variant("nftokens_type", data, abi_serializer_max_time);
    }
@@ -65,12 +65,14 @@ public:
                          _ysymbol.issuer, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT);
    }
 
+   template<typename T>
    action_result
-   issue(const account_name &to, const string &token, vector<string> uris, const string &name, const string &memo) {
+   issue(const account_name &to, const string &token, const T &ids, const vector<string> &uris, const string &name, const string &memo) {
       auto _token = yx_asset::from_string(token);
       return push_action(N(issue), mvo()
                                ("to", to)
                                ("token", _token)
+                               ("ids", ids)
                                ("uris", uris)
                                ("name", name)
                                ("memo", memo),
@@ -78,14 +80,17 @@ public:
       );
    }
 
+   template<typename T>
    action_result transferid(account_name from,
-                          account_name to,
-                          id_type id,
-                          string memo) {
+                            account_name to,
+                            account_name issuer,
+                            const T &ids,
+                            const string &memo) {
       return push_action(N(transferid), mvo()
                                ("from", from)
                                ("to", to)
-                               ("id", id)
+                               ("issuer", issuer)
+                               ("ids", ids)
                                ("memo", memo),
                          from, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
       );
@@ -94,7 +99,7 @@ public:
    action_result transfer(account_name from,
                           account_name to,
                           const string &token,
-                          string memo) {
+                          const string &memo) {
       auto _token = yx_asset::from_string(token);
       return push_action(N(transfer), mvo()
                                ("from", from)
@@ -105,11 +110,13 @@ public:
       );
    }
 
-   action_result redeem(account_name owner, id_type token_id) {
+   template<typename T>
+   action_result redeem(account_name issuer, const T &ids, const string &memo) {
       return push_action(N(redeem), mvo()
-                               ("owner", owner)
-                               ("token_id", token_id),
-                         owner, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
+                               ("issuer", issuer)
+                               ("ids", ids)
+                               ("memo", memo),
+                         issuer, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
       );
    }
 };
@@ -147,7 +154,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri1", "uri2", "uri3", "uri4", "uri5"};
 
-      result = issue(N(alice), "5 TKN@alice", uris, "nft1", "my memo");
+      result = issue(N(alice), "5 TKN@alice", vector<id_type>{0, 1, 2, 3, 4}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -156,7 +163,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       BOOST_REQUIRE_EQUAL("alice", stats["supply"]["issuer"].get_string());
 
       for (auto i = 0; i < 5; i++) {
-         auto tokenval = get_token(static_cast<id_type>(i));
+         auto tokenval = get_token(static_cast<id_type>(i), N(alice));
          BOOST_REQUIRE_EQUAL(i, tokenval["id"]);
          BOOST_REQUIRE_EQUAL(uris[i], tokenval["uri"]);
          BOOST_REQUIRE_EQUAL("alice", tokenval["owner"]);
@@ -184,7 +191,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri"};
 
-      result = issue(N(bob), "1 TKN@alice", uris, "nft1", "my memo");
+      result = issue(N(bob), "1 TKN@alice", vector<id_type>{0}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -192,7 +199,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       BOOST_REQUIRE_EQUAL("1 TKN", stats["supply"]["amount"].get_string());
       BOOST_REQUIRE_EQUAL("alice", stats["supply"]["issuer"].get_string());
 
-      auto tokenval = get_token(0);
+      auto tokenval = get_token(0, N(alice));
       BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
       BOOST_REQUIRE_EQUAL("uri", tokenval["uri"]);
       BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
@@ -208,11 +215,11 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       */
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("to account does not exist"),
-                          issue(N(dummy), "1 TKN@alice", uris, "nft1", "my memo")
+                          issue(N(dummy), "1 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("non-fungible token doesn't support precision"),
-                          issue(N(alice), "1.05 TKN@alice", uris, "nft1", "my memo")
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("the precision of non-fungible token must be 0"),
+                          issue(N(alice), "1.05 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
       );
 
       string memo;
@@ -221,25 +228,39 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       }
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("memo has more than 256 bytes"),
-                          issue(N(alice), "1 TKN@alice", uris, "nft1", memo)
+                          issue(N(alice), "1 TKN@alice", vector<id_type>{1}, uris, "nft1", memo)
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("token is not yet created"),
-                          issue(N(alice), "1 TTT@alice", uris, "nft1", "my memo")
+                          issue(N(alice), "1 TTT@alice", vector<id_type>{1}, uris, "nft1", "my memo")
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("must be positive token"),
-                          issue(N(alice), "-1 TKN@alice", uris, "nft1", "my memo")
+                          issue(N(alice), "-1 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between the number of tokens and uris provided"),
-                          issue(N(alice), "2 TKN@alice", uris, "nft1", "my memo")
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between token amount and the number of ids provided"),
+                          issue(N(alice), "2 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
+      );
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between token amount and the number of uris provided"),
+                          issue(N(alice), "2 TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
       );
 
       uris.push_back("uri2");
 
       BOOST_REQUIRE_EQUAL(success(),
-                          issue(N(alice), "2 TKN@alice", uris, "nft1", "my memo")
+                          issue(N(alice), "2 TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
+      );
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token with specified ID already exists"),
+                          issue(N(alice), "2 TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
+      );
+
+      vector<string> error_uris{uris.begin(), uris.end()};
+      error_uris.push_back("12345678901234567890123456789012345678901234567890123456789012345");
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("uri has more than 64 bytes"),
+                          issue(N(alice), "3 TKN@alice", vector<id_type>{3, 4, 5}, error_uris, "nft1", "my memo")
       );
 
       string name;
@@ -248,11 +269,11 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       }
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("name has more than 32 bytes"),
-                          issue(N(alice), "2 TKN@alice", uris, name, "my memo")
+                          issue(N(alice), "2 TKN@alice", vector<id_type>{3, 4}, uris, name, "my memo")
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("name is empty"),
-                          issue(N(alice), "2 TKN@alice", uris, "", "my memo")
+                          issue(N(alice), "2 TKN@alice", vector<id_type>{3, 4}, uris, "", "my memo")
       );
 
    } FC_LOG_AND_RETHROW()
@@ -264,11 +285,11 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri"};
 
-      result = issue(N(alice), "1 NFT@alice", uris, "nft1", "my memo");
+      result = issue(N(alice), "1 NFT@alice", vector<id_type>{0}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
-      auto tokenval = get_token(0);
+      auto tokenval = get_token(0, N(alice));
       BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
       BOOST_REQUIRE_EQUAL("uri", tokenval["uri"]);
       BOOST_REQUIRE_EQUAL("alice", tokenval["owner"]);
@@ -280,7 +301,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
-      tokenval = get_token(0);
+      tokenval = get_token(0, N(alice));
       BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
       BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
 
@@ -288,7 +309,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("token is not found or is not owned by from account"), result);
 
       result = transfer(N(alice), N(bob), "1.00 NFT@alice", "error transfer");
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token amount must be 1 with no precision"), result);
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token amount must be 1 with precision 0"), result);
 
    } FC_LOG_AND_RETHROW()
 
@@ -299,13 +320,12 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri", "uri2", "uri3"};
 
-      result = issue(N(alice), "3 NFT@alice", uris, "nft1", "my memo");
+      result = issue(N(alice), "3 NFT@alice", vector<id_type>{0, 1, 2}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
-      result = transferid(N(alice), N(bob), 0, "send token 0 to bob");
-      BOOST_REQUIRE_EQUAL("", result);
-      result = transferid(N(alice), N(bob), 1, "send token 1 to bob");
+      vector<id_type> ids = {0, 1};
+      result = transferid(N(alice), N(bob), N(alice), ids, "send token 0 and 1 to bob");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -321,7 +341,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       );
       */
 
-      auto tokenval = get_token(1);
+      auto tokenval = get_token(1, N(alice));
       BOOST_REQUIRE_EQUAL(1, tokenval["id"]);
       BOOST_REQUIRE_EQUAL("uri2", tokenval["uri"]);
       BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
@@ -329,7 +349,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       BOOST_REQUIRE_EQUAL("1 NFT", tokenval["value"]["amount"].get_string());
       BOOST_REQUIRE_EQUAL("alice", tokenval["value"]["issuer"].get_string());
 
-      result = transferid(N(bob), N(carol), 1, "send token 1 to carol");
+      result = transferid(N(bob), N(carol), N(alice), vector<id_type>{1}, "send token 1 to carol");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -345,7 +365,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       );
       */
 
-      auto tokenval_1 = get_token(1);
+      auto tokenval_1 = get_token(1, N(alice));
       BOOST_REQUIRE_EQUAL(1, tokenval_1["id"]);
       BOOST_REQUIRE_EQUAL("uri2", tokenval_1["uri"]);
       BOOST_REQUIRE_EQUAL("carol", tokenval_1["owner"]);
@@ -354,19 +374,19 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       BOOST_REQUIRE_EQUAL("alice", tokenval_1["value"]["issuer"].get_string());
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("from account does not own token with specified ID"),
-                          transferid(N(alice), N(carol), 0, "send from non-owner")
+                          transferid(N(alice), N(carol), N(alice), vector<id_type>{0}, "send from non-owner")
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("from and to account cannot be the same"),
-                          transferid(N(alice), N(alice), 1, "send to the issuer")
+                          transferid(N(alice), N(alice), N(alice), vector<id_type>{1}, "send to the issuer")
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("to account does not exist"),
-                          transferid(N(alice), N(dummy), 1, "send to non-existing")
+                          transferid(N(alice), N(dummy), N(alice), vector<id_type>{1}, "send to non-existing")
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("token with specified ID does not exist"),
-                          transferid(N(alice), N(bob), 3, "no token id")
+                          transferid(N(alice), N(bob), N(alice), vector<id_type>{3}, "no token id")
       );
 
       string memo;
@@ -375,7 +395,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       }
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("memo has more than 256 bytes"),
-                          transferid(N(alice), N(bob), 1, memo)
+                          transferid(N(alice), N(bob), N(alice), vector<id_type>{1}, memo)
       );
    } FC_LOG_AND_RETHROW()
 
@@ -389,11 +409,11 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri1", "uri2"};
 
-      result = issue(N(alice), "2 NFT@alice", uris, "nft1", "issue 2 tokens");
+      result = issue(N(alice), "2 NFT@alice", vector<id_type>{0, 1}, uris, "nft1", "issue 2 tokens");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
-      result = redeem(N(alice), 1);
+      result = redeem(N(alice), vector<id_type>{1}, "redeem token 1");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -408,15 +428,28 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       );
       */
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token with id does not exist"),
-                          redeem(N(alice), 100200)
+      result = transferid(N(alice), N(bob), N(alice), vector<id_type>{0}, "send token 0 to bob");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token not owned by issuer"),
+                          redeem(N(alice), vector<id_type>{0}, "redeem token")
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token not owned by specified owner"),
-                          redeem(N(bob), 0)
+      result = transferid(N(bob), N(alice), N(alice), vector<id_type>{0}, "send token 0 to bob");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks();
+
+      string memo;
+      for (auto i = 0; i < 100; i++) {
+         memo += "longmemo";
+      }
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("memo has more than 256 bytes"),
+                          redeem(N(alice), vector<id_type>{0}, memo)
       );
 
-      result = redeem(N(alice), 0);
+      result = redeem(N(alice), vector<id_type>{0}, "redeem token 0");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
