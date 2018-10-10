@@ -29,8 +29,18 @@
       "fields": [
         {"name":"to", "type":"account_name"},
         {"name":"token", "type":"yx_asset"},
+        {"name":"ids", "type":"id_type[]"},
         {"name":"uris", "type":"string[]"},
         {"name":"name", "type":"string"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "redeem",
+      "base": "",
+      "fields": [
+        {"name":"issuer", "type":"account_name"},
+        {"name":"ids", "type":"id_type[]"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -40,7 +50,8 @@
       "fields": [
         {"name":"from", "type":"account_name"},
         {"name":"to", "type":"account_name"},
-        {"name":"id", "type":"id_type"},
+        {"name":"issuer", "type":"account_name"},
+        {"name":"ids", "type":"id_type[]"},
         {"name":"memo", "type":"string"}
       ]
     },
@@ -52,14 +63,6 @@
         {"name":"to", "type":"account_name"},
         {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
-      ]
-    },
-    {
-      "name": "redeem",
-      "base": "",
-      "fields": [
-        {"name":"owner", "type":"name"},
-        {"name":"token_id", "type":"id_type"}
       ]
     },
     {

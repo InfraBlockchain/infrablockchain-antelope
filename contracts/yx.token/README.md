@@ -72,7 +72,7 @@ clyos push action yx.token issue '{"to":"user2","token":{"amount":"100000.0000 B
 1. token : the amount of token with the issuer(=token depository)
    * amount
    * issuer
-1. memo : the additional data set by the action caller
+1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of issue
 * Case 1. If the to account is different from the issuer, issue does the inline action for `transfer`.
@@ -97,11 +97,11 @@ clyos push action yx.token issue '{"to":"user2","token":{"amount":"100000.0000 B
 ## redeem
 Redeem(burn) token from an account by the token depository
 
-* At, first the account transfers the token to its depository.
+* At first, the account transfers the token to the depository.
 ```
 clyos push action yx.token transfer '{"from":"user2","to":"d2","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem by user2"}' -p user2
 ```
-1. Then the token depository checks the transfer action is irreversible and calls redeem action.
+* Then the token depository checks the transfer action is irreversible and calls redeem action.
 ```
 clyos push action yx.token redeem '{"token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem for user2"}' -p d2
 ```
@@ -110,7 +110,7 @@ clyos push action yx.token redeem '{"token":{"amount":"10000.0000 BTC","issuer":
 1. token : the amount of token with the issuer(=token depository)
    * amount
    * issuer
-1. memo : the additional data set by the action caller
+1. memo : string less than or equal to 256 bytes
 
 
 ## transfer
