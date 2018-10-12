@@ -139,6 +139,8 @@ $YOSEMITE_CLI create account yosemite yx.identity YOS7qFXz5bvLYphF8S8XXTYgExnN2h
 $YOSEMITE_CLI create account yosemite yx.ntoken YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.token YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.nft YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.escrow YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 
 
 { print_section_title "Create initial Identity Authority Account"; } 2>/dev/null
@@ -240,7 +242,7 @@ $YOSEMITE_CLI push action yosemite setpriv '["yx.token",1]' -p yosemite@active
 sleep 2
 
 
-{ print_section_title "Install DContract Contract"; } 2>/dev/null
+{ print_section_title "Install DigitalContract Contract"; } 2>/dev/null
 
 sleep 2
 $YOSEMITE_CLI set contract yx.dcontract $YOSEMITE_CONTRACTS_DIR/yx.dcontract/
@@ -248,6 +250,21 @@ sleep 2
 $YOSEMITE_CLI push action yosemite setpriv '["yx.dcontract",1]' -p yosemite@active
 sleep 2
 
+{ print_section_title "Install Non-Fungible-Token(ERC721) Contract"; } 2>/dev/null
+
+sleep 2
+$YOSEMITE_CLI set contract yx.nft $YOSEMITE_CONTRACTS_DIR/yx.nft/
+sleep 2
+$YOSEMITE_CLI push action yosemite setpriv '["yx.nft",1]' -p yosemite@active
+sleep 2
+
+{ print_section_title "Install Token Escrow Contract"; } 2>/dev/null
+
+sleep 2
+$YOSEMITE_CLI set contract yx.escrow $YOSEMITE_CONTRACTS_DIR/yx.escrow/
+sleep 2
+$YOSEMITE_CLI push action yosemite setpriv '["yx.escrow",1]' -p yosemite@active
+sleep 2
 
 { print_section_title "Querying the status of System Depositories, Identity Authorities and Block Producers"; } 2>/dev/null
 
@@ -336,6 +353,10 @@ $YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcsign", "300.00 DKRW" ]' -p 
 $YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcupadd", "50.00 DKRW" ]' -p yosemite@active
 $YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcremove", "0.00 DKRW" ]' -p yosemite@active
 
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.esescrow", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.esproceed", "400.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.escancel", "10.00 DKRW" ]' -p yosemite@active
+
 $YOSEMITE_CLI get table -l 100 yx.txfee yx.txfee txfees
 $YOSEMITE_CLI get table -L tf.transfer -l 1 yx.txfee yx.txfee txfees
 
@@ -359,7 +380,7 @@ $YOSEMITE_CLI get account yx.msig
 
 sleep 1
 
-{ print_section_title "Resign \"yx.txfee\", \"yx.identity\", \"yx.ntoken\", \"yx.token\", \"yx.dcontract\" delegating authority to \"yosemite\""; } 2>/dev/null
+{ print_section_title "Resign Yosemite Contract Accounts delegating authority to \"yosemite\""; } 2>/dev/null
 
 $YOSEMITE_CLI get account yx.txfee
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.txfee","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.txfee@owner
@@ -385,6 +406,16 @@ $YOSEMITE_CLI get account yx.dcontract
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@owner
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@active
 $YOSEMITE_CLI get account yx.dcontract
+
+$YOSEMITE_CLI get account yx.nft
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@active
+$YOSEMITE_CLI get account yx.nft
+
+$YOSEMITE_CLI get account yx.escrow
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@active
+$YOSEMITE_CLI get account yx.escrow
 
 sleep 1
 

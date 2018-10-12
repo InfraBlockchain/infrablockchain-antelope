@@ -161,7 +161,7 @@ $YOSEMITE_CLI wallet import --private-key YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UEL
 Create System Accounts
 ---
 
-* yx.msig(privileged), yx.txfee, yx.identity, yx.ntoken(privileged), yx.token(privileged), yx.dcontract(privileged)
+* yx.msig(privileged), yx.txfee, yx.identity, yx.ntoken(privileged), yx.token(privileged), yx.dcontract(privileged), yx.nft(privileged), yx.escrow(privileged)
 ```bash
 $YOSEMITE_CLI create account yosemite yx.msig YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.txfee YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
@@ -169,6 +169,8 @@ $YOSEMITE_CLI create account yosemite yx.identity YOS7qFXz5bvLYphF8S8XXTYgExnN2h
 $YOSEMITE_CLI create account yosemite yx.ntoken YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.token YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.nft YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.escrow YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 
 ```
 
@@ -295,11 +297,25 @@ $YOSEMITE_CLI set contract yx.token $YOSEMITE_CONTRACTS_DIR/yx.token/
 $YOSEMITE_CLI push action yosemite setpriv '["yx.token",1]' -p yosemite@active
 ```
 
-Install DContract Contract
+Install DigitalContract Contract
 ---
 ```bash
 $YOSEMITE_CLI set contract yx.dcontract $YOSEMITE_CONTRACTS_DIR/yx.dcontract/
 $YOSEMITE_CLI push action yosemite setpriv '["yx.dcontract",1]' -p yosemite@active
+```
+
+Install Non-Fungible-Token(ERC721) Contract
+---
+```bash
+$YOSEMITE_CLI set contract yx.nft $YOSEMITE_CONTRACTS_DIR/yx.nft/
+$YOSEMITE_CLI push action yosemite setpriv '["yx.nft",1]' -p yosemite@active
+```
+
+Install Token Escrow Contract
+---
+```bash
+$YOSEMITE_CLI set contract yx.escrow $YOSEMITE_CONTRACTS_DIR/yx.escrow/
+$YOSEMITE_CLI push action yosemite setpriv '["yx.escrow",1]' -p yosemite@active
 ```
 
 Querying the status of System Depositories, Identity Authorities and Block Producers
@@ -502,7 +518,7 @@ $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.msig","permission"
 $YOSEMITE_CLI get account yx.msig
 ```
 
-Resign "yx.txfee", "yx.identity", "yx.ntoken", "yx.token", "yx.dcontract" delegating authority to "yosemite"
+Resign Yosemite Contract Accounts delegating authority to "yosemite"
 ---
 ```bash
 $YOSEMITE_CLI get account yx.txfee
@@ -529,6 +545,16 @@ $YOSEMITE_CLI get account yx.dcontract
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@owner
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@active
 $YOSEMITE_CLI get account yx.dcontract
+
+$YOSEMITE_CLI get account yx.nft
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@active
+$YOSEMITE_CLI get account yx.nft
+
+$YOSEMITE_CLI get account yx.escrow
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@active
+$YOSEMITE_CLI get account yx.escrow
 ```
 
 Unauthorizing Block Producer
