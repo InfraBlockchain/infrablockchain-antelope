@@ -41,9 +41,8 @@ namespace yosemite { namespace non_native_token {
       for (unsigned int i = 0; i < ids.size(); i++) {
          auto const &mint_id = ids.at(i);
          eosio_assert(static_cast<uint32_t>(tokens.find(mint_id) == tokens.end()), "token with specified ID already exists");
-         // we expect that uri would be uuid; https://stackoverflow.com/questions/13397038/uuid-max-character-length
          string uri = uris.at(i);
-         eosio_assert(static_cast<uint32_t>(uri.size() <= 64), "uri has more than 64 bytes");
+         eosio_assert(static_cast<uint32_t>(uri.size() <= 256), "uri has more than 256 bytes");
 
          tokens.emplace(get_self(), [&](auto &_token) {
             _token.id = mint_id;

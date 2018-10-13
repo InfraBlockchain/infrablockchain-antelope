@@ -257,9 +257,14 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
                           issue(N(alice), "2 TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
       );
 
+      string big_uri;
+      for (auto i = 0; i < 26; i++) {
+         big_uri += "1234567890";
+      }
+
       vector<string> error_uris{uris.begin(), uris.end()};
-      error_uris.push_back("12345678901234567890123456789012345678901234567890123456789012345");
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("uri has more than 64 bytes"),
+      error_uris.push_back(big_uri);
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("uri has more than 256 bytes"),
                           issue(N(alice), "3 TKN@alice", vector<id_type>{3, 4, 5}, error_uris, "nft1", "my memo")
       );
 

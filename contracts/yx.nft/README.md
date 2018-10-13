@@ -62,7 +62,9 @@ clyos push action yx.nft issue '{"to":"user1","token":{"amount":"2 MYGAME","issu
    * amount : must be positive integer and must match with the length of uris
    * issuer
 1. ids : the list of identifiers assigned by the issuer for each NFT; they are used as primary key of `nftokens` table
-1. uris : the list of information for each NFT; must match with the amount of NFT
+1. uris : the list of item information URIs for each NFT; the number of uris must match with the amount of NFT
+   * Each URI is a string less than or equal to 256 bytes.
+   * We recommend to use tiny URL or the rear part of URL that would be composed to the full URL by DApp.
 1. name : the name of NFT; less than or equal to 32 bytes
 1. memo : string less than or equal to 256 bytes
 
