@@ -67,6 +67,12 @@ namespace eosio { namespace chain {
       /// this field is also used for transaction-vote logging in secondary log store
       fc::optional<yosemite_core::transaction_vote> trx_vote;
 
+      /// YOSEMITE Delegated Transaction Fee Payment
+      /// YOSEMITE blockchain provides 'transaction fee payer' option for every blockchain transaction.
+      /// If 'transaction fee payer' field is specified in a submitted transaction, transaction fee is charged to
+      /// the specified transaction fee payer who additionally signed the transaction on behalf of the initial transaction sender
+      fc::optional<name>                         fee_payer;
+
       transaction_trace_ptr                      failed_dtrx_trace;
       fc::optional<fc::exception>                except;
       std::exception_ptr                         except_ptr;
@@ -81,15 +87,9 @@ FC_REFLECT( eosio::chain::base_action_trace,
                     (receipt)(act)(context_free)(elapsed)(cpu_usage)(console)(total_cpu_usage)(trx_id)
                     (block_num)(block_time)(producer_block_id)(account_ram_deltas) )
 
-// [YOSEMITE] 'trx_id's in 'action_trace' are duplicated in the serialized 'transaction_trace'.
-// This causes wasted storage for the secondary database store (mongo_db_plugin)
-// When 'action_trace' is stored in secondary db, 'trx_id' field is added manually in secondary db
-//FC_REFLECT( eosio::chain::base_action_trace,
-//                      (receipt)(act)(elapsed)(cpu_usage)(console)(total_cpu_usage) )
-
 FC_REFLECT_DERIVED( eosio::chain::action_trace,
                     (eosio::chain::base_action_trace), (inline_traces) )
 
 FC_REFLECT( eosio::chain::transaction_trace, (id)(block_num)(block_time)(producer_block_id)
                                              (receipt)(elapsed)(net_usage)(scheduled)
-                                             (action_traces)(trx_vote)(failed_dtrx_trace)(except) )
+                                             (action_traces)(trx_vote)(fee_payer)(failed_dtrx_trace)(except) )

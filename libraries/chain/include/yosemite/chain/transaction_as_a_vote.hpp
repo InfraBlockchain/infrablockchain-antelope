@@ -12,8 +12,6 @@
 #include <yosemite/chain/exceptions.hpp>
 #include <fc/reflect/reflect.hpp>
 
-#define YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD 1001
-
 namespace yosemite_core {
 
     using std::map;

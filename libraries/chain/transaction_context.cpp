@@ -33,17 +33,28 @@ namespace eosio { namespace chain {
       //EOS_ASSERT( trx.transaction_extensions.size() == 0, unsupported_feature, "we don't support any extensions yet" );
 
       auto &tx_ext = trx.transaction_extensions;
-      // YOSEMITE "Transaction-as-a-vote" Transaction-Extention support
-      EOS_ASSERT( tx_ext.size() <= 1, unsupported_feature, "support only upto 1 transaction extension (transaction-as-a-vote)" );
+      // YOSEMITE "Transaction-as-a-vote", "Delegated Transaction Fee Payment" Transaction-Extension support
+      EOS_ASSERT( tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, delegated-transaction-fee-payment)" );
 
       if (tx_ext.size() > 0) {
-         auto tx_ext_item = *tx_ext.begin();
-         EOS_ASSERT( tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD, unsupported_feature, "support only transaction-as-a-vote transaction extension" );
+         for (auto&& tx_ext_item: tx_ext) {
+            if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
 
-         try {
-            trace->trx_vote = yosemite_core::transaction_vote(
-                    fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
-         } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
+               try {
+                  trace->trx_vote = yosemite_core::transaction_vote(
+                        fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
+               } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
+
+            } else if (tx_ext_item.first == YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
+
+               try {
+                  trace->fee_payer = fc::raw::unpack<name>(tx_ext_item.second);
+               } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_delegated_trx_fee_payer_account, "Invalid delegated transaction fee payer account name");
+
+            } else {
+               EOS_ASSERT( false, unsupported_feature, "unsupported transaction extension code" );
+            }
+         }
       }
    }
 
@@ -451,6 +462,15 @@ namespace eosio { namespace chain {
 
    const yosemite_core::transaction_vote& transaction_context::get_transaction_vote() const {
       return (*(trace->trx_vote));
+   }
+
+
+   bool transaction_context::has_delegated_tx_fee_payer() const {
+      return trace->fee_payer.valid() && !(trace->fee_payer->empty());
+   }
+
+   const name& transaction_context::get_delegated_tx_fee_payer() const {
+      return (*(trace->fee_payer));
    }
 
    void transaction_context::dispatch_action( action_trace& trace, const action& a, account_name receiver, bool context_free, uint32_t recurse_depth ) {

@@ -93,6 +93,7 @@ Options:
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/chain/contract_types.hpp>
 #include <yosemite/chain/native_token_symbol.hpp>
+#include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 
 #pragma push_macro("N")
