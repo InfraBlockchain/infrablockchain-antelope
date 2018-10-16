@@ -344,6 +344,75 @@ namespace eosio { namespace chain {
                                         checktime
                                       );
 
+      _check_authorization_actions(checker, delay_max_limit, effective_provided_delay,
+            actions, provided_keys, provided_permissions, provided_delay, checktime);
+
+      if( !allow_unused_keys ) {
+         EOS_ASSERT( checker.all_keys_used(), tx_irrelevant_sig,
+                     "transaction bears irrelevant signatures from these keys: ${keys}",
+                     ("keys", checker.unused_keys()) );
+      }
+   }
+
+   void
+   authorization_manager::check_authorization( const vector<action>&                actions,
+                                               const vector<permission_level>&      permissions,
+                                               const flat_set<public_key_type>&     provided_keys,
+                                               const flat_set<permission_level>&    provided_permissions,
+                                               fc::microseconds                     provided_delay,
+                                               const std::function<void()>&         _checktime,
+                                               bool                                 allow_unused_keys
+                                             )const
+   {
+      const auto& checktime = ( static_cast<bool>(_checktime) ? _checktime : _noop_checktime );
+
+      auto delay_max_limit = fc::seconds( _control.get_global_properties().configuration.max_transaction_delay );
+
+      auto effective_provided_delay =  (provided_delay >= delay_max_limit) ? fc::microseconds::maximum() : provided_delay;
+
+      auto checker = make_auth_checker( [&](const permission_level& p){ return get_permission(p).auth; },
+                                        _control.get_global_properties().configuration.max_authority_depth,
+                                        provided_keys,
+                                        provided_permissions,
+                                        effective_provided_delay,
+                                        checktime
+      );
+
+      _check_authorization_actions(checker, delay_max_limit, effective_provided_delay,
+                                   actions, provided_keys, provided_permissions, provided_delay, checktime);
+
+      for(const auto& permission: permissions) {
+         EOS_ASSERT( checker.satisfied(permission), unsatisfied_authorization,
+                     "permission '${auth}' was not satisfied under a provided delay of ${provided_delay} ms, "
+                     "provided permissions ${provided_permissions}, provided keys ${provided_keys}, "
+                     "and a delay max limit of ${delay_max_limit_ms} ms",
+                     ("auth", permission)
+                           ("provided_delay", provided_delay.count()/1000)
+                           ("provided_permissions", provided_permissions)
+                           ("provided_keys", provided_keys)
+                           ("delay_max_limit_ms", delay_max_limit.count()/1000)
+         );
+      }
+
+      if( !allow_unused_keys ) {
+         EOS_ASSERT( checker.all_keys_used(), tx_irrelevant_sig,
+                     "transaction bears irrelevant signatures from these keys: ${keys}",
+                     ("keys", checker.unused_keys()) );
+      }
+   }
+
+   template <typename T>
+   void
+   authorization_manager::_check_authorization_actions( T& checker,
+                                                        fc::microseconds& delay_max_limit,
+                                                        fc::microseconds& effective_provided_delay,
+                                                        const vector<action>&                actions,
+                                                        const flat_set<public_key_type>&     provided_keys,
+                                                        const flat_set<permission_level>&    provided_permissions,
+                                                        fc::microseconds&                    provided_delay,
+                                                        const std::function<void()>&         checktime ) const
+   {
+
       map<permission_level, fc::microseconds> permissions_to_satisfy;
 
       for( const auto& act : actions ) {
@@ -406,18 +475,12 @@ namespace eosio { namespace chain {
                      "provided permissions ${provided_permissions}, provided keys ${provided_keys}, "
                      "and a delay max limit of ${delay_max_limit_ms} ms",
                      ("auth", p.first)
-                     ("provided_delay", provided_delay.count()/1000)
-                     ("provided_permissions", provided_permissions)
-                     ("provided_keys", provided_keys)
-                     ("delay_max_limit_ms", delay_max_limit.count()/1000)
-                   );
+                           ("provided_delay", provided_delay.count()/1000)
+                           ("provided_permissions", provided_permissions)
+                           ("provided_keys", provided_keys)
+                           ("delay_max_limit_ms", delay_max_limit.count()/1000)
+         );
 
-      }
-
-      if( !allow_unused_keys ) {
-         EOS_ASSERT( checker.all_keys_used(), tx_irrelevant_sig,
-                     "transaction bears irrelevant signatures from these keys: ${keys}",
-                     ("keys", checker.unused_keys()) );
       }
    }
 
