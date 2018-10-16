@@ -341,7 +341,17 @@ vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_
 }
 
 //////////////////////////////////////
+/// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
 
+account_name apply_context::get_delegated_transaction_fee_payer() {
+   if (trx_context.has_delegated_tx_fee_payer()) {
+      return trx_context.get_delegated_tx_fee_payer();
+   } else {
+      return account_name(0);
+   }
+}
+
+//////////////////////////////////////
 
 const table_id_object* apply_context::find_table( name code, name scope, name table ) {
    return db.find<table_id_object, by_code_scope_table>(boost::make_tuple(code, scope, table));

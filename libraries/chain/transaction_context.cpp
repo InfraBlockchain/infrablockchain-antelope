@@ -48,7 +48,7 @@ namespace eosio { namespace chain {
             } else if (tx_ext_item.first == YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
 
                try {
-                  trace->fee_payer = fc::raw::unpack<name>(tx_ext_item.second);
+                  trace->fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
                } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_delegated_trx_fee_payer_account, "Invalid delegated transaction fee payer account name");
 
             } else {
@@ -469,7 +469,7 @@ namespace eosio { namespace chain {
       return trace->fee_payer.valid() && !(trace->fee_payer->empty());
    }
 
-   const name& transaction_context::get_delegated_tx_fee_payer() const {
+   const account_name& transaction_context::get_delegated_tx_fee_payer() const {
       return (*(trace->fee_payer));
    }
 

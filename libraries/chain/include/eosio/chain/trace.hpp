@@ -71,7 +71,7 @@ namespace eosio { namespace chain {
       /// YOSEMITE blockchain provides 'transaction fee payer' option for every blockchain transaction.
       /// If 'transaction fee payer' field is specified in a submitted transaction, transaction fee is charged to
       /// the specified transaction fee payer who additionally signed the transaction on behalf of the initial transaction sender
-      fc::optional<name>                         fee_payer;
+      fc::optional<account_name>                 fee_payer;
 
       transaction_trace_ptr                      failed_dtrx_trace;
       fc::optional<fc::exception>                except;

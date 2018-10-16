@@ -52,7 +52,7 @@ namespace eosio { namespace chain {
 
          /// YOSEMITE Delegated Transaction Fee Payment
          bool has_delegated_tx_fee_payer() const;
-         const name& get_delegated_tx_fee_payer() const;
+         const account_name& get_delegated_tx_fee_payer() const;
 
       private:
 
