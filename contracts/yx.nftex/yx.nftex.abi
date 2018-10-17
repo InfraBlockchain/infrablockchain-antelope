@@ -1,0 +1,100 @@
+{
+  "version": "eosio::abi/1.0",
+  "types": [
+    {
+      "new_type_name": "account_name",
+      "type": "name"
+    },
+    {
+      "new_type_name": "id_type",
+      "type": "uint64"
+    }
+  ],
+  "structs": [
+    {
+      "name": "yx_nft",
+      "base": "",
+      "fields": [
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"id", "type":"id_type"}
+      ]
+    },
+    {
+      "name": "buy",
+      "base": "",
+      "fields": [
+        {"name":"buyer", "type":"account_name"},
+        {"name":"nft", "type":"yx_nft"},
+        {"name":"price", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "buynt",
+      "base": "",
+      "fields": [
+        {"name":"buyer", "type":"account_name"},
+        {"name":"nft", "type":"yx_nft"},
+        {"name":"price", "type":"asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "sell",
+      "base": "",
+      "fields": [
+        {"name":"seller", "type":"account_name"},
+        {"name":"nft", "type":"yx_nft"},
+        {"name":"price", "type":"yx_asset"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "sellnt",
+      "base": "",
+      "fields": [
+        {"name":"seller", "type":"account_name"},
+        {"name":"nft", "type":"yx_nft"},
+        {"name":"price", "type":"asset"},
+        {"name":"expiration", "type":"time_point_sec"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "cancelsell",
+      "base": "",
+      "fields": [
+        {"name":"nft", "type":"yx_nft"}
+      ]
+    },
+    {
+      "name": "sell_order",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"seller", "type":"account_name"},
+        {"name":"price", "type":"yx_asset"},
+        {"name":"expiration", "type":"time_point_sec"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "buy", "type": "buy", "ricardian_contract": "" },
+    { "name": "buynt", "type": "buynt", "ricardian_contract": "" },
+    { "name": "sell", "type": "sell", "ricardian_contract": "" },
+    { "name": "sellnt", "type": "sellnt", "ricardian_contract": "" },
+    { "name": "cancelsell", "type": "cancelsell", "ricardian_contract": "" }
+  ],
+  "tables": [
+    {
+      "name": "sellbook",
+      "type": "sell_order",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "clauses": []
+}

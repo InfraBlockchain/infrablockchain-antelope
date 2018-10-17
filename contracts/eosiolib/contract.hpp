@@ -1,5 +1,7 @@
 #pragma once
 
+#include <eosiolib/eosio.hpp>
+
 namespace eosio {
 
 /**
@@ -23,7 +25,7 @@ class contract {
        * @brief Construct a new contract object.
        * @param n - The name of this contract
        */
-      contract( account_name n ):_self(n){}
+      explicit contract(account_name n) : _self(n) {}
       
       /**
        * 

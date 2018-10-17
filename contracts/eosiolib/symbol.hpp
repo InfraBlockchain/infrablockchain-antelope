@@ -161,6 +161,28 @@ namespace eosio {
          }
       }
 
+      std::string name_string() const {
+         uint64_t v = value;
+         v >>= 8;
+         std::string result;
+         while (v > 0) {
+            char c = static_cast<char>(v & 0xFF);
+            result += c;
+            v >>= 8;
+         }
+         return result;
+      }
+
+      explicit operator std::string() const {
+         uint8_t p = static_cast<uint8_t>(precision());
+         std::string ret = std::to_string(p);
+         ret += ',';
+         ret += name_string();
+         return ret;
+      }
+
+      std::string to_string() const { return std::string(*this); }
+
       EOSLIB_SERIALIZE( symbol_type, (value) )
    };
 

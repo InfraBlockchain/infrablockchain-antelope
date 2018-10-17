@@ -9,6 +9,7 @@
 #define YOSEMITE_USER_TOKEN_ACCOUNT N(yx.token)
 #define YOSEMITE_DIGITAL_CONTRACT_ACCOUNT N(yx.dcontract)
 #define YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT N(yx.nft)
+#define YOSEMITE_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT N(yx.nftex)
 #define YOSEMITE_TOKEN_ESCROW_ACCOUNT N(yx.escrow)
 
 
@@ -22,6 +23,8 @@ namespace yosemite {
                 || account == YOSEMITE_IDENTITY_ACCOUNT
                 || account == YOSEMITE_DIGITAL_CONTRACT_ACCOUNT
                 || account == YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
+                || account == YOSEMITE_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT
+                || account == YOSEMITE_TOKEN_ESCROW_ACCOUNT
         );
     }
 

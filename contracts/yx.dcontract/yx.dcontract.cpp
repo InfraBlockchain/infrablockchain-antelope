@@ -26,7 +26,7 @@ namespace yosemite {
         eosio_assert(static_cast<uint32_t>(!conhash.empty()), "conhash cannot be empty");
         eosio_assert(static_cast<uint32_t>(conhash.size() <= 256), "conhash is too long");
         eosio_assert(static_cast<uint32_t>(adddochash.size() <= 256), "additional conhash is too long");
-        eosio_assert(static_cast<uint32_t>(expiration > time_point_sec(now() + 60)), "digital contract is expired or expiration time is too close to now");
+        eosio_assert(static_cast<uint32_t>(expiration > time_point_sec(now() + 60)), "wrong expiration : already expired or too close to now");
         eosio_assert(static_cast<uint32_t>(options == 0), "options is currently reserved");
         flat_set<account_name> empty_duplicates;
         check_signers_param(signers, empty_duplicates);

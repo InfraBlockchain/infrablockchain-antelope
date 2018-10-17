@@ -114,9 +114,7 @@ namespace yosemite { namespace non_native_token {
          const auto &sender_token = tokens.get(id, "token with specified ID does not exist");
          eosio_assert(static_cast<uint32_t>(sender_token.owner == from), "from account does not own token with specified ID");
 
-         if (!is_auth_by_sysaccount) {
-            check_transfer_rules(from, to, sender_token.value);
-         }
+         check_transfer_rules(from, to, sender_token.value);
 
          // Transfer NFT from sender to receiver
          tokens.modify(sender_token, 0, [&](auto &token) {

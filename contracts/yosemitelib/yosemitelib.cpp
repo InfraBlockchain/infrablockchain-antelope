@@ -1,8 +1,40 @@
+/**
+ * @file
+ * @copyright defined in yosemite-public-blockchain/LICENSE
+ */
+
+#include <eosiolib/action.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/token.hpp>
+#include <yosemitelib/yx_contract.hpp>
 #include "token.hpp"
+
+namespace yosemite {
+
+   void yx_contract::transfer_token_as_inline(account_name from, account_name to, const yx_asset &token, const std::string &memo) {
+      if (token.is_native()) {
+         if (token.issuer == 0) {
+            INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
+                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                                   {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                   {from, to, token, memo});
+         } else {
+            INLINE_ACTION_SENDER(yosemite::native_token::ntoken, ntransfer)
+                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                                   {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                   {from, to, token, memo});
+         }
+      } else {
+         INLINE_ACTION_SENDER(yosemite::non_native_token::token, transfer)
+               (YOSEMITE_USER_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                              {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                {from, to, token, memo});
+      }
+   }
+
+}
 
 namespace yosemite { namespace non_native_token {
 
