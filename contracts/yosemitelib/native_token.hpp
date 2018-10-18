@@ -28,7 +28,7 @@ namespace yosemite { namespace native_token {
         void nredeem(const yx_asset &token, const string &memo);
         void transfer(account_name from, account_name to, eosio::asset amount, const string &memo);
         void ntransfer(account_name from, account_name to, const yx_asset &token, const string &memo);
-        void payfee(account_name payer, yx_asset token);
+        void payfee(account_name payer, const asset &fee);
         void setkycrule(uint8_t type, identity::identity_kyc_t kyc);
 
     private:
@@ -89,12 +89,9 @@ namespace yosemite { namespace native_token {
         return balance_holder.amount.amount;
     }
 
-    void charge_transaction_fee(account_name payer, uint64_t operation,
-                                const std::vector<account_name> &zeroedout_depos = {},
-                                const yx_asset &remained_ntoken = {}) {
+    void charge_transaction_fee(account_name payer, uint64_t operation) {
         auto tx_fee = yosemite::get_transaction_fee(operation);
         if (tx_fee.amount > 0) {
-
             account_name delegated_payer = delegated_trx_fee_payer();
             if (delegated_payer != 0) {
                 // authorization check for the delegated fee payer is done on chain core
@@ -106,41 +103,9 @@ namespace yosemite { namespace native_token {
                 require_auth(payer);
             }
 
-            accounts_native accounts_table_native(YOSEMITE_NATIVE_TOKEN_ACCOUNT, payer);
-            for (auto &balance_holder : accounts_table_native) {
-                if (std::find(zeroedout_depos.begin(), zeroedout_depos.end(), balance_holder.token.issuer) != zeroedout_depos.end()) {
-                    continue;
-                }
-
-                eosio::asset to_send{0, YOSEMITE_NATIVE_TOKEN_SYMBOL};
-                if (balance_holder.token.issuer == remained_ntoken.issuer) {
-                    if (remained_ntoken.amount >= tx_fee.amount) {
-                        to_send.amount = tx_fee.amount;
-                        tx_fee.amount = 0;
-                    } else {
-                        to_send.amount = remained_ntoken.amount;
-                        tx_fee.amount -= remained_ntoken.amount;
-                    }
-                } else {
-                    if (balance_holder.token.amount >= tx_fee.amount) {
-                        to_send.amount = tx_fee.amount;
-                        tx_fee.amount = 0;
-                    } else {
-                        to_send.amount = balance_holder.token.amount;
-                        tx_fee.amount -= balance_holder.token.amount;
-                    }
-                }
-
-                INLINE_ACTION_SENDER(ntoken, payfee)
-                        (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         {payer, yx_asset(to_send, balance_holder.token.issuer)});
-
-                if (tx_fee.amount == 0) {
-                    break;
-                }
-            }
-
-            eosio_assert(static_cast<uint32_t>(tx_fee.amount == 0), "payer account cannot afford transaction fee");
+            INLINE_ACTION_SENDER(ntoken, payfee)
+                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                   {payer, tx_fee});
         }
     }
 }}

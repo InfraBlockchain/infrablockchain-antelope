@@ -452,12 +452,23 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
+      // fee of transfer is 100.00 DKRW
       result = ntoken_transfer(N(user1), N(user2), to_asset_string(10000), "my transfer for txfee");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
-      // check transaction fee
+      // check total native token balance of related accounts
       auto accounts_total = ntoken_get_accounts_total(YOSEMITE_TX_FEE_ACCOUNT);
+      REQUIRE_MATCHING_OBJECT(accounts_total, mvo()
+            ("amount", to_asset_string(10000))
+      );
+
+      accounts_total = ntoken_get_accounts_total(N(user1));
+      REQUIRE_MATCHING_OBJECT(accounts_total, mvo()
+            ("amount", to_asset_string(35000))
+      );
+
+      accounts_total = ntoken_get_accounts_total(N(user2));
       REQUIRE_MATCHING_OBJECT(accounts_total, mvo()
             ("amount", to_asset_string(10000))
       );

@@ -57,7 +57,7 @@
       "base": "",
       "fields": [
         {"name":"payer", "type":"account_name"},
-        {"name":"token", "type":"yx_asset"}
+        {"name":"fee", "type":"asset"}
       ]
     },
     {
