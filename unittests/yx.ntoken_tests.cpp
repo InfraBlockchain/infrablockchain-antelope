@@ -41,26 +41,10 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks(1);
 
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(wptransfer), N(user1), mvo()
-            ("from", "user1")
-            ("to", "user2")
-            ("amount", to_asset_string(100))
-            ("payer", "d1")
-            ("memo", "")),
-                          missing_auth_exception);
-
       BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(ntransfer), N(user2), mvo()
             ("from", "user1")
             ("to", "user2")
             ("token", _token)
-            ("memo", "")),
-                          missing_auth_exception);
-
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(wpntransfer), N(user1), mvo()
-            ("from", "user1")
-            ("to", "user2")
-            ("token", _token)
-            ("payer", "d1")
             ("memo", "")),
                           missing_auth_exception);
 
@@ -237,6 +221,7 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
             ("amount", to_asset_string(700000))
       );
 
+      /*
       result = ntoken_wptransfer(N(user1), N(user2), to_asset_string(200000), N(d2), "my wptransfer");
       BOOST_REQUIRE_EQUAL("assertion failure with message: payer account cannot afford transaction fee", result);
       produce_blocks(1);
@@ -247,6 +232,7 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
 
       accounts_total = ntoken_get_accounts_total(N(user1));
       BOOST_REQUIRE_EQUAL("", accounts_total); // check if 0.00 DKRW
+      */
 
       result = ntoken_transfer(N(user1), N(user2), to_asset_string(-100), "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must transfer positive amount", result);
@@ -329,20 +315,38 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
             ("amount", to_asset_string(490000))
       );
 
+      /*
       result = wpntransfer(N(user1), N(user2), to_yx_asset_string(490000, "d2"), N(d2), "my wpntransfer");
       BOOST_REQUIRE_EQUAL("assertion failure with message: payer account cannot afford transaction fee", result);
       produce_blocks(1);
+      */
 
       result = nissue(N(d2), to_yx_asset_string(500000, "d2"), "");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks(1);
 
+      /*
       result = wpntransfer(N(user1), N(user2), to_yx_asset_string(490000, "d2"), N(d2), "my wptransfer");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks(1);
+      */
+
+      result = ntransfer(N(user1), N(user2), to_yx_asset_string(490000, "d2"), "my ntransfer");
+      BOOST_REQUIRE_EQUAL("assertion failure with message: payer account cannot afford transaction fee", result);
+      produce_blocks(1);
+
+      result = nissue(N(user1), to_yx_asset_string(500000, "d2"), "");
+      BOOST_REQUIRE_EQUAL("", result);
+      produce_blocks(1);
+
+      result = ntransfer(N(user1), N(user2), to_yx_asset_string(490000, "d2"), "my ntransfer");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks(1);
 
       accounts_total = ntoken_get_accounts_total(N(user1));
-      BOOST_REQUIRE_EQUAL("", accounts_total);
+      REQUIRE_MATCHING_OBJECT(accounts_total, mvo()
+            ("amount", to_asset_string(490000))
+      );
 
       accounts_total = ntoken_get_accounts_total(N(user2));
       REQUIRE_MATCHING_OBJECT(accounts_total, mvo()

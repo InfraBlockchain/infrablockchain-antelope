@@ -354,22 +354,6 @@ public:
             ("memo", memo), from, abi_ser_ntoken);
    }
 
-   action_result
-   ntoken_wptransfer(account_name from, account_name to, const string &amount, account_name payer, const string &memo) {
-      try {
-         base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(wptransfer),
-                                  vector<account_name>{from, payer}, mvo()
-                                        ("from", from)
-                                        ("to", to)
-                                        ("amount", amount)
-                                        ("payer", payer)
-                                        ("memo", memo));
-         return success();
-      } catch (const fc::exception &ex) {
-         return error(ex.top_message());
-      }
-   }
-
    action_result ntransfer(account_name from, account_name to, const string &token, const string &memo) {
       auto _token = yx_asset::from_string(token);
       return push_action(N(ntransfer), mvo()
@@ -377,23 +361,6 @@ public:
             ("to", to)
             ("token", _token)
             ("memo", memo), from, abi_ser_ntoken);
-   }
-
-   action_result
-   wpntransfer(account_name from, account_name to, const string &token, account_name payer, const string &memo) {
-      try {
-         auto _token = yx_asset::from_string(token);
-         base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(wpntransfer),
-                                  vector<account_name>{from, payer}, mvo()
-                                        ("from", from)
-                                        ("to", to)
-                                        ("token", _token)
-                                        ("payer", payer)
-                                        ("memo", memo));
-         return success();
-      } catch (const fc::exception &ex) {
-         return error(ex.top_message());
-      }
    }
 
    /* Token methods */

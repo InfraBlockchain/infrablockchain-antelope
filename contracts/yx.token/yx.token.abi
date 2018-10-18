@@ -59,17 +59,6 @@
       ]
     },
     {
-      "name": "wptransfer",
-      "base": "",
-      "fields": [
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"token", "type":"yx_asset"},
-        {"name":"payer", "type":"account_name"},
-        {"name":"memo", "type":"string"}
-      ]
-    },
-    {
       "name": "setkycrule",
       "base": "",
       "fields": [
@@ -122,7 +111,6 @@
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
-    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
     { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
     { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }

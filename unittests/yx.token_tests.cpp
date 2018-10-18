@@ -236,20 +236,6 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
       );
       */
 
-      result = token_wptransfer(N(user1), N(user2), "1000.0000 ETH@tkprovider2", N(tkprovider2), "my wptransfer");
-      BOOST_REQUIRE_EQUAL("", result);
-      produce_blocks(1);
-
-      /*
-      accounts = token_get_accounts(N(user1), N(tkprovider));
-      BOOST_REQUIRE_EQUAL("", accounts);
-
-      accounts = token_get_accounts(N(user2), N(tkprovider));
-      REQUIRE_MATCHING_OBJECT(accounts, mvo()
-            ("amount", "9900.00 DKRW")
-      );
-      */
-
       result = token_transfer(N(user1), N(user2), "-1.0000 ETH@tkprovider", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must transfer positive token", result);
 

@@ -93,10 +93,6 @@ namespace yosemite { namespace native_token {
     }
 
     void ntoken::transfer(account_name from, account_name to, eosio::asset amount, const string &memo) {
-        wptransfer(from, to, amount, from, memo);
-    }
-
-    void ntoken::wptransfer(account_name from, account_name to, eosio::asset amount, account_name payer, const string &memo) {
         bool called_by_system_contract = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
         if (!called_by_system_contract) {
             eosio_assert(static_cast<uint32_t>(yx_asset{amount, 0}.is_valid()), "invalid amount");
@@ -119,7 +115,11 @@ namespace yosemite { namespace native_token {
 
         vector<account_name> zeroedout_depos{};
         yx_asset remained_ntoken{};
+        const account_name delegated_payer = delegated_trx_fee_payer();
+        const account_name payer = delegated_payer != 0 ? delegated_payer : from;
 
+        // In order to check whether from account have enough native token to pay the transaction fee,
+        // it tracks the native token balance of the specific system depository of 'from' account.
         accounts_native accounts_table_native(get_self(), from);
         for (auto &balance_holder : accounts_table_native) {
             yx_symbol native_token_symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL, balance_holder.token.issuer};
@@ -139,15 +139,9 @@ namespace yosemite { namespace native_token {
                 }
             }
 
-            if (from == payer) {
-                INLINE_ACTION_SENDER(ntoken, ntransfer)
-                        (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         {from, to, {to_balance, native_token_symbol}, memo});
-            } else {
-                INLINE_ACTION_SENDER(ntoken, wpntransfer)
-                        (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                         {from, to, {to_balance, native_token_symbol}, payer, memo});
-            }
+            INLINE_ACTION_SENDER(ntoken, ntransfer)
+                    (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                     {from, to, {to_balance, native_token_symbol}, memo});
 
             if (amount.amount == 0) {
                 if (!called_by_system_contract) {
@@ -166,11 +160,6 @@ namespace yosemite { namespace native_token {
     }
 
     void ntoken::ntransfer(account_name from, account_name to, const yx_asset &token, const string &memo) {
-        wpntransfer(from, to, token, from, memo);
-    }
-
-    void ntoken::wpntransfer(account_name from, account_name to, const yx_asset &token, account_name payer,
-                             const string &memo) {
         bool called_by_system_contract = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
         if (!called_by_system_contract) {
             eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
@@ -196,7 +185,7 @@ namespace yosemite { namespace native_token {
         add_native_token_balance(to, token);
 
         if (!called_by_system_contract) {
-            charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_NTRANSFER);
+            charge_transaction_fee(from, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_NTRANSFER);
         }
     }
 
@@ -297,6 +286,5 @@ namespace yosemite { namespace native_token {
     }
 }} // namespace native_token yosemite
 
-EOSIO_ABI(yosemite::native_token::ntoken, (nissue)(nredeem)(transfer)(wptransfer)(ntransfer)(wpntransfer)
-                                          (payfee)(setkycrule)
+EOSIO_ABI(yosemite::native_token::ntoken, (nissue)(nredeem)(transfer)(ntransfer)(payfee)(setkycrule)
 )

@@ -100,7 +100,7 @@ namespace yosemite {
             i.signerinfo = signerinfo;
         });
 
-        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
+        native_token::charge_transaction_fee(signer, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
     }
 
     void digital_contract::upadddochash(const dcid &dc_id, const string &adddochash) {
