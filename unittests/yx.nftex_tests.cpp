@@ -15,7 +15,6 @@ struct yx_nft {
 FC_REFLECT(yx_nft, (ysymbol)(id))
 
 class nftex_tester : public yx_tester {
-   static const uint32_t MURMUR3HASH_SEED = 4234316459;
 
 public:
 
@@ -80,13 +79,13 @@ public:
 
       vector<string> uris = {"uri1", "uri2", "uri3", "uri4", "uri5"};
 
-      result = nft_issue(N(alice), "5 GIT@gameprovider", vector<id_type>{0, 1, 2, 3, 4}, uris, "my game", "my memo");
+      result = nft_issue(N(alice), "0,GIT@gameprovider", vector<id_type>{0, 1, 2, 3, 4}, uris, "my game", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
       uris = {"uri6", "uri7", "uri8", "uri9", "uri10"};
 
-      result = nft_issue(N(bob), "5 GIT@gameprovider", vector<id_type>{5, 6, 7, 8, 9}, uris, "my game", "my memo");
+      result = nft_issue(N(bob), "0,GIT@gameprovider", vector<id_type>{5, 6, 7, 8, 9}, uris, "my game", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
