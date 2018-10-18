@@ -161,7 +161,6 @@ $YOSEMITE_CLI wallet import --private-key YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UEL
 Create System Accounts
 ---
 
-* yx.msig(privileged), yx.txfee, yx.identity, yx.ntoken(privileged), yx.token(privileged), yx.dcontract(privileged), yx.nft(privileged), yx.escrow(privileged)
 ```bash
 $YOSEMITE_CLI create account yosemite yx.msig YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.txfee YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
@@ -170,6 +169,7 @@ $YOSEMITE_CLI create account yosemite yx.ntoken YOS7qFXz5bvLYphF8S8XXTYgExnN2hXR
 $YOSEMITE_CLI create account yosemite yx.token YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.nft YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.nftex YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.escrow YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 
 ```
@@ -309,6 +309,13 @@ Install Non-Fungible-Token(ERC721) Contract
 ```bash
 $YOSEMITE_CLI set contract yx.nft $YOSEMITE_CONTRACTS_DIR/yx.nft/
 $YOSEMITE_CLI push action yosemite setpriv '["yx.nft",1]' -p yosemite@active
+```
+
+Install Non-Fungible-Token(ERC721) Exchange Contract
+---
+```bash
+$YOSEMITE_CLI set contract yx.nftex $YOSEMITE_CONTRACTS_DIR/yx.nftex/
+$YOSEMITE_CLI push action yosemite setpriv '["yx.nftex",1]' -p yosemite@active
 ```
 
 Install Token Escrow Contract
@@ -550,6 +557,11 @@ $YOSEMITE_CLI get account yx.nft
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@owner
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@active
 $YOSEMITE_CLI get account yx.nft
+
+$YOSEMITE_CLI get account yx.nftex
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@active
+$YOSEMITE_CLI get account yx.nftex
 
 $YOSEMITE_CLI get account yx.escrow
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@owner

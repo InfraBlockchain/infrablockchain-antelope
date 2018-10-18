@@ -1,143 +1,139 @@
-# To build yex contract
-1. locate yex directory under EOS_HOME/contracts
-1. add `add_subdirectory(yex)` to EOS_HOME/contracts/CMakeLists.txt
-1. run eosio_build.sh
+# Abtract
+* This Yosemite contract is for the peer-to-peer market of non-fungible tokens.
+* The Yosemite contract for the non-fungible token(NFT) is [`yx.nft`](../../contracts/yx.nft/README.md).
 
-# To test yex contract
+# What You Can Do With This Contract
+* An entity who owns the NFT can sell it with the specific token. The seller can cancel the sell order.
+* An entity who owns the token can buy it.
 
-* Assume that the eosio.bios contract and the eosio.token contract are prepared.
-   * https://github.com/EOSIO/eos/wiki/Tutorial-Getting-Started-With-Contracts
-   * https://github.com/EOSIO/eos/wiki/Tutorial-eosio-token-Contract
+# Management Actions
 
-## unlock wallet
-cleos wallet unlock --password \<your-wallet-password\>
-
-## yex contract
+## setting fee for operations
+* Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-cleos wallet import 5JaiqS7QMibLc8jf7jw75by7ZcFGu78ifBp8fPudHYNDRjq9NtC
-cleos wallet import 5KNZguojmRLQzy5oUzs3zK3acQYNmzAk1YU1vJ9nrr7834YR84m
-cleos create account eosio yex EOS7rW3MpWQg64p5NdNEw453Jh1EsuYndjxpfZ1cZpMfRvs734zwH EOS7rW3MpWQg64p5NdNEw453Jh1EsuYndjxpfZ1cZpMfRvs734zwH
+clyos push action yx.txfee settxfee '{"operation":"tf.nftsell", "fee":"500.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.nftbuy", "fee":"500.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.nftsellc", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
-## deploy yex contract
-`cleos set contract yex build/contracts/yex -p yex`
 
-## user1
-```
-cleos wallet import 5JUFNtseKzkjxaqA69GYX4e4eDuTR5p2P9bCkXWEjWVDdNMEAAV
-cleos wallet import 5J8mZ6sqVXZzkPtzQ9pRrpTzXJm7amBUfXfja6KGNjSMWnMFPG4
-cleos create account eosio user1 EOS5Mi1wGid545qYfUNJaMY1qmrHRF51z3StnCP5usDTFymgTqvD6 EOS7NaaAkmNGEXa2UkgUmxdkwxA2tf8Tn7y9YmMykLEcSpTSc6tgk
-cleos set account permission user1 active '{"threshold": 1,"keys": [{"key": "EOS7rW3MpWQg64p5NdNEw453Jh1EsuYndjxpfZ1cZpMfRvs734zwH","weight": 1}],"accounts": [{"permission":{"actor":"yex","permission":"active"},"weight":1}]}' owner -p user1
-```
+# Actions
 
-## user2
+## sell
+Sell NFT with the specified token
+
+* NFT is transferred from the seller to `yx.nftex` account.
+* Price token must be created if it is not the native token. See [`yx.token`](../../contracts/yx.token/README.md).
 ```
-cleos wallet import 5K5jUcrT827UjQE497GuVHDF5tjJv2V2knheFThKaDjW54dNNrM
-cleos wallet import 5KjqyFRQrNzxfjd6zj5MREBedLe2cZdbk4a5eUnojxshXmYbsZ7
-cleos create account eosio user2 EOS7sCHT9Fw4h6q8DM9PC4kGgozCQbW1Gs4QdXRY29wJiUHu3uciU EOS68XGZHQ8TiQYMFUvXXgNbbTGu6pQ3fTgqmH16FBDrLtFzDyLa2
-cleos set account permission user2 active '{"threshold": 1,"keys": [{"key": "EOS7rW3MpWQg64p5NdNEw453Jh1EsuYndjxpfZ1cZpMfRvs734zwH","weight": 1}],"accounts": [{"permission":{"actor":"yex","permission":"active"},"weight":1}]}' owner -p user2
+clyos push action yx.nftex sell '{"seller":"user1","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"},"price":{"amount":"1000.00 GMT","issuer":"gameprovider"},"expiration":"2018-10-24T02:49:57","memo":"my memo"}' -p user1
 ```
 
-## d1 (depository 1)
+### parameters of sell
+1. seller : seller who owns the NFT
+1. nft
+   * ysymbol : NFT symbol and its issuer; precision is always 0
+   * id : NFT id managed by [`yx.nft`](../../contracts/yx.nft/README.md)
+1. price : the amount of token with the issuer
+   * native token managed by yx.ntoken
+   * non-native token managed by yx.token
+1. expiration : expiration time in the ISO8601 format, combined date and time to seconds in UTC e.g. 2018-10-24T02:49:57
+   * YosemiteChain assumes that the time-zone of the expiration time is UTC. Other time-zones are not considered.
+   * The minimum expiration is 1 minute from now.
+1. memo : string less than or equal to 256 bytes
+
+### inline actions and notifications of sell
 ```
-cleos wallet import 5KFi61BKiAR5XNXQLYhkkzLWwdWbXUzmekVzn3MmpZjT9X1n78N
-cleos wallet import 5JiJiBo2mQBfx9cHTTieEA8aVVktqr1gond7SogG8dF9in1iFBS
-cleos create account eosio d1 EOS884qE7rLpnf3cejF6pq4w5S8wp9PMhHmSViuxrrQmGpkFtDvy2 EOS6LPAQCVK69srvKmPCTyD6QjG4Z8t3YThJVTGeZeQg8MokC4YTq
+#      yx.nftex <= yx.nftex::sell               {"seller":"user1","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":0},"price":{"amo...
+#        yx.nft <= yx.nft::transferid           {"from":"user1","to":"yx.nftex","issuer":"gameprovider","ids":[0],"memo":"my memo"}
+#         user1 <= yx.nft::transferid           {"from":"user1","to":"yx.nftex","issuer":"gameprovider","ids":[0],"memo":"my memo"}
+#      yx.nftex <= yx.nft::transferid           {"from":"user1","to":"yx.nftex","issuer":"gameprovider","ids":[0],"memo":"my memo"}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"500.00 DKRW","issuer":"d1"}}
+#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"500.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"500.00 DKRW","issuer":"d1"}}
 ```
 
-## EOS token issueing for user1 & user2
-```
-cleos push action eosio.token create '[ "eosio", "1000000000 EOS", 0, 0, 0]' -p eosio.token
-cleos push action eosio.token issue '[ "user1", "10000 EOS", "memo" ]' -p eosio
-cleos push action eosio.token issue '[ "user2", "10000 EOS", "memo" ]' -p eosio
-```
-* check balance : cleos get currency balance eosio.token user1
+## cancelsell
+Cancel the sell order of NFT
 
-## BTC token issueing for user1 & user2
+* NFT is transferred from `yx.nftex` account to the seller.
 ```
-cleos push action eosio.token create '[ "d1", "1000000000 BTC", 0, 0, 0]' -p eosio.token
-cleos push action eosio.token issue '[ "user1", "10000 BTC", "memo" ]' -p d1
-cleos push action eosio.token issue '[ "user2", "10000 BTC", "memo" ]' -p d1
+clyos push action yx.nftex cancelsell '{"nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"}}' -p user1
 ```
 
-## deposit for user1 & user2
-* *Note that precision is not supported now.*
+### parameters of cancelsell
+1. nft
+   * ysymbol : NFT symbol and its issuer; precision is always 0
+   * id : NFT id managed by [`yx.nft`](../../contracts/yx.nft/README.md)
+
+### inline actions and notifications of cancelsell
 ```
-cleos push action yex deposit '{"from":"user1", "quantity":{"quantity":"10000 EOS","contract":"eosio"}}' -p user1
-cleos push action yex deposit '{"from":"user1", "quantity":{"quantity":"10000 BTC","contract":"d1"}}' -p user1
-cleos push action yex deposit '{"from":"user2", "quantity":{"quantity":"10000 EOS","contract":"eosio"}}' -p user2
-cleos push action yex deposit '{"from":"user2", "quantity":{"quantity":"10000 BTC","contract":"d1"}}' -p user2
-```
-## buy orders by user1
-* buy BTC using EOS as currency
-```
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"1 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"2 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"3 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"4 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"5 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"3 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"4 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"5 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
-cleos push action yex buy '{"buyer":"user1", "at_price":{"quantity":"3 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user1
+#      yx.nftex <= yx.nftex::cancelsell         {"nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":0}}
+#        yx.nft <= yx.nft::transferid           {"from":"yx.nftex","to":"user1","issuer":"gameprovider","ids":[0],"memo":""}
+#      yx.nftex <= yx.nft::transferid           {"from":"yx.nftex","to":"user1","issuer":"gameprovider","ids":[0],"memo":""}
+#         user1 <= yx.nft::transferid           {"from":"yx.nftex","to":"user1","issuer":"gameprovider","ids":[0],"memo":""}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
+#         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
 ```
 
-## sell orders by user2
-* sell BTC to earn EOS
+## buy
+Buy NFT on the sell order book
+
 ```
-cleos push action yex sell '{"seller":"user2", "at_price":{"quantity":"3 EOS","contract":"eosio"}, "quantity":{"quantity":"1 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user2
-cleos push action yex sell '{"seller":"user2", "at_price":{"quantity":"3 EOS","contract":"eosio"}, "quantity":{"quantity":"2 BTC","contract":"d1"}, "expiration":"2018-05-31T02:49:57.000"}' -p user2
+clyos push action yx.nftex buy '{"buyer":"user2","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"},"price":{"amount":"1000.00 GMT","issuer":"gameprovider"},"memo":""}' -p user2
 ```
 
-# To print order book
-* Please check nodeos console log.
+### parameters of buy
+1. buyer
+1. nft
+   * ysymbol : NFT symbol and its issuer; precision is always 0
+   * id : NFT id managed by [`yx.nft`](../../contracts/yx.nft/README.md)
+1. price : the amount of token with the issuer
+   * native token managed by yx.ntoken
+   * non-native token managed by yx.token
+1. memo : string less than or equal to 256 bytes
 
-## Buy order book based on price 3 EOS (price index)
+### inline actions and notifications of buy
 ```
-cleos push action yex printprindex '{"buy_or_sell":"1", "token":"0 BTC", "at_price":"3 EOS"}' -p yex
-```
-## Buy order book based on price 1 EOS (price index)
-```
-cleos push action yex printprindex '{"buy_or_sell":"1", "token":"0 BTC", "at_price":"1 EOS"}' -p yex
-```
-## Sell order book based on price 3 EOS (price index)
-```
-cleos push action yex printprindex '{"buy_or_sell":"0", "token":"0 BTC", "at_price":"3 EOS"}' -p yex
-```
-
-## Simple list-up
-```
-cleos get table yex 6071415247654309701 buybook
-cleos get table yex 6071415247654309701 sellbook
-```
-* 6071415247654309701 is the scope and the uint64 representation of the string `BTCEOS`.
-
-# To cancel all orders of buy/sell order book
-```
-cleos push action yex cancelall '{"token":"0 BTC", "currency":"0 EOS", "buy":"1", "sell":"0"}' -p yex
-cleos push action yex cancelall '{"token":"0 BTC", "currency":"0 EOS", "buy":"0", "sell":"1"}' -p yex
-cleos push action yex cancelall '{"token":"0 BTC", "currency":"0 EOS", "buy":"1", "sell":"1"}' -p yex
+#      yx.nftex <= yx.nftex::buy                {"buyer":"user2","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":0},"price":{"amou...
+#        yx.nft <= yx.nft::transferid           {"from":"yx.nftex","to":"user2","issuer":"gameprovider","ids":[0],"memo":""}
+#      yx.nftex <= yx.nft::transferid           {"from":"yx.nftex","to":"user2","issuer":"gameprovider","ids":[0],"memo":""}
+#         user2 <= yx.nft::transferid           {"from":"yx.nftex","to":"user2","issuer":"gameprovider","ids":[0],"memo":""}
+#      yx.token <= yx.token::transfer           {"from":"user2","to":"user1","token":{"amount":"1000.00 GMT","issuer":"gameprovider"},"memo":""}
+#         user2 <= yx.token::transfer           {"from":"user2","to":"user1","token":{"amount":"1000.00 GMT","issuer":"gameprovider"},"memo":""}
+#         user1 <= yx.token::transfer           {"from":"user2","to":"user1","token":{"amount":"1000.00 GMT","issuer":"gameprovider"},"memo":""}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"user2","token":{"amount":"500.00 DKRW","issuer":"d1"}}
+#         user2 <= yx.ntoken::payfee            {"payer":"user2","token":{"amount":"500.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"user2","token":{"amount":"500.00 DKRW","issuer":"d1"}}
 ```
 
-# ETC.
-## setup eosio account
-cleos wallet import 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
+# Tables
 
-## set bios contract
-```
-cleos set contract eosio build/contracts/eosio.bios -p eosio
-```
+## sellbook
+Get all sell orders for each NFT symbol
 
-## eosio.token contract
+The value 518171862 is [FNV-1a hash](https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1a_hash) result of `0,GIT@gameprovider`.
 ```
-cleos wallet import 5JUFNtseKzkjxaqA69GYX4e4eDuTR5p2P9bCkXWEjWVDdNMEAAV
-cleos wallet import 5J8mZ6sqVXZzkPtzQ9pRrpTzXJm7amBUfXfja6KGNjSMWnMFPG4
-cleos create account eosio eosio.token EOS5Mi1wGid545qYfUNJaMY1qmrHRF51z3StnCP5usDTFymgTqvD6 EOS7NaaAkmNGEXa2UkgUmxdkwxA2tf8Tn7y9YmMykLEcSpTSc6tgk
-cleos set contract eosio.token build/contracts/eosio.token -p eosio.token
+clyos get table yx.nftex 518171862 sellbook
 ```
 
-## account permission for deposit & withdrawal
+### results of nftokens
 ```
-cleos set account permission user1 active '{"threshold": 1,"keys": [{"key": "EOS7rW3MpWQg64p5NdNEw453Jh1EsuYndjxpfZ1cZpMfRvs734zwH","weight": 1}],"accounts": [{"permission":{"actor":"yex","permission":"active"},"weight":1}]}' owner -p user1
+{
+  "rows": [{
+      "id": 0,
+      "ysymbol": {
+        "tsymbol": "0,GIT",
+        "issuer": "gameprovider"
+      },
+      "seller": "user1",
+      "price": {
+        "amount": "1000.00 GMT",
+        "issuer": "gameprovider"
+      },
+      "expiration": "2018-10-24T02:49:57"
+    }
+  ],
+  "more": false
+}
 ```
-* Note that EOS7rW3MpWQg64p5NdNEw453Jh1EsuYndjxpfZ1cZpMfRvs734zwH is the public key of the 'yex' account.

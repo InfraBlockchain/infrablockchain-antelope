@@ -100,6 +100,10 @@ public:
       set_tx_fee("tf.tsetopts", zero_ntoken);
       set_tx_fee("tf.tfreezeac", zero_ntoken);
 
+      set_tx_fee("tf.nftbuy", zero_ntoken);
+      set_tx_fee("tf.nftsell", zero_ntoken);
+      set_tx_fee("tf.nftsellc", zero_ntoken);
+
       produce_blocks();
 
       set_code(YOSEMITE_NATIVE_TOKEN_ACCOUNT, yx_ntoken_wast);

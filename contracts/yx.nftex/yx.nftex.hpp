@@ -18,7 +18,6 @@ namespace yosemite {
    };
 
    class nft_exchange : public yx_contract {
-      static const uint32_t MURMUR3HASH_SEED = 4234316459;
       static const uint32_t MAX_EXPIRATION_SECONDS = 604800; // 1 week in seconds
 
       uint64_t make_scope(const yx_symbol &nft_symbol) const;

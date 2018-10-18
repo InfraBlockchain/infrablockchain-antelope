@@ -8,6 +8,8 @@
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/hash_fnv1a.hpp>
+#include <yosemitelib/transaction_fee.hpp>
+#include <yosemitelib/native_token.hpp>
 
 namespace yosemite {
 
@@ -35,6 +37,10 @@ namespace yosemite {
 
       // transfer price to seller
       transfer_token_as_inline(buyer, sell_order.seller, price, memo);
+
+      sell_book.erase(sell_order);
+
+      native_token::charge_transaction_fee(buyer, YOSEMITE_TX_FEE_OP_NAME_NFT_BUY);
    }
 
    void nft_exchange::buynt(account_name buyer, const yx_nft &nft, const asset &price, const string &memo) {
@@ -49,7 +55,7 @@ namespace yosemite {
       uint64_t sellbook_scope = make_scope(nft.ysymbol);
       sellbook sell_book{get_self(), sellbook_scope};
 
-      eosio_assert(static_cast<uint32_t>(sell_book.find(nft.id) == sell_book.end()), "already exists");
+      eosio_assert(static_cast<uint32_t>(sell_book.find(nft.id) == sell_book.end()), "sell order with the id already exists");
 
       sell_book.emplace(get_self(), [&](auto &order) {
          order.id = nft.id;
@@ -65,6 +71,8 @@ namespace yosemite {
             (YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, {{seller,                  N(active)},
                                                    {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
              {seller, get_self(), nft.ysymbol.issuer, ids, memo});
+
+      native_token::charge_transaction_fee(seller, YOSEMITE_TX_FEE_OP_NAME_NFT_SELL);
    }
 
    void
@@ -78,8 +86,13 @@ namespace yosemite {
                                   const time_point_sec &expiration) const {
       require_auth(order_account);
       eosio_assert(static_cast<uint32_t>(is_account(nft.ysymbol.issuer)), "invalid issuer account");
+      eosio_assert(static_cast<uint32_t>(nft.ysymbol.is_valid()), "invalid nft symbol");
+      eosio_assert(static_cast<uint32_t>(non_native_token::does_token_exist(YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, nft.ysymbol)), "nft does not exist");
       eosio_assert(static_cast<uint32_t>(price.is_valid()), "invalid price");
       eosio_assert(static_cast<uint32_t>(price.amount > 0), "only positive price is allowed");
+      if (!price.is_native(false)) {
+         eosio_assert(static_cast<uint32_t>(non_native_token::does_token_exist(YOSEMITE_USER_TOKEN_ACCOUNT, price.get_yx_symbol())), "price token does not exist");
+      }
       eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
       if (expiration.utc_seconds != 0) {
@@ -109,6 +122,8 @@ namespace yosemite {
       INLINE_ACTION_SENDER(yosemite::non_native_token::nft, transferid)
             (YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, {{YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
              {get_self(), order.seller, nft.ysymbol.issuer, ids, ""});
+
+      native_token::charge_transaction_fee(order.seller, YOSEMITE_TX_FEE_OP_NAME_NFT_SELL_CANCEL);
    }
 
 }

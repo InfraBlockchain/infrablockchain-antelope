@@ -123,14 +123,20 @@ BOOST_AUTO_TEST_SUITE(yx_nftex_tests)
       BOOST_REQUIRE_EQUAL(3, tokenval["id"]);
       BOOST_REQUIRE_EQUAL("yx.nftex", tokenval["owner"]);
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("already exists"),
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("sell order with the id already exists"),
                           sell(N(alice), "0,GIT@gameprovider", 3, "1000.00 GMT@gameprovider", expiration.to_iso_string(), ""));
 
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("nft does not exist"),
+                          sell(N(alice), "0,NONE@gameprovider", 1, "1000.00 GMT@gameprovider", expiration.to_iso_string(), ""));
+
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("invalid issuer account"),
-                          sell(N(alice), "0,GIT@xxxxxxxxxxxx", 3, "1000.00 GMT@gameprovider", expiration.to_iso_string(), ""));
+                          sell(N(alice), "0,GIT@xxxxxxxxxxxx", 1, "1000.00 GMT@gameprovider", expiration.to_iso_string(), ""));
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("price token does not exist"),
+                          sell(N(alice), "0,GIT@gameprovider", 1, "1000.00 NONE@gameprovider", expiration.to_iso_string(), ""));
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("only positive price is allowed"),
-                          sell(N(alice), "0,GIT@gameprovider", 3, "-1000.00 GMT@gameprovider", expiration.to_iso_string(), ""));
+                          sell(N(alice), "0,GIT@gameprovider", 1, "-1000.00 GMT@gameprovider", expiration.to_iso_string(), ""));
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("memo has more than 256 bytes"),
                           sell(N(alice), "0,GIT@gameprovider", 1, "1000.00 GMT@gameprovider", expiration.to_iso_string(),
@@ -178,6 +184,9 @@ BOOST_AUTO_TEST_SUITE(yx_nftex_tests)
       auto tokenval = nft_get_token(static_cast<id_type>(3), N(gameprovider));
       BOOST_REQUIRE_EQUAL(3, tokenval["id"]);
       BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
+
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("NFT with the specified id is not in the sell order book"),
+                          buy(N(bob), "0,GIT@gameprovider", 3, "1000.00 GMT@gameprovider", ""));
 
    } FC_LOG_AND_RETHROW()
 

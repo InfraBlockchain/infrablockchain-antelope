@@ -17,7 +17,7 @@ namespace yosemite { namespace non_native_token {
    public:
       explicit nft(account_name self) : token(self) {}
 
-      void issue(account_name to, const yx_asset &token, const vector<id_type> &ids, const vector<string> &uris, const string &name,
+      void issue(account_name to, const yx_symbol &ysymbol, const vector<id_type> &ids, const vector<string> &uris, const string &name,
                  const string &memo);
       void redeem(account_name issuer, const vector <id_type> &ids, const string &memo);
       void transferid(account_name from, account_name to, account_name issuer, const vector<id_type> &ids, const string &memo);

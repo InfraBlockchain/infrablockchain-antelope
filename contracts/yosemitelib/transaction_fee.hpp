@@ -38,10 +38,14 @@
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE       N(tf.dcremove)
 
 // yx.escrow
-#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_ESCROW       N(tf.esescrow)
-#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_PROCEED      N(tf.esproceed)
-#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_CANCEL       N(tf.escancel)
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_ESCROW          N(tf.esescrow)
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_PROCEED         N(tf.esproceed)
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_CANCEL          N(tf.escancel)
 
+// yx.nftex
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_BUY                N(tf.nftbuy)
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_SELL               N(tf.nftsell)
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_SELL_CANCEL        N(tf.nftsellc)
 
 namespace yosemite {
 
