@@ -40,7 +40,7 @@ Create NFT with its symbol
 * The NFT creator naturally becomes the NFT depository.
 * Enabling the setting of options cannot be done any more after creation, because the owners of the NFT should know about what options can be set and it must not be changed after they own.
 ```
-clyos push action yx.nft create '{"ysymbol":{"tsymbol":"0,MYGAME","issuer":"gameprovider"},"can_set_options":0}' -p gameprovider
+clyos push action yx.nft create '{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"can_set_options":0}' -p gameprovider
 ```
 
 ### parameters of create
@@ -52,15 +52,13 @@ clyos push action yx.nft create '{"ysymbol":{"tsymbol":"0,MYGAME","issuer":"game
 Issue one or multiple NFTs to an account by the NFT depository
 
 ```
-clyos push action yx.nft issue '{"to":"user1","token":{"amount":"1 MYGAME","issuer":"gameprovider"},"ids":[0],"uris":["item1"],"name":"basicsword","memo":"my memo"}' -p gameprovider
-clyos push action yx.nft issue '{"to":"user1","token":{"amount":"2 MYGAME","issuer":"gameprovider"},"ids":[1,2],"uris":["item2-1", "item2-2"],"name":"potion1","memo":"my memo"}' -p gameprovider
+clyos push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[0],"uris":["item1"],"name":"basicsword","memo":"my memo"}' -p gameprovider
+clyos push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[1,2],"uris":["item2-1", "item2-2"],"name":"potion1","memo":"my memo"}' -p gameprovider
 ```
 
 ### parameters of issue
 1. to : the account who is transferred the NFT
-1. token : the amount of NFT with the issuer(=NFT depository)
-   * amount : must be positive integer and must match with the length of uris
-   * issuer
+1. ysymbol : NFT symbol and its issuer; precision is always 0
 1. ids : the list of identifiers assigned by the issuer for each NFT; they are used as primary key of `nftokens` table
 1. uris : the list of item information URIs for each NFT; the number of uris must match with the amount of NFT
    * Each URI is a string less than or equal to 256 bytes.
@@ -72,7 +70,7 @@ clyos push action yx.nft issue '{"to":"user1","token":{"amount":"2 MYGAME","issu
 * Case 1. If the `to` account is different from the issuer, the issue action does the `transferid` inline action.
    * Case 1-2. single issue
 ```
-#        yx.nft <= yx.nft::issue                {"to":"user1","token":{"amount":"1 MYGAME","issuer":"gameprovider"},"ids":[0],"uris":["item1"],"name":"basicsw...
+#        yx.nft <= yx.nft::issue                {"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[0],"uris":["item1"],"name":"basicsw...
 #        yx.nft <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[0],"memo":"my memo"}
 #  gameprovider <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[0],"memo":"my memo"}
 #         user1 <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[0],"memo":"my memo"}
@@ -82,7 +80,7 @@ clyos push action yx.nft issue '{"to":"user1","token":{"amount":"2 MYGAME","issu
 ```
    * Case 1-2. multiple issue
 ```
-#        yx.nft <= yx.nft::issue                {"to":"user1","token":{"amount":"2 MYGAME","issuer":"gameprovider"},"ids":[1,2],"uris":["item2-1","item2-2"],"na...
+#        yx.nft <= yx.nft::issue                {"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[1,2],"uris":["item2-1","item2-2"],"na...
 #        yx.nft <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[1,2],"memo":"my memo"}
 #  gameprovider <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[1,2],"memo":"my memo"}
 #         user1 <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[1,2],"memo":"my memo"}
@@ -93,7 +91,7 @@ clyos push action yx.nft issue '{"to":"user1","token":{"amount":"2 MYGAME","issu
 
 * Case 2. If the to account is the NFT depository itself, there is no `transferid` inline action.
 ```
-#        yx.nft <= yx.nft::issue                {"to":"gameprovider","token":{"amount":"1 MYGAME","issuer":"gameprovider"},"ids":[3],"uris":["item1"],"name":"...
+#        yx.nft <= yx.nft::issue                {"to":"gameprovider","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[3],"uris":["item1"],"name":"...
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 #  gameprovider <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
@@ -137,7 +135,7 @@ Transfer a NFT
 * This action would be used when the sender owns only one NFT of the symbol and the issuer.
 * If the sender has more than one NFT specified by the token, any NFT with the certain uri is transferred.
 ```
-clyos push action yx.nft transfer '{"from":"user2","to":"user3","token":{"amount":"1 MYGAME","issuer":"gameprovider"},"memo":"my memo"}' -p user2
+clyos push action yx.nft transfer '{"from":"user2","to":"user3","token":{"amount":"1 GIT","issuer":"gameprovider"},"memo":"my memo"}' -p user2
 ```
 
 ### parameters of transfer
@@ -180,7 +178,7 @@ clyos get table yx.nft gameprovider nftokens
       "uri": "item1",
       "owner": "user1",
       "value": {
-        "amount": "1 MYGAME",
+        "amount": "1 GIT",
         "issuer": "gameprovider"
       },
       "name": "basicsword"

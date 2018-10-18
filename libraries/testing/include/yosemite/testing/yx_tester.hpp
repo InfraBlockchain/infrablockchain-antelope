@@ -517,16 +517,16 @@ public:
 
    template<typename T>
    action_result
-   nft_issue(const account_name &to, const string &token, const T &ids, const vector<string> &uris, const string &name, const string &memo) {
-      auto _token = yx_asset::from_string(token);
+   nft_issue(const account_name &to, const string &ysymbol, const T &ids, const vector<string> &uris, const string &name, const string &memo) {
+      yx_symbol _ysymbol = yx_symbol::from_string(ysymbol);
       return push_action(N(issue), mvo()
                                ("to", to)
-                               ("token", _token)
+                               ("ysymbol", _ysymbol)
                                ("ids", ids)
                                ("uris", uris)
                                ("name", name)
                                ("memo", memo),
-                         _token.issuer, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
+                         _ysymbol.issuer, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
       );
    }
 

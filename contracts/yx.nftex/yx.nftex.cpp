@@ -105,7 +105,7 @@ namespace yosemite {
 
    uint64_t nft_exchange::make_scope(const yx_symbol &nft_symbol) const {
       string sym = nft_symbol.to_string();
-      return static_cast<uint64_t>(hash_32_fnv1a(sym.c_str(), static_cast<int>(sym.size())));
+      return static_cast<uint64_t>(hash_32_fnv1a(sym.c_str(), static_cast<uint32_t>(sym.size())));
    }
 
    void nft_exchange::cancelsell(const yx_nft &nft) {

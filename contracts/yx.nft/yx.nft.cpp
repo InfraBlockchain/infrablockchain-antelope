@@ -1,6 +1,6 @@
 /**
- *  @file
- *  @copyright defined in yosemite-public-blockchain/LICENSE
+ * @file
+ * @copyright defined in yosemite-public-blockchain/LICENSE
  */
 #include <yosemitelib/transaction_fee.hpp>
 #include "yx.nft.hpp"
@@ -14,29 +14,28 @@ namespace yosemite { namespace non_native_token {
    }
 
    // @abi action
-   void nft::issue(account_name to, const yx_asset &token, const vector<id_type> &ids, const vector<string> &uris,
+   void nft::issue(account_name to, const yx_symbol &ysymbol, const vector<id_type> &ids, const vector<string> &uris,
                    const string &name, const string &memo) {
-      check_issue_parameters(to, token, memo);
-      eosio_assert(static_cast<uint32_t>(token.get_yx_symbol().precision() == 0), "the precision of non-fungible token must be 0");
-      eosio_assert(static_cast<uint32_t>(token.amount == ids.size()), "mismatch between token amount and the number of ids provided");
-      eosio_assert(static_cast<uint32_t>(token.amount == uris.size()), "mismatch between token amount and the number of uris provided");
+      yx_asset token_issued = yx_asset{1, ysymbol};
+
+      check_issue_parameters(to, token_issued, memo);
+      eosio_assert(static_cast<uint32_t>(ysymbol.precision() == 0), "the precision of non-fungible token must be 0");
+      eosio_assert(static_cast<uint32_t>(uris.size() == ids.size()), "mismatch between the number of ids and uris");
       eosio_assert(static_cast<uint32_t>(uris.size() <= 100), "the number of uris cannot exceed 100");
       eosio_assert(static_cast<uint32_t>(name.size() <= 32), "name has more than 32 bytes");
       eosio_assert(static_cast<uint32_t>(!name.empty()), "name is empty");
 
-      stats stats_table(get_self(), token.symbol.value);
-      const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
+      stats stats_table(get_self(), ysymbol.value);
+      const auto &tstats = stats_table.get(ysymbol.issuer, "token is not yet created");
 
       stats_table.modify(tstats, 0, [&](auto &s) {
-         s.supply.amount += token.amount;
+         s.supply.amount += ids.size();
          eosio_assert(static_cast<uint32_t>(s.supply.amount > 0 && s.supply.amount <= asset::max_amount),
                       "token amount cannot be more than 2^62 - 1");
       });
 
       // Mint nfts
-      token_index tokens(get_self(), token.issuer);
-      const yx_symbol &ysymbol = token.get_yx_symbol();
-      yx_asset token_issued = yx_asset{1, ysymbol};
+      token_index tokens(get_self(), ysymbol.issuer);
 
       for (unsigned int i = 0; i < ids.size(); i++) {
          auto const &mint_id = ids.at(i);
@@ -47,22 +46,22 @@ namespace yosemite { namespace non_native_token {
          tokens.emplace(get_self(), [&](auto &_token) {
             _token.id = mint_id;
             _token.uri = uri;
-            _token.owner = token.issuer;
+            _token.owner = ysymbol.issuer;
             _token.value = token_issued;
             _token.name = name;
          });
       }
 
       yx_asset token_to_add = yx_asset{static_cast<int64_t>(ids.size()), ysymbol};
-      add_token_balance(token.issuer, token_to_add);
+      add_token_balance(ysymbol.issuer, token_to_add);
 
-      if (to != token.issuer) {
+      if (to != ysymbol.issuer) {
          SEND_INLINE_ACTION(*this, transferid,
-                            {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                            {token.issuer, to, token.issuer, ids, memo});
+                            {{ysymbol.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                            {ysymbol.issuer, to, ysymbol.issuer, ids, memo});
       }
 
-      charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
+      charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
    }
 
    // @abi action

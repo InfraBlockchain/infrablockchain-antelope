@@ -1,6 +1,7 @@
-//
-// Created by eugene on 10/17/18.
-//
+/**
+ * @file
+ * @copyright defined in yosemite-public-blockchain/LICENSE
+ */
 
 #ifndef YOSEMITE_HASH_FNV1A_HPP
 #define YOSEMITE_HASH_FNV1A_HPP
@@ -13,14 +14,14 @@ namespace yosemite {
    // key is the data to hash, len is the size of the data (or how much of it to hash against)
    // code license: public domain or equivalent
    // post: https://notes.underscorediscovery.com/constexpr-fnv1a/
-   inline const uint32_t hash_32_fnv1a(const void* key, const uint32_t len) {
+   inline uint32_t hash_32_fnv1a(const void* key, const uint32_t len) {
 
-      const char* data = (char*)key;
+      const char* data = static_cast<const char *>(key);
       uint32_t hash = 0x811c9dc5;
       uint32_t prime = 0x1000193;
 
-      for(int i = 0; i < len; ++i) {
-         uint8_t value = data[i];
+      for (uint32_t i = 0; i < len; ++i) {
+         auto value = static_cast<uint8_t>(data[i]);
          hash = hash ^ value;
          hash *= prime;
       }
@@ -29,14 +30,14 @@ namespace yosemite {
 
    } //hash_32_fnv1a
 
-   inline const uint64_t hash_64_fnv1a(const void* key, const uint64_t len) {
+   inline uint64_t hash_64_fnv1a(const void* key, const uint64_t len) {
 
-      const char* data = (char*)key;
+      const char* data = static_cast<const char *>(key);
       uint64_t hash = 0xcbf29ce484222325;
       uint64_t prime = 0x100000001b3;
 
-      for(int i = 0; i < len; ++i) {
-         uint8_t value = data[i];
+      for (uint64_t i = 0; i < len; ++i) {
+         auto value = static_cast<uint8_t>(data[i]);
          hash = hash ^ value;
          hash *= prime;
       }

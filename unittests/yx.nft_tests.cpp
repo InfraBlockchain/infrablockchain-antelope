@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri1", "uri2", "uri3", "uri4", "uri5"};
 
-      result = nft_issue(N(alice), "5 TKN@alice", vector<id_type>{0, 1, 2, 3, 4}, uris, "nft1", "my memo");
+      result = nft_issue(N(alice), "0,TKN@alice", vector<id_type>{0, 1, 2, 3, 4}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri"};
 
-      result = nft_issue(N(bob), "1 TKN@alice", vector<id_type>{0}, uris, "nft1", "my memo");
+      result = nft_issue(N(bob), "0,TKN@alice", vector<id_type>{0}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -106,11 +106,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       */
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("to account does not exist"),
-                          nft_issue(N(dummy), "1 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
-      );
-
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("the precision of non-fungible token must be 0"),
-                          nft_issue(N(alice), "1.05 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
+                          nft_issue(N(dummy), "0,TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
       );
 
       string memo;
@@ -119,33 +115,25 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       }
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("memo has more than 256 bytes"),
-                          nft_issue(N(alice), "1 TKN@alice", vector<id_type>{1}, uris, "nft1", memo)
+                          nft_issue(N(alice), "0,TKN@alice", vector<id_type>{1}, uris, "nft1", memo)
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("token is not yet created"),
-                          nft_issue(N(alice), "1 TTT@alice", vector<id_type>{1}, uris, "nft1", "my memo")
+                          nft_issue(N(alice), "0,TTT@alice", vector<id_type>{1}, uris, "nft1", "my memo")
       );
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("must be positive token"),
-                          nft_issue(N(alice), "-1 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
-      );
-
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between token amount and the number of ids provided"),
-                          nft_issue(N(alice), "2 TKN@alice", vector<id_type>{1}, uris, "nft1", "my memo")
-      );
-
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between token amount and the number of uris provided"),
-                          nft_issue(N(alice), "2 TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("mismatch between the number of ids and uris"),
+                          nft_issue(N(alice), "0,TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
       );
 
       uris.push_back("uri2");
 
       BOOST_REQUIRE_EQUAL(success(),
-                          nft_issue(N(alice), "2 TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
+                          nft_issue(N(alice), "0,TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("token with specified ID already exists"),
-                          nft_issue(N(alice), "2 TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
+                          nft_issue(N(alice), "0,TKN@alice", vector<id_type>{1, 2}, uris, "nft1", "my memo")
       );
 
       string big_uri;
@@ -156,7 +144,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       vector<string> error_uris{uris.begin(), uris.end()};
       error_uris.push_back(big_uri);
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("uri has more than 256 bytes"),
-                          nft_issue(N(alice), "3 TKN@alice", vector<id_type>{3, 4, 5}, error_uris, "nft1", "my memo")
+                          nft_issue(N(alice), "0,TKN@alice", vector<id_type>{3, 4, 5}, error_uris, "nft1", "my memo")
       );
 
       string name;
@@ -165,11 +153,11 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
       }
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("name has more than 32 bytes"),
-                          nft_issue(N(alice), "2 TKN@alice", vector<id_type>{3, 4}, uris, name, "my memo")
+                          nft_issue(N(alice), "0,TKN@alice", vector<id_type>{3, 4}, uris, name, "my memo")
       );
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("name is empty"),
-                          nft_issue(N(alice), "2 TKN@alice", vector<id_type>{3, 4}, uris, "", "my memo")
+                          nft_issue(N(alice), "0,TKN@alice", vector<id_type>{3, 4}, uris, "", "my memo")
       );
 
    } FC_LOG_AND_RETHROW()
@@ -181,7 +169,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri"};
 
-      result = nft_issue(N(alice), "1 NFT@alice", vector<id_type>{0}, uris, "nft1", "my memo");
+      result = nft_issue(N(alice), "0,NFT@alice", vector<id_type>{0}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -216,7 +204,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri", "uri2", "uri3"};
 
-      result = nft_issue(N(alice), "3 NFT@alice", vector<id_type>{0, 1, 2}, uris, "nft1", "my memo");
+      result = nft_issue(N(alice), "0,NFT@alice", vector<id_type>{0, 1, 2}, uris, "nft1", "my memo");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
@@ -305,7 +293,7 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
       vector<string> uris = {"uri1", "uri2"};
 
-      result = nft_issue(N(alice), "2 NFT@alice", vector<id_type>{0, 1}, uris, "nft1", "nft_issue 2 tokens");
+      result = nft_issue(N(alice), "0,NFT@alice", vector<id_type>{0, 1}, uris, "nft1", "nft issue 2 tokens");
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks();
 
