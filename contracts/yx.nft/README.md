@@ -60,7 +60,7 @@ clyos push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","issu
 1. to : the account who is transferred the NFT
 1. ysymbol : NFT symbol and its issuer; precision is always 0
 1. ids : the list of identifiers assigned by the issuer for each NFT; they are used as primary key of `nftokens` table
-1. uris : the list of item information URIs for each NFT; the number of uris must match with the amount of NFT
+1. uris : the list of item information URIs for each NFT; the number of uris must match with the number of ids
    * Each URI is a string less than or equal to 256 bytes.
    * We recommend to use tiny URL or the rear part of URL that would be composed to the full URL by DApp.
 1. name : the name of NFT; less than or equal to 32 bytes
@@ -118,7 +118,7 @@ clyos push action yx.nft redeem '{"issuer":"gameprovider","ids":[0,1],"memo":"re
 Transfer NFTs
 
 ```
-clyos push action yx.nft transferid '{"from":"user2","to":"user3","issuer":"gameprovider"},"ids":[0,1],"memo":"my memo"}' -p user2
+clyos push action yx.nft transferid '{"from":"user2","to":"user3","issuer":"gameprovider","ids":[0,1],"memo":"my memo"}' -p user2
 ```
 
 ### parameters of transferid
