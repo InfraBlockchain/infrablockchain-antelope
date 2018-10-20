@@ -8,14 +8,6 @@
   ],
   "structs": [
     {
-      "name": "yx_asset",
-      "base": "",
-      "fields": [
-        {"name":"amount", "type":"asset"},
-        {"name":"issuer", "type":"account_name"}
-      ]
-    },
-    {
       "name": "itemid",
       "base": "",
       "fields": [
@@ -38,33 +30,12 @@
       ]
     },
     {
-      "name": "wpcreate",
-      "base": "create",
-      "fields": [
-        {"name":"payer", "type":"account_name"}
-      ]
-    },
-    {
       "name": "bid",
       "base": "",
       "fields": [
         {"name":"itemid", "type":"itemid"},
         {"name":"bidder", "type":"account_name"},
-        {"name":"token", "type":"yx_asset"}
-      ]
-    },
-    {
-      "name": "wpbid",
-      "base": "bid",
-      "fields": [
-        {"name":"payer", "type":"account_name"}
-      ]
-    },
-    {
-      "name": "complete",
-      "base": "",
-      "fields": [
-        {"name":"itemid", "type":"itemid"}
+        {"name":"price", "type":"yx_asset"}
       ]
     },
     {
@@ -95,11 +66,9 @@
   ],
   "actions": [
     { "name": "create", "type": "create", "ricardian_contract": "" },
-    { "name": "wpcreate", "type": "wpcreate", "ricardian_contract": "" },
     { "name": "bid", "type": "bid", "ricardian_contract": "" },
-    { "name": "wpbid", "type": "wpbid", "ricardian_contract": "" },
-    { "name": "complete", "type": "complete", "ricardian_contract": "" },
-    { "name": "remove", "type": "remove", "ricardian_contract": "" }
+    { "name": "confirm", "type": "confirm", "ricardian_contract": "" },
+    { "name": "cancel", "type": "cancel", "ricardian_contract": "" }
   ],
   "tables": [
     {
