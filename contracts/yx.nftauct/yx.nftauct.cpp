@@ -92,7 +92,6 @@ namespace yosemite {
 
       auction_items_index aucitems_idx{get_self(), item_id.creator};
       const auto &info = aucitems_idx.get(item_id.sequence, "auction item does not exist");
-      eosio_assert(static_cast<uint32_t>(!info.completed), "auction has been completed");
 
       const time_point_sec &bidtime = time_point_sec(now());
       eosio_assert(static_cast<uint32_t>(info.expiration > bidtime), "auction has been expired");
@@ -107,8 +106,6 @@ namespace yosemite {
          eosio_assert(static_cast<uint32_t>(increased_amount > 0),
                       "bid amount is not increased properly");
       }
-
-      //TODO:check complete
 
       aucitems_idx.modify(info, 0, [&](auto &i) {
          i.last_bidder = bidder;
@@ -128,7 +125,6 @@ namespace yosemite {
 
       auction_items_index aucitems_idx{get_self(), item_id.creator};
       const auto &info = aucitems_idx.get(item_id.sequence, "auction item does not exist");
-      eosio_assert(static_cast<uint32_t>(!info.completed), "auction has been completed");
 
       // send escrowed token to the auction item creator
       yx_asset last_bid_token{info.last_bid_amount, info.start_price.get_yx_symbol()};
@@ -150,5 +146,5 @@ namespace yosemite {
    }
 }
 
-EOSIO_ABI(yosemite::ntf_auction, (create)(bid)(complete)(remove)
+EOSIO_ABI(yosemite::nft_auction, (create)(bid)(complete)(remove)
 )

@@ -7,6 +7,7 @@
 #include <eosiolib/time.hpp>
 #include <string>
 #include <yosemitelib/yx_asset.hpp>
+#include <yosemitelib/yx_contract.hpp>
 
 namespace yosemite {
 
@@ -36,9 +37,6 @@ namespace yosemite {
         void bid(const itemid &item_id, account_name bidder, const yx_asset &token);
         void complete(const itemid &item_id);
         void remove(const itemid &item_id);
-
-    private:
-        void transfer_token_as_inline(account_name from, account_name to, const yx_asset &token);
     };
 
     /* scope = creator */
