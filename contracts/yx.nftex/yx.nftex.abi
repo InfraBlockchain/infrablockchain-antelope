@@ -73,6 +73,7 @@
       "base": "",
       "fields": [
         {"name":"id", "type":"uint64"},
+        {"name":"nft_id", "type":"uint64"},
         {"name":"ysymbol", "type":"yx_symbol"},
         {"name":"seller", "type":"account_name"},
         {"name":"price", "type":"yx_asset"},

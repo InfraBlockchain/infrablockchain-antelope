@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_SUITE(yx_nftex_tests)
       BOOST_REQUIRE_EQUAL(3, tokenval["id"]);
       BOOST_REQUIRE_EQUAL("yx.nftex", tokenval["owner"]);
 
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("sell order with the id already exists"),
+      BOOST_REQUIRE_EQUAL(wasm_assert_msg("sell order with the same NFT already exists"),
                           sell(N(alice), "0,GIT@gameprovider", 3, "1000.00 GMT@gameprovider", expiration.to_iso_string(), ""));
 
       BOOST_REQUIRE_EQUAL(wasm_assert_msg("nft does not exist"),

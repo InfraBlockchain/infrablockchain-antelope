@@ -7,7 +7,6 @@
 #include "../yx.nft/yx.nft.hpp"
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/hash_fnv1a.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/native_token.hpp>
 
@@ -16,10 +15,11 @@ namespace yosemite {
    void nft_exchange::buy(account_name buyer, const yx_nft &nft, const yx_asset &price, const string &memo) {
       check_param(buyer, nft, price, memo);
 
-      uint64_t sellbook_scope = make_scope(nft.ysymbol);
-      sellbook sell_book{get_self(), sellbook_scope};
+      sellbook sell_book{get_self(), nft.ysymbol.value};
+      auto order_index = sell_book.get_index<N(orderkey)>();
+      const uint128_t &orderkey = nft.get_orderkey();
+      const auto &sell_order = order_index.get(orderkey, "NFT with the specified id is not in the sell order book");
 
-      const auto &sell_order = sell_book.get(nft.id, "NFT with the specified id is not in the sell order book");
       auto _now = now();
       if (sell_order.expiration <= time_point_sec(_now)) {
          sell_book.erase(sell_order);
@@ -29,7 +29,7 @@ namespace yosemite {
       eosio_assert(static_cast<uint32_t>(sell_order.seller != buyer), "seller and buyer are the same");
 
       // transfer NFT to buyer
-      vector<id_type> ids{sell_order.id};
+      vector<id_type> ids{sell_order.nft_id};
       INLINE_ACTION_SENDER(yosemite::non_native_token::nft, transferid)
             (YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT, {{get_self(),              N(active)},
                                                    {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
@@ -52,13 +52,15 @@ namespace yosemite {
       eosio_assert(static_cast<uint32_t>(expiration.utc_seconds > 0), "expiration must be set");
       check_param(seller, nft, price, memo, expiration);
 
-      uint64_t sellbook_scope = make_scope(nft.ysymbol);
-      sellbook sell_book{get_self(), sellbook_scope};
+      sellbook sell_book{get_self(), nft.ysymbol.value};
+      auto order_index = sell_book.get_index<N(orderkey)>();
+      const uint128_t &orderkey = nft.get_orderkey();
 
-      eosio_assert(static_cast<uint32_t>(sell_book.find(nft.id) == sell_book.end()), "sell order with the id already exists");
+      eosio_assert(static_cast<uint32_t>(order_index.find(orderkey) == order_index.end()), "sell order with the same NFT already exists");
 
       sell_book.emplace(get_self(), [&](auto &order) {
-         order.id = nft.id;
+         order.id = sell_book.available_primary_key();
+         order.nft_id = nft.id;
          order.ysymbol = nft.ysymbol;
          order.seller = seller;
          order.price = price;
@@ -103,16 +105,12 @@ namespace yosemite {
       }
    }
 
-   uint64_t nft_exchange::make_scope(const yx_symbol &nft_symbol) const {
-      string sym = nft_symbol.to_string();
-      return static_cast<uint64_t>(hash_32_fnv1a(sym.c_str(), static_cast<uint32_t>(sym.size())));
-   }
-
    void nft_exchange::cancelsell(const yx_nft &nft) {
-      uint64_t scope = make_scope(nft.ysymbol);
+      sellbook sell_book{get_self(), nft.ysymbol.value};
+      auto order_index = sell_book.get_index<N(orderkey)>();
+      const uint128_t &orderkey = nft.get_orderkey();
+      const auto &order = order_index.get(orderkey, "NFT with the specified id is not in the sell order book");
 
-      sellbook sell_book(get_self(), scope);
-      const auto &order = sell_book.get(nft.id, "NFT with the specified id is not in the sell book");
       require_auth(order.seller);
 
       sell_book.erase(order);
