@@ -128,22 +128,6 @@ clyos push action yx.token transfer '{"from":"user2","to":"user3","token":{"amou
    * issuer
 1. memo : string less than or equal to 256 bytes
 
-## wptransfer
-Transfer token with the designated fee payer
-
-```
-clyos push action yx.token wptransfer '{"from":"user2","to":"user3","token":{"amount":"10000.0000 BTC","issuer":"d2"},"payer":"servprovider","memo":"my memo"}' -p user2
-```
-
-### parameters of wptransfer
-1. from : account name to transfer from
-1. to : account name to transfer to
-1. token : the amount of token with the issuer(=token depository)
-   * amount
-   * issuer
-1. payer : account name which pays transaction fee
-1. memo : string less than or equal to 256 bytes
-
 
 ## setkycrule
 Set the KYC vector for send or receive

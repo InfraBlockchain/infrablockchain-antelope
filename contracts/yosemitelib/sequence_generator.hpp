@@ -11,11 +11,9 @@ namespace yosemite {
         uint64_t sequence;
 
         uint64_t primary_key() const { return PRIMARY_KEY; }
-
-        EOSLIB_SERIALIZE(sequence_holder, (sequence))
     };
 
-    typedef eosio::multi_index<N(seqholders), sequence_holder> seqholders;
+    using seqholders = eosio::multi_index<N(seqholders), sequence_holder>;
 
     struct sequence_generator {
         static uint64_t new_sequence(uint64_t contract, uint64_t scope) {

@@ -1,4 +1,5 @@
 #pragma once
+#include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/trace.hpp>
@@ -48,6 +49,10 @@ namespace eosio { namespace chain {
          void add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount);
          bool has_transaction_vote() const;
          const yosemite_core::transaction_vote& get_transaction_vote() const;
+
+         /// YOSEMITE Delegated Transaction Fee Payment
+         bool has_delegated_tx_fee_payer() const;
+         const account_name& get_delegated_tx_fee_payer() const;
 
       private:
 

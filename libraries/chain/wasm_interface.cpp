@@ -1338,12 +1338,12 @@ class transaction_api : public context_aware_api {
          return context.cancel_deferred_transaction( (unsigned __int128)sender_id );
       }
 
-      /// YOSEMITE Core API
+      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       void cast_transaction_vote(uint32_t vote_amount) {
           context.cast_transaction_vote(vote_amount);
       }
 
-      /// YOSEMITE Core API
+      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
          auto trx_votes = context.get_transaction_votes_in_head_block();
 
@@ -1354,6 +1354,11 @@ class transaction_api : public context_aware_api {
          memcpy( memory, trx_votes.data(), copy_size );
 
          return copy_size;
+      }
+
+      /// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
+      account_name delegated_trx_fee_payer() {
+         return context.get_delegated_transaction_fee_payer();
       }
 };
 
@@ -1853,6 +1858,7 @@ REGISTER_INTRINSICS(transaction_api,
    (cancel_deferred,           int(int)                     )
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
+   (delegated_trx_fee_payer,   int64_t()                    )
 );
 
 REGISTER_INTRINSICS(context_free_api,

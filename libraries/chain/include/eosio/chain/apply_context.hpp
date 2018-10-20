@@ -490,6 +490,12 @@ class apply_context {
       /// get transaction vote data accumulated in the head block (previous block)
       vector<yosemite_core::transaction_vote> get_transaction_votes_in_head_block();
 
+   /// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
+   public:
+
+      /// get delegated transaction fee payer account name from transaction message
+      account_name get_delegated_transaction_fee_payer();
+
    /// Authorization methods:
    public:
 

@@ -189,35 +189,6 @@ clyos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"100
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"20.00 DKRW","issuer":"d2"}}
 ```
 
-## wptransfer
-Transfer the native token regardless of the system depository with the designated fee payer
-
-* If the fee payer account is different from 'from' account, you should use this action.
-* 'wp' means 'with payer'.
-* It requires the signature of the fee payer account.
-```
-clyos push action yx.ntoken wptransfer '{"from":"user1","to":"user2","amount":"10000.00 DKRW","payer":"servprovider","memo":"my memo"}' -p user1 servprovider
-```
-
-### parameters of wptransfer
-1. from : account name to transfer from
-1. to : account name to transfer to
-1. amount : token amount and symbol
-1. payer : account name which pays transaction fee
-1. memo : string less than or equal to 256 bytes
-
-### inline actions and notifications of wptransfer
-* You can see that `payer` of `payfee` inline action is the servprovider account.
-```
-#     yx.ntoken <= yx.ntoken::wptransfer        {"from":"user1","to":"user2","amount":"10000.00 DKRW","payer":"servprovider","memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user1 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user2 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.00 DKRW","issuer":"d1"}}
-#  servprovider <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"20.00 DKRW","issuer":"d1"}}
-```
-
 ## ntransfer
 Transfer the native token designating the system depository
 
@@ -245,35 +216,6 @@ clyos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"am
 #      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
 ```
 
-### wpntransfer
-Transfer the native token designating the system depository with the designated fee payer
-
-* The purpose and requirement of this action is the same with `wptransfer` action.
-```
-clyos push action yx.ntoken wpntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovider","memo":"my memo"}' -p user1 servprovider
-```
-
-### parameters of wpntransfer
-1. from : account name to transfer from
-1. to : account name to transfer to
-1. token : token amount and symbol with issuer account
-   * amount
-   * issuer
-1. payer : account name which pays transaction fee
-1. memo : string less than or equal to 256 bytes
-
-### inline actions and notifications of wpntransfer
-* There would be no inline action other than `payfee` inline action when the fee is set to more than 0.00 DKRW.
-* In this example, the fee is set to 10.00 DKRW. So the `payfee` inline action is shown.
-* You can see that `payer` of `payfee` inline action is the servprovider account.
-```
-#     yx.ntoken <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user1 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
-#         user2 <= yx.ntoken::wpntransfer       {"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"payer":"servprovide...
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.00 DKRW","issuer":"d1"}}
-#  servprovider <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"servprovider","token":{"amount":"10.00 DKRW","issuer":"d1"}}
-```
 
 # Tables
 

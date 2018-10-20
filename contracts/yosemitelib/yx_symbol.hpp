@@ -6,6 +6,8 @@
 
 namespace yosemite {
 
+    const static char symbol_issuer_denominator = '@';
+
     struct yx_symbol : public eosio::symbol_type {
         account_name issuer;
 
@@ -42,6 +44,17 @@ namespace yosemite {
             result <<= 64;
             return result | issuer;
         }
+
+        explicit operator std::string() const {
+            std::string result = symbol_type::to_string();
+            result += symbol_issuer_denominator;
+            result += eosio::name{issuer}.to_string();
+            return result;
+        }
+
+       std::string to_string() const {
+          return std::string(*this);
+       }
 
         friend bool operator==(const yx_symbol &a, const yx_symbol &b) {
             return std::tie(a.value, a.issuer) == std::tie(b.value, b.issuer);

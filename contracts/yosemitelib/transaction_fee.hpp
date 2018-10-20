@@ -37,7 +37,17 @@
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH N(tf.dcupadd)
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE       N(tf.dcremove)
 
-// yx.auction
+// yx.escrow
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_ESCROW          N(tf.esescrow)
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_PROCEED         N(tf.esproceed)
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_CANCEL          N(tf.escancel)
+
+// yx.nftex
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_BUY                N(tf.nftbuy)
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_SELL               N(tf.nftsell)
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_SELL_CANCEL        N(tf.nftsellc)
+
+// yx.nftauct
 #define YOSEMITE_TX_FEE_OP_NAME_AUCTION_CREATE         N(tf.axcreate)
 #define YOSEMITE_TX_FEE_OP_NAME_AUCTION_BID            N(tf.axbid)
 #define YOSEMITE_TX_FEE_OP_NAME_AUCTION_REMOVE         N(tf.axremove)

@@ -55,10 +55,6 @@ namespace yosemite { namespace non_native_token {
    }
 
    void yx_token::transfer(account_name from, account_name to, const yx_asset &token, const string &memo) {
-      wptransfer(from, to, token, from, memo);
-   }
-
-   void yx_token::wptransfer(account_name from, account_name to, const yx_asset &token, account_name payer, const string &memo) {
       bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
       if (!is_auth_by_sysaccount) {
          check_transfer_parameters(from, to, token, memo);
@@ -72,11 +68,11 @@ namespace yosemite { namespace non_native_token {
       add_token_balance(to, token);
 
       if (!is_auth_by_sysaccount) {
-         charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
+         charge_fee(from, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
       }
    }
 
 }}
 
-EOSIO_ABI(yosemite::non_native_token::yx_token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)(setoptions)(freezeacc)
+EOSIO_ABI(yosemite::non_native_token::yx_token, (create)(issue)(redeem)(transfer)(setkycrule)(setoptions)(freezeacc)
 )

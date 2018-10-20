@@ -811,8 +811,21 @@ struct controller_impl {
             trx_context.delay = fc::seconds(trx->trx.delay_sec);
 
             if( !self.skip_auth_check() && !trx->implicit ) {
+
+               // YOSEMITE Delegated Transaction Fee Payment
+               // The submitted transaction message must contain
+               // crypto signature of 'transaction fee payer' account.
+
+               vector<permission_level> permissions_to_check;
+               if (trx_context.has_delegated_tx_fee_payer()) {
+                  permissions_to_check.push_back(
+                        permission_level {trx_context.get_delegated_tx_fee_payer(), config::active_name}
+                        );
+               }
+
                authorization.check_authorization(
                        trx->trx.actions,
+                       permissions_to_check,
                        trx->recover_keys( chain_id ),
                        {},
                        trx_context.delay,

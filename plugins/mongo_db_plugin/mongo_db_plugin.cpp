@@ -100,7 +100,6 @@ public:
    void purge_abi_cache();
 
    bool add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                          const uint32_t& block_num, const std::chrono::milliseconds& block_time,
                           /*bool executed,*/ uint64_t parent_global_sequence /*const std::chrono::milliseconds& now*/ );
 
    void update_account(const chain::action& act);
@@ -775,7 +774,6 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
 
 bool
 mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces, const chain::action_trace& atrace,
-                                        const uint32_t& block_num, const std::chrono::milliseconds& block_time,
                                         /*bool executed,*/ uint64_t parent_global_sequence /*const std::chrono::milliseconds& now*/ )
 {
    using namespace bsoncxx::types;
@@ -816,9 +814,6 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       // to retrieve exact document timestamp even for the case of temporary chain fork.
       //action_traces_doc.append( kvp( "createdAt", b_date{now} ) ); ==> replaced by 'b_time' (block time)
 
-      action_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
-      action_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
-
       if (parent_global_sequence == 0) {
          // YOSEMITE mongo_db_plugin can support searching for 'sent' actions filtered by sender accounts,
          // by saving 'sender' list (accounts who signed the original transaction)
@@ -852,7 +847,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
    }
 
    for( const auto& iline_atrace : atrace.inline_traces ) {
-      added |= add_action_trace( bulk_action_traces, iline_atrace, block_num, block_time, /*executed,*/ global_sequence /*trx_id, now*/ );
+      added |= add_action_trace( bulk_action_traces, iline_atrace, /*executed,*/ global_sequence /*trx_id, now*/ );
    }
 
    return added;
@@ -866,8 +861,6 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
    using bsoncxx::builder::basic::sub_array;
 
    const uint32_t block_num = t->block_num;
-   const auto block_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-         std::chrono::microseconds{t->block_time.to_time_point().time_since_epoch().count()});
 
    auto trans_traces_doc = bsoncxx::builder::basic::document{};
 
@@ -886,7 +879,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
       bool write_atraces = false;
       for( const auto& atrace : t->action_traces ) {
         try {
-           write_atraces |= add_action_trace( bulk_action_traces, atrace, block_num, block_time, /*executed,*/ 0 /*trx_id, now*/ );
+           write_atraces |= add_action_trace( bulk_action_traces, atrace, /*executed,*/ 0 /*trx_id, now*/ );
         } catch(...) {
            handle_mongo_exception("add action traces", __LINE__);
         }
@@ -941,8 +934,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
    //trans_traces_doc.append( kvp( "createdAt", b_date{now} ));
 
    if (executed) {
-      trans_traces_doc.append( kvp( "bNum", b_int32{static_cast<int32_t>(block_num)} ) );
-      trans_traces_doc.append( kvp( "bTime", b_date{block_time} ) );
+      trans_traces_doc.append( kvp( "BN", b_int32{static_cast<int32_t>(block_num)} ) );
    }
 
    // merge 'trans_traces' document to the document stored in 'trans' collection
@@ -1113,6 +1105,8 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
    }
 
    if( store_transactions ) {
+      const auto block_num = bs->block->block_num();
+      const fc::string block_time_str( bs->block->timestamp.to_time_point() );
       bool transactions_in_block = false;
       mongocxx::options::bulk_write bulk_opts;
       bulk_opts.ordered( false );
@@ -1136,9 +1130,13 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
 //                                                                       kvp( "block_num", b_int32{static_cast<int32_t>(block_num)} ),
 //                                                                       kvp( "updatedAt", b_date{now} ) ) ) );
 
-         // 'block-number' and 'block-time' are saved on _process_applied_transaction
-         auto update_doc = make_document( kvp( "$set", make_document( kvp( "irrAt", b_date{now} ),
-                                                                      kvp( "bId", block_id_str ) ) ) );
+         // 'block-number', 'block-time' and 'BN' are saved on _process_applied_transaction
+         auto update_doc = make_document( kvp( "$set", make_document( kvp( "block_num", b_int32{static_cast<int32_t>(block_num)} ),
+                                                                      kvp( "block_time", block_time_str ),
+                                                                      kvp( "block_id", block_id_str ),
+                                                                      kvp( "BN", b_int32{static_cast<int32_t>(block_num)} ),
+                                                                      kvp( "irrAt", b_date{now} )
+                                                                    ) ) );
 
          mongocxx::model::update_one update_op{make_document( kvp( "id", trx_id_str ) ), update_doc.view()};
          update_op.upsert( true );
@@ -1464,9 +1462,7 @@ void mongo_db_plugin_impl::init() {
             trans.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));
             //trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ));
             // implicit transactions having system actions like 'onblock' should be filtered in block explorer
-            trans.create_index( bsoncxx::from_json( R"xxx({ "implicit" : 1, "bTime" : -1 })xxx" ));
-            //trans.create_index( bsoncxx::from_json( R"xxx({ "bTime" : -1 })xxx" ),
-            //                    bsoncxx::from_json( R"xxx({ "partialFilterExpression" : { "$and" : [ { "implicit" : false }, { "bTime" : { "$exists" : true } } ] } })xxx" ) );
+            trans.create_index( bsoncxx::from_json( R"xxx({ "implicit" : 1, "BN" : -1 })xxx" ));
 
             //auto trans_trace = mongo_conn[db_name][trans_traces_col];
             //trans_trace.create_index( bsoncxx::from_json( R"xxx({ "id" : 1 })xxx" ));

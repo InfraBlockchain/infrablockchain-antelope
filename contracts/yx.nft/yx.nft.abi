@@ -28,7 +28,7 @@
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
-        {"name":"token", "type":"yx_asset"},
+        {"name":"ysymbol", "type":"yx_symbol"},
         {"name":"ids", "type":"id_type[]"},
         {"name":"uris", "type":"string[]"},
         {"name":"name", "type":"string"},
