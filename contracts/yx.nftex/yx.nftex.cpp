@@ -23,7 +23,7 @@ namespace yosemite {
       auto _now = now();
       if (sell_order.expiration <= time_point_sec(_now)) {
          sell_book.erase(sell_order);
-         eosio_assert(static_cast<uint32_t>(false), "sell order is expired");
+         return;
       }
       eosio_assert(static_cast<uint32_t>(sell_order.price == price), "price is different");
       eosio_assert(static_cast<uint32_t>(sell_order.seller != buyer), "seller and buyer are the same");
