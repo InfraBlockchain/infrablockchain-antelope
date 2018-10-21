@@ -6,29 +6,6 @@
 
 namespace yosemite { namespace native_token {
 
-    bool ntoken::check_identity_auth_for_transfer(account_name account, const ntoken_kyc_rule_type &kycrule_type) {
-        eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
-                     "account is blacklisted by identity authority");
-        switch (kycrule_type) {
-            case NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND:
-                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND)),
-                             "account is send-blacklisted by identity authority");
-                break;
-            case NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE:
-                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE)),
-                             "account is receive-blacklisted by identity authority");
-                break;
-            case NTOKEN_KYC_RULE_TYPE_MAX:
-                // ignored
-                break;
-        }
-
-        kyc_rule_index kyc_rule(get_self(), get_self());
-        const auto &rule = kyc_rule.get(kycrule_type, "KYC rule is not set; use setkycrule operation to set");
-
-        return identity::has_all_kyc_status(account, rule.kyc_flags);
-    }
-
     void ntoken::nissue(const account_name &to, const yx_asset &token, const string &memo) {
         eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
         eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");

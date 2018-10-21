@@ -19,6 +19,33 @@ namespace yosemite { namespace native_token {
 
     static const uint64_t NTOKEN_BASIC_STATS_KEY = N(basicstats);
 
+   /* native token stats per depository, scope = depository */
+   struct native_token_stats {
+      uint64_t key = 0;
+      asset supply;
+      uint8_t options = 0; // frozen, ...
+
+      uint64_t primary_key() const { return key; }
+   };
+
+   /* KYC rule for native token, scope = get_self() */
+   enum ntoken_kyc_rule_type {
+      NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND = 0,
+      NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE = 1,
+
+      NTOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
+   };
+
+   struct kyc_rule {
+      uint8_t type = 0; // == ntoken_kyc_rule_type
+      identity::identity_kyc_t kyc_flags = 0; // from yosemitelib/identity.hpp
+
+      uint64_t primary_key() const { return type; }
+   };
+
+   typedef eosio::multi_index<N(ntstats), native_token_stats> stats_native;
+   typedef eosio::multi_index<N(kycrule), kyc_rule> kyc_rule_index;
+
     class ntoken : public contract {
     public:
         explicit ntoken(account_name self) : contract(self) {
@@ -32,38 +59,8 @@ namespace yosemite { namespace native_token {
         void setkycrule(uint8_t type, identity::identity_kyc_t kyc);
 
     private:
-
-        /* native token stats per depository, scope = depository */
-        struct native_token_stats {
-            uint64_t key = 0;
-            asset supply;
-            uint8_t options = 0; // frozen, ...
-
-            uint64_t primary_key() const { return key; }
-        };
-
-        /* KYC rule for native token, scope = get_self() */
-        enum ntoken_kyc_rule_type {
-            NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND    = 0,
-            NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE = 1,
-
-            NTOKEN_KYC_RULE_TYPE_MAX // MUST NOT EXCEED MORE THAN 255
-        };
-
-        struct kyc_rule {
-            uint8_t type = 0; // == ntoken_kyc_rule_type
-            identity::identity_kyc_t kyc_flags = 0; // from yosemitelib/identity.hpp
-
-            uint64_t primary_key() const { return type; }
-        };
-
-        typedef eosio::multi_index<N(ntstats), native_token_stats> stats_native;
-        typedef eosio::multi_index<N(kycrule), kyc_rule> kyc_rule_index;
-
         void add_native_token_balance(const account_name &owner, const yx_asset &token);
         void sub_native_token_balance(const account_name &owner, const yx_asset &token);
-
-        bool check_identity_auth_for_transfer(account_name account, const ntoken_kyc_rule_type &kycrule_type);
     };
 
     /* scope = owner */
@@ -107,6 +104,29 @@ namespace yosemite { namespace native_token {
                   (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
                    {payer, tx_fee});
         }
+    }
+
+    bool check_identity_auth_for_transfer(account_name account, const ntoken_kyc_rule_type &kycrule_type) {
+       eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+                    "account is blacklisted by identity authority");
+       switch (kycrule_type) {
+          case NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND:
+             eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND)),
+                          "account is send-blacklisted by identity authority");
+             break;
+          case NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE:
+             eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE)),
+                          "account is receive-blacklisted by identity authority");
+             break;
+          case NTOKEN_KYC_RULE_TYPE_MAX:
+             // ignored
+             break;
+       }
+
+       kyc_rule_index kyc_rule(YOSEMITE_NATIVE_TOKEN_ACCOUNT, YOSEMITE_NATIVE_TOKEN_ACCOUNT);
+       const auto &rule = kyc_rule.get(kycrule_type, "KYC rule is not set; use setkycrule operation to set");
+
+       return identity::has_all_kyc_status(account, rule.kyc_flags);
     }
 }}
 

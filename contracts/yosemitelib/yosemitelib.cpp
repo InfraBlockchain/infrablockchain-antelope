@@ -13,7 +13,8 @@
 
 namespace yosemite {
 
-   void yx_contract::transfer_token_as_inline(account_name from, account_name to, const yx_asset &token, const std::string &memo) {
+   void yx_contract::transfer_token_as_inline(account_name from, account_name to, const yx_asset &token,
+                                              const std::string &memo) {
       if (token.is_native()) {
          if (token.issuer == 0) {
             INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
@@ -134,19 +135,6 @@ namespace yosemite { namespace non_native_token {
       }
 
       charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
-   }
-
-   bool token::check_identity_auth_for_transfer(account_name account, const token_rule_type &kycrule_type,
-                                                const token_stats &tstats) {
-      eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
-                   "account is blacklisted by identity authority");
-
-      auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), kycrule_type);
-      if (itr == tstats.kyc_rules.end()) return true;
-
-      auto index = std::distance(tstats.kyc_rules.begin(), itr);
-      auto kyc_flags = tstats.kyc_rule_flags[static_cast<size_t>(index)];
-      return identity::has_all_kyc_status(account, kyc_flags);
    }
 
    void token::setoptions(const yx_symbol &ysymbol, uint16_t options, bool reset) {

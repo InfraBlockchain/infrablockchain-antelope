@@ -8,22 +8,22 @@
   ],
   "structs": [
     {
-      "name": "itemid",
+      "name": "yx_nft",
       "base": "",
       "fields": [
-        {"name":"creator", "type":"account_name"},
-        {"name":"sequence", "type":"uint64"}
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"id", "type":"uint64"}
       ]
     },
     {
       "name": "create",
       "base": "",
       "fields": [
-        {"name":"itemid", "type":"itemid"},
+        {"name":"yx_nft", "type":"yx_nft"},
+        {"name":"nft_owner", "type":"account_name"},
         {"name":"start_price", "type":"yx_asset"},
         {"name":"end_price", "type":"asset"},
         {"name":"min_inc_price", "type":"asset"},
-        {"name":"confirm_wait_duration", "type":"uint16"},
         {"name":"expiration", "type":"time_point_sec"},
         {"name":"iteminfo", "type":"string"},
         {"name":"options", "type":"uint8"}
@@ -33,42 +33,48 @@
       "name": "bid",
       "base": "",
       "fields": [
-        {"name":"itemid", "type":"itemid"},
+        {"name":"yx_nft", "type":"yx_nft"},
         {"name":"bidder", "type":"account_name"},
         {"name":"price", "type":"yx_asset"}
+      ]
+    },
+    {
+      "name": "complete",
+      "base": "",
+      "fields": [
+        {"name":"yx_nft", "type":"yx_nft"}
       ]
     },
     {
       "name": "remove",
       "base": "",
       "fields": [
-        {"name":"itemid", "type":"itemid"}
+        {"name":"yx_nft", "type":"yx_nft"}
       ]
     },
     {
       "name": "aucitems_type",
       "base": "",
       "fields": [
-        {"name":"sequence", "type":"uint64"},
+        {"name":"id", "type":"uint64"},
+        {"name":"nft_owner", "type":"account_name"},
         {"name":"start_price", "type":"yx_asset"},
-        {"name":"end_amount", "type":"int64"},
-        {"name":"min_inc_amount", "type":"int64"},
-        {"name":"confirm_wait_duration", "type":"uint16"},
+        {"name":"end_price", "type":"asset"},
+        {"name":"min_inc_price", "type":"asset"},
         {"name":"expiration", "type":"time_point_sec"},
         {"name":"iteminfo", "type":"string"},
         {"name":"options", "type":"uint8"},
         {"name":"last_bidder", "type":"account_name"},
-        {"name":"last_bid_amount", "type":"int64"},
+        {"name":"last_bid_price", "type":"asset"},
         {"name":"last_bid_time", "type":"time_point_sec"},
-        {"name":"completed", "type":"uint8"}
       ]
     }
   ],
   "actions": [
     { "name": "create", "type": "create", "ricardian_contract": "" },
     { "name": "bid", "type": "bid", "ricardian_contract": "" },
-    { "name": "confirm", "type": "confirm", "ricardian_contract": "" },
-    { "name": "cancel", "type": "cancel", "ricardian_contract": "" }
+    { "name": "complete", "type": "complete", "ricardian_contract": "" },
+    { "name": "remove", "type": "remove", "ricardian_contract": "" }
   ],
   "tables": [
     {

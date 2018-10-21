@@ -92,9 +92,20 @@ namespace yosemite { namespace non_native_token {
 
         void add_token_balance(const account_name &owner, const yx_asset &token);
         void sub_token_balance(const account_name &owner, const yx_asset &token);
-        bool check_identity_auth_for_transfer(account_name account, const token_rule_type &kycrule_type,
-                                              const token_stats &tstats);
     };
+
+    bool check_identity_auth_for_transfer(account_name account, const token_rule_type &kycrule_type,
+                                          const token_stats &tstats) {
+       eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+                    "account is blacklisted by identity authority");
+
+       auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), kycrule_type);
+       if (itr == tstats.kyc_rules.end()) return true;
+
+       auto index = std::distance(tstats.kyc_rules.begin(), itr);
+       auto kyc_flags = tstats.kyc_rule_flags[static_cast<size_t>(index)];
+       return identity::has_all_kyc_status(account, kyc_flags);
+    }
 
     bool does_token_exist(const uint64_t contract, const yx_symbol &ysymbol) {
         eosio_assert(static_cast<uint32_t>(!ysymbol.is_native()), "native token is not allowed for this API");
@@ -102,5 +113,29 @@ namespace yosemite { namespace non_native_token {
         stats stats_table(contract, ysymbol.value);
         const auto &tstats = stats_table.find(ysymbol.issuer);
         return tstats != stats_table.end();
+    }
+
+    bool can_account_receive_token(const uint64_t contract, const yx_symbol &ysymbol, account_name account) {
+       eosio_assert(static_cast<uint32_t>(!ysymbol.is_native()), "native token is not allowed for this API");
+
+       stats stats_table{contract, ysymbol.value};
+       const auto &tstats = stats_table.get(ysymbol.issuer, "token is not created");
+       eosio_assert(
+             static_cast<uint32_t>(check_identity_auth_for_transfer(account, TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE,
+                                                                    tstats)),
+             "KYC authentication for account is failed");
+
+       // check if the account is frozen
+       accounts accounts_table{contract, account};
+       auto sym_index = accounts_table.get_index<N(yxsymbol)>();
+       const auto &balance_holder = sym_index.find(ysymbol.to_uint128());
+
+       if (balance_holder != sym_index.end()) {
+          eosio_assert(static_cast<uint32_t>((balance_holder->options & TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT) !=
+                                             TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT),
+                       "account is frozen by token issuer");
+       }
+
+       return true;
     }
 }}

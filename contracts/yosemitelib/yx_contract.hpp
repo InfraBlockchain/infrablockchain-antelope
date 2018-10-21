@@ -10,6 +10,7 @@
 namespace yosemite {
 
    using namespace eosio;
+   using std::string;
 
    /**
     * @defgroup contracttype Yosemite Contract Type
@@ -35,7 +36,7 @@ namespace yosemite {
       explicit yx_contract(account_name n) : contract(n) {}
 
    protected:
-      void transfer_token_as_inline(account_name from, account_name to, const yx_asset &token, const std::string &memo);
+      void transfer_token_as_inline(account_name from, account_name to, const yx_asset &token, const string &memo = "");
    };
 
 /// @} contracttype
