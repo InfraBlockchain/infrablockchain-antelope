@@ -488,14 +488,19 @@ $YOSEMITE_CLI push action yx.ntoken nissue '["useraccount3",{"amount":"100000.00
 $YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount2", "useraccount3", "10000.00 DKRW", "memo" ]' -p useraccount2
 $YOSEMITE_CLI push action yx.ntoken ntransfer '[ "useraccount2", "useraccount3", {"amount":"10000.00 DKRW","issuer":"sysdepo1"}, "memo" ]' -p useraccount2
 
-$YOSEMITE_CLI push action yx.ntoken wptransfer '[ "useraccount3", "useraccount2", "10000.00 DKRW", "useraccount2", "memo" ]' -p useraccount3 -p useraccount2
-
 $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntstats
 $YOSEMITE_CLI get table yx.ntoken useraccount1 ntaccounts
 $YOSEMITE_CLI get table yx.ntoken useraccount2 ntaccounts
 $YOSEMITE_CLI get table yx.ntoken useraccount3 ntaccounts
 $YOSEMITE_CLI get table yx.ntoken yx.txfee ntaccounts
 $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntaccounts
+
+sleep 1
+
+{ print_section_title "Delegated Transaction Fee Payment"; } 2>/dev/null
+
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer useraccount2 -p useraccount3 -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer producer.c -p useraccount3 -p producer.c
 
 sleep 1
 
