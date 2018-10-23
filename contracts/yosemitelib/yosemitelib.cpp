@@ -56,6 +56,8 @@ namespace yosemite { namespace non_native_token {
          s.kyc_rules.clear();
          s.kyc_rule_flags.clear();
       });
+
+      charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);
    }
 
    void token::add_token_balance(const account_name &owner, const yx_asset &token) {
