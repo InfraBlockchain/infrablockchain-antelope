@@ -497,13 +497,6 @@ $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntaccounts
 
 sleep 1
 
-{ print_section_title "Delegated Transaction Fee Payment"; } 2>/dev/null
-
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer useraccount2 -p useraccount3 -p useraccount2
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer producer.c -p useraccount3 -p producer.c
-
-sleep 1
-
 { print_section_title "Claim Producer Rewards"; } 2>/dev/null
 
 sleep 3
@@ -525,6 +518,13 @@ $YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", 
 sleep 2
 
 $YOSEMITE_CLI get table yosemite yosemite producers
+sleep 1
+
+{ print_section_title "Delegated Transaction Fee Payment"; } 2>/dev/null
+
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer useraccount2 -p useraccount3 -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer producer.c -p useraccount3 -p producer.c
+
 sleep 1
 
 { print_section_title "Querying action data"; } 2>/dev/null
