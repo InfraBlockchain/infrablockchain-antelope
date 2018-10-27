@@ -33,7 +33,7 @@ namespace yosemite { namespace non_native_token {
       explicit yx_token(account_name self) : token(self) {
       }
 
-      void grantissue(const account_name &to, const yx_asset &limit);
+      void grantissue(const account_name &to, const yx_asset &limit, const string &memo);
       /** Token is issued by the user till issue limit. */
       void issuebyuser(const account_name &user, const yx_asset &token, const string &memo);
       void changeissued(const account_name &user, const yx_asset &delta, bool decrease);

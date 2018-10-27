@@ -9,11 +9,12 @@ namespace yosemite { namespace non_native_token {
       eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 2), "token precision must be equal or larger than 2");
    }
 
-   void yx_token::grantissue(const account_name &to, const yx_asset &limit) {
+   void yx_token::grantissue(const account_name &to, const yx_asset &limit, const string &memo) {
       eosio_assert(static_cast<uint32_t>(limit.is_valid()), "invalid limit");
       eosio_assert(static_cast<uint32_t>(limit.amount >= 0), "must be non-negative limit");
       eosio_assert(static_cast<uint32_t>(!limit.is_native(false)), "cannot grant issue with the native token");
       eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+      eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
       require_auth(limit.issuer);
 
       delegated_issue_table delissue_tbl{get_self(), limit.symbol.value};
@@ -26,6 +27,7 @@ namespace yosemite { namespace non_native_token {
             holder.id = delissue_tbl.available_primary_key();
             holder.account = to;
             holder.limit = limit;
+            holder.issued = yx_asset{0, limit.get_yx_symbol()};
          });
       } else {
          if (limit.amount == 0 && issue_info->issued.amount == 0) {
@@ -61,7 +63,7 @@ namespace yosemite { namespace non_native_token {
       increase_supply(token);
       add_token_balance(user, token);
 
-      charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
+      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
    }
 
    void yx_token::changeissued(const account_name &user, const yx_asset &delta, bool decrease) {

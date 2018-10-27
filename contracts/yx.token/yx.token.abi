@@ -74,7 +74,8 @@
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
-        {"name":"limit", "type":"yx_asset"}
+        {"name":"limit", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
       ]
     },
     {
