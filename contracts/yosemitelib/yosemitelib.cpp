@@ -13,7 +13,8 @@
 
 namespace yosemite {
 
-   void yx_contract::transfer_token_as_inline(account_name from, account_name to, const yx_asset &token, const std::string &memo) {
+   void yx_contract::transfer_token_as_inline(account_name from, account_name to,
+                                              const yx_asset &token, const std::string &memo) {
       if (token.is_native()) {
          if (token.issuer == 0) {
             INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
@@ -209,7 +210,6 @@ namespace yosemite { namespace non_native_token {
       eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
       eosio_assert(static_cast<uint32_t>(!token.is_native(false)), "cannot issue the native token with this action");
       eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-      require_auth(token.issuer);
       eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
    }
 

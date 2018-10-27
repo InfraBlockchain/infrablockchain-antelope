@@ -8,22 +8,6 @@
   ],
   "structs": [
     {
-      "name": "yx_symbol",
-      "base": "",
-      "fields": [
-        {"name":"tsymbol", "type":"symbol"},
-        {"name":"issuer", "type":"account_name"}
-      ]
-    },
-    {
-      "name": "yx_asset",
-      "base": "",
-      "fields": [
-        {"name":"amount", "type":"asset"},
-        {"name":"issuer", "type":"account_name"}
-      ]
-    },
-    {
       "name": "create",
       "base": "",
       "fields": [
@@ -86,6 +70,32 @@
       ]
     },
     {
+      "name": "grantissue",
+      "base": "",
+      "fields": [
+        {"name":"to", "type":"account_name"},
+        {"name":"limit", "type":"yx_asset"}
+      ]
+    },
+    {
+      "name": "issuebyuser",
+      "base": "",
+      "fields": [
+        {"name":"user", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "changeissued",
+      "base": "",
+      "fields": [
+        {"name":"user", "type":"account_name"},
+        {"name":"delta", "type":"yx_asset"},
+        {"name":"decrease", "type":"uint8"}
+      ]
+    },
+    {
       "name": "accounts_type",
       "base": "",
       "fields": [
@@ -104,6 +114,16 @@
         {"name":"kyc_rules", "type":"uint8[]"},
         {"name":"kyc_rule_flags", "type":"uint16[]"}
       ]
+    },
+    {
+      "name": "delegated_issue_type",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"account", "type":"account_name"},
+        {"name":"limit", "type":"yx_asset"},
+        {"name":"issued", "type":"yx_asset"}
+      ]
     }
   ],
   "actions": [
@@ -113,7 +133,10 @@
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
     { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
-    { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }
+    { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" },
+    { "name": "grantissue", "type": "grantissue", "ricardian_contract": "" },
+    { "name": "issuebyuser", "type": "issuebyuser", "ricardian_contract": "" },
+    { "name": "changeissued", "type": "changeissued", "ricardian_contract": "" }
   ],
   "tables": [{
       "name": "taccounts",
@@ -126,6 +149,12 @@
       "type": "stats_type",
       "index_type": "i64",
       "key_names" : ["issuer"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "delissue",
+      "type": "delegated_issue_type",
+      "index_type": "i64",
+      "key_names" : ["id"],
       "key_types" : ["uint64"]
     }
   ],

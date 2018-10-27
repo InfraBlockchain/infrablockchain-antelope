@@ -19,6 +19,7 @@ namespace yosemite { namespace non_native_token {
       yx_asset token_issued = yx_asset{1, ysymbol};
 
       check_issue_parameters(to, token_issued, memo);
+      require_auth(ysymbol.issuer);
       eosio_assert(static_cast<uint32_t>(ysymbol.precision() == 0), "the precision of non-fungible token must be 0");
       eosio_assert(static_cast<uint32_t>(uris.size() == ids.size()), "mismatch between the number of ids and uris");
       eosio_assert(static_cast<uint32_t>(uris.size() <= 100), "the number of uris cannot exceed 100");

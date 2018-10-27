@@ -421,6 +421,21 @@ public:
             ("memo", memo), _token.issuer, abi_ser_token, YOSEMITE_USER_TOKEN_ACCOUNT);
    }
 
+   action_result token_grantissue(const account_name &to, const string &token) {
+      auto _token = yx_asset::from_string(token);
+      return push_action(N(grantissue), mvo()
+            ("to", to)
+            ("token", _token), _token.issuer, abi_ser_token, YOSEMITE_USER_TOKEN_ACCOUNT);
+   }
+
+   action_result token_issuebyuser(const account_name &user, const string &token, const string &memo) {
+      auto _token = yx_asset::from_string(token);
+      return push_action(N(issuebyuser), mvo()
+            ("to", user)
+            ("token", _token)
+            ("memo", memo), _token.issuer, abi_ser_token, YOSEMITE_USER_TOKEN_ACCOUNT);
+   }
+
    transaction_trace_ptr token_redeem(const string &token, const string &memo) {
       auto _token = yx_asset::from_string(token);
       return base_tester::push_action(YOSEMITE_USER_TOKEN_ACCOUNT, N(redeem), _token.issuer, mvo()
