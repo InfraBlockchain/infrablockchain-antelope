@@ -97,12 +97,14 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks(1);
 
-      /*
-      auto accounts = token_get_accounts(N(user1), N(tkprovider));
+      auto accounts = token_get_account_balance("4,ETH@tkprovider", N(user1));
+      log_to_console("step1");
       string str;
+      from_variant(accounts, str);
+      log_to_console("step2");
+      log_to_console(str);
       fc::from_variant(accounts["token"], str);
       BOOST_REQUIRE_EQUAL("10000.0000 ETH@tkprovider", str);
-      */
 
       produce_blocks(1);
 
@@ -226,7 +228,7 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
             ("token", "5000.0000 ETH@tkprovider")
       );
 
-      accounts = token_get_accounts(N(user1), N(tkprovider2));
+      accounts = token_get_account_balance(N(user1), N(tkprovider2));
       REQUIRE_MATCHING_OBJECT(accounts, mvo()
             ("token", "5000.0000 ETH@tkprovider2")
       );
@@ -242,7 +244,7 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
       produce_blocks(1);
 
       /*
-      accounts = token_get_accounts(N(user1), N(tkprovider2));
+      accounts = token_get_account_balance(N(user1), N(tkprovider2));
       REQUIRE_MATCHING_OBJECT(accounts, mvo()
             ("token", "")
       );

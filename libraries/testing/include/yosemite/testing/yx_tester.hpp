@@ -55,6 +55,30 @@ public:
    abi_serializer abi_ser_nft;
    abi_serializer abi_ser_nftex;
 
+   vector<char> get_row_by_secondary_key(uint64_t code, uint64_t scope, uint64_t table, eosio::chain::uint128_t key) const {
+      vector<char> data;
+      const auto &db = control->db();
+      const auto *table_id = db.find<chain::table_id_object, chain::by_code_scope_table>(
+            boost::make_tuple(code, scope, table));
+      if (!table_id) {
+         return data;
+      }
+
+      static const uint8_t secondary_index_num = 0;
+      const auto * const secondary_table_id = db.find<chain::table_id_object, chain::by_code_scope_table>(
+            boost::make_tuple(code, scope, table | secondary_index_num)); // yxsymbol secondary index
+
+      const auto &secondary_index = db.get_index<index128_index>().indices();
+      const auto &secondary_index_by_secondary = secondary_index.get<by_secondary>();
+      const auto &itr = secondary_index_by_secondary.find(boost::make_tuple(secondary_table_id->id, key));
+
+      const auto *itr2 = db.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, itr->primary_key));
+
+      data.resize(itr2->value.size());
+      memcpy(data.data(), itr2->value.data(), data.size());
+      return data;
+   }
+
    void init_yosemite_contracts() {
       produce_blocks(2);
 
@@ -374,8 +398,9 @@ public:
       return data.empty() ? fc::variant() : abi_ser_token.binary_to_variant("stats_type", data, abi_serializer_max_time);
    }
 
-   fc::variant token_get_accounts(const account_name &owner, const account_name &issuer) {
-      vector<char> data = get_row_by_account(YOSEMITE_USER_TOKEN_ACCOUNT, owner, N(taccounts), issuer);
+   fc::variant token_get_account_balance(const string &ysymbol, const account_name &owner) {
+      auto _ysymbol = yx_symbol::from_string(ysymbol);
+      vector<char> data = get_row_by_secondary_key(YOSEMITE_USER_TOKEN_ACCOUNT, owner, N(taccounts), _ysymbol.to_uint128());
       return data.empty() ? fc::variant() : abi_ser_token.binary_to_variant("accounts_type", data, abi_serializer_max_time);
    }
 
