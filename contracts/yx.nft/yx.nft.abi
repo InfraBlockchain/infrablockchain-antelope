@@ -56,13 +56,12 @@
       ]
     },
     {
-      "name": "transfer",
+      "name": "setkycrule",
       "base": "",
       "fields": [
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"token", "type":"yx_asset"},
-        {"name":"memo", "type":"string"}
+        {"name":"ysymbol", "type":"yx_symbol"},
+        {"name":"type", "type":"uint8"},
+        {"name":"kyc", "type":"uint16"}
       ]
     },
     {
