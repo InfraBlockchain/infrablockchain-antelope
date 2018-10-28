@@ -1,6 +1,5 @@
 #include <yosemite/testing/yx_tester.hpp>
 #include <fc/reflect/reflect.hpp>
-#include "fnv1a.hpp"
 
 using namespace yosemite::chain;
 using namespace yosemite::testing;
@@ -23,17 +22,6 @@ public:
 
       create_accounts({N(alice), N(bob), N(carol), N(gameprovider)});
       produce_blocks();
-   }
-
-   uint64_t make_scope(const yx_symbol &nft_symbol) const {
-      string sym = nft_symbol.to_string();
-      return static_cast<uint64_t>(hash_32_fnv1a(sym.c_str(), static_cast<int>(sym.size())));
-   }
-
-   fc::variant get_sell_order(const string &nft_symbol, uint64_t id) {
-      uint64_t scope = make_scope(yx_symbol::from_string(nft_symbol));
-      vector<char> data = get_row_by_account(YOSEMITE_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT, scope, N(sellbook), id);
-      return data.empty() ? fc::variant() : abi_ser_nftex.binary_to_variant("sell_order", data, abi_serializer_max_time);
    }
 
    action_result
