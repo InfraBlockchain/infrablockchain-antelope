@@ -162,41 +162,6 @@ BOOST_AUTO_TEST_SUITE(yx_nft_tests)
 
    } FC_LOG_AND_RETHROW()
 
-   BOOST_FIXTURE_TEST_CASE(transfer_tests, nft_tester) try {
-      auto result = nft_create("0,NFT@alice", 0);
-      BOOST_REQUIRE_EQUAL("", result);
-      produce_blocks();
-
-      vector<string> uris = {"uri"};
-
-      result = nft_issue(N(alice), "0,NFT@alice", vector<id_type>{0}, uris, "nft1", "my memo");
-      BOOST_REQUIRE_EQUAL("", result);
-      produce_blocks();
-
-      auto tokenval = nft_get_token(0, N(alice));
-      BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
-      BOOST_REQUIRE_EQUAL("uri", tokenval["uri"]);
-      BOOST_REQUIRE_EQUAL("alice", tokenval["owner"]);
-      BOOST_REQUIRE_EQUAL("nft1", tokenval["name"]);
-      BOOST_REQUIRE_EQUAL("1 NFT", tokenval["value"]["amount"].get_string());
-      BOOST_REQUIRE_EQUAL("alice", tokenval["value"]["issuer"].get_string());
-
-      result = nft_transfer(N(alice), N(bob), "1 NFT@alice", "send a token to bob");
-      BOOST_REQUIRE_EQUAL("", result);
-      produce_blocks();
-
-      tokenval = nft_get_token(0, N(alice));
-      BOOST_REQUIRE_EQUAL(0, tokenval["id"]);
-      BOOST_REQUIRE_EQUAL("bob", tokenval["owner"]);
-
-      result = nft_transfer(N(alice), N(bob), "1 NFT@alice", "error nft_transfer");
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token is not found or is not owned by from account"), result);
-
-      result = nft_transfer(N(alice), N(bob), "1.00 NFT@alice", "error nft_transfer");
-      BOOST_REQUIRE_EQUAL(wasm_assert_msg("token amount must be 1 with precision 0"), result);
-
-   } FC_LOG_AND_RETHROW()
-
    BOOST_FIXTURE_TEST_CASE(transferid_tests, nft_tester) try {
       auto result = nft_create("0,NFT@alice", 0);
       BOOST_REQUIRE_EQUAL("", result);

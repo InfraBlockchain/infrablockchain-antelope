@@ -558,17 +558,6 @@ public:
       );
    }
 
-   action_result nft_transfer(account_name from, account_name to, const string &token, const string &memo) {
-      auto _token = yx_asset::from_string(token);
-      return push_action(N(transfer), mvo()
-                               ("from", from)
-                               ("to", to)
-                               ("token", _token)
-                               ("memo", memo),
-                         from, abi_ser_nft, YOSEMITE_NON_FUNGIBLE_TOKEN_ACCOUNT
-      );
-   }
-
    template<typename T>
    action_result nft_redeem(account_name issuer, const T &ids, const string &memo) {
       return push_action(N(redeem), mvo()

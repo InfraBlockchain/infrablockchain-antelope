@@ -66,15 +66,6 @@
       ]
     },
     {
-      "name": "setkycrule",
-      "base": "",
-      "fields": [
-        {"name":"ysymbol", "type":"yx_symbol"},
-        {"name":"type", "type":"uint8"},
-        {"name":"kyc", "type":"uint16"}
-      ]
-    },
-    {
       "name": "setoptions",
       "base": "",
       "fields": [
@@ -129,7 +120,6 @@
     { "name": "issue", "type": "issue", "ricardian_contract": "" },
     { "name": "redeem", "type": "redeem", "ricardian_contract": "" },
     { "name": "transferid", "type": "transferid", "ricardian_contract": "" },
-    { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
     { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
     { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" }

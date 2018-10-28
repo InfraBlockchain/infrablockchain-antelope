@@ -117,6 +117,7 @@ clyos push action yx.nft redeem '{"issuer":"gameprovider","ids":[0,1],"memo":"re
 ## transferid
 Transfer NFTs
 
+* Note that transfer action is not supported for NFT. All NFTs are different each other so that it cannot be distinguishable with just the token symbol and issuer.
 ```
 clyos push action yx.nft transferid '{"from":"user2","to":"user3","issuer":"gameprovider","ids":[0,1],"memo":"my memo"}' -p user2
 ```
@@ -128,23 +129,6 @@ clyos push action yx.nft transferid '{"from":"user2","to":"user3","issuer":"game
 1. ids : the list of identifiers assigned by the issuer for each NFT
 1. memo : string less than or equal to 256 bytes
 
-
-## transfer
-Transfer a NFT
-
-* This action would be used when the sender owns only one NFT of the symbol and the issuer.
-* If the sender has more than one NFT specified by the token, any NFT with the certain uri is transferred.
-```
-clyos push action yx.nft transfer '{"from":"user2","to":"user3","token":{"amount":"1 GIT","issuer":"gameprovider"},"memo":"my memo"}' -p user2
-```
-
-### parameters of transfer
-1. from : account name to transfer from
-1. to : account name to transfer to
-1. token : the amount of token with the issuer
-   * amount : must be 1
-   * issuer
-1. memo : string less than or equal to 256 bytes
 
 ## setkycrule
 See [`yx.token` setkycrule](../../contracts/yx.token#setkycrule)
