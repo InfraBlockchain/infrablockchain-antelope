@@ -18,6 +18,41 @@ YOSEMITE is powered by [EOSIO software](https://github.com/EOSIO/eos) to get low
 
 YOSEMITE is released under the open source MIT license and is offered “AS IS” without warranty of any kind, express or implied. Any security provided by the YOSEMITE software depends in part on how it is used, configured, and deployed. YOSEMITE is built upon many third-party libraries such as Binaryen (Apache License) and WAVM (BSD 3-clause) which are also provided “AS IS” without warranty of any kind. Without limiting the generality of the foregoing, Yosemite X Inc. makes no representation or guarantee that YOSEMITE or any third-party libraries will perform as intended or will be free of errors, bugs or faulty code. Both may fail in large or small ways that could completely or partially limit functionality or compromise computer systems. If you use or implement YOSEMITE, you do so at your own risk. In no event will Yosemite X Inc. be liable to any party for any damages whatsoever, even if it had been advised of the possibility of damage.  
 
+**If you have previously installed EOSIO, please run the `eosio_uninstall` script (it is in the directory where you cloned EOSIO) before downloading and using the binary releases.**
+
+#### Mac OS X Brew Install
+```sh
+$ brew tap eosio/eosio
+$ brew install eosio
+```
+#### Mac OS X Brew Uninstall
+```sh
+$ brew remove eosio
+```
+#### Ubuntu 18.04 Debian Package Install
+```sh
+$ wget https://github.com/eosio/eos/releases/download/v1.4.1/eosio-1.4.1.ubuntu-18.04-x86_64.deb
+$ sudo apt install ./eosio-1.4.1.ubuntu-18.04-x86_64.deb
+```
+#### Ubuntu 16.04 Debian Package Install
+```sh
+$ wget https://github.com/eosio/eos/releases/download/v1.4.1/eosio-1.4.1.ubuntu-16.04-x86_64.deb
+$ sudo apt install ./eosio-1.4.1.ubuntu-16.04-x86_64.deb
+```
+#### Debian Package Uninstall
+```sh
+$ sudo apt remove eosio
+```
+#### RPM Package Install
+```sh
+$ wget https://github.com/eosio/eos/releases/download/v1.4.1/eosio-1.4.1.x86_64-0.x86_64.rpm
+$ sudo yum install ./eosio-1.4.1.x86_64-0.x86_64.rpm
+```
+#### RPM Package Uninstall
+```sh
+$ sudo yum remove eosio.cdt
+```
+
 ## Supported Operating Systems
 1. Centos 7
 2. Ubuntu 18.04

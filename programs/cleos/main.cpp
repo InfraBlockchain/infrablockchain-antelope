@@ -51,7 +51,7 @@ Usage: ./clyos create SUBCOMMAND
 
 Subcommands:
   key                         Create a new keypair and print the public and private keys
-  account                     Create a new account on the blockchain
+  account                     Create a new account on the blockchain (assumes system contract does not restrict RAM usage)
 
 $ ./clyos create account
 Create a new account on the blockchain
@@ -169,7 +169,8 @@ bfs::path determine_home_directory()
 }
 
 string url = "http://127.0.0.1:8888/";
-string wallet_url = "http://127.0.0.1:8900/";
+string default_wallet_url = "unix://" + (determine_home_directory() / "eosio-wallet" / (string(key_store_executable_name) + ".sock")).string();
+string wallet_url; //to be set to default_wallet_url in main
 bool no_verify = false;
 vector<string> headers;
 
@@ -559,6 +560,24 @@ chain::action create_action(const vector<permission_level>& authorization, const
    return chain::action{authorization, code, act, variant_to_bin(code, act, args)};
 }
 
+chain::action create_buyram(const name& creator, const name& newaccount, const asset& quantity) {
+   fc::variant act_payload = fc::mutable_variant_object()
+         ("payer", creator.to_string())
+         ("receiver", newaccount.to_string())
+         ("quant", quantity.to_string());
+   return create_action(tx_permission.empty() ? vector<chain::permission_level>{{creator,config::active_name}} : get_account_permissions(tx_permission),
+                        config::system_account_name, N(buyram), act_payload);
+}
+
+chain::action create_buyrambytes(const name& creator, const name& newaccount, uint32_t numbytes) {
+   fc::variant act_payload = fc::mutable_variant_object()
+         ("payer", creator.to_string())
+         ("receiver", newaccount.to_string())
+         ("bytes", numbytes);
+   return create_action(tx_permission.empty() ? vector<chain::permission_level>{{creator,config::active_name}} : get_account_permissions(tx_permission),
+                        config::system_account_name, N(buyrambytes), act_payload);
+}
+
 chain::action create_delegate(const name& from, const name& receiver, const asset& net, const asset& cpu, bool transfer) {
    fc::variant act_payload = fc::mutable_variant_object()
          ("from", from.to_string())
@@ -824,25 +843,22 @@ struct set_action_permission_subcommand {
 };
 
 
-bool local_port_used(const string& lo_address, uint16_t port) {
+bool local_port_used() {
     using namespace boost::asio;
 
     io_service ios;
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(lo_address), port);
-    boost::asio::ip::tcp::socket socket(ios);
-    boost::system::error_code ec = error::would_block;
-    //connecting/failing to connect to localhost should be always fast - don't care about timeouts
-    socket.async_connect(endpoint, [&](const boost::system::error_code& error) { ec = error; } );
-    do {
-        ios.run_one();
-    } while (ec == error::would_block);
+    local::stream_protocol::endpoint endpoint(wallet_url.substr(strlen("unix://")));
+    local::stream_protocol::socket socket(ios);
+    boost::system::error_code ec;
+    socket.connect(endpoint, ec);
+
     return !ec;
 }
 
-void try_local_port( const string& lo_address, uint16_t port, uint32_t duration ) {
+void try_local_port(uint32_t duration) {
    using namespace std::chrono;
    auto start_time = duration_cast<std::chrono::milliseconds>( system_clock::now().time_since_epoch() ).count();
-   while ( !local_port_used(lo_address, port)) {
+   while ( !local_port_used()) {
       if (duration_cast<std::chrono::milliseconds>( system_clock::now().time_since_epoch()).count() - start_time > duration ) {
          std::cerr << "Unable to connect to keyos, if keyos is running please kill the process and try again.\n";
          throw connection_exception(fc::log_messages{FC_LOG_MESSAGE(error, "Unable to connect to keyos")});
@@ -866,16 +882,11 @@ void ensure_keosd_running(CLI::App* app) {
        ) // system list* do not require wallet
          return;
     }
+    if (wallet_url != default_wallet_url)
+      return;
 
-    auto parsed_url = parse_url(wallet_url);
-    auto resolved_url = resolve_url(context, parsed_url);
-
-    if (!resolved_url.is_loopback)
-        return;
-
-    for (const auto& addr: resolved_url.resolved_addresses)
-       if (local_port_used(addr, resolved_url.resolved_port))  // Hopefully taken by keosd
-          return;
+    if (local_port_used())
+       return;
 
     boost::filesystem::path binPath = boost::dll::program_location();
     binPath.remove_filename();
@@ -887,13 +898,17 @@ void ensure_keosd_running(CLI::App* app) {
         binPath.remove_filename().remove_filename().append(key_store_executable_name).append(key_store_executable_name);
     }
 
-    const auto& lo_address = resolved_url.resolved_addresses.front();
     if (boost::filesystem::exists(binPath)) {
         namespace bp = boost::process;
         binPath = boost::filesystem::canonical(binPath);
 
         vector<std::string> pargs;
-        pargs.push_back("--http-server-address=" + lo_address + ":" + std::to_string(resolved_url.resolved_port));
+        pargs.push_back("--http-server-address");
+        pargs.push_back("");
+        pargs.push_back("--https-server-address");
+        pargs.push_back("");
+        pargs.push_back("--unix-socket-path");
+        pargs.push_back(string(key_store_executable_name) + ".sock");
 
         ::boost::process::child keos(binPath, pargs,
                                      bp::std_in.close(),
@@ -902,13 +917,12 @@ void ensure_keosd_running(CLI::App* app) {
         if (keos.running()) {
             std::cerr << binPath << " launched" << std::endl;
             keos.detach();
-            try_local_port(lo_address, resolved_url.resolved_port, 2000);
+            try_local_port(2000);
         } else {
-            std::cerr << "No wallet service listening on " << lo_address << ":"
-                      << std::to_string(resolved_url.resolved_port) << ". Failed to launch " << binPath << std::endl;
+            std::cerr << "No wallet service listening on " << wallet_url << ". Failed to launch " << binPath << std::endl;
         }
     } else {
-        std::cerr << "No wallet service listening on " << lo_address << ":" << std::to_string(resolved_url.resolved_port)
+        std::cerr << "No wallet service listening on "
                   << ". Cannot automatically start keyos because keyos was not found." << std::endl;
     }
 }
@@ -972,6 +986,9 @@ struct create_account_subcommand {
    string active_key_str;
    string stake_net;
    string stake_cpu;
+   uint32_t buy_ram_bytes_in_kbytes = 0;
+   uint32_t buy_ram_bytes = 0;
+   string buy_ram_eos;
    bool transfer;
    bool simple;
 
@@ -988,6 +1005,14 @@ struct create_account_subcommand {
                                    (localized("The amount of EOS delegated for net bandwidth")))->required();
          createAccount->add_option("--stake-cpu", stake_cpu,
                                    (localized("The amount of EOS delegated for CPU bandwidth")))->required();
+         createAccount->add_option("--buy-ram-kbytes", buy_ram_bytes_in_kbytes,
+                                   (localized("The amount of RAM bytes to purchase for the new account in kibibytes (KiB)")));
+         createAccount->add_option("--buy-ram-bytes", buy_ram_bytes,
+                                   (localized("The amount of RAM bytes to purchase for the new account in bytes")));
+         createAccount->add_option("--buy-ram", buy_ram_eos,
+                                   (localized("The amount of RAM bytes to purchase for the new account in EOS")));
+         createAccount->add_flag("--transfer", transfer,
+                                 (localized("Transfer voting power and right to unstake EOS to receiver")));
       }
 #endif
 
@@ -1006,6 +1031,10 @@ struct create_account_subcommand {
             auto create = create_newaccount(creator, account_name, owner_key, active_key);
 #ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
             if (!simple) {
+               EOSC_ASSERT( buy_ram_eos.size() || buy_ram_bytes_in_kbytes || buy_ram_bytes, "ERROR: One of --buy-ram, --buy-ram-kbytes or --buy-ram-bytes should have non-zero value" );
+               EOSC_ASSERT( !buy_ram_bytes_in_kbytes || !buy_ram_bytes, "ERROR: --buy-ram-kbytes and --buy-ram-bytes cannot be set at the same time" );
+               action buyram = !buy_ram_eos.empty() ? create_buyram(creator, account_name, to_asset(buy_ram_eos))
+                  : create_buyrambytes(creator, account_name, (buy_ram_bytes_in_kbytes) ? (buy_ram_bytes_in_kbytes * 1024) : buy_ram_bytes);
                auto net = to_asset(stake_net);
                auto cpu = to_asset(stake_cpu);
                if ( net.get_amount() != 0 || cpu.get_amount() != 0 ) {
@@ -1135,6 +1164,7 @@ struct delegate_bandwidth_subcommand {
    string stake_cpu_amount;
    string stake_storage_amount;
    string buy_ram_amount;
+   uint32_t buy_ram_bytes = 0;
    bool transfer = false;
 
    delegate_bandwidth_subcommand(CLI::App* actionRoot) {
@@ -1144,6 +1174,7 @@ struct delegate_bandwidth_subcommand {
       delegate_bandwidth->add_option("stake_net_quantity", stake_net_amount, localized("The amount of EOS to stake for network bandwidth"))->required();
       delegate_bandwidth->add_option("stake_cpu_quantity", stake_cpu_amount, localized("The amount of EOS to stake for CPU bandwidth"))->required();
       delegate_bandwidth->add_option("--buyram", buy_ram_amount, localized("The amount of EOS to buyram"));
+      delegate_bandwidth->add_option("--buy-ram-bytes", buy_ram_bytes, localized("The amount of RAM to buy in number of bytes"));
       delegate_bandwidth->add_flag("--transfer", transfer, localized("Transfer voting power and right to unstake EOS to receiver"));
       add_standard_transaction_options(delegate_bandwidth);
 
@@ -1155,12 +1186,11 @@ struct delegate_bandwidth_subcommand {
                   ("stake_cpu_quantity", to_asset(stake_cpu_amount))
                   ("transfer", transfer);
          std::vector<chain::action> acts{create_action({permission_level{from_str,config::active_name}}, config::system_account_name, N(delegatebw), act_payload)};
-         if (buy_ram_amount.length()) {
-            fc::variant act_payload2 = fc::mutable_variant_object()
-               ("payer", from_str)
-               ("receiver", receiver_str)
-               ("quant", to_asset(buy_ram_amount));
-            acts.push_back(create_action({permission_level{from_str,config::active_name}}, config::system_account_name, N(buyram), act_payload2));
+         EOSC_ASSERT( !(buy_ram_amount.size()) || !buy_ram_bytes, "ERROR: --buyram and --buy-ram-bytes cannot be set at the same time" );
+         if (buy_ram_amount.size()) {
+            acts.push_back( create_buyram(from_str, receiver_str, to_asset(buy_ram_amount)) );
+         } else if (buy_ram_bytes) {
+            acts.push_back( create_buyrambytes(from_str, receiver_str, buy_ram_bytes) );
          }
          send_actions(std::move(acts));
       });
@@ -1230,6 +1260,52 @@ struct list_bw_subcommand {
    }
 };
 
+struct buyram_subcommand {
+   string from_str;
+   string receiver_str;
+   string amount;
+   bool kbytes = false;
+   bool bytes = false;
+
+   buyram_subcommand(CLI::App* actionRoot) {
+      auto buyram = actionRoot->add_subcommand("buyram", localized("Buy RAM"));
+      buyram->add_option("payer", from_str, localized("The account paying for RAM"))->required();
+      buyram->add_option("receiver", receiver_str, localized("The account receiving bought RAM"))->required();
+      buyram->add_option("amount", amount, localized("The amount of EOS to pay for RAM, or number of bytes/kibibytes of RAM if --bytes/--kbytes is set"))->required();
+      buyram->add_flag("--kbytes,-k", kbytes, localized("buyram in number of kibibytes (KiB)"));
+      buyram->add_flag("--bytes,-b", bytes, localized("buyram in number of bytes"));
+      add_standard_transaction_options(buyram);
+      buyram->set_callback([this] {
+         EOSC_ASSERT( !kbytes || !bytes, "ERROR: --kbytes and --bytes cannot be set at the same time" );
+         if (kbytes || bytes) {
+            send_actions( { create_buyrambytes(from_str, receiver_str, fc::to_uint64(amount) * ((kbytes) ? 1024ull : 1ull)) } );
+         } else {
+            send_actions( { create_buyram(from_str, receiver_str, to_asset(amount)) } );
+         }
+      });
+   }
+};
+
+struct sellram_subcommand {
+   string from_str;
+   string receiver_str;
+   uint64_t amount;
+
+   sellram_subcommand(CLI::App* actionRoot) {
+      auto sellram = actionRoot->add_subcommand("sellram", localized("Sell RAM"));
+      sellram->add_option("account", receiver_str, localized("The account to receive EOS for sold RAM"))->required();
+      sellram->add_option("bytes", amount, localized("Number of RAM bytes to sell"))->required();
+      add_standard_transaction_options(sellram);
+
+      sellram->set_callback([this] {
+            fc::variant act_payload = fc::mutable_variant_object()
+               ("account", receiver_str)
+               ("bytes", amount);
+            send_actions({create_action({permission_level{receiver_str,config::active_name}}, config::system_account_name, N(sellram), act_payload)});
+         });
+   }
+};
+
 struct claimrewards_subcommand {
    string owner;
 
@@ -1268,12 +1344,13 @@ struct canceldelay_subcommand {
    }
 };
 
+
 struct register_sysdepo_subcommand {
    string sysdepo_account;
    string url;
    uint16_t location = 0;
 
-    register_sysdepo_subcommand(CLI::App* actionRoot) {
+   register_sysdepo_subcommand(CLI::App* actionRoot) {
       auto subcommand = actionRoot->add_subcommand("regsysdepo", localized("Register as a system depository"));
       subcommand->add_option("account", sysdepo_account, localized("The account to register as the system depository"))->required();
       subcommand->add_option("url", url, localized("The url to the web service which is provided by the system depository"))->required();
@@ -1283,9 +1360,9 @@ struct register_sysdepo_subcommand {
       subcommand->set_callback([this] {
          const auto permission = permission_level{sysdepo_account, config::active_name};
          fc::variant payload = fc::mutable_variant_object()
-                  ("depository", sysdepo_account)
-                  ("url", url)
-                  ("location", location);
+               ("depository", sysdepo_account)
+               ("url", url)
+               ("location", location);
          send_actions({create_action({permission}, config::system_account_name, N(regsysdepo), payload)});
       });
    }
@@ -1294,7 +1371,7 @@ struct register_sysdepo_subcommand {
 struct authorize_sysdepo_subcommand {
    string sysdepo_account;
 
-    authorize_sysdepo_subcommand(CLI::App* actionRoot) {
+   authorize_sysdepo_subcommand(CLI::App* actionRoot) {
       auto subcommand = actionRoot->add_subcommand("authsysdepo", localized("Authorize the registered system depository by block producers"));
       subcommand->add_option("account", sysdepo_account, localized("The account which is registered as the system depository"))->required();
       add_standard_transaction_options(subcommand);
@@ -1302,7 +1379,7 @@ struct authorize_sysdepo_subcommand {
       subcommand->set_callback([this] {
          const auto permission = permission_level{config::system_account_name, config::active_name};
          fc::variant payload = fc::mutable_variant_object()
-                  ("depository", sysdepo_account);
+               ("depository", sysdepo_account);
          send_actions({create_action({permission}, config::system_account_name, N(authsysdepo), payload)});
       });
    }
@@ -1311,7 +1388,7 @@ struct authorize_sysdepo_subcommand {
 struct remove_sysdepo_subcommand {
    string sysdepo_account;
 
-    remove_sysdepo_subcommand(CLI::App* actionRoot) {
+   remove_sysdepo_subcommand(CLI::App* actionRoot) {
       auto subcommand = actionRoot->add_subcommand("rmvsysdepo", localized("Deauthorize the system depository by block producers"));
       subcommand->add_option("account", sysdepo_account, localized("The account which is registered as the system depository"))->required();
       add_standard_transaction_options(subcommand);
@@ -1319,73 +1396,79 @@ struct remove_sysdepo_subcommand {
       subcommand->set_callback([this] {
          const auto permission = permission_level{config::system_account_name, config::active_name};
          fc::variant payload = fc::mutable_variant_object()
-                  ("depository", sysdepo_account);
+               ("depository", sysdepo_account);
          send_actions({create_action({permission}, config::system_account_name, N(rmvsysdepo), payload)});
       });
    }
 };
 
 struct register_idauth_subcommand {
-    string idauth_account;
-    string url;
-    uint16_t location = 0;
+   string idauth_account;
+   string url;
+   uint16_t location = 0;
 
-    register_idauth_subcommand(CLI::App* actionRoot) {
-        auto subcommand = actionRoot->add_subcommand("regidauth", localized("Register as an identity authority"));
-        subcommand->add_option("account", idauth_account, localized("The account to register as the identity authority"))->required();
-        subcommand->add_option("url", url, localized("The url to the web service which is provided by the identity authority"))->required();
-        //subcommand->add_option("location", location, localized("reserved value"));
-        add_standard_transaction_options(subcommand);
+   register_idauth_subcommand(CLI::App* actionRoot) {
+      auto subcommand = actionRoot->add_subcommand("regidauth", localized("Register as an identity authority"));
+      subcommand->add_option("account", idauth_account, localized("The account to register as the identity authority"))->required();
+      subcommand->add_option("url", url, localized("The url to the web service which is provided by the identity authority"))->required();
+      //subcommand->add_option("location", location, localized("reserved value"));
+      add_standard_transaction_options(subcommand);
 
-        subcommand->set_callback([this] {
-            const auto permission = permission_level{idauth_account, config::active_name};
-            fc::variant payload = fc::mutable_variant_object()
-                    ("identity_authority", idauth_account)
-                    ("url", url)
-                    ("location", location);
-            send_actions({create_action({permission}, config::system_account_name, N(regidauth), payload)});
-        });
-    }
+      subcommand->set_callback([this] {
+         const auto permission = permission_level{idauth_account, config::active_name};
+         fc::variant payload = fc::mutable_variant_object()
+               ("identity_authority", idauth_account)
+               ("url", url)
+               ("location", location);
+         send_actions({create_action({permission}, config::system_account_name, N(regidauth), payload)});
+      });
+   }
 };
 
 struct authorize_idauth_subcommand {
-    string idauth_account;
+   string idauth_account;
 
-    authorize_idauth_subcommand(CLI::App* actionRoot) {
-        auto subcommand = actionRoot->add_subcommand("authidauth", localized("Authorize the registered identity authority by block producers"));
-        subcommand->add_option("account", idauth_account, localized("The account which is registered as the identity authority"))->required();
-        add_standard_transaction_options(subcommand);
+   authorize_idauth_subcommand(CLI::App* actionRoot) {
+      auto subcommand = actionRoot->add_subcommand("authidauth", localized("Authorize the registered identity authority by block producers"));
+      subcommand->add_option("account", idauth_account, localized("The account which is registered as the identity authority"))->required();
+      add_standard_transaction_options(subcommand);
 
-        subcommand->set_callback([this] {
-            const auto permission = permission_level{config::system_account_name, config::active_name};
-            fc::variant payload = fc::mutable_variant_object()
-                    ("identity_authority", idauth_account);
-            send_actions({create_action({permission}, config::system_account_name, N(authidauth), payload)});
-        });
-    }
+      subcommand->set_callback([this] {
+         const auto permission = permission_level{config::system_account_name, config::active_name};
+         fc::variant payload = fc::mutable_variant_object()
+               ("identity_authority", idauth_account);
+         send_actions({create_action({permission}, config::system_account_name, N(authidauth), payload)});
+      });
+   }
 };
 
 struct remove_idauth_subcommand {
-    string idauth_account;
+   string idauth_account;
 
-    remove_idauth_subcommand(CLI::App* actionRoot) {
-        auto subcommand = actionRoot->add_subcommand("rmvidauth", localized("Deauthorize the identity authority by block producers"));
-        subcommand->add_option("account", idauth_account, localized("The account which is registered as the identity authority"))->required();
-        add_standard_transaction_options(subcommand);
+   remove_idauth_subcommand(CLI::App* actionRoot) {
+      auto subcommand = actionRoot->add_subcommand("rmvidauth", localized("Deauthorize the identity authority by block producers"));
+      subcommand->add_option("account", idauth_account, localized("The account which is registered as the identity authority"))->required();
+      add_standard_transaction_options(subcommand);
 
-        subcommand->set_callback([this] {
-            const auto permission = permission_level{config::system_account_name, config::active_name};
-            fc::variant payload = fc::mutable_variant_object()
-                    ("identity_authority", idauth_account);
-            send_actions({create_action({permission}, config::system_account_name, N(rmvidauth), payload)});
-        });
-    }
+      subcommand->set_callback([this] {
+         const auto permission = permission_level{config::system_account_name, config::active_name};
+         fc::variant payload = fc::mutable_variant_object()
+               ("identity_authority", idauth_account);
+         send_actions({create_action({permission}, config::system_account_name, N(rmvidauth), payload)});
+      });
+   }
 };
 
-void get_account( const string& accountName, bool json_format ) {
-   auto json = call(get_account_func, fc::mutable_variant_object("account_name", accountName));
-   auto res = json.as<eosio::chain_apis::read_only::get_account_results>();
+void get_account( const string& accountName, const string& coresym, bool json_format ) {
+   fc::variant json;
+   if (coresym.empty()) {
+      json = call(get_account_func, fc::mutable_variant_object("account_name", accountName));
+   }
+   else {
+      json = call(get_account_func, fc::mutable_variant_object("account_name", accountName)("expected_core_symbol", symbol::from_string(coresym)));
+   }
 
+   auto res = json.as<eosio::chain_apis::read_only::get_account_results>();
    if (!json_format) {
       asset staked;
       asset unstaking;
@@ -1663,6 +1746,7 @@ int main( int argc, char** argv ) {
    bindtextdomain(locale_domain, locale_path);
    textdomain(locale_domain);
    context = eosio::client::http::create_http_context();
+   wallet_url = default_wallet_url;
 
    CLI::App app{"Command Line Interface to YOSEMITE Client"};
    app.require_subcommand();
@@ -1834,11 +1918,13 @@ int main( int argc, char** argv ) {
 
    // get account
    string accountName;
+   string coresym;
    bool print_json;
    auto getAccount = get->add_subcommand("account", localized("Retrieve an account from the blockchain"), false);
    getAccount->add_option("name", accountName, localized("The name of the account to retrieve"))->required();
+   getAccount->add_option("core-symbol", coresym, localized("The expected core symbol of the chain you are querying"));
    getAccount->add_flag("--json,-j", print_json, localized("Output in JSON format") );
-   getAccount->set_callback([&]() { get_account(accountName, print_json); });
+   getAccount->set_callback([&]() { get_account(accountName, coresym, print_json); });
 
 #ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
    // get code
@@ -2280,15 +2366,18 @@ int main( int argc, char** argv ) {
    string abiPath;
    bool shouldSend = true;
    bool contract_clear = false;
+   bool suppress_duplicate_check = false;
    auto codeSubcommand = setSubcommand->add_subcommand("code", localized("Create or update the code on an account"));
    codeSubcommand->add_option("account", account, localized("The account to set code for"))->required();
    codeSubcommand->add_option("code-file", wasmPath, localized("The fullpath containing the contract WASM"));//->required();
    codeSubcommand->add_flag( "-c,--clear", contract_clear, localized("Remove code on an account"));
+   codeSubcommand->add_flag( "--suppress-duplicate-check", suppress_duplicate_check, localized("Don't check for duplicate"));
 
    auto abiSubcommand = setSubcommand->add_subcommand("abi", localized("Create or update the abi on an account"));
    abiSubcommand->add_option("account", account, localized("The account to set the ABI for"))->required();
    abiSubcommand->add_option("abi-file", abiPath, localized("The fullpath containing the contract ABI"));//->required();
    abiSubcommand->add_flag( "-c,--clear", contract_clear, localized("Remove abi on an account"));
+   abiSubcommand->add_flag( "--suppress-duplicate-check", suppress_duplicate_check, localized("Don't check for duplicate"));
 
    auto contractSubcommand = setSubcommand->add_subcommand("contract", localized("Create or update the contract on an account"));
    contractSubcommand->add_option("account", account, localized("The account to publish a contract for"))
@@ -2300,9 +2389,24 @@ int main( int argc, char** argv ) {
    auto abi = contractSubcommand->add_option("abi-file,-a,--abi", abiPath, localized("The ABI for the contract relative to contract-dir"));
 //                                ->check(CLI::ExistingFile);
    contractSubcommand->add_flag( "-c,--clear", contract_clear, localized("Rmove contract on an account"));
+   contractSubcommand->add_flag( "--suppress-duplicate-check", suppress_duplicate_check, localized("Don't check for duplicate"));
 
    std::vector<chain::action> actions;
    auto set_code_callback = [&]() {
+
+      std::vector<char> old_wasm;
+      bool duplicate = false;
+      fc::sha256 old_hash, new_hash;
+      if (!suppress_duplicate_check) {
+         try {
+            const auto result = call(get_code_hash_func, fc::mutable_variant_object("account_name", account));
+            old_hash = fc::sha256(result["code_hash"].as_string());
+         } catch (...) {
+            std::cerr << "Failed to get existing code hash, continue without duplicate check..." << std::endl;
+            suppress_duplicate_check = true;
+         }
+      }
+
       bytes code_bytes;
       if(!contract_clear){
          std::string wasm;
@@ -2319,24 +2423,46 @@ int main( int argc, char** argv ) {
          fc::read_file_contents(wasmPath, wasm);
          EOS_ASSERT( !wasm.empty(), wast_file_not_found, "no wasm file found ${f}", ("f", wasmPath) );
 
-         const string binary_wasm_header("\x00\x61\x73\x6d\x01\x00\x00\x00", 8);
-         if(wasm.compare(0, 8, binary_wasm_header))
-            std::cerr << localized("WARNING: ") << wasmPath << localized(" doesn't look like a binary WASM file. Is it something else, like WAST? Trying anyways...") << std::endl;
-         code_bytes = bytes(wasm.begin(), wasm.end());
-
+        const string binary_wasm_header("\x00\x61\x73\x6d\x01\x00\x00\x00", 8);
+        if(wasm.compare(0, 8, binary_wasm_header))
+           std::cerr << localized("WARNING: ") << wasmPath << localized(" doesn't look like a binary WASM file. Is it something else, like WAST? Trying anyways...") << std::endl;
+        code_bytes = bytes(wasm.begin(), wasm.end());
       } else {
          code_bytes = bytes();
       }
 
+      if (!suppress_duplicate_check) {
+         if (code_bytes.size()) {
+            new_hash = fc::sha256::hash(&(code_bytes[0]), code_bytes.size());
+         }
+         duplicate = (old_hash == new_hash);
+      }
 
-      actions.emplace_back( create_setcode(account, code_bytes ) );
-      if ( shouldSend ) {
-         std::cerr << localized("Setting Code...") << std::endl;
-         send_actions(std::move(actions), 10000, packed_transaction::zlib);
+      if (!duplicate) {
+         actions.emplace_back( create_setcode(account, code_bytes ) );
+         if ( shouldSend ) {
+            std::cerr << localized("Setting Code...") << std::endl;
+            send_actions(std::move(actions), 10000, packed_transaction::zlib);
+         }
+      } else {
+         std::cout << "Skipping set code because the new code is the same as the existing code" << std::endl;
       }
    };
 
    auto set_abi_callback = [&]() {
+
+      bytes old_abi;
+      bool duplicate = false;
+      if (!suppress_duplicate_check) {
+         try {
+            const auto result = call(get_raw_abi_func, fc::mutable_variant_object("account_name", account));
+            old_abi = result["abi"].as_blob().data;
+         } catch (...) {
+            std::cerr << "Failed to get existing raw abi, continue without duplicate check..." << std::endl;
+            suppress_duplicate_check = true;
+         }
+      }
+
       bytes abi_bytes;
       if(!contract_clear){
          fc::path cpath(contractPath);
@@ -2351,17 +2477,24 @@ int main( int argc, char** argv ) {
          EOS_ASSERT( fc::exists( abiPath ), abi_file_not_found, "no abi file found ${f}", ("f", abiPath)  );
 
          abi_bytes = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
-
       } else {
          abi_bytes = bytes();
       }
 
-      try {
-         actions.emplace_back( create_setabi(account, abi_bytes) );
-      } EOS_RETHROW_EXCEPTIONS(abi_type_exception,  "Fail to parse ABI JSON")
-      if ( shouldSend ) {
-         std::cerr << localized("Setting ABI...") << std::endl;
-         send_actions(std::move(actions), 10000, packed_transaction::zlib);
+      if (!suppress_duplicate_check) {
+         duplicate = (old_abi.size() == abi_bytes.size() && std::equal(old_abi.begin(), old_abi.end(), abi_bytes.begin()));
+      }
+
+      if (!duplicate) {
+         try {
+            actions.emplace_back( create_setabi(account, abi_bytes) );
+         } EOS_RETHROW_EXCEPTIONS(abi_type_exception,  "Fail to parse ABI JSON")
+         if ( shouldSend ) {
+            std::cerr << localized("Setting ABI...") << std::endl;
+            send_actions(std::move(actions), 10000, packed_transaction::zlib);
+         }
+      } else {
+         std::cout << "Skipping set abi because the new abi is the same as the existing abi" << std::endl;
       }
    };
 
@@ -2373,8 +2506,12 @@ int main( int argc, char** argv ) {
       shouldSend = false;
       set_code_callback();
       set_abi_callback();
-      std::cerr << localized("Publishing contract...") << std::endl;
-      send_actions(std::move(actions), 10000, packed_transaction::zlib);
+      if (actions.size()) {
+         std::cerr << localized("Publishing contract...") << std::endl;
+         send_actions(std::move(actions), 10000, packed_transaction::zlib);
+      } else {
+         std::cout << "no transaction is sent" << std::endl;
+      }
    });
    codeSubcommand->set_callback(set_code_callback);
    abiSubcommand->set_callback(set_abi_callback);
@@ -2484,10 +2621,8 @@ int main( int argc, char** argv ) {
    createWallet->add_option("-f,--file", password_file, localized("Name of file to write wallet password output to. (Must be set, unless \"--to-console\" is passed"));
    createWallet->add_flag( "--to-console", print_console, localized("Print password to console."));
    createWallet->set_callback([&wallet_name, &password_file, &print_console] {
-      if (password_file.empty() && !print_console) {
-         std::cerr << "ERROR: Either indicate a file using \"--file\" or pass \"--to-console\"" << std::endl;
-         return;
-      }
+      EOSC_ASSERT( !password_file.empty() ^ print_console, "ERROR: Either indicate a file using \"--file\" or pass \"--to-console\"" );
+      EOSC_ASSERT( password_file.empty() || !std::ofstream(password_file.c_str()).fail(), "ERROR: Failed to create file in specified path" );
 
       const auto& v = call(wallet_url, wallet_create, wallet_name);
       std::cout << localized("Creating wallet: ${wallet_name}", ("wallet_name", wallet_name)) << std::endl;
@@ -2497,8 +2632,10 @@ int main( int argc, char** argv ) {
          std::cout << fc::json::to_pretty_string(v) << std::endl;
       } else {
          std::cerr << localized("saving password to ${filename}", ("filename", password_file)) << std::endl;
+         auto password_str = fc::json::to_pretty_string(v);
+         boost::replace_all(password_str, "\"", "");
          std::ofstream out( password_file.c_str() );
-         out << fc::json::to_pretty_string(v);
+         out << password_str;
       }
    });
 
@@ -3003,19 +3140,21 @@ int main( int argc, char** argv ) {
       }
    );
 
-   // sudo subcommand
-   auto sudo = app.add_subcommand("sudo", localized("Sudo contract commands"), false);
-   sudo->require_subcommand();
+   // wrap subcommand
+   auto wrap = app.add_subcommand("wrap", localized("Wrap contract commands"), false);
+   wrap->require_subcommand();
 
-   // sudo exec
+   // wrap exec
+   string wrap_con = "yx.wrap";
    executer = "";
    string trx_to_exec;
-   auto sudo_exec = sudo->add_subcommand("exec", localized("Execute a transaction while bypassing authorization checks"));
-   add_standard_transaction_options(sudo_exec);
-   sudo_exec->add_option("executer", executer, localized("Account executing the transaction and paying for the deferred transaction RAM"))->required();
-   sudo_exec->add_option("transaction", trx_to_exec, localized("The JSON string or filename defining the transaction to execute"))->required();
+   auto wrap_exec = wrap->add_subcommand("exec", localized("Execute a transaction while bypassing authorization checks"));
+   add_standard_transaction_options(wrap_exec);
+   wrap_exec->add_option("executer", executer, localized("Account executing the transaction and paying for the deferred transaction RAM"))->required();
+   wrap_exec->add_option("transaction", trx_to_exec, localized("The JSON string or filename defining the transaction to execute"))->required();
+   wrap_exec->add_option("--contract,-c", wrap_con, localized("The account which controls the wrap contract"));
 
-   sudo_exec->set_callback([&] {
+   wrap_exec->set_callback([&] {
       fc::variant trx_var;
       try {
          trx_var = json_from_file_or_string(trx_to_exec);
@@ -3023,14 +3162,14 @@ int main( int argc, char** argv ) {
 
       auto accountPermissions = get_account_permissions(tx_permission);
       if( accountPermissions.empty() ) {
-         accountPermissions = vector<permission_level>{{executer, config::active_name}, {"yx.sudo", config::active_name}};
+         accountPermissions = vector<permission_level>{{executer, config::active_name}, {wrap_con, config::active_name}};
       }
 
       auto args = fc::mutable_variant_object()
          ("executer", executer )
          ("trx", trx_var);
 
-      send_actions({chain::action{accountPermissions, "yx.sudo", "exec", variant_to_bin( N(yx.sudo), N(exec), args ) }});
+      send_actions({chain::action{accountPermissions, wrap_con, "exec", variant_to_bin( wrap_con, N(exec), args ) }});
    });
 
    // system subcommand
@@ -3070,6 +3209,7 @@ int main( int argc, char** argv ) {
       if (verbose_errors) {
          elog("connect error: ${e}", ("e", e.to_detail_string()));
       }
+      return 1;
    } catch (const fc::exception& e) {
       // attempt to extract the error code if one is present
       if (!print_recognized_errors(e, verbose_errors)) {

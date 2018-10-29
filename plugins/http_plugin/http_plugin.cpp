@@ -767,4 +767,9 @@ namespace eosio {
    void http_plugin::set_wss_connection_termination_handler(ws_connection_termination_handler<tls_socket_endpoint> handler) {
       my->tls_ws_connection_term_handler = handler;
    }
+
+   bool http_plugin::verbose_errors()const {
+      return verbose_http_errors;
+   }
+
 }

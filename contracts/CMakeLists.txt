@@ -11,6 +11,7 @@ add_subdirectory(libc++)
 # For internal test
 add_subdirectory(eosio.token)
 add_subdirectory(multi_index_test)
+add_subdirectory(snapshot_test)
 add_subdirectory(eosio.system)
 add_subdirectory(stltest)
 add_subdirectory(test.inline)

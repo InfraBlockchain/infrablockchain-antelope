@@ -56,7 +56,10 @@ def analyzeBPs(bps0, bps1, expectDivergence):
             bpsStr+=str(blockNum0)+"->"+prod0
 
         if index is None:
-            return
+            if expectDivergence:
+                errorInDivergence=True
+                break
+            return None
 
         bpsStr0=None
         bpsStr2=None
@@ -85,13 +88,17 @@ def analyzeBPs(bps0, bps1, expectDivergence):
             bpsStr0+=str(blockNum0)+numDiff+"->"+prod0+prodDiff
             bpsStr1+=str(blockNum1)+numDiff+"->"+prod1+prodDiff
         if errorInDivergence:
-            msg="Failed analyzing block producers - "
-            if expectDivergence:
-                msg+="nodes indicate different block producers for the same blocks, but did not expect them to diverge."
-            else:
-                msg+="did not expect nodes to indicate different block producers for the same blocks."
-            msg+="\n  Matching Blocks= %s \n  Diverging branch node0= %s \n  Diverging branch node1= %s" % (bpsStr,bpsStr0,bpsStr1)
-            Utils.errorExit(msg)
+            break
+
+    if errorInDivergence:
+        msg="Failed analyzing block producers - "
+        if expectDivergence:
+            msg+="nodes indicate different block producers for the same blocks, but did not expect them to diverge."
+        else:
+            msg+="did not expect nodes to indicate different block producers for the same blocks."
+        msg+="\n  Matching Blocks= %s \n  Diverging branch node0= %s \n  Diverging branch node1= %s" % (bpsStr,bpsStr0,bpsStr1)
+        Utils.errorExit(msg)
+
     return firstDivergence
 
 def getMinHeadAndLib(prodNodes):
@@ -103,7 +110,8 @@ def getMinHeadAndLib(prodNodes):
 
 
 
-args = TestHelper.parse_args({"--prod-count","--dump-error-details","--keep-logs","-v","--leave-running","--clean-run","--p2p-plugin"})
+args = TestHelper.parse_args({"--prod-count","--dump-error-details","--keep-logs","-v","--leave-running","--clean-run",
+                              "--p2p-plugin","--wallet-port"})
 Utils.Debug=args.v
 totalProducerNodes=2
 totalNonProducerNodes=1
@@ -117,18 +125,20 @@ dontKill=args.leave_running
 prodCount=args.prod_count
 killAll=args.clean_run
 p2pPlugin=args.p2p_plugin
+walletPort=args.wallet_port
 
-walletMgr=WalletMgr(True)
+walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
 killEosInstances=not dontKill
 killWallet=not dontKill
 
-WalletdName="keosd"
+WalletdName=Utils.EosWalletName
 ClientName="cleos"
 
 try:
     TestHelper.printSystemInfo("BEGIN")
 
+    cluster.setWalletMgr(walletMgr)
     cluster.killall(allInstances=killAll)
     cluster.cleanup()
     Print("Stand up cluster")
@@ -142,7 +152,7 @@ try:
     # "bridge" shape connects defprocera through defproducerk (in node0) to each other and defproducerl through defproduceru (in node01)
     # and the only connection between those 2 groups is through the bridge node
 
-    if cluster.launch(prodCount=prodCount, onlyBios=False, dontKill=dontKill, topo="bridge", pnodes=totalProducerNodes,
+    if cluster.launch(prodCount=prodCount, onlyBios=False, topo="bridge", pnodes=totalProducerNodes,
                       totalNodes=totalNodes, totalProducers=totalProducers, p2pPlugin=p2pPlugin,
                       useBiosBootFile=False, specificExtraNodeosArgs=specificExtraNodeosArgs) is False:
         Utils.cmdError("launcher")
@@ -165,12 +175,6 @@ try:
     testWalletName="test"
 
     Print("Creating wallet \"%s\"." % (testWalletName))
-    walletMgr.killall(allInstances=killAll)
-    walletMgr.cleanup()
-    if walletMgr.launch() is False:
-        Utils.cmdError("%s" % (WalletdName))
-        Utils.errorExit("Failed to stand up eos walletd.")
-
     testWallet=walletMgr.create(testWalletName, [cluster.eosioAccount,accounts[0],accounts[1],accounts[2],accounts[3],accounts[4]])
 
     for _, account in cluster.defProducerAccounts.items():

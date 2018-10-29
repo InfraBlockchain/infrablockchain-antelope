@@ -191,7 +191,7 @@ namespace eosio {
 
         void add_handler(const string& url, const url_handler&);
         void add_api(const api_description& api) {
-           for (const auto& call : api) 
+           for (const auto& call : api)
               add_handler(call.first, call.second);
         }
 
@@ -205,6 +205,8 @@ namespace eosio {
         void add_wss_handler(const string& url, ws_message_handler<tls_socket_endpoint> handler);
         void set_ws_connection_termination_handler(ws_connection_termination_handler<basic_socket_endpoint> handler);
         void set_wss_connection_termination_handler(ws_connection_termination_handler<tls_socket_endpoint> handler);
+
+        bool verbose_errors()const;
 
       private:
         std::unique_ptr<class http_plugin_impl> my;
