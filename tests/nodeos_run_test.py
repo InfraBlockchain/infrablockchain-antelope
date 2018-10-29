@@ -204,9 +204,6 @@ try:
     Print("Create new account %s via %s" % (currencyAccount.name, cluster.eosioAccount.name))
     transId=node.createAccount(currencyAccount, cluster.defproduceraAccount, stakedDeposit=50, exitOnError=True)
 
-    Print("Create new account %s via %s" % (currencyAccount.name, cluster.eosioAccount.name))
-    transId=node.createAccount(currencyAccount, cluster.defproduceraAccount, stakedDeposit=50, exitOnError=True)
-
     Print("Validating accounts after user accounts creation")
     accounts=[testeraAccount, currencyAccount]
     cluster.validateAccounts(accounts)

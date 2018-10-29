@@ -519,7 +519,7 @@ class Node(object):
         cmdDesc="create account"
         cmd="%s -j %s %s %s %s" % (
             cmdDesc, creatorAccount.name, account.name, account.ownerPublicKey, account.activePublicKey)
-        msg="(creator account=%s, account=%s)" % (creatorAccount.name, account.name);
+        msg="(creator account=%s, account=%s)" % (creatorAccount.name, account.name)
         trans=self.processCleosCmd(cmd, cmdDesc, silentErrors=False, exitOnError=exitOnError, exitMsg=msg)
         self.trackCmdTransaction(trans)
         transId=Node.getTransId(trans)
@@ -730,7 +730,7 @@ class Node(object):
         assert(destination)
         assert(isinstance(destination, Account))
 
-        cmd = "%s %s -v transfer ntoken -j %s %s" % (Utils.EosClientPath, self.endpointArgs, source.name, destination.name)
+        cmd = "%s %s -v transfer ntoken -j %s %s" % (Utils.EosClientPath, self.eosClientArgs(), source.name, destination.name)
         cmdArr = cmd.split()
         cmdArr.append(amountStr)
         cmdArr.append(memo)
