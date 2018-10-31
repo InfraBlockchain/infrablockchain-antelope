@@ -75,18 +75,6 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
 
    } FC_LOG_AND_RETHROW()
 
-   BOOST_FIXTURE_TEST_CASE(grantissue_test, yx_token_tester) try {
-
-      auto result = token_create("4,ETH@tkprovider", 0);
-      BOOST_REQUIRE_EQUAL("", result);
-      produce_blocks(1);
-
-      result = token_issue(N(user1), "10000.0000 ETH@tkprovider", "my memo");
-      BOOST_REQUIRE_EQUAL("", result);
-      produce_blocks(1);
-
-   } FC_LOG_AND_RETHROW()
-
    BOOST_FIXTURE_TEST_CASE(issue_test, yx_token_tester) try {
 
       auto result = token_create("4,ETH@tkprovider", 0);

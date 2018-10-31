@@ -83,6 +83,7 @@
       "base": "",
       "fields": [
         {"name":"user", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
         {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
       ]

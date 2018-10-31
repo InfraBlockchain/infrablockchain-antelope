@@ -9,96 +9,6 @@ namespace yosemite { namespace non_native_token {
       eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 2), "token precision must be equal or larger than 2");
    }
 
-   void yx_token::grantissue(const account_name &to, const yx_asset &limit, const string &memo) {
-      eosio_assert(static_cast<uint32_t>(limit.is_valid()), "invalid limit");
-      eosio_assert(static_cast<uint32_t>(limit.amount >= 0), "must be non-negative limit");
-      eosio_assert(static_cast<uint32_t>(!limit.is_native(false)), "cannot grant issue with the native token");
-      eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-      eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-      require_auth(limit.issuer);
-
-      delegated_issue_table delissue_tbl{get_self(), limit.symbol.value};
-      auto second_index = delissue_tbl.get_index<N(secondary)>();
-      const uint128_t &second_key = to_uint128(limit.get_yx_symbol().issuer, to);
-      const auto &issue_info = second_index.find(second_key);
-
-      if (issue_info == second_index.end()) {
-         delissue_tbl.emplace(get_self(), [&](auto &holder) {
-            holder.id = delissue_tbl.available_primary_key();
-            holder.account = to;
-            holder.limit = limit;
-            holder.issued = yx_asset{0, limit.get_yx_symbol()};
-         });
-      } else {
-         if (limit.amount == 0 && issue_info->issued.amount == 0) {
-            second_index.erase(issue_info);
-         } else {
-            second_index.modify(issue_info, 0, [&](auto &holder) {
-               holder.limit = limit;
-            });
-         }
-      }
-
-      charge_fee(limit.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_GRANT_ISSUE);
-   }
-
-   void yx_token::issuebyuser(const account_name &user, const yx_asset &token, const string &memo) {
-      check_issue_parameters(user, token, memo);
-      check_transfer_rules(user, user, token);
-      eosio_assert(static_cast<uint32_t>(user != token.issuer), "user and token issuer must be different");
-      require_auth(user);
-
-      delegated_issue_table delissue_tbl{get_self(), token.symbol.value};
-      auto second_index = delissue_tbl.get_index<N(secondary)>();
-      const uint128_t &second_key = to_uint128(token.get_yx_symbol().issuer, user);
-      const auto &issue_info = second_index.find(second_key);
-
-      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "user issue is not granted by the token issuer");
-      eosio_assert(static_cast<uint32_t>(issue_info->limit.amount - issue_info->issued.amount >= token.amount), "issue limit is reached");
-
-      second_index.modify(issue_info, 0, [&](auto &holder) {
-         holder.issued.amount += token.amount;
-      });
-
-      increase_supply(token);
-      add_token_balance(user, token);
-
-      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
-   }
-
-   void yx_token::changeissued(const account_name &user, const yx_asset &delta, bool decrease) {
-      check_issue_parameters(user, delta, "");
-      eosio_assert(static_cast<uint32_t>(user != delta.issuer), "user and token issuer must be different");
-      require_auth(delta.issuer);
-
-      delegated_issue_table delissue_tbl{get_self(), delta.symbol.value};
-      auto second_index = delissue_tbl.get_index<N(secondary)>();
-      const uint128_t &second_key = to_uint128(delta.get_yx_symbol().issuer, user);
-      const auto &issue_info = second_index.find(second_key);
-
-      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "user issue is not granted by the token issuer");
-
-      bool erase = false;
-
-      second_index.modify(issue_info, 0, [&](auto &holder) {
-         if (decrease) {
-            holder.issued.amount -= delta.amount;
-            eosio_assert(static_cast<uint32_t>(holder.issued.amount >= 0), "wrong decrease delta");
-            erase = (holder.limit.amount == 0) && (holder.issued.amount == 0);
-         } else {
-            holder.issued.amount += delta.amount;
-            eosio_assert(
-                  static_cast<uint32_t>(holder.issued.amount >= 0 && holder.issued.amount <= holder.limit.amount),
-                  "wrong decrease delta");
-         }
-      });
-      if (erase) {
-         second_index.erase(issue_info);
-      }
-
-      charge_fee(delta.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CHANGE_ISSUED);
-   }
-
    void yx_token::increase_supply(const yx_asset &token) const {
       stats stats_table{get_self(), token.symbol.value};
       const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
@@ -118,9 +28,7 @@ namespace yosemite { namespace non_native_token {
       add_token_balance(token.issuer, token);
 
       if (to != token.issuer) {
-         INLINE_ACTION_SENDER(token, transfer)
-            (get_self(),
-             {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+         SEND_INLINE_ACTION(*this, transfer, {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
              {token.issuer, to, token, memo});
       }
 
@@ -166,6 +74,99 @@ namespace yosemite { namespace non_native_token {
       }
    }
 
+   void yx_token::grantissue(const account_name &to, const yx_asset &limit, const string &memo) {
+      eosio_assert(static_cast<uint32_t>(limit.is_valid()), "invalid limit");
+      eosio_assert(static_cast<uint32_t>(limit.amount >= 0), "must be non-negative limit");
+      eosio_assert(static_cast<uint32_t>(!limit.is_native(false)), "cannot grant issue with the native token");
+      eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+      eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+      require_auth(limit.issuer);
+
+      delegated_issue_table delissue_tbl{get_self(), limit.symbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(limit.get_yx_symbol().issuer, to);
+      const auto &issue_info = second_index.find(second_key);
+
+      if (issue_info == second_index.end()) {
+         delissue_tbl.emplace(get_self(), [&](auto &holder) {
+            holder.id = delissue_tbl.available_primary_key();
+            holder.account = to;
+            holder.limit = limit;
+            holder.issued = yx_asset{0, limit.get_yx_symbol()};
+         });
+      } else {
+         if (limit.amount == 0 && issue_info->issued.amount == 0) {
+            second_index.erase(issue_info);
+         } else {
+            second_index.modify(issue_info, 0, [&](auto &holder) {
+               holder.limit = limit;
+            });
+         }
+      }
+
+      charge_fee(limit.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_GRANT_ISSUE);
+   }
+
+   void yx_token::issuebyuser(const account_name &user, const account_name &to, const yx_asset &token, const string &memo) {
+      check_issue_parameters(user, token, memo);
+      check_transfer_rules(user, user, token);
+      eosio_assert(static_cast<uint32_t>(user != token.issuer), "user and token issuer must be different");
+      require_auth(user);
+
+      delegated_issue_table delissue_tbl{get_self(), token.symbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(token.get_yx_symbol().issuer, user);
+      const auto &issue_info = second_index.find(second_key);
+
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "user issue is not granted by the token issuer");
+      eosio_assert(static_cast<uint32_t>(issue_info->limit.amount - issue_info->issued.amount >= token.amount), "issue limit is reached");
+
+      second_index.modify(issue_info, 0, [&](auto &holder) {
+         holder.issued.amount += token.amount;
+      });
+
+      increase_supply(token);
+      add_token_balance(user, token);
+      if (user != to) {
+         SEND_INLINE_ACTION(*this, transfer, {{user, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+               {user, to, token, memo});
+      }
+
+      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
+   }
+
+   void yx_token::changeissued(const account_name &user, const yx_asset &delta, bool decrease) {
+      check_issue_parameters(user, delta, "");
+      eosio_assert(static_cast<uint32_t>(user != delta.issuer), "user and token issuer must be different");
+      require_auth(delta.issuer);
+
+      delegated_issue_table delissue_tbl{get_self(), delta.symbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(delta.get_yx_symbol().issuer, user);
+      const auto &issue_info = second_index.find(second_key);
+
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "user issue is not granted by the token issuer");
+
+      bool erase = false;
+
+      second_index.modify(issue_info, 0, [&](auto &holder) {
+         if (decrease) {
+            holder.issued.amount -= delta.amount;
+            eosio_assert(static_cast<uint32_t>(holder.issued.amount >= 0), "wrong decrease delta");
+            erase = (holder.limit.amount == 0) && (holder.issued.amount == 0);
+         } else {
+            holder.issued.amount += delta.amount;
+            eosio_assert(
+                  static_cast<uint32_t>(holder.issued.amount >= 0 && holder.issued.amount <= holder.limit.amount),
+                  "wrong decrease delta");
+         }
+      });
+      if (erase) {
+         second_index.erase(issue_info);
+      }
+
+      charge_fee(delta.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CHANGE_ISSUED);
+   }
 }}
 
 EOSIO_ABI(yosemite::non_native_token::yx_token, (create)(issue)(redeem)(transfer)(setkycrule)(setoptions)(freezeacc)(grantissue)(issuebyuser)(changeissued)

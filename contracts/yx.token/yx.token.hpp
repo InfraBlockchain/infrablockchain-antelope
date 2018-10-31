@@ -33,13 +33,13 @@ namespace yosemite { namespace non_native_token {
       explicit yx_token(account_name self) : token(self) {
       }
 
-      void grantissue(const account_name &to, const yx_asset &limit, const string &memo);
-      /** Token is issued by the user till issue limit. */
-      void issuebyuser(const account_name &user, const yx_asset &token, const string &memo);
-      void changeissued(const account_name &user, const yx_asset &delta, bool decrease);
       void issue(const account_name &to, const yx_asset &token, const string &memo);
       void redeem(const yx_asset &token, const string &memo);
       void transfer(account_name from, account_name to, const yx_asset &token, const string &memo) override;
+      void grantissue(const account_name &to, const yx_asset &limit, const string &memo);
+      /** Token is issued by the user till issue limit. */
+      void issuebyuser(const account_name &user, const account_name &to, const yx_asset &token, const string &memo);
+      void changeissued(const account_name &user, const yx_asset &delta, bool decrease);
 
    protected:
       void inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t can_set_options) override;

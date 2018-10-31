@@ -200,11 +200,12 @@ Issue the token by the user with the issue authority and the issue limit
 * The total 'issued' amount of the user is incresed by the amount of token.
 * The total 'issued' amount of the user cannot exceed the issue limit granted by the token issuer.
 ```
-clyos push action yx.token issuebyuser '{"user":"user1", "token":{"amount":"100000.0000 BTC","issuer":"d2"}, "memo":"my memo"}' -p user1
+clyos push action yx.token issuebyuser '{"user":"user1","to":"user1","token":{"amount":"100000.0000 BTC","issuer":"d2"}, "memo":"my memo"}' -p user1
 ```
 
 ### parameters of issuebyuser
 1. user : the account who is granted the issue authority
+1. to : the account who is transferred the token
 1. token : the amount of token with the issuer
    * amount
    * issuer
