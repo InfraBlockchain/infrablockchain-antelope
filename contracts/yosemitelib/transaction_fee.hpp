@@ -29,8 +29,10 @@
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE       N(tf.tsetkyc)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS       N(tf.tsetopts)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_FREEZEACC        N(tf.tfreezeac)
-#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_GRANT_ISSUE      N(tf.tgissue)
+
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SET_USER_ISSUE_LIMIT N(tf.tsetuilim)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER    N(tf.tissuebyu)
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_ENTRUST_USER_ISSUE_TO N(tf.ttrustui)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_CHANGE_ISSUED    N(tf.tchangeis)
 
 // yx.dcontract

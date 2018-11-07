@@ -20,6 +20,7 @@ namespace yosemite { namespace non_native_token {
       account_name account;
       yx_asset limit{};
       yx_asset issued{}; // cannot exceed limit
+      account_name entrusted_issuer{};
 
       uint64_t primary_key() const { return id; }
       uint128_t by_secondary_key() const {
@@ -36,9 +37,11 @@ namespace yosemite { namespace non_native_token {
       void issue(const account_name &to, const yx_asset &token, const string &memo);
       void redeem(const yx_asset &token, const string &memo);
       void transfer(account_name from, account_name to, const yx_asset &token, const string &memo) override;
-      void grantissue(const account_name &to, const yx_asset &limit, const string &memo);
+      void setuilimit(const account_name &to, const yx_asset &limit);
       /** Token is issued by the user till issue limit. */
       void issuebyuser(const account_name &user, const account_name &to, const yx_asset &token, const string &memo);
+      /** The user entrusts its issue authority to another account. Currently, another account is only the token issuer. */
+      void entrustui(const account_name &user, const account_name &to, const yx_symbol &ysymbol);
       void changeissued(const account_name &user, const yx_asset &delta, bool decrease);
 
    protected:

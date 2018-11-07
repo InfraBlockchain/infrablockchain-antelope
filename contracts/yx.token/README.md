@@ -182,20 +182,20 @@ clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2
 1. freeze : freeze or unfreeze
 
 
-## grantissue
-Grant issue authority to the token user with the certain amount of token by the token depository.
+## setuilimit
+Set the limit of user issue amount by the token depository.
 ```
-clyos push action yx.token grantissue '{"to":"user1", "limit":{"amount":"1000000.0000 BTC","issuer":"d2"}}' -p d2
+clyos push action yx.token setuilimit '{"to":"user1", "limit":{"amount":"1000000.0000 BTC","issuer":"d2"}}' -p d2
 ```
 
-### parameters of grantissue
+### parameters of setuilimit
 1. to : the account who is granted the issue authority
-1. limit : the amount of token with the issuer
+1. limit : the limit amount of token with the issuer
    * amount
    * issuer
 
 ## issuebyuser
-Issue the token by the user with the issue authority and the issue limit
+Issue the token by the user with the user issue authority and the limit
 
 * The total 'issued' amount of the user is incresed by the amount of token.
 * The total 'issued' amount of the user cannot exceed the issue limit granted by the token issuer.
@@ -211,8 +211,24 @@ clyos push action yx.token issuebyuser '{"user":"user1","to":"user1","token":{"a
    * issuer
 1. memo : string less than or equal to 256 bytes
 
+
+## entrustui
+Entrust the user issue authority to another account
+
+* Agreed by the user under the terms and conditions, the delegated account can issue the amount of the token by the issue limit.
+```
+clyos push action yx.token entrustui '{"user":"user1","to":"d2","ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}}' -p user1
+```
+
+### parameters of issuebyuser
+1. user : the account who is granted the issue authority
+1. to : the account who is entrusted
+   * Currently only the token issuer can be entrusted.
+1. ysymbol : token symbol and its issuer
+
+
 ## changeissued
-Decrease or increase the total 'issued' amount of token of the user
+Decrease or increase the total user-issued amount of token of the user
 ```
 clyos push action yx.token changeissued '{"user":"user1", "delta":{"amount":"1000000.0000 BTC","issuer":"d2"}, "decrease":1}' -p d2
 ```

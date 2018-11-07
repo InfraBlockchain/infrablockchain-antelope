@@ -70,12 +70,11 @@
       ]
     },
     {
-      "name": "grantissue",
+      "name": "setuilimit",
       "base": "",
       "fields": [
         {"name":"to", "type":"account_name"},
-        {"name":"limit", "type":"yx_asset"},
-        {"name":"memo", "type":"string"}
+        {"name":"limit", "type":"yx_asset"}
       ]
     },
     {
@@ -86,6 +85,15 @@
         {"name":"to", "type":"account_name"},
         {"name":"token", "type":"yx_asset"},
         {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "entrustui",
+      "base": "",
+      "fields": [
+        {"name":"user", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"ysymbol", "type":"yx_symbol"}
       ]
     },
     {
@@ -136,8 +144,9 @@
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" },
     { "name": "setoptions", "type": "setoptions", "ricardian_contract": "" },
     { "name": "freezeacc", "type": "freezeacc", "ricardian_contract": "" },
-    { "name": "grantissue", "type": "grantissue", "ricardian_contract": "" },
+    { "name": "setuilimit", "type": "setuilimit", "ricardian_contract": "" },
     { "name": "issuebyuser", "type": "issuebyuser", "ricardian_contract": "" },
+    { "name": "entrustui", "type": "entrustui", "ricardian_contract": "" },
     { "name": "changeissued", "type": "changeissued", "ricardian_contract": "" }
   ],
   "tables": [{

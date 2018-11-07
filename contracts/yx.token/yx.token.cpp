@@ -74,12 +74,13 @@ namespace yosemite { namespace non_native_token {
       }
    }
 
-   void yx_token::grantissue(const account_name &to, const yx_asset &limit, const string &memo) {
+   void yx_token::setuilimit(const account_name &to, const yx_asset &limit) {
       eosio_assert(static_cast<uint32_t>(limit.is_valid()), "invalid limit");
       eosio_assert(static_cast<uint32_t>(limit.amount >= 0), "must be non-negative limit");
       eosio_assert(static_cast<uint32_t>(!limit.is_native(false)), "cannot grant issue with the native token");
       eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-      eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+      eosio_assert(static_cast<uint32_t>(
+            does_token_exist(YOSEMITE_USER_TOKEN_ACCOUNT, limit.get_yx_symbol())), "token does not exist");
       require_auth(limit.issuer);
 
       delegated_issue_table delissue_tbl{get_self(), limit.symbol.value};
@@ -104,22 +105,27 @@ namespace yosemite { namespace non_native_token {
          }
       }
 
-      charge_fee(limit.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_GRANT_ISSUE);
+      charge_fee(limit.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SET_USER_ISSUE_LIMIT);
    }
 
    void yx_token::issuebyuser(const account_name &user, const account_name &to, const yx_asset &token, const string &memo) {
       check_issue_parameters(user, token, memo);
       check_transfer_rules(user, user, token);
       eosio_assert(static_cast<uint32_t>(user != token.issuer), "user and token issuer must be different");
-      require_auth(user);
+      eosio_assert(static_cast<uint32_t>(is_account(to)), "to account is invalid");
 
       delegated_issue_table delissue_tbl{get_self(), token.symbol.value};
       auto second_index = delissue_tbl.get_index<N(secondary)>();
       const uint128_t &second_key = to_uint128(token.get_yx_symbol().issuer, user);
       const auto &issue_info = second_index.find(second_key);
 
-      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "user issue is not granted by the token issuer");
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "the limit of user issue is not set by the token issuer");
       eosio_assert(static_cast<uint32_t>(issue_info->limit.amount - issue_info->issued.amount >= token.amount), "issue limit is reached");
+
+      // even if the entrusted issuer is set, the user should issue by himself or herself
+      if (issue_info->entrusted_issuer == 0 || !has_auth(issue_info->entrusted_issuer)) {
+         require_auth(user);
+      }
 
       second_index.modify(issue_info, 0, [&](auto &holder) {
          holder.issued.amount += token.amount;
@@ -135,6 +141,36 @@ namespace yosemite { namespace non_native_token {
       charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
    }
 
+   void yx_token::entrustui(const account_name &user, const account_name &to, const yx_symbol &ysymbol) {
+      eosio_assert(static_cast<uint32_t>(ysymbol.is_valid()), "invalid token symbol");
+      eosio_assert(static_cast<uint32_t>(!ysymbol.is_native(false)), "cannot apply the native token with this action");
+      eosio_assert(static_cast<uint32_t>(to == ysymbol.issuer || user == to), "currently only the token issuer is allowed for to");
+
+      require_auth(user);
+
+      delegated_issue_table delissue_tbl{get_self(), ysymbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(ysymbol.issuer, user);
+      const auto &issue_info = second_index.find(second_key);
+
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "the limit of user issue is not set by the token issuer");
+      if (issue_info->entrusted_issuer != 0) {
+         eosio_assert(static_cast<uint32_t>(issue_info->entrusted_issuer != to), "entrusted issuer is already set");
+      } else {
+         eosio_assert(static_cast<uint32_t>(user != to), "entrusted issuer is already unset");
+      }
+
+      second_index.modify(issue_info, 0, [&](auto &holder) {
+         if (user == to) {
+            holder.entrusted_issuer = 0;
+         } else {
+            holder.entrusted_issuer = to;
+         }
+      });
+
+      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ENTRUST_USER_ISSUE_TO);
+   }
+
    void yx_token::changeissued(const account_name &user, const yx_asset &delta, bool decrease) {
       check_issue_parameters(user, delta, "");
       eosio_assert(static_cast<uint32_t>(user != delta.issuer), "user and token issuer must be different");
@@ -145,7 +181,7 @@ namespace yosemite { namespace non_native_token {
       const uint128_t &second_key = to_uint128(delta.get_yx_symbol().issuer, user);
       const auto &issue_info = second_index.find(second_key);
 
-      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "user issue is not granted by the token issuer");
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "the limit of user issue is not set by the token issuer");
 
       bool erase = false;
 
@@ -169,5 +205,6 @@ namespace yosemite { namespace non_native_token {
    }
 }}
 
-EOSIO_ABI(yosemite::non_native_token::yx_token, (create)(issue)(redeem)(transfer)(setkycrule)(setoptions)(freezeacc)(grantissue)(issuebyuser)(changeissued)
+EOSIO_ABI(yosemite::non_native_token::yx_token,
+      (create)(issue)(redeem)(transfer)(setkycrule)(setoptions)(freezeacc)(setuilimit)(issuebyuser)(entrustui)(changeissued)
 )
