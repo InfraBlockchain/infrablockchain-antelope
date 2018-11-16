@@ -31,8 +31,9 @@ clyos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.00 D
 clyos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.00 DKRW"}}' -p yosemite
 clyos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.00 DKRW"}}' -p yosemite
 clyos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tgissue", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tissuebyu", "fee":"1.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tsetuilim", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tissuebyu", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.ttrustui", "fee":"10.00 DKRW"}}' -p yosemite
 clyos push action yx.txfee settxfee '{"operation":"tf.tchangeis", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
