@@ -25,6 +25,10 @@
 
 #include <eosio/chain/eosio_contract.hpp>
 
+#include <yosemite/chain/yosemite_global_property_database.hpp>
+#include <yosemite/chain/transaction_fee_database.hpp>
+#include <yosemite/chain/standard_token_database.hpp>
+
 namespace eosio { namespace chain {
 
 using resource_limits::resource_limits_manager;
@@ -37,6 +41,10 @@ using controller_index_set = index_set<
    block_summary_multi_index,
    transaction_multi_index,
    generated_transaction_multi_index,
+   yosemite::chain::yosemite_global_property_multi_index,
+   yosemite::chain::transaction_fee_multi_index,
+   yosemite::chain::token_info_multi_index,
+   yosemite::chain::token_balance_multi_index,
    table_id_multi_index
 >;
 
