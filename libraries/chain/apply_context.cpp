@@ -12,6 +12,11 @@
 #include <boost/container/flat_set.hpp>
 #include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/exceptions.hpp>
+#include <yosemite/chain/standard_token_database.hpp>
+#include <yosemite/chain/transaction_fee_database.hpp>
+#include <yosemite/chain/system_token_list.hpp>
+#include <yosemite/chain/yosemite_global_property_database.hpp>
+#include <yosemite/chain/standard_token_action_types.hpp>
 
 using boost::container::flat_set;
 
@@ -51,7 +56,18 @@ void apply_context::exec_one( action_trace& trace )
       try {
          const auto& a = control.get_account( receiver );
          privileged = a.privileged;
-         auto native = control.find_apply_handler( receiver, act.account, act.name );
+
+         const apply_handler* native = nullptr;
+
+         /// YOSEMITE Built-in Actions
+         if (receiver == act.account) {
+            native = control.find_built_in_action_apply_handler(act.name);
+         }
+
+         if (native == nullptr) {
+            native = control.find_apply_handler( receiver, act.account, act.name );
+         }
+
          if( native ) {
             if( trx_context.can_subjectively_fail && control.is_producing_block() ) {
                control.check_contract_list( receiver );

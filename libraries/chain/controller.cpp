@@ -28,6 +28,7 @@
 #include <yosemite/chain/yosemite_global_property_database.hpp>
 #include <yosemite/chain/transaction_fee_database.hpp>
 #include <yosemite/chain/standard_token_database.hpp>
+#include <yosemite/chain/standard_token_action_handlers.hpp>
 
 namespace eosio { namespace chain {
 
@@ -146,6 +147,13 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
 
    /**
+    * [YOSEMITE Built-in Actions Feature]
+    * predefined actions can be executed on every account even though an account doesn't have contract code.
+    * YOSEMITE Standard Token operations (issue,redeem,transfer,...) are built-in actions supported on every account
+    */
+   map< action_name, apply_handler >   built_in_action_apply_handlers;
+
+   /**
     *  Transactions that were undone by pop_block or abort_block, transactions
     *  are removed from this list if they are re-applied in other blocks. Producers
     *  can query this list when scheduling new transactions into blocks.
@@ -174,6 +182,10 @@ struct controller_impl {
 
    void set_apply_handler( account_name receiver, account_name contract, action_name action, apply_handler v ) {
       apply_handlers[receiver][make_pair(contract,action)] = v;
+   }
+
+   void set_built_in_action_apply_handler( action_name action, apply_handler v ) {
+      built_in_action_apply_handlers[action] = v;
    }
 
    controller_impl( const controller::config& cfg, controller& s  )
@@ -211,6 +223,11 @@ struct controller_impl {
 */
 
    SET_APP_HANDLER( yosemite, yosemite, canceldelay );
+
+#define SET_BUILT_IN_ACTION_APP_HANDLER( action ) \
+   set_built_in_action_apply_handler( #action, &BOOST_PP_CAT(yosemite::chain::apply_, BOOST_PP_CAT(yosemite_built_in_action, BOOST_PP_CAT(_,action) ) ) )
+
+   SET_BUILT_IN_ACTION_APP_HANDLER( settokenmeta );
 
    fork_db.irreversible.connect( [&]( auto b ) {
                                  on_irreversible(b);
@@ -1971,6 +1988,16 @@ db_read_mode controller::get_read_mode()const {
 
 validation_mode controller::get_validation_mode()const {
    return my->conf.block_validation_mode;
+}
+
+/// YOSEMITE Built-in Actions
+const apply_handler* controller::find_built_in_action_apply_handler( action_name act ) const
+{
+   auto handler = my->built_in_action_apply_handlers.find( act );
+   if ( handler != my->built_in_action_apply_handlers.end() ) {
+      return &handler->second;
+   }
+   return nullptr;
 }
 
 const apply_handler* controller::find_apply_handler( account_name receiver, account_name scope, action_name act ) const
