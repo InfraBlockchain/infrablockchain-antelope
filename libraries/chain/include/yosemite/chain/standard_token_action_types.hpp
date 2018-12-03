@@ -6,6 +6,7 @@
 #pragma once
 
 #include <eosio/chain/types.hpp>
+#include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/symbol.hpp>
 
 namespace yosemite { namespace chain {
@@ -22,9 +23,7 @@ namespace yosemite { namespace chain {
       }
    };
 
-   bool is_yosemite_standard_token_action(action_name action) {
-      return action == settokenmeta::get_name();
-   }
+   bool is_yosemite_standard_token_action(action_name action);
 
 } } /// yosemite::chain
 

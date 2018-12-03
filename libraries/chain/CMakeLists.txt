@@ -43,6 +43,7 @@ add_library( eosio_chain
              webassembly/wabt.cpp
 
              yosemite/standard_token_action_handlers.cpp
+             yosemite/standard_token_action_types.cpp
 
 #             get_config.cpp
 #             global_property_object.cpp

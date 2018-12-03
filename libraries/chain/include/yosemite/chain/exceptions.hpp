@@ -9,6 +9,9 @@ namespace yosemite { namespace chain {
 
     using namespace eosio::chain;
 
+//FC_DECLARE_DERIVED_EXCEPTION( transaction_exception,             chain_exception,
+//                              3040000, "Transaction exception" )
+
     FC_DECLARE_DERIVED_EXCEPTION( invalid_trx_vote_target_account, transaction_exception,
                                   3041001, "Invalid Transaction-Vote Target Account Data In Tx-Ext" )
 
@@ -17,5 +20,13 @@ namespace yosemite { namespace chain {
 
     FC_DECLARE_DERIVED_EXCEPTION( dtfp_inside_generated_tx, transaction_exception,
                                   3041003, "Delegated-Transaction-Fee-Payment is not allowed inside generated transaction" )
+
+  FC_DECLARE_DERIVED_EXCEPTION( yosemite_standard_token_exception, chain_exception,
+                                3710000, "YOSEMITE standard token exception" )
+
+    FC_DECLARE_DERIVED_EXCEPTION( token_meta_validate_exception, yosemite_standard_token_exception,
+                                  3710001, "Invalid token meta info" )
+
+
 
 }} // namespace yosemite::chain
