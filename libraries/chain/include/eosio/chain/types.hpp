@@ -175,7 +175,7 @@ namespace eosio { namespace chain {
       OBJECT_TYPE_COUNT, ///< Sentry value which contains the number of different object types
       YOSEMITE_OBJECT_TYPE_DELIMITER = 1000,
       yosemite_global_property_object_type,
-      yosemite_token_info_object_type,
+      yosemite_token_meta_object_type,
       yosemite_token_balance_object_type,
       yosemite_transaction_fee_object_type
    };

@@ -19,8 +19,8 @@ namespace yosemite { namespace chain {
    /**
     * @brief token information object
     */
-   class token_info_object : public chainbase::object<yosemite_token_info_object_type, token_info_object> {
-      OBJECT_CTOR(token_info_object, (url)(description))
+   class token_meta_object : public chainbase::object<yosemite_token_meta_object_type, token_meta_object> {
+      OBJECT_CTOR(token_meta_object, (url)(description))
 
       id_type        id;
       token_id_type  token_id; // token id = token account name
@@ -33,10 +33,10 @@ namespace yosemite { namespace chain {
    struct by_token_id;
 
    using token_info_multi_index = chainbase::shared_multi_index_container<
-      token_info_object,
+      token_meta_object,
       indexed_by<
-         ordered_unique< tag<by_id>, member<token_info_object, token_info_object::id_type, &token_info_object::id> >,
-         ordered_unique< tag<by_token_id>, member<token_info_object, token_id_type, &token_info_object::token_id> >
+         ordered_unique< tag<by_id>, member<token_meta_object, token_meta_object::id_type, &token_meta_object::id> >,
+         ordered_unique< tag<by_token_id>, member<token_meta_object, token_id_type, &token_meta_object::token_id> >
       >
    >;
 
@@ -73,7 +73,7 @@ namespace yosemite { namespace chain {
 namespace eosio { namespace chain { namespace config {
 
    template<>
-   struct billable_size<yosemite::chain::token_info_object> {
+   struct billable_size<yosemite::chain::token_meta_object> {
       static const uint64_t overhead = overhead_per_row_per_index_ram_bytes * 2;  ///< overhead for 2x indices internal-key(id) and token_id
       static const uint64_t value = 32 + 2*(8+4+256) + overhead; ///< 32 bytes for constant size fields + 2 x upto-256-string(including 8 for pointer to vector data, 4 for size of vector) + overhead
    };
@@ -87,8 +87,8 @@ namespace eosio { namespace chain { namespace config {
 } } } /// eosio::chain::config
 
 
-CHAINBASE_SET_INDEX_TYPE(yosemite::chain::token_info_object, yosemite::chain::token_info_multi_index)
+CHAINBASE_SET_INDEX_TYPE(yosemite::chain::token_meta_object, yosemite::chain::token_info_multi_index)
 CHAINBASE_SET_INDEX_TYPE(yosemite::chain::token_balance_object, yosemite::chain::token_balance_multi_index)
 
-FC_REFLECT(yosemite::chain::token_info_object, (token_id)(symbol)(total_supply)(url)(description) )
+FC_REFLECT(yosemite::chain::token_meta_object, (token_id)(symbol)(total_supply)(url)(description) )
 FC_REFLECT(yosemite::chain::token_balance_object, (token_id)(account)(balance) )
