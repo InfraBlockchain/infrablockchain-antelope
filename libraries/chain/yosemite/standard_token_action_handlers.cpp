@@ -27,9 +27,9 @@ namespace yosemite { namespace chain {
          int64_t url_size = action.url.size();
          int64_t desc_size = action.description.size();
 
-         EOS_ASSERT( action.symbol.valid(), token_meta_validate_exception, "invalid token symbol" );
-         EOS_ASSERT( url_size > 0 && url_size <= 255, token_meta_validate_exception, "invalid token url size" );
-         EOS_ASSERT( desc_size > 0 && desc_size <= 255, token_meta_validate_exception, "invalid token description size" );
+         EOS_ASSERT( action.symbol.valid(), token_action_validate_exception, "invalid token symbol" );
+         EOS_ASSERT( url_size > 0 && url_size <= 255, token_action_validate_exception, "invalid token url size" );
+         EOS_ASSERT( desc_size > 0 && desc_size <= 255, token_action_validate_exception, "invalid token description size" );
 
          // only the account owner can set token metadata for its own token
          context.require_authorization(context.receiver);
@@ -47,7 +47,7 @@ namespace yosemite { namespace chain {
          auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
          if ( token_meta_ptr ) {
             EOS_ASSERT( token_meta_ptr->symbol != action.symbol || token_meta_ptr->url != action.url.c_str() || token_meta_ptr->description != action.description.c_str(),
-               token_meta_validate_exception, "attempting update token metadata, but new metadata is same as old one" );
+                        token_action_validate_exception, "attempting update token metadata, but new metadata is same as old one" );
 
             db.modify( *token_meta_ptr, set_token_meta_lambda );
          } else {
@@ -64,12 +64,12 @@ namespace yosemite { namespace chain {
 
       auto issue_action = context.act.data_as_built_in_common_action<issue>();
       try {
-         EOS_ASSERT( issue_action.to.good(), token_issue_validate_exception, "invalid to account name" );
-         EOS_ASSERT( issue_action.qty.is_valid(), token_issue_validate_exception, "invalid quantity" );
+         EOS_ASSERT( issue_action.to.good(), token_action_validate_exception, "invalid to account name" );
+         EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
 
          share_type issue_amount = issue_action.qty.get_amount();
-         EOS_ASSERT( issue_amount > 0, token_issue_validate_exception, "amount of token issuance must be greater than 0" );
-         EOS_ASSERT( issue_action.memo.size() <= 256, token_issue_validate_exception, "memo has more than 256 bytes" );
+         EOS_ASSERT( issue_amount > 0, token_action_validate_exception, "amount of token issuance must be greater than 0" );
+         EOS_ASSERT( issue_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
 
          auto& db = context.db;
 
@@ -78,11 +78,11 @@ namespace yosemite { namespace chain {
          auto token_meta_obj = *token_meta_ptr;
 
          EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
-                    "token symbol of quantity field mismatches with the symbol(${sym2}) of token metadata",
+                    "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
                     ("sym", token_meta_obj.symbol.to_string()) );
 
-         auto to_account_obj_ptr = db.find<account_object, by_name>(issue_action.to);
-         EOS_ASSERT( to_account_obj_ptr != nullptr, token_issue_validate_exception,
+         auto to_account_obj_ptr = db.find<account_object, by_name>( issue_action.to );
+         EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
                      "token issuance target account ${account} does not exist", ("account", issue_action.to) );
 
          share_type old_total_supply = token_meta_obj.total_supply;
@@ -112,6 +112,47 @@ namespace yosemite { namespace chain {
       } FC_CAPTURE_AND_RETHROW( (issue_action) )
    }
 
+
+   void apply_yosemite_built_in_action_transfer( apply_context& context ) {
+
+      auto transfer_action = context.act.data_as_built_in_common_action<transfer>();
+      try {
+         EOS_ASSERT( transfer_action.from.good(), token_action_validate_exception, "invalid from account name" );
+         EOS_ASSERT( transfer_action.to.good(), token_action_validate_exception, "invalid to account name" );
+         EOS_ASSERT( transfer_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
+
+         share_type transfer_amount = transfer_action.qty.get_amount();
+         EOS_ASSERT( transfer_amount > 0, token_action_validate_exception, "amount of token transfer must be greater than 0" );
+         EOS_ASSERT( transfer_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
+
+         auto& db = context.db;
+
+         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
+         auto token_meta_obj = *token_meta_ptr;
+
+         EOS_ASSERT( transfer_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
+                     "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
+                     ("sym", token_meta_obj.symbol.to_string()) );
+
+         auto from_account_obj_ptr = db.find<account_object, by_name>( transfer_action.from );
+         EOS_ASSERT( from_account_obj_ptr != nullptr, no_token_target_account_exception,
+                     "transfer from account ${account} does not exist", ("account", transfer_action.from) );
+
+         auto to_account_obj_ptr = db.find<account_object, by_name>( transfer_action.to );
+         EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
+                     "transfer to account ${account} does not exist", ("account", transfer_action.to) );
+
+         // need 'from' account signature
+         context.require_authorization( transfer_action.from );
+
+         subtract_token_balance( context, context.receiver, transfer_action.from, transfer_amount );
+         add_token_balance( context, context.receiver, transfer_action.to, transfer_amount );
+
+      } FC_CAPTURE_AND_RETHROW( (transfer_action) )
+   }
+
+
    void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value ) {
 
       EOS_ASSERT( context.receiver == token_id, invalid_token_balance_update_access_exception, "add_token_balance : action context receiver mismatches token-id" );
@@ -131,6 +172,31 @@ namespace yosemite { namespace chain {
          });
 
          context.add_ram_usage(owner, (int64_t)(config::billable_size_v<token_balance_object>));
+      }
+   }
+
+   void subtract_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value ) {
+
+      EOS_ASSERT( context.receiver == token_id, invalid_token_balance_update_access_exception, "subtract_token_balance : action context receiver mismatches token-id" );
+
+      auto& db = context.db;
+
+      auto balance_ptr = db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, owner));
+      if ( balance_ptr ) {
+         share_type cur_balance = balance_ptr->balance;
+         EOS_ASSERT( cur_balance >= value, insufficient_token_balance_exception, "account ${account} has insufficient_token_balance", ("account", owner) );
+
+         if ( cur_balance == value ) {
+            db.remove( *balance_ptr );
+            context.add_ram_usage(owner, -(int64_t)(config::billable_size_v<token_balance_object>));
+         } else {
+            db.modify<token_balance_object>( *balance_ptr, [&]( token_balance_object& balance_obj ) {
+               balance_obj.balance -= value;
+            });
+         }
+
+      } else {
+         EOS_ASSERT( false, insufficient_token_balance_exception, "account ${account} has insufficient_token_balance", ("account", owner) );
       }
    }
 

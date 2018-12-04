@@ -24,14 +24,14 @@ namespace yosemite { namespace chain {
   FC_DECLARE_DERIVED_EXCEPTION( yosemite_standard_token_exception, chain_exception,
                                 3711000, "YOSEMITE standard token exception" )
 
-    FC_DECLARE_DERIVED_EXCEPTION( token_meta_validate_exception, yosemite_standard_token_exception,
-                                  3711001, "Invalid token meta info" )
-
-    FC_DECLARE_DERIVED_EXCEPTION( token_issue_validate_exception, yosemite_standard_token_exception,
-                                  3711002, "Invalid token issue action data" )
+    FC_DECLARE_DERIVED_EXCEPTION( token_action_validate_exception, yosemite_standard_token_exception,
+                                  3711001, "Invalid token action data" )
 
     FC_DECLARE_DERIVED_EXCEPTION( token_not_yet_created_exception, yosemite_standard_token_exception,
-                                  3711003, "No token metadata, token is not yet created" )
+                                  3711002, "No token metadata, token is not yet created" )
+
+    FC_DECLARE_DERIVED_EXCEPTION( no_token_target_account_exception, yosemite_standard_token_exception,
+                                  3711003, "token target account does not exist" )
 
     FC_DECLARE_DERIVED_EXCEPTION( token_symbol_mismatch_exception, yosemite_standard_token_exception,
                                   3711004, "Token symbol mismatch" )
@@ -41,6 +41,9 @@ namespace yosemite { namespace chain {
 
     FC_DECLARE_DERIVED_EXCEPTION( token_balance_overflow_exception, yosemite_standard_token_exception,
                                   3711006, "Token balance overflow" )
+
+    FC_DECLARE_DERIVED_EXCEPTION( insufficient_token_balance_exception, yosemite_standard_token_exception,
+                                  3711007, "Insufficient token balance" )
 
 
 }} // namespace yosemite::chain

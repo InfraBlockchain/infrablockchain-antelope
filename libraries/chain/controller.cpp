@@ -224,11 +224,12 @@ struct controller_impl {
 
    SET_APP_HANDLER( yosemite, yosemite, canceldelay );
 
-#define SET_BUILT_IN_ACTION_APP_HANDLER( action ) \
+#define SET_BUILT_IN_ACTION_APPLY_HANDLER( action ) \
    set_built_in_action_apply_handler( #action, &BOOST_PP_CAT(yosemite::chain::apply_, BOOST_PP_CAT(yosemite_built_in_action, BOOST_PP_CAT(_,action) ) ) )
 
-   SET_BUILT_IN_ACTION_APP_HANDLER( settokenmeta );
-   SET_BUILT_IN_ACTION_APP_HANDLER( issue );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( settokenmeta );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( issue );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( transfer );
 
    fork_db.irreversible.connect( [&]( auto b ) {
                                  on_irreversible(b);
