@@ -85,6 +85,14 @@ namespace eosio { namespace chain {
             : account(account), name(name), authorization(move(auth)), data(data) {
       }
 
+      template<typename T, std::enable_if_t<!std::is_base_of<bytes, T>::value, int> = 1>
+      action( vector<permission_level> auth, account_name account, const T& value )
+           : account(account) {
+         name        = T::get_name();
+         authorization = move(auth);
+         data        = fc::raw::pack(value);
+      }
+
       template<typename T>
       T data_as()const {
          EOS_ASSERT( account == T::get_account(), action_type_exception, "account is not consistent with action struct" );

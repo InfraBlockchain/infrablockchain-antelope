@@ -8,6 +8,7 @@
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/contract_types.hpp>
 #include <eosio/chain/apply_context.hpp>
+#include <yosemite/chain/standard_token_database.hpp>
 
 namespace yosemite { namespace chain {
 
@@ -18,8 +19,12 @@ namespace yosemite { namespace chain {
     */
    ///@{
 
-   void apply_yosemite_built_in_action_settokenmeta(apply_context&);
+   void apply_yosemite_built_in_action_settokenmeta( apply_context& context);
+
+   void apply_yosemite_built_in_action_issue( apply_context& context );
 
    ///@}  end action handlers
 
-} } /// namespace yosemite::chain
+   void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );
+
+} } /// namespace yosemite::chain::stdtoken

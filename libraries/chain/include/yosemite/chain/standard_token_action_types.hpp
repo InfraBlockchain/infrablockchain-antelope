@@ -8,10 +8,16 @@
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/symbol.hpp>
+#include <eosio/chain/asset.hpp>
 
-namespace yosemite { namespace chain {
+namespace yosemite { namespace chain { namespace token {
 
    using namespace eosio::chain;
+
+   /**
+    * Every account can process built-in token actions (settokenmeta, issue, transfer, redeem)
+    * An account can have optional token contract code inheriting built-in token actions
+    */
 
    struct settokenmeta {
       symbol       symbol;
@@ -23,8 +29,31 @@ namespace yosemite { namespace chain {
       }
    };
 
+   struct issue {
+      account_name  to;
+      asset         qty; // token quantity
+      std::string   memo;
+
+      static action_name get_name() {
+         return N(issue);
+      }
+   };
+
+   struct transfer {
+      account_name  from;
+      account_name  to;
+      asset         qty; // token quantity
+      std::string   memo;
+
+      static action_name get_name() {
+         return N(transfer);
+      }
+   };
+
    bool is_yosemite_standard_token_action(action_name action);
 
-} } /// yosemite::chain
+} } } /// yosemite::chain::stdtoken
 
-FC_REFLECT( yosemite::chain::settokenmeta , (symbol)(url)(description) )
+FC_REFLECT( yosemite::chain::token::settokenmeta , (symbol)(url)(description) )
+FC_REFLECT( yosemite::chain::token::issue, (to)(qty)(memo) )
+FC_REFLECT( yosemite::chain::token::transfer, (from)(to)(qty)(memo) )
