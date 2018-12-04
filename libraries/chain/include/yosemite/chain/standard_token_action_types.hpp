@@ -50,6 +50,15 @@ namespace yosemite { namespace chain { namespace token {
       }
    };
 
+   struct txfee {
+      account_name  payer;
+      asset         fee; // token quantity to pay tx fee
+
+      static action_name get_name() {
+         return N(txfee);
+      }
+   };
+
    bool is_yosemite_standard_token_action(action_name action);
 
 } } } /// yosemite::chain::stdtoken
@@ -57,3 +66,4 @@ namespace yosemite { namespace chain { namespace token {
 FC_REFLECT( yosemite::chain::token::settokenmeta , (symbol)(url)(description) )
 FC_REFLECT( yosemite::chain::token::issue, (to)(qty)(memo) )
 FC_REFLECT( yosemite::chain::token::transfer, (from)(to)(qty)(memo) )
+FC_REFLECT( yosemite::chain::token::txfee, (payer)(fee) )

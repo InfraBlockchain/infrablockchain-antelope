@@ -25,6 +25,8 @@ namespace yosemite { namespace chain {
 
    void apply_yosemite_built_in_action_transfer( apply_context& context );
 
+   void apply_yosemite_built_in_action_txfee( apply_context& context );
+
    ///@}  end action handlers
 
    void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );

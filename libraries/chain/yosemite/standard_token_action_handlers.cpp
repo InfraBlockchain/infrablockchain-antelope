@@ -8,6 +8,7 @@
 #include <yosemite/chain/standard_token_action_types.hpp>
 #include <yosemite/chain/standard_token_database.hpp>
 #include <yosemite/chain/exceptions.hpp>
+#include <yosemite/chain/system_accounts.hpp>
 
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/transaction_context.hpp>
@@ -20,6 +21,9 @@ namespace yosemite { namespace chain {
    using namespace eosio::chain;
    using namespace yosemite::chain::token;
 
+   /**
+    * 'settokenmeta' standard token action handler
+    */
    void apply_yosemite_built_in_action_settokenmeta(apply_context& context) {
 
       auto action = context.act.data_as_built_in_common_action<settokenmeta>();
@@ -46,7 +50,8 @@ namespace yosemite { namespace chain {
 
          auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
          if ( token_meta_ptr ) {
-            EOS_ASSERT( token_meta_ptr->symbol != action.symbol || token_meta_ptr->url != action.url.c_str() || token_meta_ptr->description != action.description.c_str(),
+            EOS_ASSERT( token_meta_ptr->symbol == action.symbol, token_action_validate_exception, "token symbol cannot be modified once it is set" );
+            EOS_ASSERT( token_meta_ptr->url != action.url.c_str() || token_meta_ptr->description != action.description.c_str(),
                         token_action_validate_exception, "attempting update token metadata, but new metadata is same as old one" );
 
             db.modify( *token_meta_ptr, set_token_meta_lambda );
@@ -60,6 +65,9 @@ namespace yosemite { namespace chain {
    }
 
 
+   /**
+    * 'issue' standard token action handler
+    */
    void apply_yosemite_built_in_action_issue(apply_context& context) {
 
       auto issue_action = context.act.data_as_built_in_common_action<issue>();
@@ -112,7 +120,9 @@ namespace yosemite { namespace chain {
       } FC_CAPTURE_AND_RETHROW( (issue_action) )
    }
 
-
+   /**
+    * 'transfer' standard token action handler
+    */
    void apply_yosemite_built_in_action_transfer( apply_context& context ) {
 
       auto transfer_action = context.act.data_as_built_in_common_action<transfer>();
@@ -150,6 +160,46 @@ namespace yosemite { namespace chain {
          add_token_balance( context, context.receiver, transfer_action.to, transfer_amount );
 
       } FC_CAPTURE_AND_RETHROW( (transfer_action) )
+   }
+
+
+   /**
+    * 'txfee' standard token action handler
+    */
+   void apply_yosemite_built_in_action_txfee( apply_context& context ) {
+
+      auto txfee_action = context.act.data_as_built_in_common_action<txfee>();
+      try {
+         EOS_ASSERT( txfee_action.payer.good(), token_action_validate_exception, "invalid payer account name" );
+         EOS_ASSERT( txfee_action.fee.is_valid(), token_action_validate_exception, "invalid fee quantity" );
+
+         share_type txfee_amount = txfee_action.fee.get_amount();
+         EOS_ASSERT( txfee_amount > 0, token_action_validate_exception, "tx fee amount must be greater than 0" );
+
+         auto& db = context.db;
+
+         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
+         auto token_meta_obj = *token_meta_ptr;
+
+         EOS_ASSERT( txfee_action.fee.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
+                     "token symbol of fee quantity field mismatches with the symbol(${sym}) of token metadata",
+                     ("sym", token_meta_obj.symbol.to_string()) );
+
+         auto payer_account_obj_ptr = db.find<account_object, by_name>( txfee_action.payer );
+         EOS_ASSERT( payer_account_obj_ptr != nullptr, no_token_target_account_exception,
+                     "tx fee payer account ${account} does not exist", ("account", txfee_action.payer) );
+
+         // need 'payer' account signature
+         if ( !context.trx_context.has_delegated_tx_fee_payer()
+              || txfee_action.payer != context.trx_context.get_delegated_tx_fee_payer() ) {
+            context.require_authorization( txfee_action.payer );
+         }
+
+         subtract_token_balance( context, context.receiver, txfee_action.payer, txfee_amount );
+         add_token_balance( context, context.receiver, YOSEMITE_TX_FEE_ACCOUNT, txfee_amount );
+
+      } FC_CAPTURE_AND_RETHROW( (txfee_action) )
    }
 
 
