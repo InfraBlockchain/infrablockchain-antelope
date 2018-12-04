@@ -42,8 +42,11 @@ namespace yosemite { namespace chain {
     FC_DECLARE_DERIVED_EXCEPTION( token_balance_overflow_exception, yosemite_standard_token_exception,
                                   3711006, "Token balance overflow" )
 
+    FC_DECLARE_DERIVED_EXCEPTION( token_balance_underflow_exception, yosemite_standard_token_exception,
+                                  3711007, "Token balance underflow" )
+
     FC_DECLARE_DERIVED_EXCEPTION( insufficient_token_balance_exception, yosemite_standard_token_exception,
-                                  3711007, "Insufficient token balance" )
+                                  3711008, "Insufficient token balance" )
 
 
 }} // namespace yosemite::chain

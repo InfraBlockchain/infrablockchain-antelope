@@ -59,6 +59,15 @@ namespace yosemite { namespace chain { namespace token {
       }
    };
 
+   struct redeem {
+      asset         qty; // token quantity to redeem(burn)
+      std::string   memo;
+
+      static action_name get_name() {
+         return N(redeem);
+      }
+   };
+
    bool is_yosemite_standard_token_action(action_name action);
 
 } } } /// yosemite::chain::stdtoken
@@ -67,3 +76,4 @@ FC_REFLECT( yosemite::chain::token::settokenmeta , (symbol)(url)(description) )
 FC_REFLECT( yosemite::chain::token::issue, (to)(qty)(memo) )
 FC_REFLECT( yosemite::chain::token::transfer, (from)(to)(qty)(memo) )
 FC_REFLECT( yosemite::chain::token::txfee, (payer)(fee) )
+FC_REFLECT( yosemite::chain::token::redeem, (qty)(memo) )

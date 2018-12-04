@@ -231,6 +231,7 @@ struct controller_impl {
    SET_BUILT_IN_ACTION_APPLY_HANDLER( issue );
    SET_BUILT_IN_ACTION_APPLY_HANDLER( transfer );
    SET_BUILT_IN_ACTION_APPLY_HANDLER( txfee );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( redeem );
 
    fork_db.irreversible.connect( [&]( auto b ) {
                                  on_irreversible(b);

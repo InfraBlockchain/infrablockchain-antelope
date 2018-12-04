@@ -203,6 +203,47 @@ namespace yosemite { namespace chain {
    }
 
 
+   /**
+    * 'redeem' standard token action handler
+    */
+   void apply_yosemite_built_in_action_redeem( apply_context& context ) {
+
+      auto redeem_action = context.act.data_as_built_in_common_action<redeem>();
+      try {
+         EOS_ASSERT( redeem_action.qty.is_valid(), token_action_validate_exception, "invalid token redemption quantity" );
+
+         share_type redeem_amount = redeem_action.qty.get_amount();
+         EOS_ASSERT( redeem_amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
+         EOS_ASSERT( redeem_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
+
+         auto& db = context.db;
+
+         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
+         auto token_meta_obj = *token_meta_ptr;
+
+         EOS_ASSERT( redeem_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
+                     "token symbol of redemption quantity field mismatches with the symbol(${sym}) of token metadata",
+                     ("sym", token_meta_obj.symbol.to_string()) );
+
+         share_type current_total_supply = token_meta_obj.total_supply;
+         EOS_ASSERT( current_total_supply - redeem_amount > 0, token_balance_underflow_exception, "total supply balance underflow" );
+
+         // only the token account owner can redeem(burn) tokens held by token account
+         context.require_authorization( context.receiver );
+
+         // update total supply
+         db.modify<token_meta_object>( token_meta_obj, [&](token_meta_object& token_meta) {
+            token_meta.total_supply -= redeem_amount;
+         });
+
+         // burn redemption token amount
+         subtract_token_balance( context, context.receiver, context.receiver, redeem_amount );
+
+      } FC_CAPTURE_AND_RETHROW( (redeem_action) )
+   }
+
+
    void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value ) {
 
       EOS_ASSERT( context.receiver == token_id, invalid_token_balance_update_access_exception, "add_token_balance : action context receiver mismatches token-id" );
