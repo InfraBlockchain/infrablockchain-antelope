@@ -15,7 +15,7 @@ namespace yosemite { namespace chain {
    using namespace eosio::chain;
 
    /**
-    * @defgroup native_action_handlers Native Action Handlers
+    * @defgroup native_standard_token_action_handlers Native Standard Token Action Handlers
     */
    ///@{
 

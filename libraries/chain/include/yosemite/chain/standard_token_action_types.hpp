@@ -16,7 +16,8 @@ namespace yosemite { namespace chain { namespace token {
 
    /**
     * Every account can process built-in token actions (settokenmeta, issue, transfer, redeem)
-    * An account can have optional token contract code inheriting built-in token actions
+    * without custom smart contract code deployed to an account.
+    * An account can have optional token contract code inheriting built-in token actions.
     */
 
    struct settokenmeta {

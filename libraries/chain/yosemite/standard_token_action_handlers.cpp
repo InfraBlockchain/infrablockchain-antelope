@@ -22,7 +22,7 @@ namespace yosemite { namespace chain {
    using namespace yosemite::chain::token;
 
    /**
-    * 'settokenmeta' standard token action handler
+    * 'settokenmeta' standard token action apply handler
     */
    void apply_yosemite_built_in_action_settokenmeta(apply_context& context) {
 
@@ -66,16 +66,17 @@ namespace yosemite { namespace chain {
 
 
    /**
-    * 'issue' standard token action handler
+    * 'issue' standard token action apply handler
     */
    void apply_yosemite_built_in_action_issue(apply_context& context) {
 
       auto issue_action = context.act.data_as_built_in_common_action<issue>();
       try {
-         EOS_ASSERT( issue_action.to.good(), token_action_validate_exception, "invalid to account name" );
+         const account_name to_account = issue_action.to;
+         EOS_ASSERT( to_account.good(), token_action_validate_exception, "invalid to account name" );
          EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
 
-         share_type issue_amount = issue_action.qty.get_amount();
+         const share_type issue_amount = issue_action.qty.get_amount();
          EOS_ASSERT( issue_amount > 0, token_action_validate_exception, "amount of token issuance must be greater than 0" );
          EOS_ASSERT( issue_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
 
@@ -89,11 +90,11 @@ namespace yosemite { namespace chain {
                     "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
                     ("sym", token_meta_obj.symbol.to_string()) );
 
-         auto to_account_obj_ptr = db.find<account_object, by_name>( issue_action.to );
+         auto to_account_obj_ptr = db.find<account_object, by_name>( to_account );
          EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
-                     "token issuance target account ${account} does not exist", ("account", issue_action.to) );
+                     "token issuance target account ${account} does not exist", ("account", to_account) );
 
-         share_type old_total_supply = token_meta_obj.total_supply;
+         const share_type old_total_supply = token_meta_obj.total_supply;
          EOS_ASSERT( old_total_supply + issue_amount > 0, token_balance_overflow_exception, "total supply balance overflow" );
 
          // only the token account owner can issue new token
@@ -108,11 +109,11 @@ namespace yosemite { namespace chain {
          add_token_balance( context, context.receiver, context.receiver, issue_amount );
 
          // send inline 'transfer' action if token receiver is not the token account
-         if ( issue_action.to != context.receiver ) {
+         if ( to_account != context.receiver ) {
             context.execute_inline(
                action { vector<permission_level>{ {context.receiver, config::active_name} },
                         context.receiver,
-                        transfer{ context.receiver, issue_action.to, issue_action.qty, issue_action.memo }
+                        transfer{ context.receiver, to_account, issue_action.qty, issue_action.memo }
                       }
                );
          }
@@ -121,17 +122,19 @@ namespace yosemite { namespace chain {
    }
 
    /**
-    * 'transfer' standard token action handler
+    * 'transfer' standard token action apply handler
     */
    void apply_yosemite_built_in_action_transfer( apply_context& context ) {
 
       auto transfer_action = context.act.data_as_built_in_common_action<transfer>();
       try {
-         EOS_ASSERT( transfer_action.from.good(), token_action_validate_exception, "invalid from account name" );
-         EOS_ASSERT( transfer_action.to.good(), token_action_validate_exception, "invalid to account name" );
+         const account_name from_account = transfer_action.from;
+         const account_name to_account = transfer_action.to;
+         EOS_ASSERT( from_account.good(), token_action_validate_exception, "invalid from account name" );
+         EOS_ASSERT( to_account.good(), token_action_validate_exception, "invalid to account name" );
          EOS_ASSERT( transfer_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
 
-         share_type transfer_amount = transfer_action.qty.get_amount();
+         const share_type transfer_amount = transfer_action.qty.get_amount();
          EOS_ASSERT( transfer_amount > 0, token_action_validate_exception, "amount of token transfer must be greater than 0" );
          EOS_ASSERT( transfer_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
 
@@ -145,35 +148,40 @@ namespace yosemite { namespace chain {
                      "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
                      ("sym", token_meta_obj.symbol.to_string()) );
 
-         auto from_account_obj_ptr = db.find<account_object, by_name>( transfer_action.from );
+         auto from_account_obj_ptr = db.find<account_object, by_name>( from_account );
          EOS_ASSERT( from_account_obj_ptr != nullptr, no_token_target_account_exception,
-                     "transfer from account ${account} does not exist", ("account", transfer_action.from) );
+                     "transfer from account ${account} does not exist", ("account", from_account) );
 
-         auto to_account_obj_ptr = db.find<account_object, by_name>( transfer_action.to );
+         auto to_account_obj_ptr = db.find<account_object, by_name>( to_account );
          EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
-                     "transfer to account ${account} does not exist", ("account", transfer_action.to) );
+                     "transfer to account ${account} does not exist", ("account", to_account) );
 
          // need 'from' account signature
-         context.require_authorization( transfer_action.from );
+         context.require_authorization( from_account );
 
-         subtract_token_balance( context, context.receiver, transfer_action.from, transfer_amount );
-         add_token_balance( context, context.receiver, transfer_action.to, transfer_amount );
+         subtract_token_balance( context, context.receiver, from_account, transfer_amount );
+         add_token_balance( context, context.receiver, to_account, transfer_amount );
+
+         // notify 'transfer' action to 'from' and 'to' accounts who could process additional operations for their own sake
+         context.require_recipient( from_account );
+         context.require_recipient( to_account );
 
       } FC_CAPTURE_AND_RETHROW( (transfer_action) )
    }
 
 
    /**
-    * 'txfee' standard token action handler
+    * 'txfee' standard token action apply handler
     */
    void apply_yosemite_built_in_action_txfee( apply_context& context ) {
 
       auto txfee_action = context.act.data_as_built_in_common_action<txfee>();
       try {
-         EOS_ASSERT( txfee_action.payer.good(), token_action_validate_exception, "invalid payer account name" );
+         const account_name payer_account = txfee_action.payer;
+         EOS_ASSERT( payer_account.good(), token_action_validate_exception, "invalid payer account name" );
          EOS_ASSERT( txfee_action.fee.is_valid(), token_action_validate_exception, "invalid fee quantity" );
 
-         share_type txfee_amount = txfee_action.fee.get_amount();
+         const share_type txfee_amount = txfee_action.fee.get_amount();
          EOS_ASSERT( txfee_amount > 0, token_action_validate_exception, "tx fee amount must be greater than 0" );
 
          auto& db = context.db;
@@ -186,25 +194,29 @@ namespace yosemite { namespace chain {
                      "token symbol of fee quantity field mismatches with the symbol(${sym}) of token metadata",
                      ("sym", token_meta_obj.symbol.to_string()) );
 
-         auto payer_account_obj_ptr = db.find<account_object, by_name>( txfee_action.payer );
+         auto payer_account_obj_ptr = db.find<account_object, by_name>( payer_account );
          EOS_ASSERT( payer_account_obj_ptr != nullptr, no_token_target_account_exception,
-                     "tx fee payer account ${account} does not exist", ("account", txfee_action.payer) );
+                     "tx fee payer account ${account} does not exist", ("account", payer_account) );
 
          // need 'payer' account signature
          if ( !context.trx_context.has_delegated_tx_fee_payer()
-              || txfee_action.payer != context.trx_context.get_delegated_tx_fee_payer() ) {
-            context.require_authorization( txfee_action.payer );
+              || payer_account != context.trx_context.get_delegated_tx_fee_payer() ) {
+            context.require_authorization( payer_account );
          }
 
-         subtract_token_balance( context, context.receiver, txfee_action.payer, txfee_amount );
+         subtract_token_balance( context, context.receiver, payer_account, txfee_amount );
          add_token_balance( context, context.receiver, YOSEMITE_TX_FEE_ACCOUNT, txfee_amount );
+
+         // notify 'txfee' action to payer account and tx-fee system account
+         context.require_recipient( payer_account );
+         context.require_recipient( YOSEMITE_TX_FEE_ACCOUNT );
 
       } FC_CAPTURE_AND_RETHROW( (txfee_action) )
    }
 
 
    /**
-    * 'redeem' standard token action handler
+    * 'redeem' standard token action apply handler
     */
    void apply_yosemite_built_in_action_redeem( apply_context& context ) {
 
@@ -212,7 +224,7 @@ namespace yosemite { namespace chain {
       try {
          EOS_ASSERT( redeem_action.qty.is_valid(), token_action_validate_exception, "invalid token redemption quantity" );
 
-         share_type redeem_amount = redeem_action.qty.get_amount();
+         const share_type redeem_amount = redeem_action.qty.get_amount();
          EOS_ASSERT( redeem_amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
          EOS_ASSERT( redeem_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
 
