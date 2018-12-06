@@ -26,12 +26,13 @@
 #include <eosio/chain/eosio_contract.hpp>
 
 #include <yosemite/chain/yosemite_global_property_database.hpp>
-#include <yosemite/chain/transaction_fee_database.hpp>
 #include <yosemite/chain/standard_token_database.hpp>
 #include <yosemite/chain/standard_token_action_handlers.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
 
 namespace eosio { namespace chain {
 
+using namespace yosemite::chain;
 using resource_limits::resource_limits_manager;
 
 using controller_index_set = index_set<
@@ -42,10 +43,9 @@ using controller_index_set = index_set<
    block_summary_multi_index,
    transaction_multi_index,
    generated_transaction_multi_index,
-   yosemite::chain::yosemite_global_property_multi_index,
-   yosemite::chain::transaction_fee_multi_index,
-   yosemite::chain::token_info_multi_index,
-   yosemite::chain::token_balance_multi_index,
+   yosemite_global_property_multi_index,
+   token_info_multi_index,
+   token_balance_multi_index,
    table_id_multi_index
 >;
 
@@ -133,6 +133,7 @@ struct controller_impl {
    wasm_interface                 wasmif;
    resource_limits_manager        resource_limits;
    authorization_manager          authorization;
+   transaction_fee_manager        txfee;
    controller::config             conf;
    chain_id_type                  chain_id;
    bool                           replaying= false;
@@ -201,6 +202,7 @@ struct controller_impl {
     wasmif( cfg.wasm_runtime ),
     resource_limits( db ),
     authorization( s, db ),
+    txfee ( db ),
     conf( cfg ),
     chain_id( cfg.genesis.compute_chain_id() ),
     read_mode( cfg.read_mode )
@@ -434,6 +436,7 @@ struct controller_impl {
 
       authorization.add_indices();
       resource_limits.add_indices();
+      txfee.add_indices();
    }
 
    void clear_all_undo() {
@@ -535,6 +538,7 @@ struct controller_impl {
 
       authorization.add_to_snapshot(snapshot);
       resource_limits.add_to_snapshot(snapshot);
+      txfee.add_to_snapshot(snapshot);
    }
 
    void read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
@@ -579,6 +583,7 @@ struct controller_impl {
 
       authorization.read_from_snapshot(snapshot);
       resource_limits.read_from_snapshot(snapshot);
+      txfee.read_from_snapshot(snapshot);
 
       db.set_revision( head->block_num );
    }
@@ -665,6 +670,7 @@ struct controller_impl {
 
       authorization.initialize_database();
       resource_limits.initialize_database();
+      txfee.initialize_database();
 
       authority system_auth(conf.genesis.initial_key);
       create_native_account( config::system_account_name, system_auth, system_auth, true );
@@ -1624,6 +1630,16 @@ const authorization_manager&   controller::get_authorization_manager()const
 authorization_manager&         controller::get_mutable_authorization_manager()
 {
    return my->authorization;
+}
+
+const transaction_fee_manager&  controller::get_tx_fee_manager()const
+{
+   return my->txfee;
+}
+
+transaction_fee_manager&        controller::get_mutable_tx_fee_manager()
+{
+   return my->txfee;
 }
 
 controller::controller( const controller::config& cfg )

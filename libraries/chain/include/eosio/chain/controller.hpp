@@ -12,6 +12,9 @@ namespace chainbase {
    class database;
 }
 
+namespace yosemite { namespace chain {
+   class transaction_fee_manager;
+} }
 
 namespace eosio { namespace chain {
 
@@ -158,6 +161,9 @@ namespace eosio { namespace chain {
          resource_limits_manager&              get_mutable_resource_limits_manager();
          const authorization_manager&          get_authorization_manager()const;
          authorization_manager&                get_mutable_authorization_manager();
+
+         const yosemite::chain::transaction_fee_manager&   get_tx_fee_manager()const;
+         yosemite::chain::transaction_fee_manager&         get_mutable_tx_fee_manager();
 
          const flat_set<account_name>&   get_actor_whitelist() const;
          const flat_set<account_name>&   get_actor_blacklist() const;

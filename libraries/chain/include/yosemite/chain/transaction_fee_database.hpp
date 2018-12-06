@@ -29,25 +29,25 @@ namespace yosemite { namespace chain {
       OBJECT_CTOR(transaction_fee_object)
 
       id_type            id;
-      account_name       receiver; // action receiver (excluding inline action receiver), 0 for global actions
+      account_name       code; // code account (excluding inline action receiver), 0 for global actions
       action_name        action; // action name
-      tx_fee_type_type   fee_type = fixed_tx_fee_per_action_type;
       tx_fee_value_type  value;
+      tx_fee_type_type   fee_type = fixed_tx_fee_per_action_type;
 
-      // [receiver == 0 and action == 0]
+      // [code == 0 and action == 0]
       //   reserved for the special 'default' transaction_fee_object record
       //   applied as default transaction fee policy for every action that doesn't have transaction_fee_object record
    };
 
-   struct by_receiver_action;
+   struct by_code_action;
 
    using transaction_fee_multi_index = chainbase::shared_multi_index_container<
       transaction_fee_object,
       indexed_by<
          ordered_unique< tag<by_id>, member<transaction_fee_object, transaction_fee_object::id_type, &transaction_fee_object::id> >,
-         ordered_unique< tag<by_receiver_action>,
+         ordered_unique< tag<by_code_action>,
             composite_key< transaction_fee_object,
-               member<transaction_fee_object, account_name, &transaction_fee_object::receiver>,
+               member<transaction_fee_object, account_name, &transaction_fee_object::code>,
                member<transaction_fee_object, action_name, &transaction_fee_object::action>
             >
          >
@@ -59,4 +59,4 @@ namespace yosemite { namespace chain {
 
 CHAINBASE_SET_INDEX_TYPE(yosemite::chain::transaction_fee_object, yosemite::chain::transaction_fee_multi_index)
 
-FC_REFLECT(yosemite::chain::transaction_fee_object, (receiver)(action)(fee_type)(value) )
+FC_REFLECT(yosemite::chain::transaction_fee_object, (code)(action)(value)(fee_type) )

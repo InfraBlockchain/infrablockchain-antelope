@@ -48,5 +48,11 @@ namespace yosemite { namespace chain {
     FC_DECLARE_DERIVED_EXCEPTION( insufficient_token_balance_exception, yosemite_standard_token_exception,
                                   3711008, "Insufficient token balance" )
 
+  FC_DECLARE_DERIVED_EXCEPTION( yosemite_transaction_fee_exception, chain_exception,
+                                3712000, "YOSEMITE transaction fee exception" )
+
+//    FC_DECLARE_DERIVED_EXCEPTION( invalid_tx_fee_setup_exception, yosemite_transaction_fee_exception,
+//                                  3712001, "Invalid transaction fee setup" )
+
 
 }} // namespace yosemite::chain
