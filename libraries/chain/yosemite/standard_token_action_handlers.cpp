@@ -35,12 +35,15 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( url_size > 0 && url_size <= 255, token_action_validate_exception, "invalid token url size" );
          EOS_ASSERT( desc_size > 0 && desc_size <= 255, token_action_validate_exception, "invalid token description size" );
 
+         token_id_type token_id = context.receiver;
+
          // only the account owner can set token metadata for its own token
-         context.require_authorization(context.receiver);
+         context.require_authorization(token_id);
 
          auto& db = context.db;
 
-         auto set_token_meta_lambda = [&action,url_size,desc_size](token_meta_object& token_meta) {
+         auto set_token_meta_lambda = [&action, token_id, url_size, desc_size](token_meta_object& token_meta) {
+            token_meta.token_id = token_id;
             token_meta.symbol = action.symbol;
             token_meta.url.resize(url_size);
             memcpy( token_meta.url.data(), action.url.data(), url_size );
@@ -48,7 +51,7 @@ namespace yosemite { namespace chain {
             memcpy( token_meta.description.data(), action.description.data(), desc_size );
          };
 
-         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
          if ( token_meta_ptr ) {
             EOS_ASSERT( token_meta_ptr->symbol == action.symbol, token_action_validate_exception, "token symbol cannot be modified once it is set" );
             EOS_ASSERT( token_meta_ptr->url != action.url.c_str() || token_meta_ptr->description != action.description.c_str(),
@@ -82,7 +85,7 @@ namespace yosemite { namespace chain {
 
          auto& db = context.db;
 
-         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -90,7 +93,7 @@ namespace yosemite { namespace chain {
                     "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
                     ("sym", token_meta_obj.symbol.to_string()) );
 
-         auto to_account_obj_ptr = db.find<account_object, by_name>( to_account );
+         auto* to_account_obj_ptr = db.find<account_object, by_name>( to_account );
          EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
                      "token issuance target account ${account} does not exist", ("account", to_account) );
 
@@ -140,7 +143,7 @@ namespace yosemite { namespace chain {
 
          auto& db = context.db;
 
-         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -148,11 +151,11 @@ namespace yosemite { namespace chain {
                      "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
                      ("sym", token_meta_obj.symbol.to_string()) );
 
-         auto from_account_obj_ptr = db.find<account_object, by_name>( from_account );
+         auto* from_account_obj_ptr = db.find<account_object, by_name>( from_account );
          EOS_ASSERT( from_account_obj_ptr != nullptr, no_token_target_account_exception,
                      "transfer from account ${account} does not exist", ("account", from_account) );
 
-         auto to_account_obj_ptr = db.find<account_object, by_name>( to_account );
+         auto* to_account_obj_ptr = db.find<account_object, by_name>( to_account );
          EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
                      "transfer to account ${account} does not exist", ("account", to_account) );
 
@@ -186,7 +189,7 @@ namespace yosemite { namespace chain {
 
          auto& db = context.db;
 
-         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -194,7 +197,7 @@ namespace yosemite { namespace chain {
                      "token symbol of fee quantity field mismatches with the symbol(${sym}) of token metadata",
                      ("sym", token_meta_obj.symbol.to_string()) );
 
-         auto payer_account_obj_ptr = db.find<account_object, by_name>( payer_account );
+         auto* payer_account_obj_ptr = db.find<account_object, by_name>( payer_account );
          EOS_ASSERT( payer_account_obj_ptr != nullptr, no_token_target_account_exception,
                      "tx fee payer account ${account} does not exist", ("account", payer_account) );
 
@@ -230,7 +233,7 @@ namespace yosemite { namespace chain {
 
          auto& db = context.db;
 
-         auto token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -262,7 +265,7 @@ namespace yosemite { namespace chain {
 
       auto& db = context.db;
 
-      auto balance_ptr = db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, owner));
+      auto* balance_ptr = db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, owner));
       if ( balance_ptr ) {
          db.modify<token_balance_object>( *balance_ptr, [&]( token_balance_object& balance_obj ) {
             balance_obj.balance += value;
@@ -284,7 +287,7 @@ namespace yosemite { namespace chain {
 
       auto& db = context.db;
 
-      auto balance_ptr = db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, owner));
+      auto* balance_ptr = db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, owner));
       if ( balance_ptr ) {
          share_type cur_balance = balance_ptr->balance;
          EOS_ASSERT( cur_balance >= value, insufficient_token_balance_exception, "account ${account} has insufficient_token_balance", ("account", owner) );
