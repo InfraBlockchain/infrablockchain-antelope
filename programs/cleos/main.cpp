@@ -95,6 +95,8 @@ Options:
 #include <yosemite/chain/native_token_symbol.hpp>
 #include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/system_accounts.hpp>
+#include <yosemite/chain/standard_token_action_types.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -2839,7 +2841,11 @@ int main( int argc, char** argv ) {
       }
       auto accountPermissions = get_account_permissions(tx_permission);
 
-      send_actions({chain::action{accountPermissions, contract_account, action, variant_to_bin( contract_account, action, action_args_var ) }});
+      if (yosemite::chain::token::is_yosemite_standard_token_action(action)) {
+         send_actions({chain::action{accountPermissions, contract_account, action, variant_to_bin( YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT, action, action_args_var ) }});
+      } else {
+         send_actions({chain::action{accountPermissions, contract_account, action, variant_to_bin( contract_account, action, action_args_var ) }});
+      }
    });
 
    // push transaction
