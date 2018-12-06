@@ -56,6 +56,9 @@ namespace yosemite { namespace chain {
       account_name code, action_name action, tx_fee_value_type value, tx_fee_type_type fee_type ) {
 
       //EOS_ASSERT( !code.empty() && !action.empty(), invalid_tx_fee_setup_exception, "set_transaction_fee - code and action must be not 0" );
+      EOS_ASSERT( value > 0, yosemite_transaction_fee_exception,  "tx fee value must be greater than 0" );
+      EOS_ASSERT( fee_type == fixed_tx_fee_per_action_type, yosemite_transaction_fee_exception,
+                  "currently set_tx_fee_for_action supports only fixed_tx_fee_per_action_type" );
 
       auto* txfee_obj_ptr = _db.find<transaction_fee_object, by_code_action>(boost::make_tuple(code, action));
       if ( txfee_obj_ptr ) {
@@ -110,7 +113,16 @@ namespace yosemite { namespace chain {
          auto txfee_obj = *txfee_obj_ptr;
          return tx_fee_for_action { txfee_obj.value, txfee_obj.fee_type };
       } else {
-         return tx_fee_for_action { 100000 , fixed_tx_fee_per_action_type };
+         return tx_fee_for_action { 100000, fixed_tx_fee_per_action_type };
+      }
+   }
+
+   tx_fee_for_action transaction_fee_manager::get_tx_fee_for_action_trace(const action_trace& action_trace) const {
+      const account_name& code = action_trace.receipt.receiver;
+      if (code == action_trace.act.account) {  // exclude notified actions
+         return get_tx_fee_for_action(code, action_trace.act.name);
+      } else {
+         return tx_fee_for_action { 0, fixed_tx_fee_per_action_type };
       }
    }
 

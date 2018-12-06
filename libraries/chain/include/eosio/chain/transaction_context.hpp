@@ -64,9 +64,8 @@ namespace eosio { namespace chain {
          bool has_transaction_vote() const;
          const yosemite_core::transaction_vote& get_transaction_vote() const;
 
-         /// YOSEMITE Delegated Transaction Fee Payment
-         bool has_delegated_tx_fee_payer() const;
-         const account_name& get_delegated_tx_fee_payer() const;
+         /// YOSEMITE Transaction-Fee-Payer
+         const account_name& get_tx_fee_payer() const;
 
       private:
 
@@ -83,6 +82,8 @@ namespace eosio { namespace chain {
          void record_transaction( const transaction_id_type& id, fc::time_point_sec expire );
 
          void validate_cpu_usage_to_bill( int64_t u, bool check_minimum = true )const;
+
+         void process_transaction_fee_payment();
 
       /// Fields:
       public:

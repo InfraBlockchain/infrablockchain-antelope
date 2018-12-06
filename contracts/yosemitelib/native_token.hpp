@@ -7,7 +7,7 @@
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/identity.hpp>
-#include <yosemitelib/delegated_trx_fee_payment.h>
+#include <yosemitelib/trx_fee_payer.h>
 
 /* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
 
@@ -92,12 +92,12 @@ namespace yosemite { namespace native_token {
     void charge_transaction_fee(account_name payer, uint64_t operation) {
         auto tx_fee = yosemite::get_transaction_fee(operation);
         if (tx_fee.amount > 0) {
-            account_name delegated_payer = delegated_trx_fee_payer();
-            if (delegated_payer != 0) {
+            account_name tx_fee_payer = trx_fee_payer();
+            if (tx_fee_payer != 0) {
                 // authorization check for the delegated fee payer is done on chain core
                 // (checking if current transaction message contains signature of the delegated payer account)
                 // delegated payer account doesn't need to be in the authorization list of current action
-                payer = delegated_payer;
+                payer = tx_fee_payer;
             } else {
                 // payer account must be in the authorization list of the current action
                 require_auth(payer);

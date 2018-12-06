@@ -68,20 +68,22 @@
 
 
 /**
- * YOSEMITE Delegated Transaction Fee Payment
- * The preset (on yx.txfee contract) transaction fee amount (in native stable token) is
- * charged to the principal account of each transaction on YOSEMITE blockchain.
- * But in real service situation, blockchain service provider can pay the transaction fees
+ * YOSEMITE Transaction Fee Payer
+ *
+ * Every transaction message for YOSEMITE blockchain has to contain 'transaction fee payer' account field.
+ * The transaction fee payer need to sign the transaction message
+ * for which the transaction fee is charged to the payer account.
+ * In real service situation, blockchain service provider can pay the transaction fees
  * on behalf of service users. By paying user's blockchain transaction fee, service provider
  * can enhance user experience and attract more customers.
  *
- * To support 'Delegated Transaction Fee Payment', YOSEMITE blockchain provides
- * 'transaction fee payer' option for every blockchain transaction.
+ * To support 'Transaction Fee Payer', YOSEMITE blockchain provides
+ * 'transaction fee payer' field for every blockchain transaction.
  * If 'transaction fee payer' field is specified in a submitted transaction,
  * the transaction fee generated from the transaction is charged to the 'transaction fee payer'.
  * The submitted transaction message must contain crypto signature of 'transaction fee payer' account.
  *
- * Example of json representation blockchain transaction with YOSEMITE Delegated Transaction Fee Payment
+ * Example of json representation blockchain transaction with YOSEMITE Transaction Fee Payer
  * {
  *   "expiration": "2018-08-16T06:17:11",
  *   "ref_block_num": 30369,
@@ -118,4 +120,4 @@
  *   "context_free_data": []
  * }
  */
-#define YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD 1002
+#define YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD 1002

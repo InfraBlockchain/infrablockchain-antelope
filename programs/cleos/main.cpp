@@ -196,7 +196,7 @@ uint32_t delaysec = 0;
 vector<string> tx_permission;
 
 string trx_vote_target_account;
-string delegated_trx_fee_payer_account;
+string trx_fee_payer_account;
 
 eosio::client::http::http_context context;
 
@@ -227,8 +227,8 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    // YOSEMITE Transaction-as-a-Vote for Proof-of-Transaction
    cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
 
-   // YOSEMITE Delegated-Transaction-Fee-Payment
-   cmd->add_option("--fee-payer", delegated_trx_fee_payer_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
+   // YOSEMITE Transaction-Fee-Payer
+   cmd->add_option("--fee-payer", trx_fee_payer_account, localized("transaction fee payer account"));
 
 #ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
@@ -351,16 +351,16 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
          "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
 
    try {
-      if (!delegated_trx_fee_payer_account.empty()) {
-         eosio::chain::name delegated_txfee_payer_account_name(delegated_trx_fee_payer_account);
+      if (!trx_fee_payer_account.empty()) {
+         eosio::chain::name txfee_payer_account_name(trx_fee_payer_account);
 
          trx.transaction_extensions.push_back(
-               std::make_pair(YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
-                              fc::raw::pack(delegated_txfee_payer_account_name)));
+               std::make_pair(YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
+                              fc::raw::pack(txfee_payer_account_name)));
       }
    } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account,
-                            "Invalid delegated transaction fee payer account: ${delegated_trx_fee_payer_account}",
-                            ("delegated_trx_fee_payer_account", delegated_trx_fee_payer_account));
+                            "Invalid transaction fee payer account: ${trx_fee_payer_account}",
+                            ("trx_fee_payer_account", trx_fee_payer_account));
 
    if (!tx_skip_sign) {
       auto required_keys = determine_required_keys(trx);

@@ -29,7 +29,7 @@ namespace yosemite { namespace chain {
       OBJECT_CTOR(transaction_fee_object)
 
       id_type            id;
-      account_name       code; // code account (excluding inline action receiver), 0 for global actions
+      account_name       code; // code account, 0 for global actions
       action_name        action; // action name
       tx_fee_value_type  value;
       tx_fee_type_type   fee_type = fixed_tx_fee_per_action_type;

@@ -201,11 +201,7 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( payer_account_obj_ptr != nullptr, no_token_target_account_exception,
                      "tx fee payer account ${account} does not exist", ("account", payer_account) );
 
-         // need 'payer' account signature
-         if ( !context.trx_context.has_delegated_tx_fee_payer()
-              || payer_account != context.trx_context.get_delegated_tx_fee_payer() ) {
-            context.require_authorization( payer_account );
-         }
+         context.require_authorization( payer_account );
 
          subtract_token_balance( context, context.receiver, payer_account, txfee_amount );
          add_token_balance( context, context.receiver, YOSEMITE_TX_FEE_ACCOUNT, txfee_amount );

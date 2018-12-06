@@ -265,13 +265,6 @@ void apply_context::execute_context_free_inline( action&& a ) {
 
 void apply_context::schedule_deferred_transaction( const uint128_t& sender_id, account_name payer, transaction&& trx, bool replace_existing ) {
    EOS_ASSERT( trx.context_free_actions.size() == 0, cfa_inside_generated_tx, "context free actions are not currently allowed in generated transactions" );
-   auto &tx_ext = trx.transaction_extensions;
-   if (tx_ext.size() > 0) {
-      for (auto&& tx_ext_item: tx_ext) {
-         EOS_ASSERT( tx_ext_item.first != YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
-               yosemite::chain::dtfp_inside_generated_tx, "delegated transaction fee payment is not currently allowed in generated transactions" );
-      }
-   }
 
    trx.expiration = control.pending_block_time() + fc::microseconds(999'999); // Rounds up to nearest second (makes expiration check unnecessary)
    trx.set_reference_block(control.head_block_id()); // No TaPoS check necessary
@@ -380,14 +373,10 @@ vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_
 }
 
 //////////////////////////////////////
-/// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
+/// YOSEMITE Core API - Transaction-Fee-Payer
 
-account_name apply_context::get_delegated_transaction_fee_payer() {
-   if (trx_context.has_delegated_tx_fee_payer()) {
-      return trx_context.get_delegated_tx_fee_payer();
-   } else {
-      return account_name(0);
-   }
+account_name apply_context::get_transaction_fee_payer() {
+   return trx_context.get_tx_fee_payer();
 }
 
 //////////////////////////////////////

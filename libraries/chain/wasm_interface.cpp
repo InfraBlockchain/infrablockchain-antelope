@@ -1360,9 +1360,9 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
-      /// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
-      account_name delegated_trx_fee_payer() {
-         return context.get_delegated_transaction_fee_payer();
+      /// YOSEMITE Core API - Transaction-Fee-Payer
+      account_name trx_fee_payer() {
+         return context.get_transaction_fee_payer();
       }
 };
 
@@ -1862,7 +1862,7 @@ REGISTER_INTRINSICS(transaction_api,
    (cancel_deferred,           int(int)                     )
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
-   (delegated_trx_fee_payer,   int64_t()                    )
+   (trx_fee_payer,   int64_t()                    )
 );
 
 REGISTER_INTRINSICS(context_free_api,

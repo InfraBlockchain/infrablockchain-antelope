@@ -8,6 +8,7 @@
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/snapshot.hpp>
+#include <eosio/chain/trace.hpp>
 #include <chainbase/chainbase.hpp>
 
 #include <yosemite/chain/transaction_fee_database.hpp>
@@ -37,6 +38,8 @@ namespace yosemite { namespace chain {
       tx_fee_for_action get_tx_fee_for_action(account_name code, action_name action) const;
       tx_fee_for_action get_tx_fee_for_common_action(action_name action) const;
       tx_fee_for_action get_default_tx_fee() const;
+
+      tx_fee_for_action get_tx_fee_for_action_trace(const action_trace& action_trace) const;
 
    private:
       chainbase::database& _db;

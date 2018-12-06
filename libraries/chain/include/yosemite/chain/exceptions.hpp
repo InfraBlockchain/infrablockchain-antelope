@@ -15,11 +15,8 @@ namespace yosemite { namespace chain {
     FC_DECLARE_DERIVED_EXCEPTION( invalid_trx_vote_target_account, transaction_exception,
                                   3041001, "Invalid Transaction-Vote Target Account Data In Tx-Ext" )
 
-    FC_DECLARE_DERIVED_EXCEPTION( invalid_delegated_trx_fee_payer_account, transaction_exception,
-                                  3041002, "Invalid Delegated Transaction Fee Payer Account Data In Tx-Ext" )
-
-    FC_DECLARE_DERIVED_EXCEPTION( dtfp_inside_generated_tx, transaction_exception,
-                                  3041003, "Delegated-Transaction-Fee-Payment is not allowed inside generated transaction" )
+    FC_DECLARE_DERIVED_EXCEPTION( invalid_trx_fee_payer_account, transaction_exception,
+                                  3041002, "Invalid Transaction Fee Payer Account Data In Tx-Ext" )
 
   FC_DECLARE_DERIVED_EXCEPTION( yosemite_standard_token_exception, chain_exception,
                                 3711000, "YOSEMITE standard token exception" )

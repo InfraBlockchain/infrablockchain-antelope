@@ -1043,16 +1043,14 @@ struct controller_impl {
 
             if( !self.skip_auth_check() && !trx->implicit ) {
 
-               // YOSEMITE Delegated Transaction Fee Payment
+               // YOSEMITE Transaction Fee Payer
                // The submitted transaction message must contain
                // crypto signature of 'transaction fee payer' account.
 
                vector<permission_level> permissions_to_check;
-               if (trx_context.has_delegated_tx_fee_payer()) {
-                  permissions_to_check.push_back(
-                        permission_level {trx_context.get_delegated_tx_fee_payer(), config::active_name}
-                        );
-               }
+               permissions_to_check.push_back(
+                  permission_level {trx_context.get_tx_fee_payer(), config::active_name}
+               );
 
                authorization.check_authorization(
                        trx->trx.actions,

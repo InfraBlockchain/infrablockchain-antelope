@@ -520,7 +520,7 @@ sleep 2
 $YOSEMITE_CLI get table yosemite yosemite producers
 sleep 1
 
-{ print_section_title "Delegated Transaction Fee Payment"; } 2>/dev/null
+{ print_section_title "Transaction Fee Payer"; } 2>/dev/null
 
 $YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer useraccount2 -p useraccount3 -p useraccount2
 $YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer producer.c -p useraccount3 -p producer.c

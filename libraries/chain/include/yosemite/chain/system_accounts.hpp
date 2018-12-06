@@ -3,7 +3,7 @@
 #include <eosio/chain/config.hpp>
 #include <eosio/chain/types.hpp>
 
-#define YOSEMITE_SYSTEM_CONTRACT_NAME N(yx.system)
+#define YOSEMITE_SYSTEM_ACCOUNT_NAME N(yosemite)
 #define YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT N(yx.tokenabi)
 #define YOSEMITE_TX_FEE_ACCOUNT N(yx.txfee)
 #define YOSEMITE_IDENTITY_ACCOUNT N(yx.identity)
