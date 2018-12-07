@@ -42,9 +42,10 @@ add_library( eosio_chain
              webassembly/wavm.cpp
              webassembly/wabt.cpp
 
-             yosemite/standard_token_action_handlers.cpp
-             yosemite/standard_token_action_types.cpp
+             yosemite/standard_token_manager.cpp
              yosemite/transaction_fee_manager.cpp
+             yosemite/standard_token_action_types.cpp
+             yosemite/standard_token_action_handlers.cpp
 
 #             get_config.cpp
 #             global_property_object.cpp

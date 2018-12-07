@@ -6,7 +6,7 @@
 
 #include <yosemite/chain/standard_token_action_handlers.hpp>
 #include <yosemite/chain/standard_token_action_types.hpp>
-#include <yosemite/chain/standard_token_database.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/exceptions.hpp>
 #include <yosemite/chain/system_accounts.hpp>
 
@@ -26,45 +26,16 @@ namespace yosemite { namespace chain {
     */
    void apply_yosemite_built_in_action_settokenmeta(apply_context& context) {
 
-      auto action = context.act.data_as_built_in_common_action<settokenmeta>();
+      auto set_token_meta = context.act.data_as_built_in_common_action<settokenmeta>();
       try {
-         int64_t url_size = action.url.size();
-         int64_t desc_size = action.description.size();
-
-         EOS_ASSERT( action.symbol.valid(), token_action_validate_exception, "invalid token symbol" );
-         EOS_ASSERT( url_size > 0 && url_size <= 255, token_action_validate_exception, "invalid token url size" );
-         EOS_ASSERT( desc_size > 0 && desc_size <= 255, token_action_validate_exception, "invalid token description size" );
-
          token_id_type token_id = context.receiver;
 
          // only the account owner can set token metadata for its own token
          context.require_authorization(token_id);
 
-         auto& db = context.db;
+         context.control.get_mutable_token_manager().set_token_meta_info(context, token_id, set_token_meta);
 
-         auto set_token_meta_lambda = [&action, token_id, url_size, desc_size](token_meta_object& token_meta) {
-            token_meta.token_id = token_id;
-            token_meta.symbol = action.symbol;
-            token_meta.url.resize(url_size);
-            memcpy( token_meta.url.data(), action.url.data(), url_size );
-            token_meta.description.resize(desc_size);
-            memcpy( token_meta.description.data(), action.description.data(), desc_size );
-         };
-
-         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
-         if ( token_meta_ptr ) {
-            EOS_ASSERT( token_meta_ptr->symbol == action.symbol, token_action_validate_exception, "token symbol cannot be modified once it is set" );
-            EOS_ASSERT( token_meta_ptr->url != action.url.c_str() || token_meta_ptr->description != action.description.c_str(),
-                        token_action_validate_exception, "attempting update token metadata, but new metadata is same as old one" );
-
-            db.modify( *token_meta_ptr, set_token_meta_lambda );
-         } else {
-            db.create<token_meta_object>( set_token_meta_lambda );
-
-            context.add_ram_usage(context.receiver, (int64_t)(config::billable_size_v<token_meta_object>));
-         }
-
-      } FC_CAPTURE_AND_RETHROW( (action) )
+      } FC_CAPTURE_AND_RETHROW( (set_token_meta) )
    }
 
 
@@ -83,9 +54,12 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( issue_amount > 0, token_action_validate_exception, "amount of token issuance must be greater than 0" );
          EOS_ASSERT( issue_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
 
-         auto& db = context.db;
+         token_id_type token_account = context.receiver;
 
-         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto& db = context.db;
+         auto& token_manager = context.control.get_mutable_token_manager();
+
+         auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -101,22 +75,20 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( old_total_supply + issue_amount > 0, token_balance_overflow_exception, "total supply balance overflow" );
 
          // only the token account owner can issue new token
-         context.require_authorization( context.receiver );
+         context.require_authorization( token_account );
 
          // update total supply
-         db.modify<token_meta_object>( token_meta_obj, [&](token_meta_object& token_meta) {
-            token_meta.total_supply += issue_amount;
-         });
+         token_manager.update_token_total_supply(token_meta_ptr, issue_amount);
 
          // issue new token to token account
-         add_token_balance( context, context.receiver, context.receiver, issue_amount );
+         token_manager.add_token_balance( context, token_account, token_account, issue_amount );
 
          // send inline 'transfer' action if token receiver is not the token account
-         if ( to_account != context.receiver ) {
+         if ( to_account != token_account ) {
             context.execute_inline(
-               action { vector<permission_level>{ {context.receiver, config::active_name} },
-                        context.receiver,
-                        transfer{ context.receiver, to_account, issue_action.qty, issue_action.memo }
+               action { vector<permission_level>{ {token_account, config::active_name} },
+                        token_account,
+                        transfer{ token_account, to_account, issue_action.qty, issue_action.memo }
                       }
                );
          }
@@ -141,9 +113,12 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( transfer_amount > 0, token_action_validate_exception, "amount of token transfer must be greater than 0" );
          EOS_ASSERT( transfer_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
 
-         auto& db = context.db;
+         token_id_type token_id = context.receiver;
 
-         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto& db = context.db;
+         auto& token_manager = context.control.get_mutable_token_manager();
+
+         auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -162,8 +137,8 @@ namespace yosemite { namespace chain {
          // need 'from' account signature
          context.require_authorization( from_account );
 
-         subtract_token_balance( context, context.receiver, from_account, transfer_amount );
-         add_token_balance( context, context.receiver, to_account, transfer_amount );
+         token_manager.subtract_token_balance( context, token_id, from_account, transfer_amount );
+         token_manager.add_token_balance( context, token_id, to_account, transfer_amount );
 
          // notify 'transfer' action to 'from' and 'to' accounts who could process additional operations for their own sake
          context.require_recipient( from_account );
@@ -187,9 +162,12 @@ namespace yosemite { namespace chain {
          const share_type txfee_amount = txfee_action.fee.get_amount();
          EOS_ASSERT( txfee_amount > 0, token_action_validate_exception, "tx fee amount must be greater than 0" );
 
-         auto& db = context.db;
+         token_id_type token_id = context.receiver;
 
-         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto& db = context.db;
+         auto& token_manager = context.control.get_mutable_token_manager();
+
+         auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -203,8 +181,8 @@ namespace yosemite { namespace chain {
 
          context.require_authorization( payer_account );
 
-         subtract_token_balance( context, context.receiver, payer_account, txfee_amount );
-         add_token_balance( context, context.receiver, YOSEMITE_TX_FEE_ACCOUNT, txfee_amount );
+         token_manager.subtract_token_balance( context, token_id, payer_account, txfee_amount );
+         token_manager.add_token_balance( context, token_id, YOSEMITE_TX_FEE_ACCOUNT, txfee_amount );
 
          // notify 'txfee' action to payer account and tx-fee system account
          context.require_recipient( payer_account );
@@ -227,9 +205,12 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( redeem_amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
          EOS_ASSERT( redeem_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
 
-         auto& db = context.db;
+         token_id_type token_account = context.receiver;
 
-         auto* token_meta_ptr = db.find<token_meta_object, by_token_id>(context.receiver);
+         auto& db = context.db;
+         auto& token_manager = context.control.get_mutable_token_manager();
+
+         auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
          EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
@@ -244,62 +225,12 @@ namespace yosemite { namespace chain {
          context.require_authorization( context.receiver );
 
          // update total supply
-         db.modify<token_meta_object>( token_meta_obj, [&](token_meta_object& token_meta) {
-            token_meta.total_supply -= redeem_amount;
-         });
+         token_manager.update_token_total_supply(token_meta_ptr, -redeem_amount);
 
          // burn redemption token amount
-         subtract_token_balance( context, context.receiver, context.receiver, redeem_amount );
+         token_manager.subtract_token_balance( context, token_account, token_account, redeem_amount );
 
       } FC_CAPTURE_AND_RETHROW( (redeem_action) )
-   }
-
-
-   void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value ) {
-
-      EOS_ASSERT( context.receiver == token_id, invalid_token_balance_update_access_exception, "add_token_balance : action context receiver mismatches token-id" );
-
-      auto& db = context.db;
-
-      auto* balance_ptr = db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, owner));
-      if ( balance_ptr ) {
-         db.modify<token_balance_object>( *balance_ptr, [&]( token_balance_object& balance_obj ) {
-            balance_obj.balance += value;
-         });
-      } else {
-         db.create<token_balance_object>( [&](token_balance_object& balance_obj) {
-            balance_obj.token_id = token_id;
-            balance_obj.account = owner;
-            balance_obj.balance = value;
-         });
-
-         context.add_ram_usage(owner, (int64_t)(config::billable_size_v<token_balance_object>));
-      }
-   }
-
-   void subtract_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value ) {
-
-      EOS_ASSERT( context.receiver == token_id, invalid_token_balance_update_access_exception, "subtract_token_balance : action context receiver mismatches token-id" );
-
-      auto& db = context.db;
-
-      auto* balance_ptr = db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, owner));
-      if ( balance_ptr ) {
-         share_type cur_balance = balance_ptr->balance;
-         EOS_ASSERT( cur_balance >= value, insufficient_token_balance_exception, "account ${account} has insufficient_token_balance", ("account", owner) );
-
-         if ( cur_balance == value ) {
-            db.remove( *balance_ptr );
-            context.add_ram_usage(owner, -(int64_t)(config::billable_size_v<token_balance_object>));
-         } else {
-            db.modify<token_balance_object>( *balance_ptr, [&]( token_balance_object& balance_obj ) {
-               balance_obj.balance -= value;
-            });
-         }
-
-      } else {
-         EOS_ASSERT( false, insufficient_token_balance_exception, "account ${account} has insufficient_token_balance", ("account", owner) );
-      }
    }
 
 } } // namespace yosemite::chain

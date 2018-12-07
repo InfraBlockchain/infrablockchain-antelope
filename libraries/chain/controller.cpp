@@ -26,9 +26,9 @@
 #include <eosio/chain/eosio_contract.hpp>
 
 #include <yosemite/chain/yosemite_global_property_database.hpp>
-#include <yosemite/chain/standard_token_database.hpp>
-#include <yosemite/chain/standard_token_action_handlers.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/transaction_fee_manager.hpp>
+#include <yosemite/chain/standard_token_action_handlers.hpp>
 
 namespace eosio { namespace chain {
 
@@ -44,8 +44,6 @@ using controller_index_set = index_set<
    transaction_multi_index,
    generated_transaction_multi_index,
    yosemite_global_property_multi_index,
-   token_info_multi_index,
-   token_balance_multi_index,
    table_id_multi_index
 >;
 
@@ -133,6 +131,7 @@ struct controller_impl {
    wasm_interface                 wasmif;
    resource_limits_manager        resource_limits;
    authorization_manager          authorization;
+   standard_token_manager         token;
    transaction_fee_manager        txfee;
    controller::config             conf;
    chain_id_type                  chain_id;
@@ -202,6 +201,7 @@ struct controller_impl {
     wasmif( cfg.wasm_runtime ),
     resource_limits( db ),
     authorization( s, db ),
+    token ( db ),
     txfee ( db ),
     conf( cfg ),
     chain_id( cfg.genesis.compute_chain_id() ),
@@ -436,6 +436,8 @@ struct controller_impl {
 
       authorization.add_indices();
       resource_limits.add_indices();
+
+      token.add_indices();
       txfee.add_indices();
    }
 
@@ -538,6 +540,8 @@ struct controller_impl {
 
       authorization.add_to_snapshot(snapshot);
       resource_limits.add_to_snapshot(snapshot);
+
+      token.add_to_snapshot(snapshot);
       txfee.add_to_snapshot(snapshot);
    }
 
@@ -583,6 +587,8 @@ struct controller_impl {
 
       authorization.read_from_snapshot(snapshot);
       resource_limits.read_from_snapshot(snapshot);
+
+      token.read_from_snapshot(snapshot);
       txfee.read_from_snapshot(snapshot);
 
       db.set_revision( head->block_num );
@@ -670,6 +676,8 @@ struct controller_impl {
 
       authorization.initialize_database();
       resource_limits.initialize_database();
+
+      token.initialize_database();
       txfee.initialize_database();
 
       authority system_auth(conf.genesis.initial_key);
@@ -1630,12 +1638,23 @@ authorization_manager&         controller::get_mutable_authorization_manager()
    return my->authorization;
 }
 
-const transaction_fee_manager&  controller::get_tx_fee_manager()const
+
+const standard_token_manager&  controller::get_token_manager()const
+{
+   return my->token;
+}
+
+standard_token_manager&        controller::get_mutable_token_manager()
+{
+   return my->token;
+}
+
+const transaction_fee_manager& controller::get_tx_fee_manager()const
 {
    return my->txfee;
 }
 
-transaction_fee_manager&        controller::get_mutable_tx_fee_manager()
+transaction_fee_manager&       controller::get_mutable_tx_fee_manager()
 {
    return my->txfee;
 }

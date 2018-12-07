@@ -71,7 +71,7 @@ namespace yosemite { namespace chain { namespace token {
 
    bool is_yosemite_standard_token_action(action_name action);
 
-} } } /// yosemite::chain::stdtoken
+} } } /// yosemite::chain::token
 
 FC_REFLECT( yosemite::chain::token::settokenmeta , (symbol)(url)(description) )
 FC_REFLECT( yosemite::chain::token::issue, (to)(qty)(memo) )

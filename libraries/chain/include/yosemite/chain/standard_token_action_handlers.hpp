@@ -31,7 +31,4 @@ namespace yosemite { namespace chain {
 
    ///@}  end action handlers
 
-   void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );
-   void subtract_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );
-
 } } /// namespace yosemite::chain::stdtoken
