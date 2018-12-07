@@ -21,20 +21,20 @@ namespace yosemite { namespace chain {
     *  - the token should be granted as system token used as a transaction fee token signed by (2/3)+ block producers
     */
    struct system_token {
-      system_token_id_type  system_token_id; // token account name selected as system token
-      uint32_t              tx_fee_multiplier; // multiplier applied to tx fee amount, 10000 = 1.0x
+      system_token_id_type  token_id; // token account name selected as system token
+      uint32_t              token_weight; // token value weight as transaction fee payment, 10000 = 1.0x, 5000 = 0.5x (tx fee is charged 2x)
 
-      static constexpr uint32_t tx_fee_multiplier_1x = 10000;
+      static constexpr uint32_t token_weight_1x = 10000;
 
       friend bool operator == ( const system_token& lhs, const system_token& rhs ) {
-         return tie( lhs.system_token_id, lhs.tx_fee_multiplier ) == tie( rhs.system_token_id, rhs.tx_fee_multiplier );
+         return tie( lhs.token_id, lhs.token_weight ) == tie( rhs.token_id, rhs.token_weight );
       }
 
       friend bool operator != (const system_token& a, const system_token& b) { return !(a == b); }
 
 //      friend bool operator < (const system_token& a, const system_token& b)
 //      {
-//         return std::tie(a.system_token_id,a.tx_fee_multiplier) < std::tie(b.system_token_id,b.tx_fee_multiplier);
+//         return std::tie(a.token_id,a.token_weight) < std::tie(b.token_id,b.token_weight);
 //      }
 //
 //      friend bool operator <= (const system_token& a, const system_token& b) { return (a == b) || (a < b); }
@@ -76,10 +76,10 @@ namespace yosemite { namespace chain {
          return result;
       }
 
-      uint32_t get_transaction_fee_multiplier(system_token_id_type token_id) {
+      uint32_t get_token_weight(system_token_id_type token_id) {
          for( const auto& sys_token : system_tokens ) {
-            if( sys_token.system_token_id == token_id ) {
-               return sys_token.tx_fee_multiplier;
+            if( sys_token.token_id == token_id ) {
+               return sys_token.token_weight;
             }
          }
          return 0;
@@ -110,6 +110,6 @@ namespace yosemite { namespace chain {
 
 } } /// yosemite::chain
 
-FC_REFLECT( yosemite::chain::system_token, (system_token_id)(tx_fee_multiplier) )
+FC_REFLECT( yosemite::chain::system_token, (token_id)(token_weight) )
 FC_REFLECT( yosemite::chain::system_token_list_type, (version)(system_tokens) )
 FC_REFLECT( yosemite::chain::shared_system_token_list_type, (version)(system_tokens) )

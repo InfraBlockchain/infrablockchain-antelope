@@ -8,6 +8,7 @@
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/snapshot.hpp>
 #include <eosio/chain/trace.hpp>
+#include <eosio/chain/transaction_context.hpp>
 #include <eosio/chain/apply_context.hpp>
 #include <chainbase/chainbase.hpp>
 
@@ -33,6 +34,8 @@ namespace yosemite { namespace chain {
 
       void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );
       void subtract_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );
+
+      void pay_transaction_fee( transaction_context& trx_context, account_name fee_payer, int64_t fee_amount );
 
    private:
       chainbase::database &_db;

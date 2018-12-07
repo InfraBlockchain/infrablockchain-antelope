@@ -8,7 +8,7 @@
 #include <eosio/chain/global_property_object.hpp>
 
 #include <yosemite/chain/transaction_fee_manager.hpp>
-#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -406,13 +406,8 @@ namespace bacc = boost::accumulators;
          txfee_to_pay += txfee_manager.get_default_tx_fee().value;
       }
 
-      // TODO : check system token balance of tx fee payer account
-      trace->action_traces.emplace_back();
-      dispatch_action( trace->action_traces.back(),
-                       action { vector<permission_level>{ {fee_payer, config::active_name} },
-                                N(systoken),
-                                token::txfee{ fee_payer, asset(txfee_to_pay) }
-                       } );
+      // dispatch 'txfee' actions to system token accounts
+      control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, txfee_to_pay );
    }
 
 

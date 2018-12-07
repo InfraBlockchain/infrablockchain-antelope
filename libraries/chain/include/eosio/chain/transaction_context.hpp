@@ -137,6 +137,8 @@ namespace eosio { namespace chain {
          fc::microseconds              billing_timer_duration_limit;
 
          deadline_timer                _deadline_timer;
+
+      friend class yosemite::chain::standard_token_manager;
    };
 
 } }

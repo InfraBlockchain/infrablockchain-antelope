@@ -5,6 +5,9 @@
  */
 
 #include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/yosemite_global_property_database.hpp>
+#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/exceptions.hpp>
 
 #include <eosio/chain/config.hpp>
 #include <eosio/chain/exceptions.hpp>
@@ -137,6 +140,57 @@ namespace yosemite { namespace chain {
       } else {
          EOS_ASSERT( false, insufficient_token_balance_exception, "account ${account} has insufficient_token_balance", ("account", owner) );
       }
+   }
+
+   void standard_token_manager::pay_transaction_fee( transaction_context& trx_context, account_name fee_payer, int64_t fee_amount ) {
+
+      EOS_ASSERT( fee_amount > 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than 0" );
+
+      auto& sys_tokens = _db.get<yosemite_global_property_object>().system_token_list;
+
+      for( const auto& sys_token : sys_tokens.system_tokens ) {
+
+         auto sys_token_id = sys_token.token_id;
+
+         auto* balance_ptr = _db.find<token_balance_object, by_token_account>(boost::make_tuple(sys_token_id, fee_payer));
+         if ( balance_ptr ) {
+
+            int64_t fee_amount_for_this_token = fee_amount;
+            share_type cur_balance = balance_ptr->balance;
+
+            if (sys_token.token_weight != system_token::token_weight_1x) {
+               fee_amount_for_this_token = fee_amount_for_this_token * system_token::token_weight_1x / sys_token.token_weight;
+               if ( cur_balance >= fee_amount_for_this_token ) {
+                  fee_amount = 0;
+               } else {
+                  fee_amount_for_this_token = cur_balance;
+                  fee_amount -= cur_balance * sys_token.token_weight / system_token::token_weight_1x;
+               }
+            } else {
+               if ( cur_balance >= fee_amount_for_this_token ) {
+                  fee_amount = 0;
+               } else {
+                  fee_amount_for_this_token = cur_balance;
+                  fee_amount -= cur_balance;
+               }
+            }
+
+            auto token_meta_ptr = _db.find<token_meta_object, by_token_id>(sys_token_id);
+            EOS_ASSERT( token_meta_ptr != nullptr, yosemite_transaction_fee_exception, "no token meta info for system token ${token_id}", ("token_id", sys_token_id) );
+
+            // dispatch 'txfee' action for this system token
+            trx_context.trace->action_traces.emplace_back();
+            trx_context.dispatch_action( trx_context.trace->action_traces.back(),
+               action { vector<permission_level>{ {fee_payer, config::active_name} },
+                        sys_token_id,
+                        token::txfee{ fee_payer, asset(fee_amount_for_this_token, token_meta_ptr->symbol) }
+               } );
+
+            if (fee_amount <= 0) break;
+         }
+      }
+
+      EOS_ASSERT( fee_amount <= 0, yosemite_transaction_fee_exception, "fee payer ${payer} does not have enough system token", ("payer", fee_payer) );
    }
 
 } } // namespace yosemite::chain
