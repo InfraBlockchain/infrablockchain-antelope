@@ -674,6 +674,8 @@ struct controller_impl {
       });
       db.create<dynamic_global_property_object>([](auto&){});
 
+      db.create<yosemite_global_property_object>([](auto&){});
+
       authorization.initialize_database();
       resource_limits.initialize_database();
 
@@ -1850,6 +1852,9 @@ const dynamic_global_property_object& controller::get_dynamic_global_properties(
 }
 const global_property_object& controller::get_global_properties()const {
   return my->db.get<global_property_object>();
+}
+const yosemite_global_property_object& controller::get_yosemite_global_properties()const {
+  return my->db.get<yosemite_global_property_object>();
 }
 
 signed_block_ptr controller::fetch_block_by_id( block_id_type id )const {

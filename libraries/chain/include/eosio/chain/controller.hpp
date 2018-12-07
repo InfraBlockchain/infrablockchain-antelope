@@ -13,6 +13,7 @@ namespace chainbase {
 }
 
 namespace yosemite { namespace chain {
+   class yosemite_global_property_object;
    class standard_token_manager;
    class transaction_fee_manager;
 } }
@@ -163,6 +164,7 @@ namespace eosio { namespace chain {
          const authorization_manager&          get_authorization_manager()const;
          authorization_manager&                get_mutable_authorization_manager();
 
+         const yosemite::chain::yosemite_global_property_object&  get_yosemite_global_properties()const;
          const yosemite::chain::standard_token_manager&    get_token_manager()const;
          yosemite::chain::standard_token_manager&          get_mutable_token_manager();
          const yosemite::chain::transaction_fee_manager&   get_tx_fee_manager()const;
