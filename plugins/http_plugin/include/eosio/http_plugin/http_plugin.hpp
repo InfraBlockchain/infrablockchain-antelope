@@ -50,6 +50,19 @@ namespace eosio {
     */
    using api_description = std::map<string, url_handler>;
 
+   struct http_plugin_defaults {
+      //If not empty, this string is prepended on to the various configuration
+      // items for setting listen addresses
+      string address_config_prefix;
+      //If empty, unix socket support will be completely disabled. If not empty,
+      // unix socket support is enabled with the given default path (treated relative
+      // to the datadir)
+      string default_unix_socket_path;
+      //If non 0, HTTP will be enabled by default on the given port number. If
+      // 0, HTTP will not be enabled by default
+      uint16_t default_http_port{0};
+   };
+
    /**
     * @brief Internal websocketpp socket config structure
     */
@@ -166,6 +179,9 @@ namespace eosio {
         http_plugin();
         virtual ~http_plugin();
 
+        //must be called before initialize
+        static void set_defaults(const http_plugin_defaults config);
+
         APPBASE_PLUGIN_REQUIRES()
         virtual void set_program_options(options_description&, options_description& cfg) override;
 
@@ -175,7 +191,7 @@ namespace eosio {
 
         void add_handler(const string& url, const url_handler&);
         void add_api(const api_description& api) {
-           for (const auto& call : api) 
+           for (const auto& call : api)
               add_handler(call.first, call.second);
         }
 
@@ -189,6 +205,8 @@ namespace eosio {
         void add_wss_handler(const string& url, ws_message_handler<tls_socket_endpoint> handler);
         void set_ws_connection_termination_handler(ws_connection_termination_handler<basic_socket_endpoint> handler);
         void set_wss_connection_termination_handler(ws_connection_termination_handler<tls_socket_endpoint> handler);
+
+        bool verbose_errors()const;
 
       private:
         std::unique_ptr<class http_plugin_impl> my;
@@ -219,22 +237,22 @@ namespace eosio {
 
          error_info() {};
 
-         error_info(const fc::exception& exc, bool include_log) {
+         error_info(const fc::exception& exc, bool include_all_log) {
             code = exc.code();
             name = exc.name();
             what = exc.what();
-            if (include_log) {
-               for (auto itr = exc.get_log().begin(); itr != exc.get_log().end(); ++itr) {
-                  // Prevent sending trace that are too big
-                  if (details.size() >= details_limit) break;
-                  // Append error
-                  error_detail detail = {
-                          itr->get_message(), itr->get_context().get_file(),
-                          itr->get_context().get_line_number(), itr->get_context().get_method()
-                  };
-                  details.emplace_back(detail);
-               }
-            }
+            for (auto itr = exc.get_log().begin(); itr != exc.get_log().end(); ++itr) {
+               // Prevent sending trace that are too big
+               // Append error
+               error_detail detail = {
+                     itr->get_message(), itr->get_context().get_file(),
+                     itr->get_context().get_line_number(), itr->get_context().get_method()
+               };
+               details.emplace_back(detail);
+
+               if (!include_all_log) break;
+               if (details.size() >= details_limit) break;
+           }
          }
       };
 

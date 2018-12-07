@@ -39,6 +39,7 @@ namespace eosio {
    using fc::optional;
    using boost::container::flat_set;
    using chain::asset;
+   using chain::symbol;
    using chain::authority;
    using chain::account_name;
    using chain::action_name;
@@ -72,6 +73,7 @@ uint64_t convert_to_type(const string& str, const string& desc);
 class read_only {
    const controller& db;
    const fc::microseconds abi_serializer_max_time;
+   bool  shorten_abi_errors = true;
 
 public:
    static const string KEYi64;
@@ -80,6 +82,8 @@ public:
       : db(db), abi_serializer_max_time(abi_serializer_max_time) {}
 
    void validate() const {}
+
+   void set_shorten_abi_errors( bool f ) { shorten_abi_errors = f; }
 
    using get_info_params = empty;
 
@@ -139,7 +143,8 @@ public:
    };
 
    struct get_account_params {
-      name account_name;
+      name             account_name;
+      optional<symbol> expected_core_symbol;
    };
    get_account_results get_account( const get_account_params& params )const;
 
@@ -155,6 +160,15 @@ public:
    struct get_code_params {
       name account_name;
       bool code_as_wasm = false;
+   };
+
+   struct get_code_hash_results {
+      name                   account_name;
+      fc::sha256             code_hash;
+   };
+
+   struct get_code_hash_params {
+      name account_name;
    };
 
    struct get_abi_results {
@@ -176,10 +190,24 @@ public:
       name                   account_name;
    };
 
+   struct get_raw_abi_params {
+      name                   account_name;
+      optional<fc::sha256>   abi_hash;
+   };
+
+   struct get_raw_abi_results {
+      name                   account_name;
+      fc::sha256             code_hash;
+      fc::sha256             abi_hash;
+      optional<chain::blob>  abi;
+   };
+
 
    get_code_results get_code( const get_code_params& params )const;
+   get_code_hash_results get_code_hash( const get_code_hash_params& params )const;
    get_abi_results get_abi( const get_abi_params& params )const;
    get_raw_code_and_abi_results get_raw_code_and_abi( const get_raw_code_and_abi_params& params)const;
+   get_raw_abi_results get_raw_abi( const get_raw_abi_params& params)const;
 
 
 
@@ -255,6 +283,27 @@ public:
 
    get_table_rows_result get_table_rows( const get_table_rows_params& params )const;
 
+   struct get_table_by_scope_params {
+      name        code; // mandatory
+      name        table = 0; // optional, act as filter
+      string      lower_bound; // lower bound of scope, optional
+      string      upper_bound; // upper bound of scope, optional
+      uint32_t    limit = 10;
+   };
+   struct get_table_by_scope_result_row {
+      name        code;
+      name        scope;
+      name        table;
+      name        payer;
+      uint32_t    count;
+   };
+   struct get_table_by_scope_result {
+      vector<get_table_by_scope_result_row> rows;
+      string      more; ///< fill lower_bound with this value to fetch more rows
+   };
+
+   get_table_by_scope_result get_table_by_scope( const get_table_by_scope_params& params )const;
+
    struct get_currency_balance_params {
       name             code;
       name             account;
@@ -297,8 +346,7 @@ public:
    };
 
    struct get_token_stats_result {
-      account_name issuer;
-      asset supply;
+      yx_asset supply;
       uint16_t can_set_options;
       uint16_t options;
       vector<uint8_t> kyc_rule_types;
@@ -437,7 +485,7 @@ public:
             copy_inline_row(*itr2, data);
 
             if (p.json) {
-               result.rows.emplace_back(abis.binary_to_variant(abis.get_table_type(p.table), data, abi_serializer_max_time));
+               result.rows.emplace_back( abis.binary_to_variant( abis.get_table_type(p.table), data, abi_serializer_max_time, shorten_abi_errors ) );
             } else {
                result.rows.emplace_back(fc::variant(data));
             }
@@ -498,7 +546,7 @@ public:
             copy_inline_row(*itr, data);
 
             if (p.json) {
-               result.rows.emplace_back(abis.binary_to_variant(abis.get_table_type(p.table), data, abi_serializer_max_time));
+               result.rows.emplace_back( abis.binary_to_variant( abis.get_table_type(p.table), data, abi_serializer_max_time, shorten_abi_errors ) );
             } else {
                result.rows.emplace_back(fc::variant(data));
             }
@@ -514,6 +562,8 @@ public:
       }
       return result;
    }
+
+   chain::symbol extract_core_symbol()const;
 
    friend struct resolver_factory<read_only>;
 };
@@ -640,17 +690,17 @@ public:
                                         const fc::path& reversible_blocks_file
                                        );
 
-   // Only call this in plugin_initialize() to modify controller constructor configuration
-   controller::config& chain_config();
-   // Only call this after plugin_startup()!
+   // Only call this after plugin_initialize()!
    controller& chain();
-   // Only call this after plugin_startup()!
+   // Only call this after plugin_initialize()!
    const controller& chain() const;
 
    chain::chain_id_type get_chain_id() const;
    fc::microseconds get_abi_serializer_max_time() const;
 
    void handle_guard_exception(const chain::guard_exception& e) const;
+
+   static void handle_db_exhaustion();
 private:
    void log_guard_exception(const chain::guard_exception& e) const;
 
@@ -671,13 +721,17 @@ FC_REFLECT( eosio::chain_apis::read_write::push_transaction_results, (transactio
 FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more) );
 
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
+
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
 
 FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (code)(account)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_params, (code)(ysymbol));
-FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (issuer)(supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_balance_params, (account)(issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_params, (issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_result, (supply)(options));
@@ -696,12 +750,16 @@ FC_REFLECT( eosio::chain_apis::read_only::get_account_results,
             (core_liquid_balance)(ram_quota)(net_weight)(cpu_weight)(net_limit)(cpu_limit)(ram_usage)(permissions)
             (total_resources)(self_delegated_bandwidth)(refund_request)(voter_info) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_results, (account_name)(code_hash)(wast)(wasm)(abi) )
+FC_REFLECT( eosio::chain_apis::read_only::get_code_hash_results, (account_name)(code_hash) )
 FC_REFLECT( eosio::chain_apis::read_only::get_abi_results, (account_name)(abi) )
-FC_REFLECT( eosio::chain_apis::read_only::get_account_params, (account_name) )
+FC_REFLECT( eosio::chain_apis::read_only::get_account_params, (account_name)(expected_core_symbol) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_params, (account_name)(code_as_wasm) )
+FC_REFLECT( eosio::chain_apis::read_only::get_code_hash_params, (account_name) )
 FC_REFLECT( eosio::chain_apis::read_only::get_abi_params, (account_name) )
 FC_REFLECT( eosio::chain_apis::read_only::get_raw_code_and_abi_params, (account_name) )
 FC_REFLECT( eosio::chain_apis::read_only::get_raw_code_and_abi_results, (account_name)(wasm)(abi) )
+FC_REFLECT( eosio::chain_apis::read_only::get_raw_abi_params, (account_name)(abi_hash) )
+FC_REFLECT( eosio::chain_apis::read_only::get_raw_abi_results, (account_name)(code_hash)(abi_hash)(abi) )
 FC_REFLECT( eosio::chain_apis::read_only::producer_info, (producer_name) )
 FC_REFLECT( eosio::chain_apis::read_only::abi_json_to_bin_params, (code)(action)(args) )
 FC_REFLECT( eosio::chain_apis::read_only::abi_json_to_bin_result, (binargs) )

@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/eosio/testing/*.hpp")
+file(GLOB HEADERS "include/eosio/testing/*.hpp" "include/yosemite/testing/*.hpp")
 
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_testing
@@ -27,5 +27,5 @@ install( TARGETS eosio_testing
    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/eosio/testing
 )
-install_directory_permissions( DIRECTORY ${CMAKE_INSTALL_FULL_INCLUDEDIR}/eosio/testing )
+install_directory_permissions( DIRECTORY ${CMAKE_INSTALL_FULL_INCLUDEDIR}/eosio/testing ${CMAKE_INSTALL_FULL_INCLUDEDIR}/yosemite/testing )
 

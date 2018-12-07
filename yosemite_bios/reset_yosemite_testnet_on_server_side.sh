@@ -11,8 +11,8 @@ YOSEMITE_KEYD_BIN_NAME=keyos
 YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NODE_BIN_NAME
 YOSEMITE_NODE_LOG_FILE=/mnt/$YOSEMITE_NODE_BIN_NAME.log
-YOSEMITE_CLI=$YOSEMITE_HOME/build/programs/$YOSEMITE_CLI_BIN_NAME/$YOSEMITE_CLI_BIN_NAME
-YOSEMITE_CLI_TESTNET="$YOSEMITE_CLI -u http://testnet.yosemitelabs.org:8888"
+YOSEMITE_CLI="$YOSEMITE_HOME/build/programs/$YOSEMITE_CLI_BIN_NAME/$YOSEMITE_CLI_BIN_NAME --wallet-url http://127.0.0.1:8900/"
+YOSEMITE_CLI_TESTNET="$YOSEMITE_CLI -u http://testnet.yosemitelabs.org:8888 --wallet-url http://127.0.0.1:8900/"
 YOSEMITE_KEYD=$YOSEMITE_HOME/build/programs/$YOSEMITE_KEYD_BIN_NAME/$YOSEMITE_KEYD_BIN_NAME
 YOSEMITE_KEYD_LOG_FILE=/mnt/$YOSEMITE_KEYD_BIN_NAME.log
 YOSEMITE_KEYD_WALLET_PASSWORD=PW5KH7i8ZEuVMvywMschs3TznhTfCdmgpPBGKJLUQjs6N6oQ7boZj
@@ -139,6 +139,9 @@ $YOSEMITE_CLI create account yosemite yx.identity YOS7qFXz5bvLYphF8S8XXTYgExnN2h
 $YOSEMITE_CLI create account yosemite yx.ntoken YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.token YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 $YOSEMITE_CLI create account yosemite yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.nft YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.nftex YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$YOSEMITE_CLI create account yosemite yx.escrow YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 
 
 { print_section_title "Create initial Identity Authority Account"; } 2>/dev/null
@@ -221,11 +224,11 @@ sleep 2
 
 { print_section_title "Install Native Token Contract"; } 2>/dev/null
 
-slee 2
+sleep 2
 $YOSEMITE_CLI set contract yx.ntoken $YOSEMITE_CONTRACTS_DIR/yx.ntoken/
-slee 2
+sleep 2
 $YOSEMITE_CLI push action yosemite setpriv '["yx.ntoken",1]' -p yosemite@active
-slee 2
+sleep 2
 
 $YOSEMITE_CLI push action yx.ntoken setkycrule "{\"type\":0, \"kyc\":$(echo 'ibase=2; 1111' | bc)}" -p yosemite@active
 $YOSEMITE_CLI push action yx.ntoken setkycrule "{\"type\":1, \"kyc\":$(echo 'ibase=2; 1111' | bc)}" -p yosemite@active
@@ -233,14 +236,14 @@ $YOSEMITE_CLI push action yx.ntoken setkycrule "{\"type\":1, \"kyc\":$(echo 'iba
 
 { print_section_title "Install User Token Contract"; } 2>/dev/null
 
-slee 2
+sleep 2
 $YOSEMITE_CLI set contract yx.token $YOSEMITE_CONTRACTS_DIR/yx.token/
-slee 2
+sleep 2
 $YOSEMITE_CLI push action yosemite setpriv '["yx.token",1]' -p yosemite@active
-slee 2
+sleep 2
 
 
-{ print_section_title "Install DContract Contract"; } 2>/dev/null
+{ print_section_title "Install DigitalContract Contract"; } 2>/dev/null
 
 sleep 2
 $YOSEMITE_CLI set contract yx.dcontract $YOSEMITE_CONTRACTS_DIR/yx.dcontract/
@@ -248,6 +251,29 @@ sleep 2
 $YOSEMITE_CLI push action yosemite setpriv '["yx.dcontract",1]' -p yosemite@active
 sleep 2
 
+{ print_section_title "Install Non-Fungible-Token(ERC721) Contract"; } 2>/dev/null
+
+sleep 2
+$YOSEMITE_CLI set contract yx.nft $YOSEMITE_CONTRACTS_DIR/yx.nft/
+sleep 2
+$YOSEMITE_CLI push action yosemite setpriv '["yx.nft",1]' -p yosemite@active
+sleep 2
+
+{ print_section_title "Install Non-Fungible-Token(ERC721) Exchange Contract"; } 2>/dev/null
+
+sleep 2
+$YOSEMITE_CLI set contract yx.nftex $YOSEMITE_CONTRACTS_DIR/yx.nftex/
+sleep 2
+$YOSEMITE_CLI push action yosemite setpriv '["yx.nftex",1]' -p yosemite@active
+sleep 2
+
+{ print_section_title "Install Token Escrow Contract"; } 2>/dev/null
+
+sleep 2
+$YOSEMITE_CLI set contract yx.escrow $YOSEMITE_CONTRACTS_DIR/yx.escrow/
+sleep 2
+$YOSEMITE_CLI push action yosemite setpriv '["yx.escrow",1]' -p yosemite@active
+sleep 2
 
 { print_section_title "Querying the status of System Depositories, Identity Authorities and Block Producers"; } 2>/dev/null
 
@@ -309,32 +335,36 @@ $YOSEMITE_CLI push action yosemite authproducer '["producer.h"]' -p yosemite@act
 $YOSEMITE_CLI push action yosemite authproducer '["producer.i"]' -p yosemite@active
 $YOSEMITE_CLI push action yosemite authproducer '["producer.j"]' -p yosemite@active
 
-sleep 180
+sleep 150
 tail -n 300 $YOSEMITE_NODE_LOG_FILE
 
 
 { print_section_title "Setup Initial Transaction Fees"; } 2>/dev/null
 
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.newacc", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regprod", "3000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regidauth", "2000000.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.newacc", "1000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regprod", "3000000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regsysdep", "2000000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.regidauth", "2000000.00 DKRW" ]' -p yosemite@active
 
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nissue", "0.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nredeem", "1000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.transfer", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ntransfer", "200.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nissue", "0.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.nredeem", "1000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.transfer", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ntransfer", "200.00 DKRW" ]' -p yosemite@active
 
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tcreate", "10000.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tissue", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tredeem", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ttransfer", "100.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tcreate", "10000.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tissue", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.tredeem", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.ttransfer", "100.00 DKRW" ]' -p yosemite@active
 
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dccreate", "500.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcaddsign", "100.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcsign", "300.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcupadd", "50.0000 DKRW" ]' -p yosemite@active
-$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcremove", "0.0000 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dccreate", "500.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcaddsign", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcsign", "300.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcupadd", "50.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.dcremove", "0.00 DKRW" ]' -p yosemite@active
+
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.esescrow", "100.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.esproceed", "400.00 DKRW" ]' -p yosemite@active
+$YOSEMITE_CLI push action yx.txfee settxfee '[ "tf.escancel", "10.00 DKRW" ]' -p yosemite@active
 
 $YOSEMITE_CLI get table -l 100 yx.txfee yx.txfee txfees
 $YOSEMITE_CLI get table -L tf.transfer -l 1 yx.txfee yx.txfee txfees
@@ -359,7 +389,7 @@ $YOSEMITE_CLI get account yx.msig
 
 sleep 1
 
-{ print_section_title "Resign \"yx.txfee\", \"yx.identity\", \"yx.ntoken\", \"yx.token\", \"yx.dcontract\" delegating authority to \"yosemite\""; } 2>/dev/null
+{ print_section_title "Resign Yosemite Contract Accounts delegating authority to \"yosemite\""; } 2>/dev/null
 
 $YOSEMITE_CLI get account yx.txfee
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.txfee","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.txfee@owner
@@ -386,6 +416,21 @@ $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permis
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@active
 $YOSEMITE_CLI get account yx.dcontract
 
+$YOSEMITE_CLI get account yx.nft
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@active
+$YOSEMITE_CLI get account yx.nft
+
+$YOSEMITE_CLI get account yx.nftex
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@active
+$YOSEMITE_CLI get account yx.nftex
+
+$YOSEMITE_CLI get account yx.escrow
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@active
+$YOSEMITE_CLI get account yx.escrow
+
 sleep 1
 
 { print_section_title "Create New User Accounts"; } 2>/dev/null
@@ -403,7 +448,7 @@ $YOSEMITE_CLI create account idauth1 useraccount3 YOS5ubmvsnjHviACtfc9SwGbY7Sprq
 $YOSEMITE_CLI create account yosemite com YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ3rNfKp96hzFxyit -p yosemite@active
 
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"com\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"1f32i7t23\"}" -p idauth1@active
-$YOSEMITE_CLI push action yx.ntoken nissue '["com",{"amount":"5000000.0000 DKRW","issuer":"sysdepo1"},"nissue com"]' -p sysdepo1@active
+$YOSEMITE_CLI push action yx.ntoken nissue '["com",{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"nissue com"]' -p sysdepo1@active
 $YOSEMITE_CLI create account com acquire.com YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh -p com@active
 
 $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntaccounts
@@ -437,13 +482,11 @@ sleep 1
 
 { print_section_title "Native Token Issue / Transfer"; } 2>/dev/null
 
-$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount2",{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
-$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount3",{"amount":"100000.0000 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
+$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount2",{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
+$YOSEMITE_CLI push action yx.ntoken nissue '["useraccount3",{"amount":"100000.00 DKRW","issuer":"sysdepo1"},"nissue test"]' -p sysdepo1@active
 
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount2", "useraccount3", "10000.0000 DKRW", "memo" ]' -p useraccount2
-$YOSEMITE_CLI push action yx.ntoken ntransfer '[ "useraccount2", "useraccount3", {"amount":"10000.0000 DKRW","issuer":"sysdepo1"}, "memo" ]' -p useraccount2
-
-$YOSEMITE_CLI push action yx.ntoken wptransfer '[ "useraccount3", "useraccount2", "10000.0000 DKRW", "useraccount2", "memo" ]' -p useraccount3 -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount2", "useraccount3", "10000.00 DKRW", "memo" ]' -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken ntransfer '[ "useraccount2", "useraccount3", {"amount":"10000.00 DKRW","issuer":"sysdepo1"}, "memo" ]' -p useraccount2
 
 $YOSEMITE_CLI get table yx.ntoken sysdepo1 ntstats
 $YOSEMITE_CLI get table yx.ntoken useraccount1 ntaccounts
@@ -469,12 +512,19 @@ sleep 1
 
 { print_section_title "Transaction Votes"; } 2>/dev/null
 
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.0000 DKRW", "memo1" ]' -p useraccount3 -v producer.f
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.0000 DKRW", "memo2" ]' -p useraccount3 -v producer.g
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.0000 DKRW", "memo3" ]' -p useraccount3 -v producer.g
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -p useraccount3 -v producer.f
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo2" ]' -p useraccount3 -v producer.g
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo3" ]' -p useraccount3 -v producer.g
 sleep 2
 
 $YOSEMITE_CLI get table yosemite yosemite producers
+sleep 1
+
+{ print_section_title "Delegated Transaction Fee Payment"; } 2>/dev/null
+
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer useraccount2 -p useraccount3 -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer producer.c -p useraccount3 -p producer.c
+
 sleep 1
 
 { print_section_title "Querying action data"; } 2>/dev/null

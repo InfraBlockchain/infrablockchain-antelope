@@ -43,7 +43,7 @@ void wallet_manager::set_timeout(const std::chrono::seconds& t) {
    timeout = t;
    auto now = std::chrono::system_clock::now();
    timeout_time = now + timeout;
-   EOS_ASSERT(timeout_time >= now, invalid_lock_timeout_exception, "Overflow on timeout_time, specified ${t}, now ${now}, timeout_time ${timeout_time}",
+   EOS_ASSERT(timeout_time >= now && timeout_time.time_since_epoch().count() > 0, invalid_lock_timeout_exception, "Overflow on timeout_time, specified ${t}, now ${now}, timeout_time ${timeout_time}",
              ("t", t.count())("now", now.time_since_epoch().count())("timeout_time", timeout_time.time_since_epoch().count()));
 }
 
@@ -276,7 +276,7 @@ void wallet_manager::own_and_use_wallet(const string& name, std::unique_ptr<wall
 }
 
 void wallet_manager::initialize_lock() {
-   //This is technically somewhat racy in here -- if multiple keosd are in this function at once.
+   //This is technically somewhat racy in here -- if multiple keyos are in this function at once.
    //I've considered that an acceptable tradeoff to maintain cross-platform boost constructs here
    lock_path = dir / "wallet.lock";
    {
@@ -286,7 +286,7 @@ void wallet_manager::initialize_lock() {
    wallet_dir_lock = std::make_unique<boost::interprocess::file_lock>(lock_path.string().c_str());
    if(!wallet_dir_lock->try_lock()) {
       wallet_dir_lock.reset();
-      EOS_THROW(wallet_exception, "Failed to lock access to wallet directory; is another keosd running?");
+      EOS_THROW(wallet_exception, "Failed to lock access to wallet directory; is another keyos running?");
    }
 }
 

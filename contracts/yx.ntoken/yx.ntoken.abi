@@ -1,4 +1,5 @@
 {
+  "version": "eosio::abi/1.0",
   "types": [
     {
       "new_type_name": "account_name",
@@ -42,17 +43,6 @@
       ]
     },
     {
-      "name": "wptransfer",
-      "base": "",
-      "fields": [
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"amount", "type":"asset"},
-        {"name":"payer", "type":"account_name"},
-        {"name":"memo", "type":"string"}
-      ]
-    },
-    {
       "name": "ntransfer",
       "base": "",
       "fields": [
@@ -63,22 +53,11 @@
       ]
     },
     {
-      "name": "wpntransfer",
-      "base": "",
-      "fields": [
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"token", "type":"yx_asset"},
-        {"name":"payer", "type":"account_name"},
-        {"name":"memo", "type":"string"}
-      ]
-    },
-    {
       "name": "payfee",
       "base": "",
       "fields": [
         {"name":"payer", "type":"account_name"},
-        {"name":"token", "type":"yx_asset"}
+        {"name":"fee", "type":"asset"}
       ]
     },
     {
@@ -125,9 +104,7 @@
     { "name": "nissue", "type": "nissue", "ricardian_contract": "" },
     { "name": "nredeem", "type": "nredeem", "ricardian_contract": "" },
     { "name": "transfer", "type": "transfer", "ricardian_contract": "" },
-    { "name": "wptransfer", "type": "wptransfer", "ricardian_contract": "" },
     { "name": "ntransfer", "type": "ntransfer", "ricardian_contract": "" },
-    { "name": "wpntransfer", "type": "wpntransfer", "ricardian_contract": "" },
     { "name": "payfee", "type": "payfee", "ricardian_contract": "" },
     { "name": "setkycrule", "type": "setkycrule", "ricardian_contract": "" }
   ],

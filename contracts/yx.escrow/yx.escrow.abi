@@ -1,0 +1,78 @@
+{
+  "version": "eosio::abi/1.0",
+  "types": [
+    {
+      "new_type_name": "account_name",
+      "type": "name"
+    }
+  ],
+  "structs": [
+    {
+      "name": "escrow",
+      "base": "",
+      "fields": [
+        {"name":"thirdparty", "type":"account_name"},
+        {"name":"id", "type":"uint64"},
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "escrownt",
+      "base": "",
+      "fields": [
+        {"name":"thirdparty", "type":"account_name"},
+        {"name":"id", "type":"uint64"},
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"amount", "type":"asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },
+    {
+      "name": "proceed",
+      "base": "",
+      "fields": [
+        {"name":"thirdparty", "type":"account_name"},
+        {"name":"id", "type":"uint64"}
+      ]
+    },
+    {
+      "name": "cancel",
+      "base": "",
+      "fields": [
+        {"name":"thirdparty", "type":"account_name"},
+        {"name":"id", "type":"uint64"}
+      ]
+    },
+    {
+      "name": "escrow_info",
+      "base": "",
+      "fields": [
+        {"name":"id", "type":"uint64"},
+        {"name":"token", "type":"yx_asset"},
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"memo", "type":"string"}
+      ]
+    }
+  ],
+  "actions": [
+    { "name": "escrow", "type": "escrow", "ricardian_contract": "" },
+    { "name": "escrownt", "type": "escrownt", "ricardian_contract": "" },
+    { "name": "proceed", "type": "proceed", "ricardian_contract": "" },
+    { "name": "cancel", "type": "cancel", "ricardian_contract": "" }
+  ],
+  "tables": [
+    {
+      "name": "escrows",
+      "type": "escrow_info",
+      "index_type": "i64",
+      "key_names" : ["id"],
+      "key_types" : ["uint64"]
+    }
+  ],
+  "ricardian_clauses": []
+}

@@ -6,6 +6,7 @@
 
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/permission_object.hpp>
+#include <eosio/chain/snapshot.hpp>
 
 #include <utility>
 #include <functional>
@@ -27,6 +28,8 @@ namespace eosio { namespace chain {
 
          void add_indices();
          void initialize_database();
+         void add_to_snapshot( const snapshot_writer_ptr& snapshot ) const;
+         void read_from_snapshot( const snapshot_reader_ptr& snapshot );
 
          const permission_object& create_permission( account_name account,
                                                      permission_name name,
@@ -84,6 +87,29 @@ namespace eosio { namespace chain {
                               bool                                 allow_unused_keys = false
                             )const;
 
+         /**
+          *  YOSEMITE - to support checking additional permissions(account-name, permission-name)
+          *  which are not in action authorizations (e.g. checking signature of delegated transaction fee payer account)
+          *
+          *  @brief Check authorizations of a vector of actions with provided keys, permission levels, and delay
+          *
+          *  @param actions - the actions to check authorization across
+          *  @param permissions - the list of (account-name, permission-name) to check authorization
+          *  @param provided_keys - the set of public keys which have authorized the transaction
+          *  @param provided_permissions - the set of permissions which have authorized the transaction (empty permission name acts as wildcard)
+          *  @param provided_delay - the delay satisfied by the transaction
+          *  @param checktime - the function that can be called to track CPU usage and time during the process of checking authorization
+          *  @param allow_unused_keys - true if method should not assert on unused keys
+          */
+         void
+         check_authorization( const vector<action>&                actions,
+                              const vector<permission_level>&      permissions,
+                              const flat_set<public_key_type>&     provided_keys,
+                              const flat_set<permission_level>&    provided_permissions = flat_set<permission_level>(),
+                              fc::microseconds                     provided_delay = fc::microseconds(0),
+                              const std::function<void()>&         checktime = std::function<void()>(),
+                              bool                                 allow_unused_keys = false
+                            )const;
 
          /**
           *  @brief Check authorizations of a permission with provided keys, permission levels, and delay
@@ -117,6 +143,17 @@ namespace eosio { namespace chain {
       private:
          const controller&    _control;
          chainbase::database& _db;
+
+      template <typename T>
+      void
+      _check_authorization_actions( T& checker,
+                                    fc::microseconds& delay_max_limit,
+                                    fc::microseconds& effective_provided_delay,
+                                    const vector<action>&                actions,
+                                    const flat_set<public_key_type>&     provided_keys,
+                                    const flat_set<permission_level>&    provided_permissions,
+                                    fc::microseconds&                    provided_delay,
+                                    const std::function<void()>&         checktime ) const;
 
          void             check_updateauth_authorization( const updateauth& update, const vector<permission_level>& auths )const;
          void             check_deleteauth_authorization( const deleteauth& del, const vector<permission_level>& auths )const;

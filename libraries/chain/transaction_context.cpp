@@ -7,7 +7,143 @@
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 
+#pragma push_macro("N")
+#undef N
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/weighted_mean.hpp>
+#include <boost/accumulators/statistics/weighted_variance.hpp>
+#pragma pop_macro("N")
+
+#include <chrono>
+
 namespace eosio { namespace chain {
+
+namespace bacc = boost::accumulators;
+
+   struct deadline_timer_verify {
+      deadline_timer_verify() {
+         //keep longest first in list. You're effectively going to take test_intervals[0]*sizeof(test_intervals[0])
+         //time to do the the "calibration" 
+         int test_intervals[] = {50000, 10000, 5000, 1000, 500, 100, 50, 10};
+
+         struct sigaction act;
+         sigemptyset(&act.sa_mask);
+         act.sa_handler = timer_hit;
+         act.sa_flags = 0;
+         if(sigaction(SIGALRM, &act, NULL))
+            return;
+
+         sigset_t alrm;
+         sigemptyset(&alrm);
+         sigaddset(&alrm, SIGALRM);
+         int dummy;
+
+         for(int& interval : test_intervals) {
+            unsigned int loops = test_intervals[0]/interval;
+
+            for(unsigned int i = 0; i < loops; ++i) {
+               struct itimerval enable = {{0, 0}, {0, interval}};
+               hit = 0;
+               auto start = std::chrono::high_resolution_clock::now();
+               if(setitimer(ITIMER_REAL, &enable, NULL))
+                  return;
+               while(!hit) {}
+               auto end = std::chrono::high_resolution_clock::now();
+               int timer_slop = std::chrono::duration_cast<std::chrono::microseconds>(end-start).count() - interval;
+
+               //since more samples are run for the shorter expirations, weigh the longer expirations accordingly. This
+               //helps to make a few results more fair. Two such examples: AWS c4&i5 xen instances being rather stable
+               //down to 100us but then struggling with 50us and 10us. MacOS having performance that seems to correlate
+               //with expiry length; that is, long expirations have high error, short expirations have low error.
+               //That said, for these platforms, a tighter tolerance may possibly be achieved by taking performance
+               //metrics in mulitple bins and appliying the slop based on which bin a deadline resides in. Not clear
+               //if that's worth the extra complexity at this point.
+               samples(timer_slop, bacc::weight = interval/(float)test_intervals[0]);
+            }
+         }
+         timer_overhead = bacc::mean(samples) + sqrt(bacc::variance(samples))*2; //target 95% of expirations before deadline
+         use_deadline_timer = timer_overhead < 1000;
+
+         act.sa_handler = SIG_DFL;
+         sigaction(SIGALRM, &act, NULL);
+      }
+
+      static void timer_hit(int) {
+         hit = 1;
+      }
+      static volatile sig_atomic_t hit;
+
+      bacc::accumulator_set<int, bacc::stats<bacc::tag::mean, bacc::tag::min, bacc::tag::max, bacc::tag::variance>, float> samples;
+      bool use_deadline_timer = false;
+      int timer_overhead;
+   };
+   volatile sig_atomic_t deadline_timer_verify::hit;
+   static deadline_timer_verify deadline_timer_verification;
+
+   deadline_timer::deadline_timer() {
+      if(initialized)
+         return;
+      initialized = true;
+
+      #define TIMER_STATS_FORMAT "min:${min}us max:${max}us mean:${mean}us stddev:${stddev}us"
+      #define TIMER_STATS \
+         ("min", bacc::min(deadline_timer_verification.samples))("max", bacc::max(deadline_timer_verification.samples)) \
+         ("mean", (int)bacc::mean(deadline_timer_verification.samples))("stddev", (int)sqrt(bacc::variance(deadline_timer_verification.samples))) \
+         ("t", deadline_timer_verification.timer_overhead)
+
+      if(deadline_timer_verification.use_deadline_timer) {
+         struct sigaction act;
+         act.sa_handler = timer_expired;
+         sigemptyset(&act.sa_mask);
+         act.sa_flags = 0;
+         if(sigaction(SIGALRM, &act, NULL) == 0) {
+            ilog("Using ${t}us deadline timer for checktime: " TIMER_STATS_FORMAT, TIMER_STATS);
+            return;
+         }
+      }
+
+      wlog("Using polled checktime; deadline timer too inaccurate: " TIMER_STATS_FORMAT, TIMER_STATS);
+      deadline_timer_verification.use_deadline_timer = false; //set in case sigaction() fails above
+   }
+
+   void deadline_timer::start(fc::time_point tp) {
+      if(tp == fc::time_point::maximum()) {
+         expired = 0;
+         return;
+      }
+      if(!deadline_timer_verification.use_deadline_timer) {
+         expired = 1;
+         return;
+      }
+      microseconds x = tp.time_since_epoch() - fc::time_point::now().time_since_epoch();
+      if(x.count() <= deadline_timer_verification.timer_overhead)
+         expired = 1;
+      else {
+         struct itimerval enable = {{0, 0}, {0, (int)x.count()-deadline_timer_verification.timer_overhead}};
+         expired = 0;
+         expired |= !!setitimer(ITIMER_REAL, &enable, NULL);
+      }
+   }
+
+   void deadline_timer::stop() {
+      if(expired)
+         return;
+      struct itimerval disable = {{0, 0}, {0, 0}};
+      setitimer(ITIMER_REAL, &disable, NULL);
+   }
+
+   deadline_timer::~deadline_timer() {
+      stop();
+   }
+
+   void deadline_timer::timer_expired(int) {
+      expired = 1;
+   }
+   volatile sig_atomic_t deadline_timer::expired = 0;
+   bool deadline_timer::initialized = false;
 
    transaction_context::transaction_context( controller& c,
                                              const signed_transaction& t,
@@ -23,24 +159,38 @@ namespace eosio { namespace chain {
    ,pseudo_start(s)
    {
       if (!c.skip_db_sessions()) {
-         undo_session = c.db().start_undo_session(true);
+         undo_session = c.mutable_db().start_undo_session(true);
       }
       trace->id = id;
+      trace->block_num = c.pending_block_state()->block_num;
+      trace->block_time = c.pending_block_time();
+      trace->producer_block_id = c.pending_producer_block_id();
       executed.reserve( trx.total_actions() );
       //EOS_ASSERT( trx.transaction_extensions.size() == 0, unsupported_feature, "we don't support any extensions yet" );
 
       auto &tx_ext = trx.transaction_extensions;
-      // YOSEMITE "Transaction-as-a-vote" Transaction-Extention support
-      EOS_ASSERT( tx_ext.size() <= 1, unsupported_feature, "support only upto 1 transaction extension (transaction-as-a-vote)" );
+      // YOSEMITE "Transaction-as-a-vote", "Delegated Transaction Fee Payment" Transaction-Extension support
+      EOS_ASSERT( tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, delegated-transaction-fee-payment)" );
 
       if (tx_ext.size() > 0) {
-         auto tx_ext_item = *tx_ext.begin();
-         EOS_ASSERT( tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD, unsupported_feature, "support only transaction-as-a-vote transaction extension" );
+         for (auto&& tx_ext_item: tx_ext) {
+            if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
 
-         try {
-            trace->trx_vote = yosemite_core::transaction_vote(
-                    fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
-         } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
+               try {
+                  trace->trx_vote = yosemite_core::transaction_vote(
+                        fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
+               } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
+
+            } else if (tx_ext_item.first == YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
+
+               try {
+                  trace->fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
+               } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_delegated_trx_fee_payer_account, "Invalid delegated transaction fee payer account name");
+
+            } else {
+               EOS_ASSERT( false, unsupported_feature, "unsupported transaction extension code" );
+            }
+         }
       }
    }
 
@@ -142,6 +292,11 @@ namespace eosio { namespace chain {
          add_net_usage( initial_net_usage );  // Fail early if current net usage is already greater than the calculated limit
 
       checktime(); // Fail early if deadline has already been exceeded
+
+      if(control.skip_trx_checks())
+         _deadline_timer.expired = 0;
+      else
+         _deadline_timer.start(_deadline);
 
       is_initialized = true;
    }
@@ -303,34 +458,34 @@ namespace eosio { namespace chain {
    }
 
    void transaction_context::checktime()const {
-      if (!control.skip_trx_checks()) {
-         auto now = fc::time_point::now();
-         if( BOOST_UNLIKELY( now > _deadline ) ) {
-            // edump((now-start)(now-pseudo_start));
-            if( explicit_billed_cpu_time || deadline_exception_code == deadline_exception::code_value ) {
-               EOS_THROW( deadline_exception, "deadline exceeded", ("now", now)("deadline", _deadline)("start", start) );
-            } else if( deadline_exception_code == block_cpu_usage_exceeded::code_value ) {
-               EOS_THROW( block_cpu_usage_exceeded,
-                          "not enough time left in block to complete executing transaction",
-                          ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
-            } else if( deadline_exception_code == tx_cpu_usage_exceeded::code_value ) {
-               if (cpu_limit_due_to_greylist) {
-                  EOS_THROW( greylist_cpu_usage_exceeded,
-                           "greylisted transaction was executing for too long",
-                           ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
-               } else {
-                  EOS_THROW( tx_cpu_usage_exceeded,
-                           "transaction was executing for too long",
-                           ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
-               }
-            } else if( deadline_exception_code == leeway_deadline_exception::code_value ) {
-               EOS_THROW( leeway_deadline_exception,
-                          "the transaction was unable to complete by deadline, "
-                          "but it is possible it could have succeeded if it were allowed to run to completion",
-                          ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
+      if(BOOST_LIKELY(_deadline_timer.expired == false))
+         return;
+      auto now = fc::time_point::now();
+      if( BOOST_UNLIKELY( now > _deadline ) ) {
+         // edump((now-start)(now-pseudo_start));
+         if( explicit_billed_cpu_time || deadline_exception_code == deadline_exception::code_value ) {
+            EOS_THROW( deadline_exception, "deadline exceeded", ("now", now)("deadline", _deadline)("start", start) );
+         } else if( deadline_exception_code == block_cpu_usage_exceeded::code_value ) {
+            EOS_THROW( block_cpu_usage_exceeded,
+                        "not enough time left in block to complete executing transaction",
+                        ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
+         } else if( deadline_exception_code == tx_cpu_usage_exceeded::code_value ) {
+            if (cpu_limit_due_to_greylist) {
+               EOS_THROW( greylist_cpu_usage_exceeded,
+                        "greylisted transaction was executing for too long",
+                        ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
+            } else {
+               EOS_THROW( tx_cpu_usage_exceeded,
+                        "transaction was executing for too long",
+                        ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
             }
-            EOS_ASSERT( false,  transaction_exception, "unexpected deadline exception code" );
+         } else if( deadline_exception_code == leeway_deadline_exception::code_value ) {
+            EOS_THROW( leeway_deadline_exception,
+                        "the transaction was unable to complete by deadline, "
+                        "but it is possible it could have succeeded if it were allowed to run to completion",
+                        ("now", now)("deadline", _deadline)("start", start)("billing_timer", now - pseudo_start) );
          }
+         EOS_ASSERT( false,  transaction_exception, "unexpected deadline exception code" );
       }
    }
 
@@ -341,6 +496,7 @@ namespace eosio { namespace chain {
       billed_time = now - pseudo_start;
       deadline_exception_code = deadline_exception::code_value; // Other timeout exceptions cannot be thrown while billable timer is paused.
       pseudo_start = fc::time_point();
+      _deadline_timer.stop();
    }
 
    void transaction_context::resume_billing_timer() {
@@ -355,6 +511,7 @@ namespace eosio { namespace chain {
          _deadline = deadline;
          deadline_exception_code = deadline_exception::code_value;
       }
+      _deadline_timer.start(_deadline);
    }
 
    void transaction_context::validate_cpu_usage_to_bill( int64_t billed_us, bool check_minimum )const {
@@ -450,19 +607,21 @@ namespace eosio { namespace chain {
       return (*(trace->trx_vote));
    }
 
+
+   bool transaction_context::has_delegated_tx_fee_payer() const {
+      return trace->fee_payer.valid() && !(trace->fee_payer->empty());
+   }
+
+   const account_name& transaction_context::get_delegated_tx_fee_payer() const {
+      return (*(trace->fee_payer));
+   }
+
    void transaction_context::dispatch_action( action_trace& trace, const action& a, account_name receiver, bool context_free, uint32_t recurse_depth ) {
       apply_context  acontext( control, *this, a, recurse_depth );
       acontext.context_free = context_free;
       acontext.receiver     = receiver;
 
-      try {
-         acontext.exec();
-      } catch( ... ) {
-         trace = move(acontext.trace);
-         throw;
-      }
-
-      trace = move(acontext.trace);
+      acontext.exec( trace );
    }
 
    void transaction_context::schedule_transaction() {
@@ -477,7 +636,7 @@ namespace eosio { namespace chain {
       auto first_auth = trx.first_authorizor();
 
       uint32_t trx_size = 0;
-      const auto& cgto = control.db().create<generated_transaction_object>( [&]( auto& gto ) {
+      const auto& cgto = control.mutable_db().create<generated_transaction_object>( [&]( auto& gto ) {
         gto.trx_id      = id;
         gto.payer       = first_auth;
         gto.sender      = account_name(); /// delayed transactions have no sender
@@ -493,7 +652,7 @@ namespace eosio { namespace chain {
 
    void transaction_context::record_transaction( const transaction_id_type& id, fc::time_point_sec expire ) {
       try {
-          control.db().create<transaction_object>([&](transaction_object& transaction) {
+          control.mutable_db().create<transaction_object>([&](transaction_object& transaction) {
               transaction.trx_id = id;
               transaction.expiration = expire;
           });

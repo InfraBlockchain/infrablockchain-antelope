@@ -12,7 +12,7 @@
 # Decision Points Before Creating Token
 You must consider the decision points carefully because it cannot be changed once created.
 1. About precision
-   * The minimum precision is 4. It's enough to use in most cases.
+   * The minimum precision is 2. It's enough to use in most cases.
    * For backing crypto-currencies like BTC or ETH, you might need 8.
 1. About options
    * Once the token is created, you cannot change the ways you handle the token. Generally the options of the token are for token management.
@@ -24,13 +24,17 @@ You must consider the decision points carefully because it cannot be changed onc
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.0000 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.0000 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tsetuilim", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tissuebyu", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.ttrustui", "fee":"10.00 DKRW"}}' -p yosemite
+clyos push action yx.txfee settxfee '{"operation":"tf.tchangeis", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
 # Actions
@@ -41,7 +45,7 @@ Create a (non-native) token with its symbol and precision
 * The token creator naturally becomes the token depository.
 * Enabling the setting of options cannot be done any more after creation, because the owners of the token should know about what options can be set and it must not be changed after they own.
 ```
-clyos push action yx.token create '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
+clyos push action yx.token create '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
 ```
 
 ### parameters of create
@@ -72,7 +76,7 @@ clyos push action yx.token issue '{"to":"user2","token":{"amount":"100000.0000 B
 1. token : the amount of token with the issuer(=token depository)
    * amount
    * issuer
-1. memo : the additional data set by the action caller
+1. memo : string less than or equal to 256 bytes
 
 ### inline actions and notifications of issue
 * Case 1. If the to account is different from the issuer, issue does the inline action for `transfer`.
@@ -81,27 +85,27 @@ clyos push action yx.token issue '{"to":"user2","token":{"amount":"100000.0000 B
 #      yx.token <= yx.token::transfer           {"from":"d2","to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}
 #            d2 <= yx.token::transfer           {"from":"d2","to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}
 #         user2 <= yx.token::transfer           {"from":"d2","to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 * Case 2. If the to account is the token depository itself, there is no `transfer` inline action.
 ```
 #      yx.token <= yx.token::issue              {"to":"d2","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"my memo"}
-#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.0000 DKRW","issuer":"d1"}}
+#     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 ## redeem
 Redeem(burn) token from an account by the token depository
 
-* At, first the account transfers the token to its depository.
+* At first, the account transfers the token to the depository.
 ```
 clyos push action yx.token transfer '{"from":"user2","to":"d2","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem by user2"}' -p user2
 ```
-1. Then the token depository checks the transfer action is irreversible and calls redeem action.
+* Then the token depository checks the transfer action is irreversible and calls redeem action.
 ```
 clyos push action yx.token redeem '{"token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem for user2"}' -p d2
 ```
@@ -110,7 +114,7 @@ clyos push action yx.token redeem '{"token":{"amount":"10000.0000 BTC","issuer":
 1. token : the amount of token with the issuer(=token depository)
    * amount
    * issuer
-1. memo : the additional data set by the action caller
+1. memo : string less than or equal to 256 bytes
 
 
 ## transfer
@@ -128,30 +132,14 @@ clyos push action yx.token transfer '{"from":"user2","to":"user3","token":{"amou
    * issuer
 1. memo : string less than or equal to 256 bytes
 
-## wptransfer
-Transfer token with the designated fee payer
-
-```
-clyos push action yx.token wptransfer '{"from":"user2","to":"user3","token":{"amount":"10000.0000 BTC","issuer":"d2"},"payer":"servprovider","memo":"my memo"}' -p user2
-```
-
-### parameters of wptransfer
-1. from : account name to transfer from
-1. to : account name to transfer to
-1. token : the amount of token with the issuer(=token depository)
-   * amount
-   * issuer
-1. payer : account name which pays transaction fee
-1. memo : string less than or equal to 256 bytes
-
 
 ## setkycrule
 Set the KYC vector for send or receive
 
 * SET_KYC_RULE flag of can_set_options must be set at token creation time.
 ```
-clyos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "type":0, "kyc":4}' -p d2
-clyos push action yx.token setkycrule '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "type":1, "kyc":4}' -p d2
+clyos push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":0, "kyc":4}' -p d2
+clyos push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":1, "kyc":4}' -p d2
 ```
 
 ### parameters of setkycrule
@@ -168,7 +156,7 @@ set or add token options
    * FREEZE_TOKEN_TRANSFER flag of can_set_options must be set at token creation time.
 
 ```
-clyos push action yx.token setoptions '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "options":1, "reset":1}' -p d2
+clyos push action yx.token setoptions '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "options":1, "reset":1}' -p d2
 ```
 
 ### parameters of setoptions
@@ -185,14 +173,73 @@ Freeze an account which has the token by its issuer
 
 * FREEZE_ACCOUNT flag of can_set_options must be set at token creation time.
 ```
-clyos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "accs":["user1","user2"], "freeze":1}' -p d2
-clyos push action yx.token freezeacc '{"ysymbol":{"symbol":"4,BTC","issuer":"d2"}, "accs":["user2"], "freeze":0}' -p d2
+clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user1","user2"], "freeze":1}' -p d2
+clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user2"], "freeze":0}' -p d2
 ```
 
 ### parameters of freezeacc
 1. ysymbol : token symbol and its issuer
 1. accs : this list of account names
 1. freeze : freeze or unfreeze
+
+
+## setuilimit
+Set the limit of user issue amount by the token depository.
+```
+clyos push action yx.token setuilimit '{"to":"user1", "limit":{"amount":"1000000.0000 BTC","issuer":"d2"}}' -p d2
+```
+
+### parameters of setuilimit
+1. to : the account who is granted the issue authority
+1. limit : the limit amount of token with the issuer
+   * amount
+   * issuer
+
+## issuebyuser
+Issue the token by the user with the user issue authority and the limit
+
+* The total 'issued' amount of the user is incresed by the amount of token.
+* The total 'issued' amount of the user cannot exceed the issue limit granted by the token issuer.
+```
+clyos push action yx.token issuebyuser '{"user":"user1","to":"user1","token":{"amount":"100000.0000 BTC","issuer":"d2"}, "memo":"my memo"}' -p user1
+```
+
+### parameters of issuebyuser
+1. user : the account who is granted the issue authority
+1. to : the account who is transferred the token
+1. token : the amount of token with the issuer
+   * amount
+   * issuer
+1. memo : string less than or equal to 256 bytes
+
+
+## entrustui
+Entrust the user issue authority to another account
+
+* Agreed by the user under the terms and conditions, the delegated account can issue the amount of the token by the issue limit.
+```
+clyos push action yx.token entrustui '{"user":"user1","to":"d2","ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}}' -p user1
+```
+
+### parameters of issuebyuser
+1. user : the account who is granted the issue authority
+1. to : the account who is entrusted
+   * Currently only the token issuer can be entrusted.
+1. ysymbol : token symbol and its issuer
+
+
+## changeissued
+Decrease or increase the total user-issued amount of token of the user
+```
+clyos push action yx.token changeissued '{"user":"user1", "delta":{"amount":"1000000.0000 BTC","issuer":"d2"}, "decrease":1}' -p d2
+```
+
+### parameters of changeissued
+1. user : the account who is granted the issue authority
+1. delta : the amount of token to decrease or increase
+   * amount
+   * issuer
+1. decrease : boolean field to indicate decrement or increment of delta
 
 
 # Tables
@@ -207,8 +254,10 @@ clyos get table yx.token 4,BTC tstats
 ```
 {
   "rows": [{
-      "issuer": "d2",
-      "supply": "800000.0000 BTC",
+      "supply": {
+        "amount": "800000.0000 BTC",
+        "issuer": "d2"
+      },
       "options": 0,
       "kyc_rules": [],
       "kyc_rule_flags": []
@@ -225,7 +274,7 @@ clyos get table yx.token user2 taccounts
 ```
 
 ### results of taccounts
-1. id : This is just for internal managing purpose. 
+1. id : just for internal managing purpose 
 1. token : yx_asset type which are token amount and issuer
 1. amount : balance of the account
 ```

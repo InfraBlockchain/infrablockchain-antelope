@@ -1,262 +1,210 @@
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/native_token.hpp>
-#include <yosemitelib/non_native_token.hpp>
+#include "yx.token.hpp"
 
 namespace yosemite { namespace non_native_token {
 
-    void token::create(const yx_symbol &ysymbol, uint16_t can_set_options) {
-        eosio_assert(static_cast<uint32_t>(ysymbol.is_valid()), "invalid ysymbol name");
-        eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 4), "token precision must be equal or larger than 4");
-        eosio_assert(static_cast<uint32_t>(!ysymbol.is_native(false)), "cannot create the native token with this action");
-        eosio_assert(static_cast<uint32_t>(can_set_options <= TOKEN_CAN_SET_OPTIONS_MAX), "invalid can_set_options");
+   void yx_token::inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t /*can_set_options*/) {
+      eosio_assert(static_cast<uint32_t>(ysymbol.precision() >= 2), "token precision must be equal or larger than 2");
+   }
 
-        require_auth(ysymbol.issuer);
+   void yx_token::increase_supply(const yx_asset &token) const {
+      stats stats_table{get_self(), token.symbol.value};
+      const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
 
-        stats stats_table(get_self(), ysymbol.value);
-        const auto &tstats = stats_table.find(ysymbol.issuer);
-        eosio_assert(static_cast<uint32_t>(tstats == stats_table.end()), "already created");
+      stats_table.modify(tstats, 0, [&](auto &s) {
+         s.supply.amount += token.amount;
+         eosio_assert(static_cast<uint32_t>(s.supply.amount > 0 && s.supply.amount <= asset::max_amount),
+                      "token amount cannot be more than 2^62 - 1");
+      });
+   }
 
-        stats_table.emplace(get_self(), [&](auto &s) {
-            s.issuer = ysymbol.issuer;
-            s.supply = asset{0, ysymbol.value};
-            s.can_set_options = can_set_options;
-            s.kyc_rules.clear();
-            s.kyc_rule_flags.clear();
-        });
+   void yx_token::issue(const account_name &to, const yx_asset &token, const string &memo) {
+      check_issue_parameters(to, token, memo);
+      require_auth(token.issuer);
 
-        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);
-    }
+      increase_supply(token);
+      add_token_balance(token.issuer, token);
 
-    void token::issue(const account_name &to, const yx_asset &token, const string &memo) {
-        eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
-        eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
-        eosio_assert(static_cast<uint32_t>(!token.is_native(false)), "cannot issue the native token with this action");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+      if (to != token.issuer) {
+         SEND_INLINE_ACTION(*this, transfer, {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+             {token.issuer, to, token, memo});
+      }
 
-        require_auth(token.issuer);
+      charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
+   }
 
-        stats stats_table(get_self(), token.symbol.value);
-        const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
+   void yx_token::redeem(const yx_asset &token, const string &memo) {
+      eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
+      eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
+      eosio_assert(static_cast<uint32_t>(!token.is_native(false)), "cannot redeem the native token with this action");
+      eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+      require_auth(token.issuer);
 
-        stats_table.modify(tstats, 0, [&](auto &s) {
-            s.supply.amount += token.amount;
-            eosio_assert(static_cast<uint32_t>(s.supply.amount > 0 && s.supply.amount <= asset::max_amount),
-                         "token amount cannot be more than 2^62 - 1");
-        });
+      stats stats_table(get_self(), token.symbol.value);
+      const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
+      eosio_assert(static_cast<uint32_t>(token.amount <= tstats.supply.amount),
+                   "redeem token exceeds supply amount");
 
-        add_token_balance(token.issuer, token);
+      stats_table.modify(tstats, 0, [&](auto &s) {
+         s.supply.amount -= token.amount;
+      });
 
-        if (to != token.issuer) {
-            INLINE_ACTION_SENDER(token, transfer)
-                    (get_self(), {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-                     { token.issuer, to, token, memo });
-        }
+      sub_token_balance(token.issuer, token);
 
-        charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
-    }
+      charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
+   }
 
-    void token::redeem(const yx_asset &token, const string &memo) {
-        eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
-        eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
-        eosio_assert(static_cast<uint32_t>(!token.is_native(false)), "cannot redeem the native token with this action");
-        eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
+   void yx_token::transfer(account_name from, account_name to, const yx_asset &token, const string &memo) {
+      bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+      if (!is_auth_by_sysaccount) {
+         check_transfer_parameters(from, to, token, memo);
+      }
+      check_transfer_rules(from, to, token);
 
-        require_auth(token.issuer);
+      require_recipient(from);
+      require_recipient(to);
 
-        stats stats_table(get_self(), token.symbol.value);
-        const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
-        eosio_assert(static_cast<uint32_t>(token.amount <= tstats.supply.amount), "redeem token exceeds supply amount");
+      sub_token_balance(from, token);
+      add_token_balance(to, token);
 
-        stats_table.modify(tstats, 0, [&](auto &s) {
-            s.supply.amount -= token.amount;
-        });
+      if (!is_auth_by_sysaccount) {
+         charge_fee(from, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
+      }
+   }
 
-        sub_token_balance(token.issuer, token);
+   void yx_token::setuilimit(const account_name &to, const yx_asset &limit) {
+      eosio_assert(static_cast<uint32_t>(limit.is_valid()), "invalid limit");
+      eosio_assert(static_cast<uint32_t>(limit.amount >= 0), "must be non-negative limit");
+      eosio_assert(static_cast<uint32_t>(!limit.is_native(false)), "cannot grant issue with the native token");
+      eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
+      eosio_assert(static_cast<uint32_t>(
+            does_token_exist(YOSEMITE_USER_TOKEN_ACCOUNT, limit.get_yx_symbol())), "token does not exist");
+      require_auth(limit.issuer);
 
-        charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
-    }
+      delegated_issue_table delissue_tbl{get_self(), limit.symbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(limit.get_yx_symbol().issuer, to);
+      const auto &issue_info = second_index.find(second_key);
 
-    void token::transfer(account_name from, account_name to, yx_asset asset, const string &memo) {
-        wptransfer(from, to, asset, from, memo);
-    }
-
-    void token::wptransfer(account_name from, account_name to, yx_asset token, account_name payer, const string &memo) {
-        bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
-        if (!is_auth_by_sysaccount) {
-            eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
-            eosio_assert(static_cast<uint32_t>(token.amount > 0), "must transfer positive token");
-            eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
-            eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
-            eosio_assert(static_cast<uint32_t>(!token.is_native(false)), "cannot transfer native token with this contract; use yx.ntoken");
-
-            require_auth(from);
-            eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
-        }
-
-        stats stats_table(get_self(), token.symbol.value);
-        const auto &tstats = stats_table.get(token.issuer, "token is not yet created");
-
-        if (tstats.options > 0) {
-            eosio_assert(static_cast<uint32_t>((tstats.options & TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER) != TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER),
-                         "token transfer is frozen");
-        }
-        if (!tstats.kyc_rules.empty()) {
-            eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(from, TOKEN_KYC_RULE_TYPE_TRANSFER_SEND, tstats)),
-                         "KYC authentication for from account is failed");
-            eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, TOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE, tstats)),
-                         "KYC authentication for to account is failed");
-        }
-
-        require_recipient(from);
-        require_recipient(to);
-
-        sub_token_balance(from, token);
-        add_token_balance(to, token);
-
-        if (!is_auth_by_sysaccount) {
-            charge_fee(payer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
-        }
-    }
-
-    void token::add_token_balance(const account_name &owner, const yx_asset &token) {
-        accounts accounts_table(get_self(), owner);
-        auto sym_index = accounts_table.get_index<N(yxsymbol)>();
-        const uint128_t &yx_symbol_s = token.get_yx_symbol().to_uint128();
-        const auto &balance_holder = sym_index.find(yx_symbol_s);
-
-        if (balance_holder == sym_index.end()) {
-            accounts_table.emplace(get_self(), [&](auto &holder) {
-                holder.id = accounts_table.available_primary_key();
-                holder.token = token;
+      if (issue_info == second_index.end()) {
+         delissue_tbl.emplace(get_self(), [&](auto &holder) {
+            holder.id = delissue_tbl.available_primary_key();
+            holder.account = to;
+            holder.limit = limit;
+            holder.issued = yx_asset{0, limit.get_yx_symbol()};
+         });
+      } else {
+         if (limit.amount == 0 && issue_info->issued.amount == 0) {
+            second_index.erase(issue_info);
+         } else {
+            second_index.modify(issue_info, 0, [&](auto &holder) {
+               holder.limit = limit;
             });
-        } else {
-            eosio_assert(static_cast<uint32_t>((balance_holder->options & TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT) != TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT),
-                    "account is frozen by token issuer");
+         }
+      }
 
-            sym_index.modify(balance_holder, 0, [&](auto &holder) {
-                holder.token += token;
-                eosio_assert(static_cast<uint32_t>(holder.token.amount > 0 && holder.token.amount <= asset::max_amount),
-                             "token amount cannot be more than 2^62 - 1");
-            });
-        }
-    }
+      charge_fee(limit.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SET_USER_ISSUE_LIMIT);
+   }
 
-    void token::sub_token_balance(const account_name &owner, const yx_asset &token) {
-        accounts accounts_table(get_self(), owner);
-        auto sym_index = accounts_table.get_index<N(yxsymbol)>();
-        const uint128_t &yx_symbol_s = token.get_yx_symbol().to_uint128();
-        const auto &balance_holder = sym_index.find(yx_symbol_s);
+   void yx_token::issuebyuser(const account_name &user, const account_name &to, const yx_asset &token, const string &memo) {
+      check_issue_parameters(user, token, memo);
+      check_transfer_rules(user, user, token);
+      eosio_assert(static_cast<uint32_t>(user != token.issuer), "user and token issuer must be different");
+      eosio_assert(static_cast<uint32_t>(is_account(to)), "to account is invalid");
 
-        eosio_assert(static_cast<uint32_t>(balance_holder != sym_index.end()), "account doesn't have token");
-        eosio_assert(static_cast<uint32_t>(balance_holder->token >= token), "insufficient token balance");
-        eosio_assert(static_cast<uint32_t>((balance_holder->options & TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT) != TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT),
-                "account is frozen by token issuer");
+      delegated_issue_table delissue_tbl{get_self(), token.symbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(token.get_yx_symbol().issuer, user);
+      const auto &issue_info = second_index.find(second_key);
 
-        bool erase;
-        sym_index.modify(balance_holder, 0, [&](auto &holder) {
-            holder.token -= token;
-            erase = holder.token.amount == 0;
-        });
-        if (erase) {
-            sym_index.erase(balance_holder);
-        }
-    }
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "the limit of user issue is not set by the token issuer");
+      eosio_assert(static_cast<uint32_t>(issue_info->limit.amount - issue_info->issued.amount >= token.amount), "issue limit is reached");
 
-    void token::charge_fee(const account_name &payer, uint64_t operation) {
-        native_token::charge_transaction_fee(payer, operation);
-    }
+      // even if the entrusted issuer is set, the user should issue by himself or herself
+      if (issue_info->entrusted_issuer == 0 || !has_auth(issue_info->entrusted_issuer)) {
+         require_auth(user);
+      }
 
-    void token::setkycrule(const yx_symbol &ysymbol, token_rule_t type, identity::identity_kyc_t kyc) {
-        eosio_assert(static_cast<uint32_t>(type < TOKEN_KYC_RULE_TYPE_MAX), "invalid type");
-        require_auth(ysymbol.issuer);
+      second_index.modify(issue_info, 0, [&](auto &holder) {
+         holder.issued.amount += token.amount;
+      });
 
-        stats stats_table(get_self(), ysymbol.value);
-        const auto &tstats = stats_table.get(ysymbol.issuer, "token is not yet created");
-        eosio_assert(static_cast<uint32_t>((tstats.can_set_options & TOKEN_CAN_SET_OPTIONS_SET_KYC_RULE) == TOKEN_CAN_SET_OPTIONS_SET_KYC_RULE),
-                     "cannot set KYC rule");
+      increase_supply(token);
+      add_token_balance(user, token);
+      if (user != to) {
+         SEND_INLINE_ACTION(*this, transfer, {{user, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+               {user, to, token, memo});
+      }
 
-        auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), type);
-        if (itr == tstats.kyc_rules.end()) {
-            stats_table.modify(tstats, 0, [&](auto &s) {
-                s.kyc_rules.push_back(type);
-                s.kyc_rule_flags.push_back(kyc);
-            });
-        } else {
-            auto index = std::distance(tstats.kyc_rules.begin(), itr);
-            stats_table.modify(tstats, 0, [&](auto &s) {
-                s.kyc_rules[static_cast<size_t>(index)] = type;
-                s.kyc_rule_flags[static_cast<size_t>(index)] = kyc;
-            });
-        }
+      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
+   }
 
-        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
-    }
+   void yx_token::entrustui(const account_name &user, const account_name &to, const yx_symbol &ysymbol) {
+      eosio_assert(static_cast<uint32_t>(ysymbol.is_valid()), "invalid token symbol");
+      eosio_assert(static_cast<uint32_t>(!ysymbol.is_native(false)), "cannot apply the native token with this action");
+      eosio_assert(static_cast<uint32_t>(to == ysymbol.issuer || user == to), "currently only the token issuer is allowed for to");
 
-    bool token::check_identity_auth_for_transfer(account_name account, const token_rule_type &kycrule_type,
-                                                 const token_stats &tstats) {
-        eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
-                     "account is blacklisted by identity authority");
+      require_auth(user);
 
-        auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), kycrule_type);
-        if (itr == tstats.kyc_rules.end()) return true;
+      delegated_issue_table delissue_tbl{get_self(), ysymbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(ysymbol.issuer, user);
+      const auto &issue_info = second_index.find(second_key);
 
-        auto index = std::distance(tstats.kyc_rules.begin(), itr);
-        auto kyc_flags = tstats.kyc_rule_flags[static_cast<size_t>(index)];
-        return identity::has_all_kyc_status(account, kyc_flags);
-    }
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "the limit of user issue is not set by the token issuer");
+      if (issue_info->entrusted_issuer != 0) {
+         eosio_assert(static_cast<uint32_t>(issue_info->entrusted_issuer != to), "entrusted issuer is already set");
+      } else {
+         eosio_assert(static_cast<uint32_t>(user != to), "entrusted issuer is already unset");
+      }
 
-    void token::setoptions(const yx_symbol &ysymbol, uint16_t options, bool reset) {
-        eosio_assert(static_cast<uint32_t>(options <= TOKEN_OPTIONS_MAX), "invalid options");
-        require_auth(ysymbol.issuer);
+      second_index.modify(issue_info, 0, [&](auto &holder) {
+         if (user == to) {
+            holder.entrusted_issuer = 0;
+         } else {
+            holder.entrusted_issuer = to;
+         }
+      });
 
-        stats stats_table(get_self(), ysymbol.value);
-        const auto &tstats = stats_table.get(ysymbol.issuer, "token is not yet created");
-        if ((options & TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER) == TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER) {
-            eosio_assert(static_cast<uint32_t>((tstats.can_set_options & TOKEN_CAN_SET_OPTIONS_FREEZE_TOKEN_TRANSFER) == TOKEN_CAN_SET_OPTIONS_FREEZE_TOKEN_TRANSFER),
-                    "cannot set TOKEN_OPTIONS_FREEZE_TOKEN_TRANSFER");
-        }
+      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ENTRUST_USER_ISSUE_TO);
+   }
 
-        stats_table.modify(tstats, 0, [&](auto &s) {
-            if (reset) {
-                s.options = options;
-            } else {
-                s.options |= options;
-            }
-        });
+   void yx_token::changeissued(const account_name &user, const yx_asset &delta, bool decrease) {
+      check_issue_parameters(user, delta, "");
+      eosio_assert(static_cast<uint32_t>(user != delta.issuer), "user and token issuer must be different");
+      require_auth(delta.issuer);
 
-        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS);
-    }
+      delegated_issue_table delissue_tbl{get_self(), delta.symbol.value};
+      auto second_index = delissue_tbl.get_index<N(secondary)>();
+      const uint128_t &second_key = to_uint128(delta.get_yx_symbol().issuer, user);
+      const auto &issue_info = second_index.find(second_key);
 
-    void token::freezeacc(const yx_symbol &ysymbol, const vector<account_name> &accs, bool freeze) {
-        eosio_assert(static_cast<uint32_t>(accs.size() <= 32 && !accs.empty()), "too many or empty accs");
-        require_auth(ysymbol.issuer);
+      eosio_assert(static_cast<uint32_t>(issue_info != second_index.end()), "the limit of user issue is not set by the token issuer");
 
-        stats stats_table(get_self(), ysymbol.value);
-        const auto &tstats = stats_table.get(ysymbol.issuer, "token is not yet created");
-        eosio_assert(static_cast<uint32_t>((tstats.can_set_options & TOKEN_CAN_SET_OPTIONS_FREEZE_ACCOUNT) == TOKEN_CAN_SET_OPTIONS_FREEZE_ACCOUNT),
-                     "cannot freeze or unfreeze accounts");
+      bool erase = false;
 
-        const uint128_t &yx_symbol_s = ysymbol.to_uint128();
-        for (auto owner : accs) {
-            accounts accounts_table{get_self(), owner};
-            auto sym_index = accounts_table.get_index<N(yxsymbol)>();
-            const auto &balance_holder = sym_index.find(yx_symbol_s);
+      second_index.modify(issue_info, 0, [&](auto &holder) {
+         if (decrease) {
+            holder.issued.amount -= delta.amount;
+            eosio_assert(static_cast<uint32_t>(holder.issued.amount >= 0), "wrong decrease delta");
+            erase = (holder.limit.amount == 0) && (holder.issued.amount == 0);
+         } else {
+            holder.issued.amount += delta.amount;
+            eosio_assert(
+                  static_cast<uint32_t>(holder.issued.amount >= 0 && holder.issued.amount <= holder.limit.amount),
+                  "wrong decrease delta");
+         }
+      });
+      if (erase) {
+         second_index.erase(issue_info);
+      }
 
-            eosio_assert(static_cast<uint32_t>(balance_holder != sym_index.end()), "account doesn't have token");
-            sym_index.modify(balance_holder, 0, [&](auto &holder) {
-                if (freeze) {
-                    holder.options |= TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT;
-                } else {
-                    holder.options &= ~TOKEN_ACCOUNT_OPTIONS_FREEZE_ACCOUNT;
-                }
-            });
-        }
-
-        charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_FREEZEACC);
-    }
-
+      charge_fee(delta.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CHANGE_ISSUED);
+   }
 }}
 
-EOSIO_ABI(yosemite::non_native_token::token, (create)(issue)(redeem)(transfer)(wptransfer)(setkycrule)(setoptions)(freezeacc)
+EOSIO_ABI(yosemite::non_native_token::yx_token,
+      (create)(issue)(redeem)(transfer)(setkycrule)(setoptions)(freezeacc)(setuilimit)(issuebyuser)(entrustui)(changeissued)
 )

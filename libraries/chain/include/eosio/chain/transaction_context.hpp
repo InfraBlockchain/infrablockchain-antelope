@@ -1,9 +1,24 @@
 #pragma once
+#include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/trace.hpp>
+#include <signal.h>
 
 namespace eosio { namespace chain {
+
+   struct deadline_timer {
+         deadline_timer();
+         ~deadline_timer();
+
+         void start(fc::time_point tp);
+         void stop();
+
+         static volatile sig_atomic_t expired;
+      private:
+         static void timer_expired(int);
+         static bool initialized;
+   };
 
    class transaction_context {
       private:
@@ -39,8 +54,6 @@ namespace eosio { namespace chain {
          void pause_billing_timer();
          void resume_billing_timer();
 
-         void add_ram_usage( account_name account, int64_t ram_delta );
-
          uint32_t update_billed_cpu_time( fc::time_point now );
 
          std::tuple<int64_t, int64_t, bool, bool> max_bandwidth_billed_accounts_can_pay( bool force_elastic_limits = false )const;
@@ -51,10 +64,16 @@ namespace eosio { namespace chain {
          bool has_transaction_vote() const;
          const yosemite_core::transaction_vote& get_transaction_vote() const;
 
+         /// YOSEMITE Delegated Transaction Fee Payment
+         bool has_delegated_tx_fee_payer() const;
+         const account_name& get_delegated_tx_fee_payer() const;
+
       private:
 
          friend struct controller_impl;
          friend class apply_context;
+
+         void add_ram_usage( account_name account, int64_t ram_delta );
 
          void dispatch_action( action_trace& trace, const action& a, account_name receiver, bool context_free = false, uint32_t recurse_depth = 0 );
          inline void dispatch_action( action_trace& trace, const action& a, bool context_free = false ) {
@@ -115,6 +134,8 @@ namespace eosio { namespace chain {
          fc::time_point                pseudo_start;
          fc::microseconds              billed_time;
          fc::microseconds              billing_timer_duration_limit;
+
+         deadline_timer                _deadline_timer;
    };
 
 } }

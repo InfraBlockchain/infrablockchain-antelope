@@ -21,7 +21,7 @@
 #define YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER        N(tf.transfer)  // = wptransfer
 #define YOSEMITE_TX_FEE_OP_NAME_NTOKEN_NTRANSFER       N(tf.ntransfer) // = wpntransfer
 
-// yx.token
+// yx.token, yx.nft
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE           N(tf.tcreate)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE            N(tf.tissue)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM           N(tf.tredeem)
@@ -30,6 +30,11 @@
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS       N(tf.tsetopts)
 #define YOSEMITE_TX_FEE_OP_NAME_TOKEN_FREEZEACC        N(tf.tfreezeac)
 
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_SET_USER_ISSUE_LIMIT N(tf.tsetuilim)
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER    N(tf.tissuebyu)
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_ENTRUST_USER_ISSUE_TO N(tf.ttrustui)
+#define YOSEMITE_TX_FEE_OP_NAME_TOKEN_CHANGE_ISSUED    N(tf.tchangeis)
+
 // yx.dcontract
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE       N(tf.dccreate)
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS   N(tf.dcaddsign)
@@ -37,6 +42,15 @@
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH N(tf.dcupadd)
 #define YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE       N(tf.dcremove)
 
+// yx.escrow
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_ESCROW          N(tf.esescrow)
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_PROCEED         N(tf.esproceed)
+#define YOSEMITE_TX_FEE_OP_NAME_ESCROW_CANCEL          N(tf.escancel)
+
+// yx.nftex
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_BUY                N(tf.nftbuy)
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_SELL               N(tf.nftsell)
+#define YOSEMITE_TX_FEE_OP_NAME_NFT_SELL_CANCEL        N(tf.nftsellc)
 
 namespace yosemite {
 

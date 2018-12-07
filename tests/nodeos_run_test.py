@@ -18,12 +18,11 @@ import re
 Print=Utils.Print
 errorExit=Utils.errorExit
 cmdError=Utils.cmdError
-from core_symbol import CORE_SYMBOL
 from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
 
 args = TestHelper.parse_args({"--host","--port","--prod-count","--defproducera_prvt_key","--defproducerb_prvt_key","--mongodb"
                               ,"--dump-error-details","--dont-launch","--keep-logs","-v","--leave-running","--only-bios","--clean-run"
-                              ,"--sanity-test","--p2p-plugin"})
+                              ,"--sanity-test","--p2p-plugin","--wallet-port"})
 server=args.host
 port=args.port
 debug=args.v
@@ -39,42 +38,49 @@ onlyBios=args.only_bios
 killAll=args.clean_run
 sanityTest=args.sanity_test
 p2pPlugin=args.p2p_plugin
+walletPort=args.wallet_port
 
 Utils.Debug=debug
 localTest=True if server == TestHelper.LOCAL_HOST else False
 cluster=Cluster(walletd=True, enableMongo=enableMongo, defproduceraPrvtKey=defproduceraPrvtKey, defproducerbPrvtKey=defproducerbPrvtKey)
-walletMgr=WalletMgr(True)
+walletMgr=WalletMgr(True, port=walletPort)
 testSuccessful=False
 killEosInstances=not dontKill
 killWallet=not dontKill
-dontBootstrap=sanityTest
+dontBootstrap=sanityTest # intent is to limit the scope of the sanity test to just verifying that nodes can be started
 
-WalletdName="keyos"
+WalletdName=Utils.EosWalletName
 ClientName="clyos"
 timeout = .5 * 12 * 2 + 60 # time for finalization with 1 producer + 60 seconds padding
 Utils.setIrreversibleTimeout(timeout)
 
 try:
     TestHelper.printSystemInfo("BEGIN")
+    cluster.setWalletMgr(walletMgr)
     Print("SERVER: %s" % (server))
     Print("PORT: %d" % (port))
 
     if enableMongo and not cluster.isMongodDbRunning():
         errorExit("MongoDb doesn't seem to be running.")
 
-    walletMgr.killall(allInstances=killAll)
-    walletMgr.cleanup()
-
     if localTest and not dontLaunch:
         cluster.killall(allInstances=killAll)
         cluster.cleanup()
         Print("Stand up cluster")
-        if cluster.launch(prodCount=prodCount, onlyBios=onlyBios, dontKill=dontKill, dontBootstrap=dontBootstrap, p2pPlugin=p2pPlugin) is False:
+        if cluster.launch(prodCount=prodCount, onlyBios=onlyBios, dontBootstrap=dontBootstrap, p2pPlugin=p2pPlugin) is False:
             cmdError("launcher")
             errorExit("Failed to stand up eos cluster.")
     else:
+        Print("Collecting cluster info.")
         cluster.initializeNodes(defproduceraPrvtKey=defproduceraPrvtKey, defproducerbPrvtKey=defproducerbPrvtKey)
         killEosInstances=False
+        Print("Stand up %s" % (WalletdName))
+        walletMgr.killall(allInstances=killAll)
+        walletMgr.cleanup()
+        print("Stand up walletd")
+        if walletMgr.launch() is False:
+            cmdError("%s" % (WalletdName))
+            errorExit("Failed to stand up eos walletd.")
 
     if sanityTest:
         testSuccessful=True
@@ -90,32 +96,21 @@ try:
     testeraAccount.name="testera11111"
     currencyAccount=accounts[1]
     currencyAccount.name="currency1111"
-    exchangeAccount=accounts[2]
-    exchangeAccount.name="exchange1111"
 
     PRV_KEY1=testeraAccount.ownerPrivateKey
     PUB_KEY1=testeraAccount.ownerPublicKey
     PRV_KEY2=currencyAccount.ownerPrivateKey
     PUB_KEY2=currencyAccount.ownerPublicKey
-    PRV_KEY3=exchangeAccount.activePrivateKey
-    PUB_KEY3=exchangeAccount.activePublicKey
 
-    testeraAccount.activePrivateKey=currencyAccount.activePrivateKey=PRV_KEY3
-    testeraAccount.activePublicKey=currencyAccount.activePublicKey=PUB_KEY3
-
-    exchangeAccount.ownerPrivateKey=PRV_KEY2
-    exchangeAccount.ownerPublicKey=PUB_KEY2
-
-    Print("Stand up %s" % (WalletdName))
-    walletMgr.killall(allInstances=killAll)
-    walletMgr.cleanup()
-    if walletMgr.launch() is False:
-        cmdError("%s" % (WalletdName))
-        errorExit("Failed to stand up eos walletd.")
+    testeraAccount.activePrivateKey=currencyAccount.activePrivateKey=PRV_KEY2
+    testeraAccount.activePublicKey=currencyAccount.activePublicKey=PUB_KEY2
 
     testWalletName="test"
     Print("Creating wallet \"%s\"." % (testWalletName))
-    testWallet=walletMgr.create(testWalletName, [cluster.eosioAccount,cluster.defproduceraAccount,cluster.defproducerbAccount])
+    walletAccounts=[cluster.defproduceraAccount,cluster.defproducerbAccount]
+    if not dontLaunch:
+        walletAccounts.append(cluster.eosioAccount)
+    testWallet=walletMgr.create(testWalletName, walletAccounts)
 
     Print("Wallet \"%s\" password=%s." % (testWalletName, testWallet.password.encode("utf-8")))
 
@@ -204,23 +199,20 @@ try:
 
     # create accounts via eosio as otherwise a bid is needed 
     Print("Create new account %s via %s" % (testeraAccount.name, cluster.eosioAccount.name))
-    transId=node.createAccount(testeraAccount, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=False, exitOnError=True)
+    transId=node.createAccount(testeraAccount, cluster.defproduceraAccount, stakedDeposit=0, waitForTransBlock=False, exitOnError=True)
 
     Print("Create new account %s via %s" % (currencyAccount.name, cluster.eosioAccount.name))
-    transId=node.createAccount(currencyAccount, cluster.eosioAccount, stakedDeposit=5000, exitOnError=True)
-
-    Print("Create new account %s via %s" % (exchangeAccount.name, cluster.eosioAccount.name))
-    transId=node.createAccount(exchangeAccount, cluster.eosioAccount, waitForTransBlock=True, exitOnError=True)
+    transId=node.createAccount(currencyAccount, cluster.defproduceraAccount, stakedDeposit=50, exitOnError=True)
 
     Print("Validating accounts after user accounts creation")
-    accounts=[testeraAccount, currencyAccount, exchangeAccount]
+    accounts=[testeraAccount, currencyAccount]
     cluster.validateAccounts(accounts)
 
     Print("Verify account %s" % (testeraAccount))
     if not node.verifyAccount(testeraAccount):
         errorExit("FAILURE - account creation failed.", raw=True)
 
-    transferAmount="97.5321 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="97.53 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (transferAmount, defproduceraAccount.name, testeraAccount.name))
     node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer")
 
@@ -231,12 +223,12 @@ try:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
-    transferAmount="0.0100 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="0.01 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Force transfer funds %s from account %s to %s" % (
         transferAmount, defproduceraAccount.name, testeraAccount.name))
     node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer", force=True)
 
-    expectedAmount="97.5421 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    expectedAmount="97.54 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Verify transfer, Expected: %s" % expectedAmount)
     actualAmount=node.getAccountTotalNativeTokenBalanceStr(testeraAccount.name)
     if expectedAmount != actualAmount:
@@ -244,7 +236,7 @@ try:
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
     Print("Validating accounts after some user trasactions")
-    accounts=[testeraAccount, currencyAccount, exchangeAccount]
+    accounts=[testeraAccount, currencyAccount]
     cluster.validateAccounts(accounts)
 
     Print("Locking all wallets.")
@@ -257,20 +249,20 @@ try:
         cmdError("%s wallet unlock" % (ClientName))
         errorExit("Failed to unlock wallet %s" % (testWallet.name))
 
-    transferAmount="97.5311 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="97.53 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (
         transferAmount, testeraAccount.name, currencyAccount.name))
     trans=node.transferNativeToken(testeraAccount, currencyAccount, transferAmount, "test transfer a->b")
     transId=Node.getTransId(trans)
 
-    expectedAmount="98.0311 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL) # 5000 initial deposit
+    expectedAmount="98.03 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL) # 50.00 initial deposit
     Print("Verify transfer, Expected: %s" % (expectedAmount))
     actualAmount=node.getAccountTotalNativeTokenBalanceStr(currencyAccount.name)
     if expectedAmount != actualAmount:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
-    node.issueNativeToken(currencyAccount.name, "d1", "100000.0000 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, "currency1111 issue", waitForTransBlock=True)
+    node.issueNativeToken(currencyAccount.name, "d1", "100000.00 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, "currency1111 issue", waitForTransBlock=True)
 
     Print("Validate last action for account %s" % (testeraAccount.name))
     actions=node.getActions(testeraAccount, -1, -1, exitOnError=True)
@@ -296,18 +288,18 @@ try:
             typeVal=  transaction["traces"][0]["act"]["name"]
             key="[traces][0][act][data][quantity]"
             amountVal=transaction["traces"][0]["act"]["data"]["amount"]
-            amountVal=int(decimal.Decimal(amountVal.split()[0])*10000)
+            amountVal=int(decimal.Decimal(amountVal.split()[0])*100)
         else:
             key="[actions][0][name]"
             typeVal=  transaction["actions"][0]["name"]
             key="[actions][0][data][quantity]"
             amountVal=transaction["actions"][0]["data"]["amount"]
-            amountVal=int(decimal.Decimal(amountVal.split()[0])*10000)
+            amountVal=int(decimal.Decimal(amountVal.split()[0])*100)
     except (TypeError, KeyError) as e:
         Print("transaction%s not found. Transaction: %s" % (key, transaction))
         raise
 
-    if typeVal != "transfer" or amountVal != 975311:
+    if typeVal != "transfer" or amountVal != 9753:
         errorExit("FAILURE - validating transaction failed: %s %s %s" % (transId, typeVal, amountVal), raw=True)
 
     Print("yx.token Tests")
@@ -343,6 +335,7 @@ try:
     try:
         assert row0
         assert (row0["token"]["amount"] == "100000.0000 CUR")
+        assert (row0["token"]["issuer"] == "currency1111")
     except (AssertionError, KeyError) as _:
         Print("ERROR: Failed get table row assertion. %s" % (row0))
         raise
@@ -351,7 +344,8 @@ try:
     ysymbolCUR = "4,CUR@currency1111"
     res = node.getTokenStats(ysymbolCUR, exitOnError=True)
     try:
-        assert(res["supply"] == "100000.0000 CUR")
+        assert(res["supply"]["amount"] == "100000.0000 CUR")
+        assert(res["supply"]["issuer"] == "currency1111")
     except (AssertionError, KeyError) as _:
         Print("ERROR: Failed get currecy stats assertion. %s" % res)
         raise
@@ -599,7 +593,7 @@ try:
             #errorExit("FAILURE - Assert in var/lib/node_00/stderr.txt")
 
     Print("Validating accounts at end of test")
-    accounts=[testeraAccount, currencyAccount, exchangeAccount]
+    accounts=[testeraAccount, currencyAccount]
     cluster.validateAccounts(accounts)
 
     testSuccessful=True

@@ -1,12 +1,12 @@
 # Mirroring EOSIO/eos to YosemiteLabs/yosemite-public-blockchain 
 https://github.com/YosemiteLabs/yosemite-public-blockchain/issues/94
 
-We can simply mirror EOSIO by pushing from EOSIO/eos:master branch to YosemiteLabs/yosemite-public-blockchain:eos-master branch. Don't forget our branch for EOSIO mirroring is <b>eos-master</b>.
+We can simply mirror EOSIO by pushing from EOSIO/eos:master branch to YosemiteLabs/yosemite-public-blockchain:eos-master branch. Don't forget our branch for EOSIO mirroring is <b>eosio-master</b>.
 
 ```console
 git clone https://github.com/EOSIO/eos
 cd eos
-git push https://github.com/YosemiteLabs/yosemite-public-blockchain master:eos-master
+git push https://github.com/YosemiteLabs/yosemite-public-blockchain master:eosio-master
 ```
 
 # Tagging EOSIO/eos Release Version After Mirroring

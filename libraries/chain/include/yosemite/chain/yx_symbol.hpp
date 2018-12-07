@@ -1,9 +1,10 @@
 /**
  *  @file
- *  @copyright defined in yosemite/LICENSE
+ *  @copyright defined in yosemite-public-blockchain/LICENSE
  */
 #pragma once
 #include <eosio/chain/symbol.hpp>
+#include <eosio/chain/exceptions.hpp>
 
 namespace yosemite { namespace chain {
     using namespace eosio::chain;
