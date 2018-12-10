@@ -11,14 +11,11 @@
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
 #include <yosemite/chain/transaction_extensions.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/exceptions.hpp>
-#include <yosemite/chain/standard_token_database.hpp>
-#include <yosemite/chain/transaction_fee_database.hpp>
-#include <yosemite/chain/system_token_list.hpp>
-#include <yosemite/chain/yosemite_global_property_database.hpp>
-#include <yosemite/chain/standard_token_action_types.hpp>
 
 using boost::container::flat_set;
+using namespace yosemite::chain;
 
 namespace eosio { namespace chain {
 
@@ -364,7 +361,7 @@ void apply_context::cast_transaction_vote(uint32_t vote_amount) {
     trx_context.add_transaction_vote(vote_amount);
 }
 
-vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_head_block() {
+vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
    auto head_block_ptr = control.head_block_state();
    if (!head_block_ptr) {
        return vector<yosemite_core::transaction_vote>();
@@ -375,8 +372,103 @@ vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_
 //////////////////////////////////////
 /// YOSEMITE Core API - Transaction-Fee-Payer
 
-account_name apply_context::get_transaction_fee_payer() {
+account_name apply_context::get_transaction_fee_payer() const {
    return trx_context.get_tx_fee_payer();
+}
+
+//////////////////////////////////////
+/// YOSEMITE Core API - Standard-Token
+
+symbol apply_context::get_token_symbol( const account_name token_id ) const {
+   return control.get_token_manager().get_token_symbol(token_id);
+}
+
+share_type apply_context::get_token_total_supply( const account_name token_id ) const {
+   return control.get_token_manager().get_token_total_supply(token_id);
+}
+
+share_type apply_context::get_token_balance( const account_name token_id, const account_name account ) const {
+   return control.get_token_manager().get_token_balance( token_id, account );
+}
+
+void apply_context::issue_token( const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can issue its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token issuance must be greater than 0" );
+
+   token_id_type token_id = receiver;
+   auto& token_manager = control.get_mutable_token_manager();
+
+   auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
+   EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
+   auto token_meta_obj = *token_meta_ptr;
+
+   auto* to_account_obj_ptr = db.find<account_object, by_name>( to );
+   EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
+               "token issuance target account ${account} does not exist", ("account", to) );
+
+   const share_type old_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( old_total_supply + amount > 0, token_balance_overflow_exception, "total supply balance overflow" );
+
+   // update total supply
+   token_manager.update_token_total_supply(token_meta_ptr, amount);
+
+   // issue new token to 'to' account
+   token_manager.add_token_balance( *this, token_id, to, amount );
+}
+
+void apply_context::transfer_token( const account_name from, const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can process transfering its own (action receiver's) tokens
+   /// Authorization check(require_authorization) and action notification(require_recipient) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( from.good(), token_action_validate_exception, "invalid from account name" );
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token transfer must be greater than 0" );
+
+   token_id_type token_id = receiver;
+
+   auto& token_manager = control.get_mutable_token_manager();
+
+   auto* from_account_obj_ptr = db.find<account_object, by_name>( from );
+   EOS_ASSERT( from_account_obj_ptr != nullptr, no_token_target_account_exception,
+               "transfer from account ${account} does not exist", ("account", from) );
+
+   auto* to_account_obj_ptr = db.find<account_object, by_name>( to );
+   EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
+               "transfer to account ${account} does not exist", ("account", to) );
+
+   token_manager.subtract_token_balance( *this, token_id, from, amount );
+   token_manager.add_token_balance( *this, token_id, to, amount );
+}
+
+void apply_context::redeem_token( const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can redeem(burn) its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
+
+   token_id_type token_account = receiver;
+
+   auto& token_manager = control.get_mutable_token_manager();
+
+   auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
+   EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_account) );
+   auto token_meta_obj = *token_meta_ptr;
+
+   share_type current_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( current_total_supply - amount > 0, token_balance_underflow_exception, "total supply balance underflow" );
+
+   // update total supply
+   token_manager.update_token_total_supply(token_meta_ptr, -amount);
+
+   // redeem(burn) tokens
+   token_manager.subtract_token_balance( *this, token_account, token_account, amount );
 }
 
 //////////////////////////////////////

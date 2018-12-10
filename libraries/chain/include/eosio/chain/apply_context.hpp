@@ -6,6 +6,7 @@
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/contract_table_objects.hpp>
+#include <eosio/chain/symbol.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <fc/utility.hpp>
 #include <sstream>
@@ -488,13 +489,35 @@ class apply_context {
       void cast_transaction_vote(uint32_t vote_amount);
 
       /// get transaction vote data accumulated in the head block (previous block)
-      vector<yosemite_core::transaction_vote> get_transaction_votes_in_head_block();
+      vector<yosemite_core::transaction_vote> get_transaction_votes_in_head_block() const;
 
    /// YOSEMITE Core API - Transaction-Fee-Payer
    public:
 
       /// get transaction fee payer account name from transaction message
-      account_name get_transaction_fee_payer();
+      account_name get_transaction_fee_payer() const;
+
+   /// YOSEMITE Core API - Standard-Token
+   public:
+
+      /// get token symbol of a token
+      symbol get_token_symbol( const account_name token_id ) const;
+
+      /// get total supply amount of a token
+      share_type get_token_total_supply( const account_name token_id ) const;
+
+      /// get token balance of an account for a token
+      share_type get_token_balance( const account_name token_id, const account_name account ) const;
+
+      /// issue new token to an account
+      void issue_token( const account_name to, const share_type amount );
+
+      /// transfer token
+      void transfer_token( const account_name from, const account_name to, const share_type amount );
+
+      /// redeem(burn) token
+      void redeem_token( const share_type amount );
+
 
    /// Authorization methods:
    public:

@@ -691,7 +691,7 @@ class producer_api : public context_aware_api {
          if( buffer_size == 0 ) return s;
 
          auto copy_size = std::min( buffer_size, s );
-         memcpy( producers, active_producers.data(), copy_size );
+         memcpy( producers, active_producers.data(),  copy_size );
 
          return copy_size;
       }
@@ -1404,6 +1404,38 @@ class context_free_transaction_api : public context_aware_api {
       }
 };
 
+/**
+ * YOSEMITE Standard Token API, custom token contract code can access standard token operations
+ */
+class token_api : public context_aware_api {
+   public:
+      using context_aware_api::context_aware_api;
+
+      uint64_t get_token_symbol( account_name token_id ) {
+         return context.get_token_symbol( token_id ).value();
+      }
+
+      int64_t get_token_total_supply( account_name token_id ) {
+         return context.get_token_total_supply( token_id );
+      }
+
+      int64_t get_token_balance( account_name token_id, account_name account ) {
+         return context.get_token_balance( token_id, account );
+      }
+
+      void issue_token( account_name to, int64_t amount ) {
+         context.issue_token( to, amount );
+      }
+
+      void transfer_token( account_name from, account_name to, int64_t amount ) {
+         context.transfer_token( from, to, amount );
+      }
+
+      void redeem_token( int64_t amount ) {
+         context.redeem_token( amount );
+      }
+};
+
 class compiler_builtins : public context_aware_api {
    public:
       compiler_builtins( apply_context& ctx )
@@ -1863,6 +1895,15 @@ REGISTER_INTRINSICS(transaction_api,
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
    (trx_fee_payer,   int64_t()                    )
+);
+
+REGISTER_INTRINSICS(token_api,
+   (get_token_symbol,          int64_t(int64_t)                 )
+   (get_token_total_supply,    int64_t(int64_t)                 )
+   (get_token_balance,         int64_t(int64_t, int64_t)        )
+   (issue_token,               void(int64_t, int64_t)           )
+   (transfer_token,            void(int64_t, int64_t, int64_t)  )
+   (redeem_token,              void(int64_t)                    )
 );
 
 REGISTER_INTRINSICS(context_free_api,

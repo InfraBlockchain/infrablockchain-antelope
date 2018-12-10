@@ -89,8 +89,20 @@ namespace yosemite { namespace chain {
       }
    }
 
-   const token_meta_object* standard_token_manager::get_token_meta_info( const token_id_type &token_id ) {
+   const token_meta_object* standard_token_manager::get_token_meta_info( const token_id_type &token_id ) const {
       return _db.find<token_meta_object, by_token_id>(token_id);
+   }
+
+   const symbol& standard_token_manager::get_token_symbol( const token_id_type& token_id ) const {
+      auto* token_meta_ptr = get_token_meta_info(token_id);
+      EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
+      return (*token_meta_ptr).symbol;
+   }
+
+   const share_type& standard_token_manager::get_token_total_supply( const token_id_type& token_id ) const {
+      auto* token_meta_ptr = get_token_meta_info(token_id);
+      EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
+      return (*token_meta_ptr).total_supply;
    }
 
    void standard_token_manager::update_token_total_supply( const token_meta_object* token_meta_ptr, share_type delta ) {
@@ -142,6 +154,15 @@ namespace yosemite { namespace chain {
       }
    }
 
+   share_type standard_token_manager::get_token_balance( const token_id_type& token_id, const account_name& account ) const {
+      auto* balance_ptr = _db.find<token_balance_object, by_token_account>(boost::make_tuple(token_id, account));
+      if ( balance_ptr ) {
+         return (*balance_ptr).balance;
+      } else {
+         return share_type(0);
+      }
+   }
+
    void standard_token_manager::pay_transaction_fee( transaction_context& trx_context, account_name fee_payer, uint32_t fee_amount ) {
 
       share_type fee_remaining = fee_amount;
@@ -181,10 +202,10 @@ namespace yosemite { namespace chain {
             // dispatch 'txfee' action for this system token
             trx_context.trace->action_traces.emplace_back();
             trx_context.dispatch_action( trx_context.trace->action_traces.back(),
-                                         action { vector<permission_level>{ {fee_payer, config::active_name} },
-                                                  sys_token_id,
-                                                  token::txfee{ fee_payer, asset(fee_for_this_token, token_meta_ptr->symbol) }
-                                         } );
+               action { vector<permission_level>{ {fee_payer, config::active_name} },
+                        sys_token_id,
+                        token::txfee{ fee_payer, asset(fee_for_this_token, token_meta_ptr->symbol) }
+               } );
 
             if (fee_remaining <= 0) break;
          }
