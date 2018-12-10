@@ -390,7 +390,7 @@ namespace bacc = boost::accumulators;
          return;
       }
 
-      int64_t txfee_to_pay = 0;
+      int32_t txfee_to_pay = 0;
       auto& txfee_manager = control.get_tx_fee_manager();
 
       for( const auto& act_trace : trace->action_traces ) {
@@ -402,12 +402,14 @@ namespace bacc = boost::accumulators;
          }
       }
 
+      EOS_ASSERT( txfee_to_pay >= 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than 0" );
+
       if (txfee_to_pay == 0) {
-         txfee_to_pay += txfee_manager.get_default_tx_fee().value;
+         txfee_to_pay = txfee_manager.get_default_tx_fee().value;
       }
 
       // dispatch 'txfee' actions to system token accounts
-      control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, txfee_to_pay );
+      control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, static_cast<uint32_t>(txfee_to_pay) );
    }
 
 
