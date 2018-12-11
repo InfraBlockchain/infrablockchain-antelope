@@ -217,4 +217,43 @@ namespace yosemite { namespace chain {
       trx_context.add_transaction_vote(fee_amount);
    }
 
+
+   int64_t standard_token_manager::set_system_token_list( vector<system_token> system_tokens ) {
+
+      auto& ygpo = _db.get<yosemite_global_property_object>();
+      auto& current_sys_tokens = ygpo.system_token_list.system_tokens;
+
+      if( std::equal( system_tokens.begin(), system_tokens.end(),
+                      current_sys_tokens.begin(), current_sys_tokens.end() ) ) {
+         return -1; // the system token list does not change
+      }
+
+      system_token_list_type new_sys_token_list;
+      new_sys_token_list.version = ygpo.system_token_list.version + 1;
+      new_sys_token_list.system_tokens = std::move(system_tokens);
+
+      int64_t version = new_sys_token_list.version;
+
+         _db.modify( ygpo, [&]( auto& ygp ) {
+         ygp.system_token_list = std::move(new_sys_token_list);
+      });
+      return version;
+   }
+
+   int standard_token_manager::get_system_token_count() const {
+      return _db.get<yosemite_global_property_object>().system_token_list.system_tokens.size();
+   }
+
+   vector<system_token> standard_token_manager::get_system_token_list() const {
+      auto& active_sys_tokens = _db.get<yosemite_global_property_object>().system_token_list.system_tokens;
+
+      vector<system_token> sys_tokens;
+      sys_tokens.reserve( active_sys_tokens.size() );
+
+      for(const auto& sys_token : active_sys_tokens ) {
+         sys_tokens.push_back({sys_token.token_id, sys_token.token_weight});
+      }
+      return sys_tokens;
+   }
+
 } } // namespace yosemite::chain

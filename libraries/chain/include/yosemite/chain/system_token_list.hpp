@@ -14,6 +14,8 @@ namespace yosemite { namespace chain {
 
    using system_token_id_type = account_name;
 
+   const static int max_system_tokens = 25;
+
    /**
     * system token is a authorized token used as transaction fee payment.
     * to be selected as a system token, a token should meet below criteria.
@@ -23,6 +25,10 @@ namespace yosemite { namespace chain {
    struct system_token {
       system_token_id_type  token_id; // token account name selected as system token
       uint32_t              token_weight; // token value weight as transaction fee payment, 10000 = 1.0x, 5000 = 0.5x (tx fee is charged 2x)
+
+      bool valid() const {
+         return token_id.good() && token_weight != 0;
+      }
 
       static constexpr uint32_t token_weight_1x = 10000;
 

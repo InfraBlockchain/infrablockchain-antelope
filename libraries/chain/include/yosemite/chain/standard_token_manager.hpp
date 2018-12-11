@@ -15,6 +15,7 @@
 
 #include <yosemite/chain/standard_token_action_types.hpp>
 #include <yosemite/chain/standard_token_database.hpp>
+#include <yosemite/chain/system_token_list.hpp>
 
 namespace yosemite { namespace chain {
 
@@ -40,6 +41,10 @@ namespace yosemite { namespace chain {
       share_type get_token_balance( const token_id_type& token_id, const account_name& account ) const;
 
       void pay_transaction_fee( transaction_context& trx_context, account_name fee_payer, uint32_t fee_amount );
+
+      int64_t set_system_token_list( vector<system_token> system_tokens );
+      int get_system_token_count() const;
+      vector<system_token> get_system_token_list() const;
 
    private:
       chainbase::database &_db;

@@ -12,7 +12,11 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
+
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/system_token_list.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
+
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -1436,6 +1440,53 @@ class token_api : public context_aware_api {
       }
 };
 
+/**
+ * YOSEMITE System Token APIs - system contract operated by block producers manages system tokens used for tx fee payment
+ */
+class system_token_api : public context_aware_api {
+   public:
+      using context_aware_api::context_aware_api;
+
+      int get_system_token_count() {
+         return context.control.get_token_manager().get_system_token_count();
+      }
+
+      uint32_t get_system_token_list( array_ptr<char> packed_system_token_list, size_t buffer_size ) {
+         vector<yosemite::chain::system_token> system_tokens = context.control.get_token_manager().get_system_token_list();
+
+         auto s = fc::raw::pack_size( system_tokens );
+         if( buffer_size == 0 ) return s;
+
+         if ( s <= buffer_size ) {
+            datastream<char*> ds( packed_system_token_list, s );
+            fc::raw::pack(ds, system_tokens);
+            return s;
+         }
+         return 0;
+      }
+
+      int64_t set_system_token_list( array_ptr<char> packed_system_token_list, size_t datalen) {
+         EOS_ASSERT( context.privileged, unaccessible_api, "${code} does not have permission to call this API", ("code",context.receiver) );
+         context.require_authorization(config::system_account_name);
+
+         datastream<const char*> ds( packed_system_token_list, datalen );
+         vector<yosemite::chain::system_token> system_tokens;
+         fc::raw::unpack(ds, system_tokens);
+         EOS_ASSERT(system_tokens.size() <= yosemite::chain::max_system_tokens, wasm_execution_error, "System token list exceeds the maximum system token count for this chain");
+
+         // check that system tokens are unique
+         std::set<yosemite::chain::system_token_id_type> unique_sys_tokens;
+         for (const auto& sys_token : system_tokens) {
+            EOS_ASSERT( context.is_account(sys_token.token_id), wasm_execution_error, "system token list includes a nonexisting account" );
+            EOS_ASSERT( sys_token.valid(), wasm_execution_error, "system token list includes an invalid value" );
+            unique_sys_tokens.insert(sys_token.token_id);
+         }
+         EOS_ASSERT( system_tokens.size() == unique_sys_tokens.size(), wasm_execution_error, "duplicate system token id in system token list" );
+
+         return context.control.get_mutable_token_manager().set_system_token_list( std::move(system_tokens) );
+      }
+};
+
 class compiler_builtins : public context_aware_api {
    public:
       compiler_builtins( apply_context& ctx )
@@ -1904,6 +1955,12 @@ REGISTER_INTRINSICS(token_api,
    (issue_token,               void(int64_t, int64_t)           )
    (transfer_token,            void(int64_t, int64_t, int64_t)  )
    (redeem_token,              void(int64_t)                    )
+);
+
+REGISTER_INTRINSICS(system_token_api,
+   (get_system_token_count,    int()                      )
+   (get_system_token_list,     int(int, int)              )
+   (set_system_token_list,     int64_t(int,int)           )
 );
 
 REGISTER_INTRINSICS(context_free_api,

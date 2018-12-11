@@ -406,8 +406,7 @@ void apply_context::issue_token( const account_name to, const share_type amount 
    EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
    auto token_meta_obj = *token_meta_ptr;
 
-   auto* to_account_obj_ptr = db.find<account_object, by_name>( to );
-   EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
+   EOS_ASSERT( is_account(to), no_token_target_account_exception,
                "token issuance target account ${account} does not exist", ("account", to) );
 
    const share_type old_total_supply = token_meta_obj.total_supply;
@@ -434,12 +433,10 @@ void apply_context::transfer_token( const account_name from, const account_name 
 
    auto& token_manager = control.get_mutable_token_manager();
 
-   auto* from_account_obj_ptr = db.find<account_object, by_name>( from );
-   EOS_ASSERT( from_account_obj_ptr != nullptr, no_token_target_account_exception,
+   EOS_ASSERT( is_account( from ), no_token_target_account_exception,
                "transfer from account ${account} does not exist", ("account", from) );
 
-   auto* to_account_obj_ptr = db.find<account_object, by_name>( to );
-   EOS_ASSERT( to_account_obj_ptr != nullptr, no_token_target_account_exception,
+   EOS_ASSERT( is_account( to ), no_token_target_account_exception,
                "transfer to account ${account} does not exist", ("account", to) );
 
    token_manager.subtract_token_balance( *this, token_id, from, amount );
