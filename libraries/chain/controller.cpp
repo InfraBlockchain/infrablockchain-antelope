@@ -29,7 +29,6 @@
 #include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/transaction_fee_manager.hpp>
 #include <yosemite/chain/standard_token_action_handlers.hpp>
-#include <yosemite/chain/system_contract_action_types.hpp>
 
 namespace eosio { namespace chain {
 

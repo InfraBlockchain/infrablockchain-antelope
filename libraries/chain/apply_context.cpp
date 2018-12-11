@@ -361,10 +361,10 @@ void apply_context::cast_transaction_vote(uint32_t vote_amount) {
     trx_context.add_transaction_vote(vote_amount);
 }
 
-vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
+vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
    auto head_block_ptr = control.head_block_state();
    if (!head_block_ptr) {
-       return vector<yosemite_core::transaction_vote>();
+       return vector<transaction_vote>();
    }
    return head_block_ptr->trx_votes.get_tx_vote_list();
 }

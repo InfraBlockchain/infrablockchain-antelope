@@ -60,9 +60,9 @@ namespace eosio { namespace chain {
 
       public:
          /// YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
-         void add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount);
+         void add_transaction_vote(yosemite::chain::transaction_vote_amount_type vote_amount);
          bool has_transaction_vote() const;
-         const yosemite_core::transaction_vote& get_transaction_vote() const;
+         const yosemite::chain::transaction_vote& get_transaction_vote() const;
 
          /// YOSEMITE Transaction-Fee-Payer
          const account_name& get_tx_fee_payer() const;

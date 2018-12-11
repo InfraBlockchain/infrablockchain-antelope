@@ -489,7 +489,7 @@ class apply_context {
       void cast_transaction_vote(uint32_t vote_amount);
 
       /// get transaction vote data accumulated in the head block (previous block)
-      vector<yosemite_core::transaction_vote> get_transaction_votes_in_head_block() const;
+      vector<yosemite::chain::transaction_vote> get_transaction_votes_in_head_block() const;
 
    /// YOSEMITE Core API - Transaction-Fee-Payer
    public:

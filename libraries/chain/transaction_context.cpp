@@ -179,8 +179,8 @@ namespace bacc = boost::accumulators;
          if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
 
             try {
-               trace->trx_vote = yosemite_core::transaction_vote(
-                  fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
+               trace->trx_vote = yosemite::chain::transaction_vote(
+                  fc::raw::unpack<yosemite::chain::transaction_vote_to_name_type>(tx_ext_item.second), 0);
             } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
 
          } else if (tx_ext_item.first == YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
@@ -631,7 +631,7 @@ namespace bacc = boost::accumulators;
       return std::make_tuple(account_net_limit, account_cpu_limit, greylisted_net, greylisted_cpu);
    }
 
-   void transaction_context::add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount) {
+   void transaction_context::add_transaction_vote(yosemite::chain::transaction_vote_amount_type vote_amount) {
 
       if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->to.empty()) {
          trace->trx_vote->amt += vote_amount;
@@ -642,7 +642,7 @@ namespace bacc = boost::accumulators;
       return trace->trx_vote.valid() && trace->trx_vote->has_vote();
    }
 
-   const yosemite_core::transaction_vote& transaction_context::get_transaction_vote() const {
+   const yosemite::chain::transaction_vote& transaction_context::get_transaction_vote() const {
       return (*(trace->trx_vote));
    }
 
