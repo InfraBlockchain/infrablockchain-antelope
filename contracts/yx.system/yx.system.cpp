@@ -7,6 +7,7 @@
 #include "yx.block_producer.cpp"
 #include "yx.sys_depository.cpp"
 #include "yx.identity_authority.cpp"
+#include "yx.system_token.cpp"
 
 namespace yosemitesys {
     using yosemite::yx_asset;
@@ -107,4 +108,6 @@ EOSIO_ABI( yosemitesys::system_contract,
            (regsysdepo)(authsysdepo)(rmvsysdepo)
            // yx.identity_authority.cpp
            (regidauth)(authidauth)(rmvidauth)
+           // yx.system_token.cpp
+           (addsystoken)(rmvsystoken)
 )

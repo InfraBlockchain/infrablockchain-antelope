@@ -4,8 +4,6 @@
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/system_depository.hpp>
 #include <yosemitelib/transaction_fee.hpp>
-#include <yosemitelib/token_api.h>
-#include <yosemitelib/system_token_api.h>
 
 #include <eosiolib/dispatcher.hpp>
 

@@ -294,6 +294,19 @@
         {"name":"identity_authority",   "type":"account_name"}
       ]
     },{
+      "name": "addsystoken",
+      "base": "",
+      "fields": [
+        {"name":"token",   "type":"account_name"},
+        {"name":"weight",  "type":"uint32"}
+      ]
+    },{
+      "name": "rmvsystoken",
+      "base": "",
+      "fields": [
+        {"name":"token",   "type":"account_name"}
+      ]
+    },{
       "name": "setpriv",
       "base": "",
       "fields": [
@@ -439,6 +452,14 @@
    },{
       "name": "rmvidauth",
       "type": "rmvidauth",
+      "ricardian_contract": ""
+   },{
+      "name": "addsystoken",
+      "type": "addsystoken",
+      "ricardian_contract": ""
+   },{
+      "name": "rmvsystoken",
+      "type": "rmvsystoken",
       "ricardian_contract": ""
    }],
    "tables": [{

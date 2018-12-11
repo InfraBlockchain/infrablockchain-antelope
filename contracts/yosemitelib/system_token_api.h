@@ -62,7 +62,7 @@ uint32_t get_system_token_list(char* data, uint32_t datalen);
  *
  * @return -1 if setting new system token list was unsuccessful, otherwise returns the version of the new system token list
  */
-int64_t set_system_token_list( char *system_token_list_data, uint32_t data_size );
+int64_t set_system_token_list( char* system_token_list_data, uint32_t data_size );
 
 
 ///@ } systokenapi

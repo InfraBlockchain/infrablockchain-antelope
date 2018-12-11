@@ -130,6 +130,13 @@ namespace yosemitesys {
         void rmvidauth( const account_name identity_authority );
 
 
+        // System Token Management (yx.system_token.cpp)
+
+        void addsystoken( const account_name token, const uint32_t weight );
+
+        void rmvsystoken( const account_name token );
+
+
     private:
         void update_elected_producers( block_timestamp timestamp );
 
