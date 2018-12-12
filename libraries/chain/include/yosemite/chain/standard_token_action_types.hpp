@@ -15,7 +15,7 @@ namespace yosemite { namespace chain { namespace token {
    using namespace eosio::chain;
 
    /**
-    * Every account can process built-in token actions (settokenmeta, issue, transfer, redeem)
+    * Every account on YOSEMITE blockchain can process built-in standard token actions (settokenmeta, issue, transfer, redeem)
     * without custom smart contract code deployed to an account.
     * An account can have optional token contract code inheriting built-in token actions.
     */
@@ -33,7 +33,7 @@ namespace yosemite { namespace chain { namespace token {
    struct issue {
       account_name  to;
       asset         qty; // token quantity
-      std::string   memo;
+      std::string   tag;
 
       static action_name get_name() {
          return N(issue);
@@ -44,7 +44,7 @@ namespace yosemite { namespace chain { namespace token {
       account_name  from;
       account_name  to;
       asset         qty; // token quantity
-      std::string   memo;
+      std::string   tag;
 
       static action_name get_name() {
          return N(transfer);
@@ -62,7 +62,7 @@ namespace yosemite { namespace chain { namespace token {
 
    struct redeem {
       asset         qty; // token quantity to redeem(burn)
-      std::string   memo;
+      std::string   tag;
 
       static action_name get_name() {
          return N(redeem);
@@ -74,7 +74,7 @@ namespace yosemite { namespace chain { namespace token {
 } } } /// yosemite::chain::token
 
 FC_REFLECT( yosemite::chain::token::settokenmeta , (symbol)(url)(description) )
-FC_REFLECT( yosemite::chain::token::issue, (to)(qty)(memo) )
-FC_REFLECT( yosemite::chain::token::transfer, (from)(to)(qty)(memo) )
+FC_REFLECT( yosemite::chain::token::issue, (to)(qty)(tag) )
+FC_REFLECT( yosemite::chain::token::transfer, (from)(to)(qty)(tag) )
 FC_REFLECT( yosemite::chain::token::txfee, (payer)(fee) )
-FC_REFLECT( yosemite::chain::token::redeem, (qty)(memo) )
+FC_REFLECT( yosemite::chain::token::redeem, (qty)(tag) )

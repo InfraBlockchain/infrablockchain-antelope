@@ -47,7 +47,7 @@ namespace yosemite { namespace chain {
       auto issue_action = context.act.data_as_built_in_common_action<issue>();
       try {
          EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
-         EOS_ASSERT( issue_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
+         EOS_ASSERT( issue_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
          // action parameter validation will be done in context.issue_token()
 
          const token_id_type token_account = context.receiver;
@@ -74,7 +74,7 @@ namespace yosemite { namespace chain {
             context.execute_inline(
                action { vector<permission_level>{ {token_account, config::active_name} },
                         token_account,
-                        transfer{ token_account, to_account, issue_action.qty, issue_action.memo }
+                        transfer{ token_account, to_account, issue_action.qty, issue_action.tag }
                       }
                );
          }
@@ -94,7 +94,7 @@ namespace yosemite { namespace chain {
          const share_type transfer_amount = transfer_action.qty.get_amount();
 
          EOS_ASSERT( transfer_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
-         EOS_ASSERT( transfer_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
+         EOS_ASSERT( transfer_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
          // action parameter validation will be done in context.transfer_token()
 
          token_id_type token_id = context.receiver;
@@ -173,7 +173,7 @@ namespace yosemite { namespace chain {
       auto redeem_action = context.act.data_as_built_in_common_action<redeem>();
       try {
          EOS_ASSERT( redeem_action.qty.is_valid(), token_action_validate_exception, "invalid token redemption quantity" );
-         EOS_ASSERT( redeem_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
+         EOS_ASSERT( redeem_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
          // action parameter validation will be done in context.issue_token()
 
          const share_type redeem_amount = redeem_action.qty.get_amount();
