@@ -729,7 +729,7 @@ asset to_asset( account_name code, const string& s ) {
    auto it = cache.find( make_pair(code, sym) );
    auto sym_str = a.symbol_name();
    if ( it == cache.end() ) {
-      auto json = call(get_token_stats_func, fc::mutable_variant_object("json", false)
+      auto json = call(get_yx_token_stats_func, fc::mutable_variant_object("json", false)
                        ("code", code)
                        ("symbol", sym_str)
       );
@@ -2075,20 +2075,51 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // yx.token accessors
+   // YOSEMITE Standard Token
    // get token balance
-   string ysymbol;
-   auto get_token = get->add_subcommand("token", localized("Retrieve information related to yosemite non-native tokens"), true);
+   string token_id;
+   auto get_token = get->add_subcommand("token", localized("Retrieve YOSEMITE standard token information"), true);
    get_token->require_subcommand();
 
-   auto get_balance = get_token->add_subcommand("balance",
-                                                localized("Retrieve the balance of an account for a given token"),
-                                                false);
-   get_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
-   get_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
-   get_balance->set_callback([&] {
+   auto get_token_balance = get_token->add_subcommand("balance",
+      localized("Retrieve the balance of an account for a given token"),
+                                                   false);
+   get_token_balance->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
+   get_token_balance->add_option("account", accountName, localized("The account name to query the balance for"))->required();
+   get_token_balance->set_callback([&] {
       try {
          auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
+            ("token", token_id)
+            ("account", accountName)
+         );
+
+         std::cout << fc::json::to_pretty_string(result)
+                   << std::endl;
+      } catch (const fc::exception &ex) {
+         if (ex.code() == 3711003) { // == yosemite::chain::token_not_yet_created_exception
+            asset empty_asset(0);
+            std::cout << fc::json::to_pretty_string(empty_asset)
+                      << std::endl;
+         } else {
+            throw;
+         }
+      }
+   });
+
+   // yx.token accessors
+   // get yxtoken balance
+   string ysymbol;
+   auto get_yx_token = get->add_subcommand("yxtoken", localized("Retrieve information related to yosemite non-native tokens"), true);
+   get_yx_token->require_subcommand();
+
+   auto get_yx_token_balance = get_yx_token->add_subcommand("balance",
+                                                localized("Retrieve the balance of an account for a given token"),
+                                                false);
+   get_yx_token_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
+   get_yx_token_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
+   get_yx_token_balance->set_callback([&] {
+      try {
+         auto result = call(get_yx_token_balance_func, fc::mutable_variant_object("json", false)
                  ("account", accountName)
                  ("code", "yx.token")
                  ("ysymbol", ysymbol)
@@ -2108,10 +2139,10 @@ int main( int argc, char** argv ) {
       }
    });
 
-   auto get_token_stats = get_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
-   get_token_stats->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
-   get_token_stats->set_callback([&] {
-      auto result = call(get_token_stats_func, fc::mutable_variant_object("json", false)
+   auto get_yx_token_stats = get_yx_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
+   get_yx_token_stats->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
+   get_yx_token_stats->set_callback([&] {
+      auto result = call(get_yx_token_stats_func, fc::mutable_variant_object("json", false)
          ("code", "yx.token")
          ("ysymbol", ysymbol)
       );
