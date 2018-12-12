@@ -22,6 +22,7 @@
 #include <eosio/utilities/common.hpp>
 
 #include <yosemite/chain/system_accounts.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
 
 #include <boost/signals2/connection.hpp>
 #include <boost/algorithm/string.hpp>
@@ -1259,7 +1260,15 @@ fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_p
    return results;
 }
 
-yx_asset read_only::get_token_balance(const read_only::get_token_balance_params &p) const {
+asset read_only::get_token_balance(const get_token_balance_params &params) const {
+
+   auto& yosemite_token_manager = db.get_token_manager();
+   const symbol& symbol = yosemite_token_manager.get_token_symbol(params.token);
+   share_type balance = yosemite_token_manager.get_token_balance(params.token, params.account);
+   return asset(balance, symbol);
+}
+
+yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {
    yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
    const abi_def abi = eosio::chain_apis::get_abi(db, p.code);
    yx_asset result{};
@@ -1328,7 +1337,7 @@ asset read_only::get_native_token_balance(const get_native_token_balance_params 
    }
 }
 
-read_only::get_token_stats_result read_only::get_token_stats(const read_only::get_token_stats_params &p) const {
+read_only::get_yx_token_stats_result read_only::get_yx_token_stats(const read_only::get_yx_token_stats_params &p) const {
    yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
 
    const auto &d = db.db();
@@ -1339,7 +1348,7 @@ read_only::get_token_stats_result read_only::get_token_stats(const read_only::ge
    EOS_ASSERT(itr, chain::token_not_found_exception, "Token is not created by the issuer.");
 
    fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
-   read_only::get_token_stats_result result;
+   read_only::get_yx_token_stats_result result;
 
    fc::raw::unpack(ds, result.supply);
    fc::raw::unpack(ds, result.can_set_options);

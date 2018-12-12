@@ -313,12 +313,19 @@ public:
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
 
    struct get_token_balance_params {
+      name token;
+      name account;
+   };
+
+   asset get_token_balance(const get_token_balance_params &params) const;
+
+   struct get_yx_token_balance_params {
       name code;
       name account;
       string ysymbol;
    };
 
-   yx_asset get_token_balance(const get_token_balance_params &params) const;
+   yx_asset get_yx_token_balance(const get_yx_token_balance_params &params) const;
 
    struct get_native_token_balance_params {
       name account;
@@ -340,12 +347,12 @@ public:
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
-   struct get_token_stats_params {
+   struct get_yx_token_stats_params {
       name code;
       string ysymbol;
    };
 
-   struct get_token_stats_result {
+   struct get_yx_token_stats_result {
       yx_asset supply;
       uint16_t can_set_options;
       uint16_t options;
@@ -353,7 +360,7 @@ public:
       vector<uint16_t> kyc_rule_flags;
    };
 
-   get_token_stats_result get_token_stats(const get_token_stats_params &params) const;
+   get_yx_token_stats_result get_yx_token_stats(const get_yx_token_stats_params &params) const;
 
    struct get_native_token_stats_params {
       account_name issuer;
@@ -729,9 +736,10 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(ac
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
 
-FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (code)(account)(ysymbol));
-FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_params, (code)(ysymbol));
-FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (token)(account));
+FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_balance_params, (code)(account)(ysymbol));
+FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_params, (code)(ysymbol));
+FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_balance_params, (account)(issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_params, (issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_result, (supply)(options));
