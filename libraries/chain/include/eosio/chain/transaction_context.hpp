@@ -115,6 +115,8 @@ namespace eosio { namespace chain {
          int64_t                       billed_cpu_time_us = 0;
          bool                          explicit_billed_cpu_time = false;
 
+         bool                          implicit_tx = false;
+
       private:
          bool                          is_initialized = false;
 

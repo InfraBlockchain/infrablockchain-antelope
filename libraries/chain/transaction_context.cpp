@@ -173,7 +173,7 @@ namespace bacc = boost::accumulators;
 
       auto &tx_ext = trx.transaction_extensions;
       // YOSEMITE "Transaction-as-a-vote", "Transaction Fee Payer" Transaction-Extension support
-      EOS_ASSERT( tx_ext.size() >= 1 && tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, transaction-fee-payer)" );
+      EOS_ASSERT( tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, transaction-fee-payer)" );
 
       for (auto&& tx_ext_item: tx_ext) {
          if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
@@ -194,7 +194,7 @@ namespace bacc = boost::accumulators;
          }
       }
 
-      EOS_ASSERT( !trace->fee_payer.empty(), yosemite::chain::invalid_trx_fee_payer_account, "transaction fee payer field is required" );
+      //EOS_ASSERT( !trace->fee_payer.empty(), yosemite::chain::invalid_trx_fee_payer_account, "transaction fee payer field is required" );
    }
 
    void transaction_context::init(uint64_t initial_net_usage)
@@ -306,6 +306,7 @@ namespace bacc = boost::accumulators;
 
    void transaction_context::init_for_implicit_trx( uint64_t initial_net_usage  )
    {
+      implicit_tx = true;
       published = control.pending_block_time();
       init( initial_net_usage);
    }
@@ -384,7 +385,10 @@ namespace bacc = boost::accumulators;
 
       using namespace yosemite::chain;
 
+      if ( implicit_tx ) return;
+
       auto& fee_payer = get_tx_fee_payer();
+      EOS_ASSERT( !fee_payer.empty(), yosemite::chain::invalid_trx_fee_payer_account, "transaction fee payer field is required" );
       if (fee_payer == config::system_account_name) {
          // system account is exempt from transaction fee
          return;

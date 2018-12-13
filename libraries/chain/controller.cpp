@@ -1058,9 +1058,12 @@ struct controller_impl {
                // crypto signature of 'transaction fee payer' account.
 
                vector<permission_level> permissions_to_check;
-               permissions_to_check.push_back(
-                  permission_level {trx_context.get_tx_fee_payer(), config::active_name}
-               );
+               auto& fee_payer = trx_context.get_tx_fee_payer();
+               if (!fee_payer.empty()) {
+                  permissions_to_check.push_back(
+                     permission_level {trx_context.get_tx_fee_payer(), config::active_name}
+                  );
+               }
 
                authorization.check_authorization(
                        trx->trx.actions,
