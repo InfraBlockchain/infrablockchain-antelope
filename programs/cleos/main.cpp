@@ -2081,9 +2081,7 @@ int main( int argc, char** argv ) {
    auto get_token = get->add_subcommand("token", localized("Retrieve YOSEMITE standard token information"), true);
    get_token->require_subcommand();
 
-   auto get_token_balance = get_token->add_subcommand("balance",
-      localized("Retrieve the balance of an account for a given token"),
-                                                   false);
+   auto get_token_balance = get_token->add_subcommand("balance", localized("Retrieve the balance of an account for a given token"), false);
    get_token_balance->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
    get_token_balance->add_option("account", accountName, localized("The account name to query the balance for"))->required();
    get_token_balance->set_callback([&] {
@@ -2099,6 +2097,27 @@ int main( int argc, char** argv ) {
          if (ex.code() == 3711003) { // == yosemite::chain::token_not_yet_created_exception
             asset empty_asset(0);
             std::cout << fc::json::to_pretty_string(empty_asset)
+                      << std::endl;
+         } else {
+            throw;
+         }
+      }
+   });
+
+   auto get_token_info = get_token->add_subcommand("info", localized("Retrieve meta information of a token"), false);
+   get_token_info->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
+   get_token_info->set_callback([&] {
+      try {
+         auto result = call(get_token_info_func, fc::mutable_variant_object("json", false)
+            ("token", token_id)
+         );
+
+         std::cout << fc::json::to_pretty_string(result)
+                   << std::endl;
+      } catch (const fc::exception &ex) {
+         if (ex.code() == 3711003) { // == yosemite::chain::token_not_yet_created_exception
+            asset empty_asset(0);
+            std::cout << "token_not_yet_created_exception"
                       << std::endl;
          } else {
             throw;

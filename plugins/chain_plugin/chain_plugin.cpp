@@ -1261,11 +1261,24 @@ fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_p
 }
 
 asset read_only::get_token_balance(const get_token_balance_params &params) const {
-
    auto& yosemite_token_manager = db.get_token_manager();
    const symbol& symbol = yosemite_token_manager.get_token_symbol(params.token);
    share_type balance = yosemite_token_manager.get_token_balance(params.token, params.account);
    return asset(balance, symbol);
+}
+
+fc::variant read_only::get_token_info(const get_token_info_params &params) const {
+   auto& yosemite_token_manager = db.get_token_manager();
+
+   auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.token);
+   EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", params.token) );
+
+   auto token_meta_obj = *token_meta_ptr;
+   return fc::mutable_variant_object("token_id", token_meta_obj.token_id)
+      ("symbol", token_meta_obj.symbol)
+      ("total_supply", token_meta_obj.total_supply)
+      ("url", token_meta_obj.url)
+      ("description", token_meta_obj.description);
 }
 
 yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {

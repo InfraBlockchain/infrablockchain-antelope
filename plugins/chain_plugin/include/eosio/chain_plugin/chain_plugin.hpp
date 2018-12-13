@@ -319,6 +319,12 @@ public:
 
    asset get_token_balance(const get_token_balance_params &params) const;
 
+   struct get_token_info_params {
+      name token;
+   };
+
+   fc::variant get_token_info(const get_token_info_params &params) const;
+
    struct get_yx_token_balance_params {
       name code;
       name account;
@@ -737,6 +743,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symb
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
 
 FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (token)(account));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_info_params, (token));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_balance_params, (code)(account)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_params, (code)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
