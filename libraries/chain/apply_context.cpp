@@ -403,7 +403,7 @@ void apply_context::issue_token( const account_name to, const share_type amount 
    auto& token_manager = control.get_mutable_token_manager();
 
    auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
-   EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
+   EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
    auto token_meta_obj = *token_meta_ptr;
 
    EOS_ASSERT( is_account(to), no_token_target_account_exception,
@@ -455,7 +455,7 @@ void apply_context::redeem_token( const share_type amount ) {
    auto& token_manager = control.get_mutable_token_manager();
 
    auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
-   EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_account) );
+   EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_account) );
    auto token_meta_obj = *token_meta_ptr;
 
    share_type current_total_supply = token_meta_obj.total_supply;

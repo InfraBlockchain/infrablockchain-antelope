@@ -1271,7 +1271,7 @@ fc::variant read_only::get_token_info(const get_token_info_params &params) const
    auto& yosemite_token_manager = db.get_token_manager();
 
    auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.token);
-   EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", params.token) );
+   EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", params.token) );
 
    auto token_meta_obj = *token_meta_ptr;
    return fc::mutable_variant_object("token_id", token_meta_obj.token_id)

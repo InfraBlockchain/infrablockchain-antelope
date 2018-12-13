@@ -57,7 +57,7 @@ namespace yosemite { namespace chain {
          auto& token_manager = context.control.get_token_manager();
 
          auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
-         EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
+         EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
          EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
@@ -101,7 +101,7 @@ namespace yosemite { namespace chain {
          auto& token_manager = context.control.get_mutable_token_manager();
 
          auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
-         EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
+         EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
          EOS_ASSERT( transfer_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
@@ -141,7 +141,7 @@ namespace yosemite { namespace chain {
          auto& token_manager = context.control.get_mutable_token_manager();
 
          auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
-         EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
+         EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
          EOS_ASSERT( txfee_action.fee.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
@@ -183,7 +183,7 @@ namespace yosemite { namespace chain {
          auto& token_manager = context.control.get_mutable_token_manager();
 
          auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
-         EOS_ASSERT( !token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
+         EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
          EOS_ASSERT( redeem_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
