@@ -41,8 +41,6 @@ namespace yosemitesys {
                   new_system_token_list.push_back( sys_token );
                }
             }
-
-            new_system_token_list.insert( new_system_token_list.end(), current_system_tokens.begin(), current_system_tokens.end() );
          }
       }
 

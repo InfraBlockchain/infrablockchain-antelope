@@ -84,11 +84,6 @@ namespace yosemitesys {
                     eosio_assert( creator == suffix, "only suffix may create this account" );
                 }
             }
-
-            if (!yosemite::is_authorized_identity_authority(creator)) {
-                // system depositories are exempted for new account transaction fee
-                yosemite::native_token::charge_transaction_fee(creator, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT);
-            }
         }
 
         // no resource limit, Yosemite is transaction-fee based blockchain.
