@@ -2085,45 +2085,42 @@ int main( int argc, char** argv ) {
    get_token_balance->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
    get_token_balance->add_option("account", accountName, localized("The account name to query the balance for"))->required();
    get_token_balance->set_callback([&] {
-      try {
-         auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
-            ("token", token_id)
-            ("account", accountName)
-         );
+      auto result = call(get_token_balance_func,
+                         fc::mutable_variant_object("token", token_id)("account", accountName)
+      );
 
-         std::cout << fc::json::to_pretty_string(result)
-                   << std::endl;
-      } catch (const fc::exception &ex) {
-         if (ex.code() == 3711003) { // == yosemite::chain::token_not_yet_created_exception
-            asset empty_asset(0);
-            std::cout << fc::json::to_pretty_string(empty_asset)
-                      << std::endl;
-         } else {
-            throw;
-         }
-      }
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
    });
 
+   // get token info
    auto get_token_info = get_token->add_subcommand("info", localized("Retrieve meta information of a token"), false);
    get_token_info->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
    get_token_info->set_callback([&] {
-      try {
-         auto result = call(get_token_info_func, fc::mutable_variant_object("json", false)
-            ("token", token_id)
-         );
+      auto result = call(get_token_info_func,
+                         fc::mutable_variant_object("token", token_id)
+      );
 
-         std::cout << fc::json::to_pretty_string(result)
-                   << std::endl;
-      } catch (const fc::exception &ex) {
-         if (ex.code() == 3711003) { // == yosemite::chain::token_not_yet_created_exception
-            asset empty_asset(0);
-            std::cout << "token_not_yet_created_exception"
-                      << std::endl;
-         } else {
-            throw;
-         }
-      }
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
    });
+
+   // get systoken list
+   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve YOSEMITE system token information"), true);
+   get_systoken->require_subcommand();
+
+   auto get_systoken_list = get_systoken->add_subcommand("list", localized("Retrieve the system token list used as transaction fee payment token(s)"), false);
+   get_systoken_list->set_callback([&] {
+      auto result = call(get_system_token_list_func,
+                         fc::mutable_variant_object("token_meta", true)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   // TODO get systoken balance
+
 
    // yx.token accessors
    // get yxtoken balance

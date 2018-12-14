@@ -97,6 +97,7 @@ namespace eosio { namespace client { namespace http {
    const string get_raw_code_and_abi_func = chain_func_base + "/get_raw_code_and_abi";
    const string get_token_balance_func = chain_func_base + "/get_token_balance";
    const string get_token_info_func = chain_func_base + "/get_token_info";
+   const string get_system_token_list_func = chain_func_base + "/get_system_token_list";
    const string get_yx_token_balance_func = chain_func_base + "/get_yx_token_balance";
    const string get_yx_token_stats_func = chain_func_base + "/get_yx_token_stats";
    const string get_native_token_balance_func = chain_func_base + "/get_native_token_balance";

@@ -1261,6 +1261,11 @@ fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_p
 }
 
 asset read_only::get_token_balance(const get_token_balance_params &params) const {
+
+   const auto &d = db.db();
+   const account_object *account_obj = d.find<account_object, by_name>(params.account);
+   EOS_ASSERT(account_obj != nullptr, chain::account_query_exception, "fail to retrieve account for ${account}", ("account", params.account) );
+
    auto& yosemite_token_manager = db.get_token_manager();
    const symbol& symbol = yosemite_token_manager.get_token_symbol(params.token);
    share_type balance = yosemite_token_manager.get_token_balance(params.token, params.account);
@@ -1279,6 +1284,31 @@ fc::variant read_only::get_token_info(const get_token_info_params &params) const
       ("total_supply", token_meta_obj.total_supply)
       ("url", token_meta_obj.url)
       ("description", token_meta_obj.description);
+}
+
+fc::variant read_only::get_system_token_list(const get_system_token_list_params &params) const {
+   fc::mutable_variant_object result;
+   vector<fc::mutable_variant_object> sys_token_list_vars;
+   auto& yosemite_token_manager = db.get_token_manager();
+   auto sys_tokens = yosemite_token_manager.get_system_token_list();
+   for ( const auto& sys_token : sys_tokens ) {
+      fc::mutable_variant_object sys_token_var;
+      sys_token_var["id"] = sys_token.token_id;
+      sys_token_var["weight"] = sys_token.token_weight;
+      if (params.token_meta) {
+         auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(sys_token.token_id);
+         EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "no token meta info for token account ${account}", ("account", sys_token.token_id) );
+         auto token_meta_obj = *token_meta_ptr;
+         sys_token_var["symbol"] = token_meta_obj.symbol;
+         sys_token_var["total_supply"] = token_meta_obj.total_supply;
+         sys_token_var["url"] = token_meta_obj.url;
+         sys_token_var["description"] = token_meta_obj.description;
+      }
+      sys_token_list_vars.push_back(sys_token_var);
+   }
+   result["count"] = sys_tokens.size();
+   result["tokens"] = sys_token_list_vars;
+   return result;
 }
 
 yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {
