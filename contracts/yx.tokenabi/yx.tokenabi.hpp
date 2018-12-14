@@ -27,13 +27,13 @@ namespace yosemite { namespace contract {
    public:
       explicit tokenabi( account_name self ) : contract(self) {}
 
-      void settokenmeta( symbol_type issuer, string url, string description );
+      void settokenmeta( symbol_type symbol, string url, string description );
 
-      void issue( account_name to, asset qty, string tag );
+      void issue( account_name t, account_name to, asset qty, string tag );
 
-      void transfer( account_name from, account_name to, asset qty, string tag );
+      void transfer( account_name t, account_name from, account_name to, asset qty, string tag );
 
-      void txfee( account_name payer, asset fee );
+      void txfee( account_name t, account_name payer, asset fee );
 
       void redeem( asset qty, string tag );
    };

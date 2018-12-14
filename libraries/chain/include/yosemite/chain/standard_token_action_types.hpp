@@ -31,6 +31,7 @@ namespace yosemite { namespace chain { namespace token {
    };
 
    struct issue {
+      account_name  t;   // token-id (token account name)
       account_name  to;
       asset         qty; // token quantity
       std::string   tag;
@@ -41,6 +42,7 @@ namespace yosemite { namespace chain { namespace token {
    };
 
    struct transfer {
+      account_name  t;   // token-id (token account name)
       account_name  from;
       account_name  to;
       asset         qty; // token quantity
@@ -52,6 +54,7 @@ namespace yosemite { namespace chain { namespace token {
    };
 
    struct txfee {
+      account_name  t;   // token-id (token account name)
       account_name  payer;
       asset         fee; // token quantity to pay tx fee
 
@@ -82,7 +85,7 @@ namespace yosemite { namespace chain { namespace token {
 } } } /// yosemite::chain::token
 
 FC_REFLECT( yosemite::chain::token::settokenmeta , (symbol)(url)(description) )
-FC_REFLECT( yosemite::chain::token::issue, (to)(qty)(tag) )
-FC_REFLECT( yosemite::chain::token::transfer, (from)(to)(qty)(tag) )
-FC_REFLECT( yosemite::chain::token::txfee, (payer)(fee) )
+FC_REFLECT( yosemite::chain::token::issue, (t)(to)(qty)(tag) )
+FC_REFLECT( yosemite::chain::token::transfer, (t)(from)(to)(qty)(tag) )
+FC_REFLECT( yosemite::chain::token::txfee, (t)(payer)(fee) )
 FC_REFLECT( yosemite::chain::token::redeem, (qty)(tag) )

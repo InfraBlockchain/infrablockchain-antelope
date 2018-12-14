@@ -204,7 +204,7 @@ namespace yosemite { namespace chain {
             trx_context.dispatch_action( trx_context.trace->action_traces.back(),
                action { vector<permission_level>{ {fee_payer, config::active_name} },
                         sys_token_id,
-                        token::txfee{ fee_payer, asset(fee_for_this_token, token_meta_ptr->symbol) }
+                        token::txfee{ sys_token_id, fee_payer, asset(fee_for_this_token, token_meta_ptr->symbol) }
                } );
 
             if (fee_remaining <= 0) break;

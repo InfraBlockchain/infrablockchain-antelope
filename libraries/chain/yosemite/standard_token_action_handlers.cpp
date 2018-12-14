@@ -46,17 +46,21 @@ namespace yosemite { namespace chain {
 
       auto issue_action = context.act.data_as_built_in_common_action<issue>();
       try {
+         const token_id_type token_id = context.receiver;
+         if ( issue_action.t !=  token_id ) {
+            return; // do nothing for notified 'issue' actions
+         }
+
          EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
          EOS_ASSERT( issue_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
          // action parameter validation will be done in context.issue_token()
 
-         const token_id_type token_account = context.receiver;
          const account_name to_account = issue_action.to;
          const share_type issue_amount = issue_action.qty.get_amount();
 
          auto& token_manager = context.control.get_token_manager();
 
-         auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
+         auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
          EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
@@ -64,20 +68,23 @@ namespace yosemite { namespace chain {
                      ("sym", token_meta_obj.symbol.to_string()) );
 
          // only the token account owner can issue new token
-         context.require_authorization( token_account );
+         context.require_authorization( token_id );
 
          // update token balance and ram usage
-         context.issue_token( token_account, issue_amount );
+         context.issue_token( to_account, issue_amount );
 
-         // send inline 'transfer' action if token receiver is not the token account
-         if ( to_account != token_account ) {
-            context.execute_inline(
-               action { vector<permission_level>{ {token_account, config::active_name} },
-                        token_account,
-                        transfer{ token_account, to_account, issue_action.qty, issue_action.tag }
-                      }
-               );
-         }
+         // notify 'issue' action to 'to account who could process additional operations for their own sake
+         context.require_recipient( to_account );
+
+//         // send inline 'transfer' action if token receiver is not the token account
+//         if ( to_account != token_account ) {
+//            context.execute_inline(
+//               action { vector<permission_level>{ {token_account, config::active_name} },
+//                        token_account,
+//                        transfer{ token_account, to_account, issue_action.qty, issue_action.tag }
+//                      }
+//               );
+//         }
 
       } FC_CAPTURE_AND_RETHROW( (issue_action) )
    }
@@ -89,15 +96,20 @@ namespace yosemite { namespace chain {
 
       auto transfer_action = context.act.data_as_built_in_common_action<transfer>();
       try {
+         const token_id_type token_id = context.receiver;
+         if ( transfer_action.t !=  token_id ) {
+            return; // do nothing for notified 'transfer' actions
+         }
+
          const account_name from_account = transfer_action.from;
          const account_name to_account = transfer_action.to;
          const share_type transfer_amount = transfer_action.qty.get_amount();
 
+         EOS_ASSERT( from_account != to_account, token_action_validate_exception, "same from, to account" );
          EOS_ASSERT( transfer_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
          EOS_ASSERT( transfer_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
          // action parameter validation will be done in context.transfer_token()
 
-         token_id_type token_id = context.receiver;
          auto& token_manager = context.control.get_mutable_token_manager();
 
          auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
@@ -128,14 +140,17 @@ namespace yosemite { namespace chain {
 
       auto txfee_action = context.act.data_as_built_in_common_action<txfee>();
       try {
+         const token_id_type token_id = context.receiver;
+         if ( txfee_action.t !=  token_id ) {
+            return; // do nothing for notified 'txfee' actions
+         }
+
          const account_name payer_account = txfee_action.payer;
          EOS_ASSERT( payer_account.good(), token_action_validate_exception, "invalid payer account name" );
          EOS_ASSERT( txfee_action.fee.is_valid(), token_action_validate_exception, "invalid fee quantity" );
 
          const share_type txfee_amount = txfee_action.fee.get_amount();
          EOS_ASSERT( txfee_amount > 0, token_action_validate_exception, "tx fee amount must be greater than 0" );
-
-         token_id_type token_id = context.receiver;
 
          auto& db = context.db;
          auto& token_manager = context.control.get_mutable_token_manager();
@@ -157,9 +172,9 @@ namespace yosemite { namespace chain {
          token_manager.subtract_token_balance( context, token_id, payer_account, txfee_amount );
          token_manager.add_token_balance( context, token_id, YOSEMITE_TX_FEE_ACCOUNT, txfee_amount );
 
-         // notify 'txfee' action to payer account and tx-fee system account
+         // notify 'txfee' action to payer account //and tx-fee system account
          context.require_recipient( payer_account );
-         context.require_recipient( YOSEMITE_TX_FEE_ACCOUNT );
+         //context.require_recipient( YOSEMITE_TX_FEE_ACCOUNT );
 
       } FC_CAPTURE_AND_RETHROW( (txfee_action) )
    }
