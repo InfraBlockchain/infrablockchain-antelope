@@ -31,6 +31,9 @@
 #include <array>
 #include <utility>
 
+#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/system_accounts.hpp>
+
 #ifdef NON_VALIDATING_TEST
 #define TESTER tester
 #else
@@ -55,9 +58,12 @@ BOOST_FIXTURE_TEST_CASE( get_block_with_invalid_abi, TESTER ) try {
    set_abi(N(asserter), asserter_abi);
    produce_blocks(1);
 
-   auto resolver = [&,this]( const account_name& name ) -> optional<abi_serializer> {
+   auto resolver = [&,this]( account_name code, action_name action ) -> optional<abi_serializer> {
       try {
-         const auto& accnt  = this->control->db().get<account_object,by_name>( name );
+         if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+            code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+         }
+         const auto& accnt  = this->control->db().get<account_object,by_name>( code );
          abi_def abi;
          if (abi_serializer::to_abi(accnt.abi, abi)) {
             return abi_serializer(abi, abi_serializer_max_time);
@@ -67,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE( get_block_with_invalid_abi, TESTER ) try {
    };
 
    // abi should be resolved
-   BOOST_REQUIRE_EQUAL(true, resolver(N(asserter)).valid());
+   BOOST_REQUIRE_EQUAL(true, resolver(N(asserter),N(actionname)).valid());
 
    // make an action using the valid contract & abi
    variant pretty_trx = mutable_variant_object()
@@ -117,7 +123,7 @@ BOOST_FIXTURE_TEST_CASE( get_block_with_invalid_abi, TESTER ) try {
    produce_blocks(1);
 
    // resolving the invalid abi result in exception
-   BOOST_CHECK_THROW(resolver(N(asserter)), invalid_type_inside_abi);
+   BOOST_CHECK_THROW(resolver(N(asserter),N(actionname)), invalid_type_inside_abi);
 
    // get the same block as string, results in decode failed(invalid abi) but not exception
    std::string block_str2 = json::to_pretty_string(plugin.get_block(param));

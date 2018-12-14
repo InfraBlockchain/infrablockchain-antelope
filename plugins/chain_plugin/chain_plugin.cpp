@@ -1508,8 +1508,11 @@ read_only::get_producer_schedule_result read_only::get_producer_schedule( const 
 template<typename Api>
 struct resolver_factory {
    static auto make(const Api* api, const fc::microseconds& max_serialization_time) {
-      return [api, max_serialization_time](const account_name &name) -> optional<abi_serializer> {
-         const auto* accnt = api->db.db().template find<account_object, by_name>(name);
+      return [api, max_serialization_time](account_name code, action_name action) -> optional<abi_serializer> {
+         if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+            code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+         }
+         const auto* accnt = api->db.db().template find<account_object, by_name>(code);
          if (accnt != nullptr) {
             abi_def abi;
             if (abi_serializer::to_abi(accnt->abi, abi)) {

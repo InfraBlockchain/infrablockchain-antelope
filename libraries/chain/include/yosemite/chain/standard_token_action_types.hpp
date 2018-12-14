@@ -69,7 +69,15 @@ namespace yosemite { namespace chain { namespace token {
       }
    };
 
-   bool is_yosemite_standard_token_action(action_name action);
+   struct utils {
+      static bool is_yosemite_standard_token_action(action_name action) {
+         return action == transfer::get_name()
+                || action == issue::get_name()
+                || action == redeem::get_name()
+                || action == txfee::get_name()
+                || action == settokenmeta::get_name();
+      }
+   };
 
 } } } /// yosemite::chain::token
 

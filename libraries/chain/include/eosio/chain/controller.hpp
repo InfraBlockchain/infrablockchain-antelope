@@ -8,6 +8,9 @@
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/snapshot.hpp>
 
+#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/system_accounts.hpp>
+
 namespace chainbase {
    class database;
 }
@@ -297,7 +300,12 @@ namespace eosio { namespace chain {
          fc::variant to_variant_with_abi( const T& obj, const fc::microseconds& max_serialization_time ) {
             fc::variant pretty_output;
             abi_serializer::to_variant( obj, pretty_output,
-                                        [&]( account_name n ){ return get_abi_serializer( n, max_serialization_time ); },
+                                        [&]( account_name code, action_name action ) {
+                                           if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+                                              code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                                           }
+                                           return get_abi_serializer( code, max_serialization_time );
+                                        },
                                         max_serialization_time);
             return pretty_output;
          }
