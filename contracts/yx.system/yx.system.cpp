@@ -1,3 +1,9 @@
+/**
+ *  @file contracts/yx.system/yx.system.cpp
+ *  @author bezalel@yosemitex.com
+ *  @copyright defined in yosemite/LICENSE.txt
+ */
+
 #include "yx.system.hpp"
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
@@ -8,6 +14,7 @@
 #include "yx.sys_depository.cpp"
 #include "yx.identity_authority.cpp"
 #include "yx.system_token.cpp"
+#include "yx.transaction_fee.cpp"
 
 namespace yosemitesys {
     using yosemite::yx_asset;
@@ -105,4 +112,6 @@ EOSIO_ABI( yosemitesys::system_contract,
            (regidauth)(authidauth)(rmvidauth)
            // yx.system_token.cpp
            (addsystoken)(rmvsystoken)
+           // yx.transaction_fee.cpp
+           (settxfee)
 )

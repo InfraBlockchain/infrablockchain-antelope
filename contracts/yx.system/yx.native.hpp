@@ -1,5 +1,6 @@
 /**
- *  @file
+ *  @file contracts/yx.system/yx.native.hpp
+ *  @author bezalel@yosemitex.com
  *  @copyright defined in yosemite/LICENSE.txt
  */
 #pragma once

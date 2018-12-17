@@ -1,3 +1,9 @@
+/**
+ *  @file contracts/yx.system/yx.block_producer.cpp
+ *  @author bezalel@yosemitex.com
+ *  @copyright defined in yosemite/LICENSE.txt
+ */
+
 #include "yx.system.hpp"
 
 #include <yosemitelib/native_token.hpp>
