@@ -7,7 +7,10 @@
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/contract_table_objects.hpp>
 #include <eosio/chain/symbol.hpp>
+
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
+
 #include <fc/utility.hpp>
 #include <sstream>
 #include <algorithm>
@@ -16,6 +19,8 @@
 namespace chainbase { class database; }
 
 namespace eosio { namespace chain {
+
+using namespace yosemite::chain;
 
 class controller;
 class transaction_context;
@@ -489,11 +494,24 @@ class apply_context {
       void cast_transaction_vote(uint32_t vote_amount);
 
       /// get transaction vote data accumulated in the head block (previous block)
-      vector<yosemite::chain::transaction_vote> get_transaction_votes_in_head_block() const;
+      vector<transaction_vote> get_transaction_votes_in_head_block() const;
 
-   /// YOSEMITE Core API - Transaction-Fee-Payer
+   /// YOSEMITE Core API - Transaction-Fee
    public:
 
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      /// set transaction fee for an action, transaction fees are determined by the 2/3+ block producers.
+      /// if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. YOSEMITE standard token actions) that every account has
+      /// if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup
+      void set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type );
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      /// get transaction fee for an action
+      /// if code == account_name(0), transaction fee info for an built-in common action is retrieved
+      /// if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup
+      tx_fee_for_action get_transaction_fee_for_action( const account_name& code, const action_name& action ) const;
+
+      /// YOSEMITE Core API - Transaction-Fee-Payer
       /// get transaction fee payer account name from transaction message
       account_name get_transaction_fee_payer() const;
 

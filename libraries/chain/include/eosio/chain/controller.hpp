@@ -4,6 +4,7 @@
 #include <eosio/chain/genesis_state.hpp>
 #include <boost/signals2/signal.hpp>
 
+#include <eosio/chain/config.hpp>
 #include <eosio/chain/abi_serializer.hpp>
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/snapshot.hpp>
@@ -283,6 +284,7 @@ namespace eosio { namespace chain {
          const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;
          wasm_interface& get_wasm_interface();
 
+         fc::microseconds abi_serializer_max_time_ms;
 
          optional<abi_serializer> get_abi_serializer( account_name n, const fc::microseconds& max_serialization_time )const {
             if( n.good() ) {

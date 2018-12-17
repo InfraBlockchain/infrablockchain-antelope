@@ -7,7 +7,7 @@
 #include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/identity.hpp>
-#include <yosemitelib/trx_fee_payer.h>
+#include <yosemitelib/trx_fee_api.h>
 
 /* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
 

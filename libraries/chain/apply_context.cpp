@@ -10,8 +10,10 @@
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
+
 #include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
 #include <yosemite/chain/exceptions.hpp>
 
 using boost::container::flat_set;
@@ -370,7 +372,25 @@ vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() co
 }
 
 //////////////////////////////////////
-/// YOSEMITE Core API - Transaction-Fee-Payer
+/// YOSEMITE Core API - Transaction-Fee
+
+void apply_context::set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call this API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   if ( !code.empty() ) {
+      EOS_ASSERT( is_account(code), account_query_exception, "account ${code} does not exist", ("code", code) );
+      auto abis = control.get_abi_serializer( code, control.abi_serializer_max_time_ms );
+      EOS_ASSERT( abis.valid(), abi_not_found_exception, "failed to get abi_serializer for account ${code}", ("code", code) );
+      EOS_ASSERT( abis->get_action_type( action ).size() > 0, abi_exception, "abi does not contain action ${action}", ("action", action) );
+   }
+
+   control.get_mutable_tx_fee_manager().set_tx_fee_for_action( code, action, value, fee_type );
+}
+
+tx_fee_for_action apply_context::get_transaction_fee_for_action( const account_name& code, const action_name& action ) const {
+   return control.get_tx_fee_manager().get_tx_fee_for_action( code, action );
+}
 
 account_name apply_context::get_transaction_fee_payer() const {
    return trx_context.get_tx_fee_payer();

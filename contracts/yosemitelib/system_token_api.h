@@ -46,7 +46,7 @@ size_t get_system_token_count();
  *
  * @param data - output buffer of the system token list, only retrieved if sufficent size to hold packed data.
  * @param datalen - size of the data buffer, 0 to report required size.
- * @return size of the system token list
+ * @return size of the packed system token list data
  * @pre `data` is a valid pointer to a range of memory at least `datalen` bytes long
  * @post `data` is filled with packed system token list (vector<yosemite_system_token>)
  */

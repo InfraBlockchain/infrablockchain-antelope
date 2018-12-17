@@ -1364,6 +1364,26 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      void set_trx_fee_for_action( const account_name code, const action_name action, int32_t value, uint32_t fee_type ) {
+         context.set_transaction_fee_for_action( code, action, value, fee_type );
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      uint32_t get_trx_fee_for_action( const account_name code, const action_name action, array_ptr<char> packed_trx_fee_for_action, size_t buffer_size ) {
+         yosemite::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
+
+         auto s = fc::raw::pack_size( tx_fee_for_action );
+         if( buffer_size == 0 ) return s;
+
+         if ( s <= buffer_size ) {
+            datastream<char*> ds( packed_trx_fee_for_action, s );
+            fc::raw::pack(ds, tx_fee_for_action);
+            return s;
+         }
+         return 0;
+      }
+
       /// YOSEMITE Core API - Transaction-Fee-Payer
       account_name trx_fee_payer() {
          return context.get_transaction_fee_payer();
@@ -1945,7 +1965,9 @@ REGISTER_INTRINSICS(transaction_api,
    (cancel_deferred,           int(int)                     )
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
-   (trx_fee_payer,   int64_t()                    )
+   (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int) )
+   (get_trx_fee_for_action,    int(int64_t, int64_t, int, int) )
+   (trx_fee_payer,             int64_t()                    )
 );
 
 REGISTER_INTRINSICS(token_api,

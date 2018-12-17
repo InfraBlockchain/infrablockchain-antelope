@@ -53,7 +53,7 @@ namespace yosemite { namespace chain {
    }
 
    void transaction_fee_manager::set_tx_fee_for_action(
-      account_name code, action_name action, tx_fee_value_type value, tx_fee_type_type fee_type ) {
+      const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
 
       //EOS_ASSERT( !code.empty() && !action.empty(), invalid_tx_fee_setup_exception, "set_transaction_fee - code and action must be not 0" );
       EOS_ASSERT( value > 0, yosemite_transaction_fee_exception,  "tx fee value must be greater than 0" );
@@ -76,15 +76,15 @@ namespace yosemite { namespace chain {
       }
    }
 
-   void transaction_fee_manager::set_tx_fee_for_common_action(action_name action, tx_fee_value_type value, tx_fee_type_type fee_type) {
+   void transaction_fee_manager::set_tx_fee_for_common_action(const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type) {
       set_tx_fee_for_action(0, action, value, fee_type);
    }
 
-   void transaction_fee_manager::set_default_tx_fee(tx_fee_value_type value, tx_fee_type_type fee_type) {
+   void transaction_fee_manager::set_default_tx_fee(const tx_fee_value_type value, const tx_fee_type_type fee_type) {
       set_tx_fee_for_action(0, 0, value, fee_type);
    }
 
-   tx_fee_for_action transaction_fee_manager::get_tx_fee_for_action(account_name code, action_name action) const {
+   tx_fee_for_action transaction_fee_manager::get_tx_fee_for_action(const account_name& code, const action_name& action) const {
 
       auto* txfee_obj_ptr = _db.find<transaction_fee_object, by_code_action>(boost::make_tuple(code, action));
       if ( txfee_obj_ptr ) {
@@ -95,7 +95,7 @@ namespace yosemite { namespace chain {
       }
    }
 
-   tx_fee_for_action transaction_fee_manager::get_tx_fee_for_common_action(action_name action) const {
+   tx_fee_for_action transaction_fee_manager::get_tx_fee_for_common_action(const action_name& action) const {
 
       auto* txfee_obj_ptr = _db.find<transaction_fee_object, by_code_action>(boost::make_tuple(account_name(0), action));
       if ( txfee_obj_ptr ) {

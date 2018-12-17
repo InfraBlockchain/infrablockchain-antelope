@@ -31,12 +31,12 @@ namespace yosemite { namespace chain {
       void add_to_snapshot( const snapshot_writer_ptr& snapshot ) const;
       void read_from_snapshot( const snapshot_reader_ptr& snapshot );
 
-      void set_tx_fee_for_action(account_name code, action_name action, tx_fee_value_type value, tx_fee_type_type fee_type = fixed_tx_fee_per_action_type);
-      void set_tx_fee_for_common_action(action_name action, tx_fee_value_type value, tx_fee_type_type fee_type = fixed_tx_fee_per_action_type);
-      void set_default_tx_fee(tx_fee_value_type value, tx_fee_type_type fee_type = fixed_tx_fee_per_action_type);
+      void set_tx_fee_for_action(const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type);
+      void set_tx_fee_for_common_action(const action_name& action, const tx_fee_value_type value, tx_fee_type_type const fee_type = fixed_tx_fee_per_action_type);
+      void set_default_tx_fee(const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type);
 
-      tx_fee_for_action get_tx_fee_for_action(account_name code, action_name action) const;
-      tx_fee_for_action get_tx_fee_for_common_action(action_name action) const;
+      tx_fee_for_action get_tx_fee_for_action(const account_name& code, const action_name& action) const;
+      tx_fee_for_action get_tx_fee_for_common_action(const action_name& action) const;
       tx_fee_for_action get_default_tx_fee() const;
 
       tx_fee_for_action get_tx_fee_for_action_trace(const action_trace& action_trace) const;
@@ -46,3 +46,5 @@ namespace yosemite { namespace chain {
    };
 
 } } /// yosemite::chain
+
+FC_REFLECT(yosemite::chain::tx_fee_for_action, (value)(fee_type) )
