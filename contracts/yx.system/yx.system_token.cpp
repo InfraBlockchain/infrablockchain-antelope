@@ -1,3 +1,9 @@
+/**
+ *  @file contracts/yx.system/yx.system_token.cpp
+ *  @author bezalel@yosemitex.com
+ *  @copyright defined in yosemite/LICENSE.txt
+ */
+
 #include "yx.system.hpp"
 
 #include <yosemitelib/token_api.h>
@@ -27,6 +33,7 @@ namespace yosemitesys {
          if ( sys_token_list_packed_size > 0 ) {
             /// allocate buffer memory through memory manager
             char* buf_sys_token_list_data_packed = static_cast<char*>(malloc(sys_token_list_packed_size));
+            eosio_assert( buf_sys_token_list_data_packed != nullptr, "malloc failed for buf_sys_token_list_data_packed" );
             get_system_token_list( buf_sys_token_list_data_packed, sys_token_list_packed_size );
 
             vector<yosemite_system_token> current_system_tokens;
@@ -41,6 +48,8 @@ namespace yosemitesys {
                   new_system_token_list.push_back( sys_token );
                }
             }
+
+            free(buf_sys_token_list_data_packed);
          }
       }
 
@@ -69,6 +78,7 @@ namespace yosemitesys {
          if ( sys_token_list_packed_size > 0 ) {
             /// allocate buffer memory through memory manager
             char* buf_sys_token_list_data_packed = static_cast<char*>(malloc(sys_token_list_packed_size));
+            eosio_assert( buf_sys_token_list_data_packed != nullptr, "malloc failed for buf_sys_token_list_data_packed" );
             get_system_token_list( buf_sys_token_list_data_packed, sys_token_list_packed_size );
 
             vector<yosemite_system_token> current_system_tokens;
@@ -84,6 +94,8 @@ namespace yosemitesys {
             }
 
             new_system_token_list.insert( new_system_token_list.end(), current_system_tokens.begin(), current_system_tokens.end() );
+
+            free(buf_sys_token_list_data_packed);
          }
       }
 
