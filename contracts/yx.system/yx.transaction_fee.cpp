@@ -23,8 +23,8 @@ namespace yosemitesys {
     *  @param value - transaction fee value
     *  @param fee_type - transaction fee type (1: fixed_tx_fee_per_action_type)
     */
-   void system_contract::settxfee( const account_name code, const action_name action, const int32_t value, const uint32_t fee_type ) {
-      set_trx_fee_for_action( code, action, value, fee_type );
+   void system_contract::settxfee( const account_name code, const action_name action, const int32_t value, const uint32_t feetype ) {
+      set_trx_fee_for_action( code, action, value, feetype );
    }
 
 } //namespace yosemitesys

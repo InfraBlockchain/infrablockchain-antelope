@@ -140,7 +140,7 @@ namespace yosemitesys {
 
         // Transaction Fee Management (yx.transaction_fee.cpp)
 
-        void settxfee( const account_name code, const action_name action, const int32_t value, const uint32_t fee_type );
+        void settxfee( const account_name code, const action_name action, const int32_t value, const uint32_t feetype );
 
     private:
         void update_elected_producers( block_timestamp timestamp );
