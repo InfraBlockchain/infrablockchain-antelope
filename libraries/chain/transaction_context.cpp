@@ -7,7 +7,6 @@
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 
-#include <yosemite/chain/transaction_fee_manager.hpp>
 #include <yosemite/chain/standard_token_manager.hpp>
 
 #pragma push_macro("N")
@@ -148,6 +147,8 @@ namespace bacc = boost::accumulators;
    volatile sig_atomic_t deadline_timer::expired = 0;
    bool deadline_timer::initialized = false;
 
+   using namespace yosemite::chain;
+
    transaction_context::transaction_context( controller& c,
                                              const signed_transaction& t,
                                              const transaction_id_type& trx_id,
@@ -179,22 +180,22 @@ namespace bacc = boost::accumulators;
          if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
 
             try {
-               trace->trx_vote = yosemite::chain::transaction_vote(
-                  fc::raw::unpack<yosemite::chain::transaction_vote_to_name_type>(tx_ext_item.second), 0);
-            } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
+               trace->trx_vote = transaction_vote(
+                  fc::raw::unpack<transaction_vote_to_name_type>(tx_ext_item.second), 0);
+            } EOS_RETHROW_EXCEPTIONS(invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
 
          } else if (tx_ext_item.first == YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
 
             try {
                trace->fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
-            } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_fee_payer_account, "Invalid transaction fee payer account name");
+            } EOS_RETHROW_EXCEPTIONS(invalid_trx_fee_payer_account, "Invalid transaction fee payer account name");
 
          } else {
             EOS_ASSERT( false, unsupported_feature, "unsupported transaction extension code" );
          }
       }
 
-      //EOS_ASSERT( !trace->fee_payer.empty(), yosemite::chain::invalid_trx_fee_payer_account, "transaction fee payer field is required" );
+      //EOS_ASSERT( !trace->fee_payer.empty(), invalid_trx_fee_payer_account, "transaction fee payer field is required" );
    }
 
    void transaction_context::init(uint64_t initial_net_usage)
@@ -383,12 +384,10 @@ namespace bacc = boost::accumulators;
    /// YOSEMITE transaction fee payment processing
    void transaction_context::process_transaction_fee_payment() {
 
-      using namespace yosemite::chain;
-
       if ( implicit_tx ) return;
 
       auto& fee_payer = get_tx_fee_payer();
-      EOS_ASSERT( !fee_payer.empty(), yosemite::chain::invalid_trx_fee_payer_account, "transaction fee payer field is required" );
+      EOS_ASSERT( !fee_payer.empty(), invalid_trx_fee_payer_account, "transaction fee payer field is required" );
       if (fee_payer == config::system_account_name) {
          // system account is exempt from transaction fee
          return;
@@ -398,12 +397,7 @@ namespace bacc = boost::accumulators;
       auto& txfee_manager = control.get_tx_fee_manager();
 
       for( const auto& act_trace : trace->action_traces ) {
-
-         txfee_to_pay += txfee_manager.get_tx_fee_for_action_trace(act_trace).value;
-
-         for( const auto& inline_act_trace : act_trace.inline_traces ) {
-            txfee_to_pay += txfee_manager.get_tx_fee_for_action_trace(inline_act_trace).value;
-         }
+         txfee_to_pay += tx_fee_for_action( txfee_manager, act_trace );
       }
 
       EOS_ASSERT( txfee_to_pay >= 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than 0" );
@@ -414,6 +408,14 @@ namespace bacc = boost::accumulators;
 
       // dispatch 'txfee' actions to system token accounts
       control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, static_cast<uint32_t>(txfee_to_pay) );
+   }
+
+   int32_t transaction_context::tx_fee_for_action(const transaction_fee_manager& txfee_manager, const action_trace& action_trace) {
+      int32_t txfee = txfee_manager.get_tx_fee_for_action_trace(action_trace).value;
+      for( const auto& inline_act_trace : action_trace.inline_traces ) {
+         txfee += tx_fee_for_action(txfee_manager, inline_act_trace);
+      }
+      return txfee;
    }
 
 
@@ -635,7 +637,7 @@ namespace bacc = boost::accumulators;
       return std::make_tuple(account_net_limit, account_cpu_limit, greylisted_net, greylisted_cpu);
    }
 
-   void transaction_context::add_transaction_vote(yosemite::chain::transaction_vote_amount_type vote_amount) {
+   void transaction_context::add_transaction_vote(transaction_vote_amount_type vote_amount) {
 
       if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->to.empty()) {
          trace->trx_vote->amt += vote_amount;
@@ -646,7 +648,7 @@ namespace bacc = boost::accumulators;
       return trace->trx_vote.valid() && trace->trx_vote->has_vote();
    }
 
-   const yosemite::chain::transaction_vote& transaction_context::get_transaction_vote() const {
+   const transaction_vote& transaction_context::get_transaction_vote() const {
       return (*(trace->trx_vote));
    }
 
