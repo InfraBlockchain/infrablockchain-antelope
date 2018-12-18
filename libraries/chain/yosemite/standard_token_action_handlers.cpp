@@ -46,10 +46,15 @@ namespace yosemite { namespace chain {
 
       auto issue_action = context.act.data_as_built_in_common_action<issue>();
       try {
-         const token_id_type token_id = context.receiver;
-         if ( issue_action.t !=  token_id ) {
-            return; // do nothing for notified 'issue' actions
+         if ( issue_action.t !=  context.receiver ) {
+            if ( issue_action.to == context.receiver ) {
+               return; // do nothing for notified 'issue' actions
+            } else {
+               EOS_ASSERT( false, token_action_validate_exception, "token issue action is delivered to irrelevant account" );
+            }
          }
+
+         const token_id_type token_id = context.receiver;
 
          EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
          EOS_ASSERT( issue_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
@@ -76,16 +81,6 @@ namespace yosemite { namespace chain {
          // notify 'issue' action to 'to account who could process additional operations for their own sake
          context.require_recipient( to_account );
 
-//         // send inline 'transfer' action if token receiver is not the token account
-//         if ( to_account != token_account ) {
-//            context.execute_inline(
-//               action { vector<permission_level>{ {token_account, config::active_name} },
-//                        token_account,
-//                        transfer{ token_account, to_account, issue_action.qty, issue_action.tag }
-//                      }
-//               );
-//         }
-
       } FC_CAPTURE_AND_RETHROW( (issue_action) )
    }
 
@@ -96,10 +91,15 @@ namespace yosemite { namespace chain {
 
       auto transfer_action = context.act.data_as_built_in_common_action<transfer>();
       try {
-         const token_id_type token_id = context.receiver;
-         if ( transfer_action.t !=  token_id ) {
-            return; // do nothing for notified 'transfer' actions
+         if ( transfer_action.t !=  context.receiver ) {
+            if ( transfer_action.to == context.receiver || transfer_action.from == context.receiver ) {
+               return; // do nothing for notified 'transfer' actions
+            } else {
+               EOS_ASSERT( false, token_action_validate_exception, "token transfer action is delivered to irrelevant account" );
+            }
          }
+
+         const token_id_type token_id = context.receiver;
 
          const account_name from_account = transfer_action.from;
          const account_name to_account = transfer_action.to;
@@ -140,10 +140,15 @@ namespace yosemite { namespace chain {
 
       auto txfee_action = context.act.data_as_built_in_common_action<txfee>();
       try {
-         const token_id_type token_id = context.receiver;
-         if ( txfee_action.t !=  token_id ) {
-            return; // do nothing for notified 'txfee' actions
+         if ( txfee_action.t != context.receiver ) {
+            if ( txfee_action.payer == context.receiver /*|| YOSEMITE_TX_FEE_ACCOUNT == context.receiver*/ ) {
+               return; // do nothing for notified 'txfee' actions
+            } else {
+               EOS_ASSERT( false, token_action_validate_exception, "token txfee action is delivered to irrelevant account" );
+            }
          }
+
+         const token_id_type token_id = context.receiver;
 
          const account_name payer_account = txfee_action.payer;
          EOS_ASSERT( payer_account.good(), token_action_validate_exception, "invalid payer account name" );
