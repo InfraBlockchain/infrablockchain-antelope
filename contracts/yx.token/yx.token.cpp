@@ -112,6 +112,7 @@ namespace yosemite { namespace non_native_token {
       check_issue_parameters(user, token, memo);
       check_transfer_rules(user, user, token);
       eosio_assert(static_cast<uint32_t>(user != token.issuer), "user and token issuer must be different");
+      eosio_assert(static_cast<uint32_t>(user != to), "self-issuance is not allowed");
       eosio_assert(static_cast<uint32_t>(is_account(to)), "to account is invalid");
 
       delegated_issue_table delissue_tbl{get_self(), token.symbol.value};
@@ -133,10 +134,7 @@ namespace yosemite { namespace non_native_token {
 
       increase_supply(token);
       add_token_balance(user, token);
-      if (user != to) {
-         SEND_INLINE_ACTION(*this, transfer, {{user, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
-               {user, to, token, memo});
-      }
+      SEND_INLINE_ACTION(*this, transfer, {{user, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}}, {user, to, token, memo});
 
       charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
    }
