@@ -1,63 +1,8 @@
 {
-   "version": "eosio::abi/1.0",
-   "types": [{
-      "new_type_name": "account_name",
-      "type": "name"
-   }],
-  "structs": [{
-     "name": "issue",
-     "base": "",
-     "fields": [
-        {"name":"t", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"qty", "type":"asset"},
-        {"name":"tag", "type":"string"}
-     ]
-    },{
-     "name": "transfer",
-     "base": "",
-     "fields": [
-        {"name":"t", "type":"account_name"},
-        {"name":"from", "type":"account_name"},
-        {"name":"to", "type":"account_name"},
-        {"name":"qty", "type":"asset"},
-        {"name":"tag", "type":"string"}
-     ]
-    },{
-      "name": "txfee",
-      "base": "",
-      "fields": [
-        {"name":"t", "type":"account_name"},
-        {"name":"payer", "type":"account_name"},
-        {"name":"fee", "type":"asset"}
-      ]
-    },{
-      "name": "redeem",
-      "base": "",
-      "fields": [
-        {"name":"qty", "type":"asset"},
-        {"name":"tag", "type":"string"}
-      ]
-    }
-  ],
-  "actions": [{
-      "name": "issue",
-      "type": "issue",
-      "ricardian_contract": ""
-    },{
-      "name": "transfer",
-      "type": "transfer",
-      "ricardian_contract": ""
-    },{
-      "name": "txfee",
-      "type": "txfee",
-      "ricardian_contract": ""
-    },{
-      "name": "redeem",
-      "type": "redeem",
-      "ricardian_contract": ""
-    }
-  ],
+  "version": "eosio::abi/1.0",
+  "types": [],
+  "structs": [],
+  "actions": [],
   "tables": [],
   "ricardian_clauses": [],
   "abi_extensions": []
