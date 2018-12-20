@@ -10,6 +10,7 @@
 namespace yosemite { namespace contract {
 
    using namespace eosio;
+   using std::string;
 
    void tokenabi::settokenmeta( symbol_type symbol, string url, string description ) {
       print(symbol); print(":"); print(url); print(":"); print(description);
