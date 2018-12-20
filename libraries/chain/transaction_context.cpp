@@ -387,7 +387,6 @@ namespace bacc = boost::accumulators;
       if ( implicit_tx ) return;
 
       auto& fee_payer = get_tx_fee_payer();
-      EOS_ASSERT( !fee_payer.empty(), invalid_trx_fee_payer_account, "transaction fee payer field is required" );
       if (fee_payer == config::system_account_name) {
          // system account is exempt from transaction fee
          return;
@@ -402,12 +401,15 @@ namespace bacc = boost::accumulators;
 
       EOS_ASSERT( txfee_to_pay >= 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than 0" );
 
-      if (txfee_to_pay == 0) {
-         txfee_to_pay = txfee_manager.get_default_tx_fee().value;
-      }
+//      if (txfee_to_pay == 0) {
+//         txfee_to_pay = txfee_manager.get_default_tx_fee().value;
+//      }
 
-      // dispatch 'txfee' actions to system token accounts
-      control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, static_cast<uint32_t>(txfee_to_pay) );
+      if ( txfee_to_pay > 0 ) {
+         EOS_ASSERT( !fee_payer.empty(), invalid_trx_fee_payer_account, "transaction fee payer field is required" );
+         // dispatch 'txfee' actions to system token accounts
+         control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, static_cast<uint32_t>(txfee_to_pay) );
+      }
    }
 
    int32_t transaction_context::tx_fee_for_action(const transaction_fee_manager& txfee_manager, const action_trace& action_trace) {

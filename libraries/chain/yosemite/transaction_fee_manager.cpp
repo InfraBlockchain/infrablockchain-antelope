@@ -56,7 +56,7 @@ namespace yosemite { namespace chain {
       const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
 
       //EOS_ASSERT( !code.empty() && !action.empty(), invalid_tx_fee_setup_exception, "set_transaction_fee - code and action must be not 0" );
-      EOS_ASSERT( value > 0, yosemite_transaction_fee_exception,  "tx fee value must be greater than 0" );
+      EOS_ASSERT( value >= 0, yosemite_transaction_fee_exception,  "tx fee value must be >= 0" );
       EOS_ASSERT( fee_type == fixed_tx_fee_per_action_type, yosemite_transaction_fee_exception,
                   "currently set_tx_fee_for_action supports only fixed_tx_fee_per_action_type" );
 
