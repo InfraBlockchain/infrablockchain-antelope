@@ -1,5 +1,5 @@
 /**
- *  @file contracts/yx.tokenabi/yx.tokenabi.hpp
+ *  @file contracts/yosemitex.fiat.stable.token/yosemitex.fiat.stable.token.hpp
  *  @author bezalel@yosemitex.com
  *  @copyright defined in yosemite/LICENSE.txt
  */
@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace yosemite { namespace contract {
+namespace yosemitex { namespace contract {
 
    using namespace eosio;
    using std::string;
