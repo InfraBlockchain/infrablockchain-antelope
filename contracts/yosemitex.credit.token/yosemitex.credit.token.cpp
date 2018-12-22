@@ -62,7 +62,7 @@ namespace yosemitex { namespace contract {
       auto credit_offering_info_it = credit_offering_table.find( account );
       if ( credit_offering_info_it == credit_offering_table.end() ) {
          eosio_assert( limit_amount > 0, "credit limit must be positive value" );
-         credit_offering_table.emplace( account, [&](credit_offering_info& info) {
+         credit_offering_table.emplace( _self, [&](credit_offering_info& info) {
             info.account = account;
             info.credit_limit = limit_amount;
             info.credit_issued = 0;
