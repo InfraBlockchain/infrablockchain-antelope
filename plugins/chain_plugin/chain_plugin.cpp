@@ -23,6 +23,7 @@
 
 #include <yosemite/chain/system_accounts.hpp>
 #include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
 
 #include <boost/signals2/connection.hpp>
 #include <boost/algorithm/string.hpp>
@@ -1311,6 +1312,13 @@ fc::variant read_only::get_system_token_list(const get_system_token_list_params 
    result["count"] = sys_tokens.size();
    result["tokens"] = sys_token_list_vars;
    return result;
+}
+
+fc::variant read_only::get_txfee_info(const get_txfee_info_params &params) const {
+   auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
+   auto tx_fee_info = yosemite_tx_fee_manager.get_tx_fee_for_action(params.code, params.action);
+   return fc::mutable_variant_object("value", tx_fee_info.value)
+      ("fee_type", tx_fee_info.fee_type);
 }
 
 yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {

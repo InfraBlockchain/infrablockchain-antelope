@@ -2126,6 +2126,24 @@ int main( int argc, char** argv ) {
    // TODO get systoken balance
 
 
+   // YOSEMITE Transaction Fee
+   // get token balance
+   string codeName;
+   string actionName;
+   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve YOSEMITE transaction fee info"), true);
+
+   auto get_txfee_info = get_txfee->add_subcommand("info", localized("Retrieve the transaction fee info for an action"), false);
+   get_txfee_info->add_option("code", codeName, localized("contract account name (if code==\"\", retrieve txfee for common actions (e.g. standard token actions))"))->required();
+   get_txfee_info->add_option("action", actionName, localized("action name (if code==\"\" and action==\"\", retrieves default txfee info"))->required();
+   get_txfee_info->set_callback([&] {
+      auto result = call(get_txfee_info_func,
+                         fc::mutable_variant_object("code", codeName)("action", actionName)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
    // yx.token accessors
    // get yxtoken balance
    string ysymbol;

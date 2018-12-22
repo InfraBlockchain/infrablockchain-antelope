@@ -331,6 +331,13 @@ public:
 
    fc::variant get_system_token_list(const get_system_token_list_params &params) const;
 
+   struct get_txfee_info_params {
+      name code;
+      name action;
+   };
+
+   fc::variant get_txfee_info(const get_txfee_info_params &params) const;
+
    struct get_yx_token_balance_params {
       name code;
       name account;
@@ -751,6 +758,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(ma
 FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (token)(account));
 FC_REFLECT(eosio::chain_apis::read_only::get_token_info_params, (token));
 FC_REFLECT(eosio::chain_apis::read_only::get_system_token_list_params, (token_meta));
+FC_REFLECT(eosio::chain_apis::read_only::get_txfee_info_params, (code)(action));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_balance_params, (code)(account)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_params, (code)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
