@@ -375,7 +375,7 @@ vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() co
 /// YOSEMITE Core API - Transaction-Fee
 
 void apply_context::set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
-   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call this API", ("code", receiver) );
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call set_trx_fee_for_action API", ("code", receiver) );
    require_authorization(config::system_account_name);
 
    if ( !code.empty() ) {
@@ -388,6 +388,13 @@ void apply_context::set_transaction_fee_for_action( const account_name& code, co
    }
 
    control.get_mutable_tx_fee_manager().set_tx_fee_for_action( code, action, value, fee_type );
+}
+
+void apply_context::unset_transaction_fee_for_action( const account_name& code, const action_name& action ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call unset_trx_fee_for_action API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   control.get_mutable_tx_fee_manager().delete_set_tx_fee_entry_for_action(code, action);
 }
 
 tx_fee_for_action apply_context::get_transaction_fee_for_action( const account_name& code, const action_name& action ) const {

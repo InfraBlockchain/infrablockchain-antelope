@@ -84,6 +84,12 @@ namespace yosemite { namespace chain {
       set_tx_fee_for_action(0, 0, value, fee_type);
    }
 
+   void transaction_fee_manager::delete_set_tx_fee_entry_for_action(const account_name& code, const action_name& action ) {
+      auto* txfee_obj_ptr = _db.find<transaction_fee_object, by_code_action>(boost::make_tuple(code, action));
+      EOS_ASSERT( txfee_obj_ptr, yosemite_transaction_fee_exception,  "tx fee db row not found" );
+      _db.remove( *txfee_obj_ptr );
+   }
+
    tx_fee_for_action transaction_fee_manager::get_tx_fee_for_action(const account_name& code, const action_name& action) const {
 
       auto* txfee_obj_ptr = _db.find<transaction_fee_object, by_code_action>(boost::make_tuple(code, action));
@@ -124,6 +130,40 @@ namespace yosemite { namespace chain {
       } else {
          return tx_fee_for_action { 0, fixed_tx_fee_per_action_type };
       }
+   }
+
+   tx_fee_list_result transaction_fee_manager::get_tx_fee_list(const account_name& code_lower_bound, const account_name& code_upper_bound, const uint32_t limit) const {
+
+      tx_fee_list_result result;
+      EOS_ASSERT( code_upper_bound.empty() || code_lower_bound <= code_upper_bound, yosemite_transaction_fee_exception,  "get_tx_fee_list requires code_lower_bound <= code_upper_bound" );
+      const auto& idx = _db.get_index<transaction_fee_multi_index, by_code_action>();
+      auto lower = idx.begin();
+      if (code_lower_bound.good()) {
+         lower = idx.lower_bound(boost::make_tuple(code_lower_bound));
+      }
+      auto upper = idx.end();
+      if (code_upper_bound.good()) {
+         upper = idx.upper_bound(boost::make_tuple(code_upper_bound));
+      }
+
+      auto time_limit = fc::time_point::now() + fc::microseconds(1000 * 50); /// 50ms max time
+
+      unsigned int count = 0;
+      auto itr = lower;
+      for (; itr != upper; ++itr) {
+         auto txfee_obj = (*itr);
+         result.tx_fee_list.push_back(tx_fee_list_item{txfee_obj.code, txfee_obj.action, txfee_obj.value, txfee_obj.fee_type});
+
+         if (++count == limit || fc::time_point::now() > time_limit) {
+            ++itr;
+            break;
+         }
+      }
+      if (itr != upper) {
+         result.more = true;
+      }
+
+      return result;
    }
 
 } } // namespace yosemite::chain

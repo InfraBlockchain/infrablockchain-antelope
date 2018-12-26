@@ -1314,11 +1314,14 @@ fc::variant read_only::get_system_token_list(const get_system_token_list_params 
    return result;
 }
 
-fc::variant read_only::get_txfee_info(const get_txfee_info_params &params) const {
+yosemite::chain::tx_fee_for_action read_only::get_txfee_item(const get_txfee_item_params &params) const {
    auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
-   auto tx_fee_info = yosemite_tx_fee_manager.get_tx_fee_for_action(params.code, params.action);
-   return fc::mutable_variant_object("value", tx_fee_info.value)
-      ("fee_type", tx_fee_info.fee_type);
+   return yosemite_tx_fee_manager.get_tx_fee_for_action(params.code, params.action);
+}
+
+yosemite::chain::tx_fee_list_result read_only::get_txfee_list(const get_txfee_list_params &params) const {
+   auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
+   return yosemite_tx_fee_manager.get_tx_fee_list(params.code_lower_bound, params.code_upper_bound, params.limit);
 }
 
 yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {

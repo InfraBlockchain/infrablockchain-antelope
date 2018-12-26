@@ -22,6 +22,18 @@ namespace yosemite { namespace chain {
       tx_fee_type_type fee_type;
    };
 
+   struct tx_fee_list_item {
+      account_name code;
+      action_name action;
+      tx_fee_value_type value;
+      tx_fee_type_type fee_type;
+   };
+
+   struct tx_fee_list_result {
+      vector<tx_fee_list_item> tx_fee_list;
+      bool more = false;
+   };
+
    class transaction_fee_manager {
    public:
       explicit transaction_fee_manager(chainbase::database& db);
@@ -35,11 +47,15 @@ namespace yosemite { namespace chain {
       void set_tx_fee_for_common_action(const action_name& action, const tx_fee_value_type value, tx_fee_type_type const fee_type = fixed_tx_fee_per_action_type);
       void set_default_tx_fee(const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type);
 
+      void delete_set_tx_fee_entry_for_action(const account_name& code, const action_name& action );
+
       tx_fee_for_action get_tx_fee_for_action(const account_name& code, const action_name& action) const;
       tx_fee_for_action get_tx_fee_for_common_action(const action_name& action) const;
       tx_fee_for_action get_default_tx_fee() const;
 
       tx_fee_for_action get_tx_fee_for_action_trace(const action_trace& action_trace) const;
+
+      tx_fee_list_result get_tx_fee_list(const account_name& code_lower_bound, const account_name& code_upper_bound, const uint32_t limit) const;
 
    private:
       chainbase::database& _db;
@@ -48,3 +64,5 @@ namespace yosemite { namespace chain {
 } } /// yosemite::chain
 
 FC_REFLECT(yosemite::chain::tx_fee_for_action, (value)(fee_type) )
+FC_REFLECT(yosemite::chain::tx_fee_list_item, (code)(action)(value)(fee_type) )
+FC_REFLECT(yosemite::chain::tx_fee_list_result, (tx_fee_list)(more) )
