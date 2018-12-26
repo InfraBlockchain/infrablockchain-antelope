@@ -21,6 +21,18 @@ namespace yosemite { namespace chain {
 
    using namespace eosio::chain;
 
+   struct token_balance {
+      token_balance(){}
+      token_balance( name n, asset a ):t(n),qty(a){}
+      name  t; // token id
+      asset qty; // quantity
+   };
+
+   struct system_token_balance {
+      asset total;
+      vector<token_balance> sys_tokens;
+   };
+
    class standard_token_manager {
    public:
       explicit standard_token_manager( chainbase::database &db );
@@ -46,8 +58,13 @@ namespace yosemite { namespace chain {
       int get_system_token_count() const;
       vector<system_token> get_system_token_list() const;
 
+      system_token_balance get_system_token_balance( const account_name& account ) const;
+
    private:
       chainbase::database &_db;
    };
 
 } } /// yosemite::chain
+
+FC_REFLECT(yosemite::chain::token_balance, (t)(qty) )
+FC_REFLECT(yosemite::chain::system_token_balance, (total)(sys_tokens) )

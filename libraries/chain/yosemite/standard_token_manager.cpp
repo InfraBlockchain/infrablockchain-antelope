@@ -8,6 +8,7 @@
 #include <yosemite/chain/yosemite_global_property_database.hpp>
 #include <yosemite/chain/standard_token_action_types.hpp>
 #include <yosemite/chain/exceptions.hpp>
+#include <yosemite/chain/native_token_symbol.hpp>
 
 #include <eosio/chain/config.hpp>
 #include <eosio/chain/exceptions.hpp>
@@ -254,6 +255,29 @@ namespace yosemite { namespace chain {
          sys_tokens.push_back({sys_token.token_id, sys_token.token_weight});
       }
       return sys_tokens;
+   }
+
+   system_token_balance standard_token_manager::get_system_token_balance( const account_name& account ) const {
+      system_token_balance result;
+
+      share_type total_balance = 0;
+
+      auto& active_sys_tokens = _db.get<yosemite_global_property_object>().system_token_list.system_tokens;
+      for(const auto& sys_token : active_sys_tokens ) {
+         system_token_id_type sys_token_id = sys_token.token_id;
+         share_type token_balance = get_token_balance( sys_token_id, account );
+         if (token_balance > 0) {
+            const symbol& token_symbol = get_token_symbol( sys_token_id );
+            if ( sys_token.token_weight == system_token::token_weight_1x ) {
+               total_balance += token_balance;
+            } else {
+               total_balance += (token_balance * sys_token.token_weight) / system_token::token_weight_1x;
+            }
+            result.sys_tokens.emplace_back(sys_token_id, asset(token_balance, token_symbol));
+         }
+      }
+      result.total = asset(total_balance, symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL));
+      return result;
    }
 
 } } // namespace yosemite::chain
