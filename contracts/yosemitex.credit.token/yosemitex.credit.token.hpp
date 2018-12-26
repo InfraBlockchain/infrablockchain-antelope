@@ -69,33 +69,42 @@ namespace yosemitex { namespace contract {
 
 
       /**
-       *
-       * @param account -
-       * @param credit_limit -
-       * @param tag -
+       * Set Credit Limit
+       * The token account owner can set a credit limit for each user account.
+       * Only token owner account can send 'creditlimit' action
+       * @param account - account name to set credit limit
+       * @param credit_limit - credit limit amount within which the target account can issue new tokens without the permission of token owner account.
+       * @param tag - user tag string to identity a specific creditlimit action (application-specific purpose)
        */
       void creditlimit( account_name account, asset credit_limit, string tag );
 
       /**
-       *
-       * @param account -
-       * @param qty -
-       * @param tag -
+       * Issue New Token By User Account Having Credit Limit
+       * Within the credit limit allowed by token owner account, an account can issue new tokens without the permission of token owner account.
+       * @param issuer - issuer account name having credit limit, issuer account must provide signature for creditissue action
+       * @param to - account name receiving issued tokens, if 'to' != 'issuer', additional 'transfer' action will be generated
+       * @param qty - token quantity (amount, symbol) to issue
+       * @param tag - user tag string to identity a specific creditissue action (application-specific purpose)
        */
       void creditissue( account_name issuer, account_name to, asset qty, string tag );
 
       /**
-       *
-       * @param account -
-       * @param qty -
-       * @param tag -
+       * Redeem Credit Tokens Issued By User Account
+       * Whenever an account issues new tokens within the credit limit,
+       * the issued credit amount is increased.
+       * When the account repay the dept of issued credit tokens, the token account owner
+       * can decrease the issued credit amount for the account to issue additional tokens within credit limit.
+       * Only token owner account can send 'creditredeem' action.
+       * @param account - account name to set credit limit
+       * @param qty - token quantity (amount, symbol) to decrese issused credit amount
+       * @param tag - user tag string to identity a specific creditredeem action (application-specific purpose)
        */
       void creditredeem( account_name account, asset qty, string tag );
    };
 
    /**
     * The token account owner can set a credit limit for each user account
-    * upto which an account can issue new tokens without the permission of token account.
+    * upto which an account can issue new tokens without the permission of token owner account.
     * Whenever an account issues new tokens within the credit limit,
     * the issued credit amount is increased.
     * When the account repay the dept of issued credit tokens, the token account owner
