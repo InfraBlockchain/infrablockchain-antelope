@@ -17,7 +17,8 @@
       "name": "creditissue",
       "base": "",
       "fields": [
-        {"name":"account", "type":"account_name"},
+        {"name":"issuer", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
         {"name":"qty", "type":"asset"},
         {"name":"tag", "type":"string"}
       ]

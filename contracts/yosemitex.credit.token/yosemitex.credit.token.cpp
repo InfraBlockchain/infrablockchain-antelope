@@ -9,6 +9,7 @@
 #include <yosemitelib/token_api.h>
 
 #include <eosiolib/symbol.hpp>
+#include <eosiolib/action.hpp>
 
 namespace yosemitex { namespace contract {
 
@@ -83,7 +84,7 @@ namespace yosemitex { namespace contract {
       require_recipient( account );
    }
 
-   void credit_token::creditissue( account_name account, asset qty, string tag ) {
+   void credit_token::creditissue( account_name issuer, account_name to, asset qty, string tag ) {
 
       symbol_type token_symbol(get_token_symbol( _self )); // if current token account is not a valid token, exception will be thrown in this call
       int64_t issue_amount = qty.amount;
@@ -92,26 +93,30 @@ namespace yosemitex { namespace contract {
       eosio_assert( issue_amount > 0, "credit issue amount must be positive value" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
 
-      eosio_assert( has_all_kyc_status( account, YOSEMITE_ID_KYC_MAX_AUTH ),
-                    "credit-issue account failed to satisfy KYC constraints" );
+      eosio_assert( has_all_kyc_status( issuer, YOSEMITE_ID_KYC_MAX_AUTH ),
+                    "credit-issue issuer failed to satisfy KYC constraints" );
 
-      // account who is trying to issue new token to its own account needs to sign
-      require_auth( account );
+      // account who is trying to issue new token needs to sign
+      require_auth( issuer );
 
       credit_offering_table_idx credit_offering_table( _self, _self );
 
-      auto& credit_info = credit_offering_table.get( account );
-      eosio_assert( issue_amount + credit_info.credit_issued <= credit_info.credit_limit, "new token issuance exceeds the account's credit limit" );
+      auto& credit_info = credit_offering_table.get( issuer );
+      eosio_assert( issue_amount + credit_info.credit_issued <= credit_info.credit_limit, "new token issuance exceeds the issuer's credit limit" );
 
-      // issue new tokens to the requested account
-      issue_token( account, issue_amount );
+      // issue new tokens to the issuer
+      issue_token( issuer, issue_amount );
 
       credit_offering_table.modify( credit_info, 0, [&](credit_offering_info& info) {
          info.credit_issued += issue_amount;
       });
 
       // notify 'creditissue' action to the issuer account
-      require_recipient( account );
+      require_recipient( issuer );
+
+      if ( issuer != to ) {
+         SEND_INLINE_ACTION( *this, transfer, {issuer, N(active)}, {_self, issuer, to, qty, tag} );
+      }
    }
 
    void credit_token::creditredeem( account_name account, asset qty, string tag ) {

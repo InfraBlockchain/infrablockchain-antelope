@@ -82,7 +82,7 @@ namespace yosemitex { namespace contract {
        * @param qty -
        * @param tag -
        */
-      void creditissue( account_name account, asset qty, string tag );
+      void creditissue( account_name issuer, account_name to, asset qty, string tag );
 
       /**
        *
