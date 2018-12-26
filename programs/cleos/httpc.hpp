@@ -99,6 +99,7 @@ namespace eosio { namespace client { namespace http {
    const string get_token_balance_func = chain_func_base + "/get_token_balance";
    const string get_token_info_func = chain_func_base + "/get_token_info";
    const string get_system_token_list_func = chain_func_base + "/get_system_token_list";
+   const string get_system_token_balance_func = chain_func_base + "/get_system_token_balance";
    const string get_txfee_item_func = chain_func_base + "/get_txfee_item";
    const string get_txfee_list_func = chain_func_base + "/get_txfee_list";
 

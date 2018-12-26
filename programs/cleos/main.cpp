@@ -1476,13 +1476,8 @@ void get_account( const string& accountName, const string& coresym, bool json_fo
 
    auto res = json.as<eosio::chain_apis::read_only::get_account_results>();
    if (!json_format) {
-      asset staked;
-      asset unstaking;
-
-      if( res.core_liquid_balance.valid() ) {
-         unstaking = asset( 0, res.core_liquid_balance->get_symbol() ); // Correct core symbol for unstaking asset.
-         staked = asset( 0, res.core_liquid_balance->get_symbol() );    // Correct core symbol for staked asset.
-      }
+      asset staked{ 0, res.system_token_balance.total.get_symbol() }; // Correct core symbol for staked asset.
+      asset unstaking{0, res.system_token_balance.total.get_symbol() }; // Correct core symbol for unstaking asset.};
 
       std::cout << "created: " << string(res.created) << std::endl;
 
@@ -1693,22 +1688,19 @@ void get_account( const string& accountName, const string& coresym, bool json_fo
       }
 #endif
 
-      if( res.core_liquid_balance.valid() ) {
-         std::cout << "native token balances:" << std::endl;
+      std::cout << "system token balances:" << std::endl;
 #ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
-         std::cout << indent << std::left << std::setw(11)
-                   << "liquid:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
-         std::cout << indent << std::left << std::setw(11)
-                   << "staked:" << std::right << std::setw(18) << staked << std::endl;
-         std::cout << indent << std::left << std::setw(11)
-                   << "unstaking:" << std::right << std::setw(18) << unstaking << std::endl;
-         std::cout << indent << std::left << std::setw(11) << "total:" << std::right << std::setw(18) << (*res.core_liquid_balance + staked + unstaking) << std::endl;
-#else
-         std::cout << indent << std::left << std::setw(11)
-                   << "total:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
+      std::cout << indent << std::left << std::setw(11)
+                << "liquid:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
+      std::cout << indent << std::left << std::setw(11)
+                << "staked:" << std::right << std::setw(18) << staked << std::endl;
+      std::cout << indent << std::left << std::setw(11)
+                << "unstaking:" << std::right << std::setw(18) << unstaking << std::endl;
+      std::cout << indent << std::left << std::setw(11) << "total:" << std::right << std::setw(18) << (*res.core_liquid_balance + staked + unstaking) << std::endl;
 #endif
-         std::cout << std::endl;
-      }
+      std::cout << indent << std::left << std::setw(11)
+                << "total:" << std::right << std::setw(18) << res.system_token_balance.total << std::endl;
+      std::cout << std::endl;
 
       if ( res.voter_info.is_object() ) {
          auto& obj = res.voter_info.get_object();
@@ -2123,8 +2115,17 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // TODO get systoken balance
+   // get systoken balance
+   auto get_systoken_balance = get_systoken->add_subcommand("balance", localized("Retrieve system token balance info of an account"), false);
+   get_systoken_balance->add_option("account", accountName, localized("The name of the account to retrieve system token balance"))->required();
+   get_systoken_balance->set_callback([&] {
+      auto result = call(get_system_token_balance_func,
+                         fc::mutable_variant_object("account", accountName)
+      );
 
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
 
    // YOSEMITE Transaction Fee
    // get txfee info

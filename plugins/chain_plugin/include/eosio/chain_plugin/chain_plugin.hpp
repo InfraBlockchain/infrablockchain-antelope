@@ -16,6 +16,7 @@
 #include <eosio/chain/plugin_interface.hpp>
 #include <eosio/chain/types.hpp>
 
+#include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/transaction_fee_manager.hpp>
 #include <yosemite/chain/yx_symbol.hpp>
 #include <yosemite/chain/yx_asset.hpp>
@@ -125,7 +126,7 @@ public:
       fc::time_point             last_code_update;
       fc::time_point             created;
 
-      optional<asset>            core_liquid_balance;
+      yosemite::chain::system_token_balance  system_token_balance;
 
       int64_t                    ram_quota  = 0;
       int64_t                    net_weight = 0;
@@ -313,6 +314,19 @@ public:
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
 
+   struct get_currency_stats_params {
+      name           code;
+      string         symbol;
+   };
+
+   struct get_currency_stats_result {
+      asset          supply;
+      asset          max_supply;
+      account_name   issuer;
+   };
+
+   fc::variant get_currency_stats( const get_currency_stats_params& params )const;
+
    struct get_token_balance_params {
       name token;
       name account;
@@ -331,6 +345,12 @@ public:
    };
 
    fc::variant get_system_token_list(const get_system_token_list_params &params) const;
+
+   struct get_system_token_balance_params {
+      name account;
+   };
+
+   yosemite::chain::system_token_balance get_system_token_balance(const get_system_token_balance_params &params) const;
 
    struct get_txfee_item_params {
       name code;
@@ -361,19 +381,6 @@ public:
    };
 
    asset get_native_token_balance(const get_native_token_balance_params &params) const;
-
-   struct get_currency_stats_params {
-      name           code;
-      string         symbol;
-   };
-
-   struct get_currency_stats_result {
-      asset          supply;
-      asset          max_supply;
-      account_name   issuer;
-   };
-
-   fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
    struct get_yx_token_stats_params {
       name code;
@@ -767,6 +774,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(ma
 FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (token)(account));
 FC_REFLECT(eosio::chain_apis::read_only::get_token_info_params, (token));
 FC_REFLECT(eosio::chain_apis::read_only::get_system_token_list_params, (token_meta));
+FC_REFLECT(eosio::chain_apis::read_only::get_system_token_balance_params, (account));
 FC_REFLECT(eosio::chain_apis::read_only::get_txfee_item_params, (code)(action));
 FC_REFLECT(eosio::chain_apis::read_only::get_txfee_list_params, (code_lower_bound)(code_upper_bound)(limit));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_balance_params, (code)(account)(ysymbol));
@@ -787,7 +795,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_scheduled_transactions_result, (tr
 
 FC_REFLECT( eosio::chain_apis::read_only::get_account_results,
             (account_name)(head_block_num)(head_block_time)(privileged)(last_code_update)(created)
-            (core_liquid_balance)(ram_quota)(net_weight)(cpu_weight)(net_limit)(cpu_limit)(ram_usage)(permissions)
+            (system_token_balance)(ram_quota)(net_weight)(cpu_weight)(net_limit)(cpu_limit)(ram_usage)(permissions)
             (total_resources)(self_delegated_bandwidth)(refund_request)(voter_info) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_results, (account_name)(code_hash)(wast)(wasm)(abi) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_hash_results, (account_name)(code_hash) )

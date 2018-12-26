@@ -1314,6 +1314,11 @@ fc::variant read_only::get_system_token_list(const get_system_token_list_params 
    return result;
 }
 
+yosemite::chain::system_token_balance read_only::get_system_token_balance(const get_system_token_balance_params &params) const {
+   auto& yosemite_token_manager = db.get_token_manager();
+   return yosemite_token_manager.get_system_token_balance(params.account);
+}
+
 yosemite::chain::tx_fee_for_action read_only::get_txfee_item(const get_txfee_item_params &params) const {
    auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
    return yosemite_tx_fee_manager.get_tx_fee_for_action(params.code, params.action);
@@ -1862,31 +1867,16 @@ read_only::get_account_results read_only::get_account( const get_account_params&
       ++perm;
    }
 
+   auto& yosemite_token_manager = db.get_token_manager();
+   result.system_token_balance = yosemite_token_manager.get_system_token_balance(params.account_name);
+
    const auto& code_account = db.db().get<account_object,by_name>( config::system_account_name );
 
    abi_def abi;
    if( abi_serializer::to_abi(code_account.abi, abi) ) {
       abi_serializer abis( abi, abi_serializer_max_time );
 
-      const auto ntoken_code = YOSEMITE_NATIVE_TOKEN_ACCOUNT;
-
-      // get total balance of native token
-      const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(ntoken_code, params.account_name, N(ntaccountstt)));
-      if( t_id != nullptr ) {
-         const auto &idx = d.get_index<key_value_index, by_scope_primary>();
-         auto it = idx.find(boost::make_tuple(t_id->id, N(totalbal)));
-         if( it != idx.end() && it->value.size() >= sizeof(int64_t) ) {
-            int64_t total_amount;
-            fc::datastream<const char *> ds(it->value.data(), it->value.size());
-            fc::raw::unpack(ds, total_amount);
-
-            if (total_amount > 0) {
-               result.core_liquid_balance = asset(total_amount, symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL));
-            }
-         }
-      }
-
-      t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, params.account_name, N(userres) ));
+      const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, params.account_name, N(userres) ));
       if (t_id != nullptr) {
          const auto &idx = d.get_index<key_value_index, by_scope_primary>();
          auto it = idx.find(boost::make_tuple( t_id->id, params.account_name ));
