@@ -142,6 +142,8 @@ namespace yosemitesys {
 
         void settxfee( const account_name code, const action_name action, const int32_t value, const uint32_t feetype );
 
+        void unsettxfee( const account_name code, const action_name action );
+
     private:
         void update_elected_producers( block_timestamp timestamp );
 

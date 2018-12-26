@@ -21,10 +21,21 @@ namespace yosemitesys {
     *  @param code - account name of contract code
     *  @param action - action name
     *  @param value - transaction fee value
-    *  @param fee_type - transaction fee type (1: fixed_tx_fee_per_action_type)
+    *  @param feetype - transaction fee type (1: fixed_tx_fee_per_action_type)
     */
    void system_contract::settxfee( const account_name code, const action_name action, const int32_t value, const uint32_t feetype ) {
       set_trx_fee_for_action( code, action, value, feetype );
+   }
+
+   /**
+    *  Unset Transaction Fee For Action
+    *  @brief delete transaction fee entry for an action (to the unsset status)
+    *
+    *  @param code - account name of contract code
+    *  @param action - action name
+    */
+   void system_contract::unsettxfee( const account_name code, const action_name action ) {
+      unset_trx_fee_for_action( code, action );
    }
 
 } //namespace yosemitesys

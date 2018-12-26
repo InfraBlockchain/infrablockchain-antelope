@@ -316,6 +316,13 @@
         {"name":"feetype",   "type":"uint32"}
       ]
     },{
+      "name": "unsettxfee",
+      "base": "",
+      "fields": [
+        {"name":"code",   "type":"account_name"},
+        {"name":"action",   "type":"action_name"}
+      ]
+    },{
       "name": "setpriv",
       "base": "",
       "fields": [
@@ -473,6 +480,10 @@
    },{
       "name": "settxfee",
       "type": "settxfee",
+      "ricardian_contract": ""
+   },{
+      "name": "unsettxfee",
+      "type": "unsettxfee",
       "ricardian_contract": ""
    }],
    "tables": [{

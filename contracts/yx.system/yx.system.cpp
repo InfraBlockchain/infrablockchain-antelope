@@ -113,5 +113,5 @@ EOSIO_ABI( yosemitesys::system_contract,
            // yx.system_token.cpp
            (addsystoken)(rmvsystoken)
            // yx.transaction_fee.cpp
-           (settxfee)
+           (settxfee)(unsettxfee)
 )
