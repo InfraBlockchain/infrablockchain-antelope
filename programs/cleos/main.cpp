@@ -228,7 +228,7 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
 
    // YOSEMITE Transaction-Fee-Payer
-   cmd->add_option("--fee-payer", trx_fee_payer_account, localized("transaction fee payer account"));
+   cmd->add_option("--txfee-payer", trx_fee_payer_account, localized("transaction fee payer account"));
 
 #ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
