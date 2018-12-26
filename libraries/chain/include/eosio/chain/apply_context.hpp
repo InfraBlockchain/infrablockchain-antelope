@@ -506,6 +506,10 @@ class apply_context {
       void set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type );
 
       /// YOSEMITE Core API - Transaction-Fee-Setup
+      /// unset transaction fee entry for an action, deleting transaction fee database row
+      void unset_transaction_fee_for_action( const account_name& code, const action_name& action );
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
       /// get transaction fee for an action
       /// if code == account_name(0), transaction fee info for an built-in common action is retrieved
       /// if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup

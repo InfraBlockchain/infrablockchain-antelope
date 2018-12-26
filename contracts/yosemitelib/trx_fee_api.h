@@ -37,6 +37,15 @@ extern "C" {
 void set_trx_fee_for_action( account_name code, action_name action, int32_t value, uint32_t fee_type );
 
 /**
+ *  Unset Transaction Fee For Action
+ *  @brief delete transaction fee entry for an action (to the unsset status)
+ *
+ *  @param code - account name of contract code
+ *  @param action - action name
+ */
+void unset_trx_fee_for_action( account_name code, action_name action );
+
+/**
  *  Get Transaction Fee For Action
  *  @brief get transaction fee for an action,
  *  if code == account_name(0), transaction fee info for an built-in common action is retrieved.

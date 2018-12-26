@@ -1370,6 +1370,11 @@ class transaction_api : public context_aware_api {
       }
 
       /// YOSEMITE Core API - Transaction-Fee-Setup
+      void unset_trx_fee_for_action( const account_name code, const action_name action ) {
+         context.unset_transaction_fee_for_action( code, action );
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
       uint32_t get_trx_fee_for_action( const account_name code, const action_name action, array_ptr<char> packed_trx_fee_for_action, size_t buffer_size ) {
          yosemite::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
 
@@ -1966,6 +1971,7 @@ REGISTER_INTRINSICS(transaction_api,
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
    (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int) )
+   (unset_trx_fee_for_action,  void(int64_t, int64_t)       )
    (get_trx_fee_for_action,    int(int64_t, int64_t, int, int) )
    (trx_fee_payer,             int64_t()                    )
 );
