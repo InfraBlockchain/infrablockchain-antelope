@@ -1279,7 +1279,9 @@ fc::variant read_only::get_token_info(const get_token_info_params &params) const
    auto& yosemite_token_manager = db.get_token_manager();
 
    auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.token);
-   EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", params.token) );
+   if (!token_meta_ptr) {
+      return fc::mutable_variant_object("token_id", "");
+   }
 
    auto token_meta_obj = *token_meta_ptr;
    return fc::mutable_variant_object("token_id", token_meta_obj.token_id)
@@ -1303,7 +1305,7 @@ fc::variant read_only::get_system_token_list(const get_system_token_list_params 
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "no token meta info for token account ${account}", ("account", sys_token.token_id) );
          auto token_meta_obj = *token_meta_ptr;
          sys_token_var["symbol"] = token_meta_obj.symbol;
-         sys_token_var["total_supply"] = token_meta_obj.total_supply;
+         sys_token_var["total_supply"] = asset{token_meta_obj.total_supply, token_meta_obj.symbol};
          sys_token_var["url"] = token_meta_obj.url;
          sys_token_var["description"] = token_meta_obj.description;
       }
@@ -1869,6 +1871,18 @@ read_only::get_account_results read_only::get_account( const get_account_params&
 
    auto& yosemite_token_manager = db.get_token_manager();
    result.system_token_balance = yosemite_token_manager.get_system_token_balance(params.account_name);
+
+   auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.account_name);
+   if (token_meta_ptr) {
+      auto token_meta_obj = *token_meta_ptr;
+      result.token_info.emplace(
+         token_meta_obj.token_id,
+         token_meta_obj.symbol,
+         asset{token_meta_obj.total_supply, token_meta_obj.symbol},
+         token_meta_obj.url.c_str(), token_meta_obj.url.size(),
+         token_meta_obj.description.c_str(), token_meta_obj.description.size()
+         );
+   }
 
    const auto& code_account = db.db().get<account_object,by_name>( config::system_account_name );
 
