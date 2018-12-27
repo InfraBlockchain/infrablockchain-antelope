@@ -12,7 +12,7 @@
 #include <yosemite/chain/exceptions.hpp>
 #include <fc/reflect/reflect.hpp>
 
-namespace yosemite_core {
+namespace yosemite { namespace chain {
 
     using std::map;
     using std::vector;
@@ -143,7 +143,7 @@ namespace yosemite_core {
         }
     };
 
-}
+} } /// yosemite::chain
 
-FC_REFLECT(yosemite_core::transaction_vote, (to)(amt))
-FC_REFLECT(yosemite_core::transaction_votes_in_block, (tx_votes))
+FC_REFLECT(yosemite::chain::transaction_vote, (to)(amt))
+FC_REFLECT(yosemite::chain::transaction_votes_in_block, (tx_votes))

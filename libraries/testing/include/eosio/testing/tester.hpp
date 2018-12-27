@@ -10,6 +10,9 @@
 
 #include <iosfwd>
 
+#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/system_accounts.hpp>
+
 #define REQUIRE_EQUAL_OBJECTS(left, right) { auto a = fc::variant( left ); auto b = fc::variant( right ); BOOST_REQUIRE_EQUAL( true, a.is_object() ); \
    BOOST_REQUIRE_EQUAL( true, b.is_object() ); \
    BOOST_REQUIRE_EQUAL_COLLECTIONS( a.get_object().begin(), a.get_object().end(), b.get_object().begin(), b.get_object().end() ); }
@@ -225,15 +228,18 @@ namespace eosio { namespace testing {
          static action_result wasm_assert_code( uint64_t error_code ) { return "assertion failure with error code: " + std::to_string(error_code); }
 
          auto get_resolver() {
-            return [this]( const account_name& name ) -> optional<abi_serializer> {
+            return [this]( account_name code, action_name action ) -> optional<abi_serializer> {
                try {
-                  const auto& accnt = control->db().get<account_object, by_name>( name );
+                  if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+                     code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                  }
+                  const auto& accnt = control->db().get<account_object, by_name>( code );
                   abi_def abi;
                   if( abi_serializer::to_abi( accnt.abi, abi )) {
                      return abi_serializer( abi, abi_serializer_max_time );
                   }
                   return optional<abi_serializer>();
-               } FC_RETHROW_EXCEPTIONS( error, "Failed to find or parse ABI for ${name}", ("name", name))
+               } FC_RETHROW_EXCEPTIONS( error, "Failed to find or parse ABI for ${code}", ("code", code))
             };
          }
 

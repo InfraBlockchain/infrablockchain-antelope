@@ -95,6 +95,8 @@ Options:
 #include <yosemite/chain/native_token_symbol.hpp>
 #include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/system_accounts.hpp>
+#include <yosemite/chain/standard_token_action_types.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -194,7 +196,7 @@ uint32_t delaysec = 0;
 vector<string> tx_permission;
 
 string trx_vote_target_account;
-string delegated_trx_fee_payer_account;
+string trx_fee_payer_account;
 
 eosio::client::http::http_context context;
 
@@ -225,8 +227,8 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    // YOSEMITE Transaction-as-a-Vote for Proof-of-Transaction
    cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
 
-   // YOSEMITE Delegated-Transaction-Fee-Payment
-   cmd->add_option("--fee-payer", delegated_trx_fee_payer_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
+   // YOSEMITE Transaction-Fee-Payer
+   cmd->add_option("--txfee-payer", trx_fee_payer_account, localized("transaction fee payer account"));
 
 #ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
@@ -349,16 +351,16 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
          "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
 
    try {
-      if (!delegated_trx_fee_payer_account.empty()) {
-         eosio::chain::name delegated_txfee_payer_account_name(delegated_trx_fee_payer_account);
+      if (!trx_fee_payer_account.empty()) {
+         eosio::chain::name txfee_payer_account_name(trx_fee_payer_account);
 
          trx.transaction_extensions.push_back(
-               std::make_pair(YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
-                              fc::raw::pack(delegated_txfee_payer_account_name)));
+               std::make_pair(YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
+                              fc::raw::pack(txfee_payer_account_name)));
       }
    } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account,
-                            "Invalid delegated transaction fee payer account: ${delegated_trx_fee_payer_account}",
-                            ("delegated_trx_fee_payer_account", delegated_trx_fee_payer_account));
+                            "Invalid transaction fee payer account: ${trx_fee_payer_account}",
+                            ("trx_fee_payer_account", trx_fee_payer_account));
 
    if (!tx_skip_sign) {
       auto required_keys = determine_required_keys(trx);
@@ -409,20 +411,24 @@ void print_action( const fc::variant& at ) {
 }
 
 //resolver for ABI serializer to decode actions in proposed transaction in multisig contract
-auto abi_serializer_resolver = [](const name& account) -> optional<abi_serializer> {
+auto abi_serializer_resolver = [](name code, name action) -> optional<abi_serializer> {
    static unordered_map<account_name, optional<abi_serializer> > abi_cache;
-   auto it = abi_cache.find( account );
+
+   if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+      code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+   }
+   auto it = abi_cache.find( code );
    if ( it == abi_cache.end() ) {
-      auto result = call(get_abi_func, fc::mutable_variant_object("account_name", account));
+      auto result = call(get_abi_func, fc::mutable_variant_object("account_name", code));
       auto abi_results = result.as<eosio::chain_apis::read_only::get_abi_results>();
 
       optional<abi_serializer> abis;
       if( abi_results.abi.valid() ) {
          abis.emplace( *abi_results.abi, abi_serializer_max_time );
       } else {
-         std::cerr << "ABI for contract " << account.to_string() << " not found. Action data will be shown in hex only." << std::endl;
+         std::cerr << "ABI for contract " << code.to_string() << " not found. Action data will be shown in hex only." << std::endl;
       }
-      abi_cache.emplace( account, abis );
+      abi_cache.emplace( code, abis );
 
       return abis;
    }
@@ -431,7 +437,7 @@ auto abi_serializer_resolver = [](const name& account) -> optional<abi_serialize
 };
 
 bytes variant_to_bin( const account_name& account, const action_name& action, const fc::variant& action_args_var ) {
-   auto abis = abi_serializer_resolver( account );
+   auto abis = abi_serializer_resolver( account, action );
    FC_ASSERT( abis.valid(), "No ABI found for ${contract}", ("contract", account));
 
    auto action_type = abis->get_action_type( action );
@@ -440,7 +446,7 @@ bytes variant_to_bin( const account_name& account, const action_name& action, co
 }
 
 fc::variant bin_to_variant( const account_name& account, const action_name& action, const bytes& action_args) {
-   auto abis = abi_serializer_resolver( account );
+   auto abis = abi_serializer_resolver( account, action );
    FC_ASSERT( abis.valid(), "No ABI found for ${contract}", ("contract", account));
 
    auto action_type = abis->get_action_type( action );
@@ -727,7 +733,7 @@ asset to_asset( account_name code, const string& s ) {
    auto it = cache.find( make_pair(code, sym) );
    auto sym_str = a.symbol_name();
    if ( it == cache.end() ) {
-      auto json = call(get_token_stats_func, fc::mutable_variant_object("json", false)
+      auto json = call(get_yx_token_stats_func, fc::mutable_variant_object("json", false)
                        ("code", code)
                        ("symbol", sym_str)
       );
@@ -1470,13 +1476,8 @@ void get_account( const string& accountName, const string& coresym, bool json_fo
 
    auto res = json.as<eosio::chain_apis::read_only::get_account_results>();
    if (!json_format) {
-      asset staked;
-      asset unstaking;
-
-      if( res.core_liquid_balance.valid() ) {
-         unstaking = asset( 0, res.core_liquid_balance->get_symbol() ); // Correct core symbol for unstaking asset.
-         staked = asset( 0, res.core_liquid_balance->get_symbol() );    // Correct core symbol for staked asset.
-      }
+      asset staked{ 0, res.system_token_balance.total.get_symbol() }; // Correct core symbol for staked asset.
+      asset unstaking{0, res.system_token_balance.total.get_symbol() }; // Correct core symbol for unstaking asset.};
 
       std::cout << "created: " << string(res.created) << std::endl;
 
@@ -1687,22 +1688,19 @@ void get_account( const string& accountName, const string& coresym, bool json_fo
       }
 #endif
 
-      if( res.core_liquid_balance.valid() ) {
-         std::cout << "native token balances:" << std::endl;
+      std::cout << "system token balances:" << std::endl;
 #ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
-         std::cout << indent << std::left << std::setw(11)
-                   << "liquid:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
-         std::cout << indent << std::left << std::setw(11)
-                   << "staked:" << std::right << std::setw(18) << staked << std::endl;
-         std::cout << indent << std::left << std::setw(11)
-                   << "unstaking:" << std::right << std::setw(18) << unstaking << std::endl;
-         std::cout << indent << std::left << std::setw(11) << "total:" << std::right << std::setw(18) << (*res.core_liquid_balance + staked + unstaking) << std::endl;
-#else
-         std::cout << indent << std::left << std::setw(11)
-                   << "total:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
+      std::cout << indent << std::left << std::setw(11)
+                << "liquid:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
+      std::cout << indent << std::left << std::setw(11)
+                << "staked:" << std::right << std::setw(18) << staked << std::endl;
+      std::cout << indent << std::left << std::setw(11)
+                << "unstaking:" << std::right << std::setw(18) << unstaking << std::endl;
+      std::cout << indent << std::left << std::setw(11) << "total:" << std::right << std::setw(18) << (*res.core_liquid_balance + staked + unstaking) << std::endl;
 #endif
-         std::cout << std::endl;
-      }
+      std::cout << indent << std::left << std::setw(11)
+                << "total:" << std::right << std::setw(18) << res.system_token_balance.total << std::endl;
+      std::cout << std::endl;
 
       if ( res.voter_info.is_object() ) {
          auto& obj = res.voter_info.get_object();
@@ -2073,20 +2071,112 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // yx.token accessors
+   // YOSEMITE Standard Token
    // get token balance
-   string ysymbol;
-   auto get_token = get->add_subcommand("token", localized("Retrieve information related to yosemite non-native tokens"), true);
+   string token_id;
+   auto get_token = get->add_subcommand("token", localized("Retrieve YOSEMITE standard token information"), true);
    get_token->require_subcommand();
 
-   auto get_balance = get_token->add_subcommand("balance",
+   auto get_token_balance = get_token->add_subcommand("balance", localized("Retrieve the balance of an account for a given token"), false);
+   get_token_balance->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
+   get_token_balance->add_option("account", accountName, localized("The account name to query the balance for"))->required();
+   get_token_balance->set_callback([&] {
+      auto result = call(get_token_balance_func,
+                         fc::mutable_variant_object("token", token_id)("account", accountName)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   // get token info
+   auto get_token_info = get_token->add_subcommand("info", localized("Retrieve meta information of a token"), false);
+   get_token_info->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
+   get_token_info->set_callback([&] {
+      auto result = call(get_token_info_func,
+                         fc::mutable_variant_object("token", token_id)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   // get systoken list
+   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve YOSEMITE system token information"), true);
+   get_systoken->require_subcommand();
+
+   auto get_systoken_list = get_systoken->add_subcommand("list", localized("Retrieve the system token list used as transaction fee payment token(s)"), false);
+   get_systoken_list->set_callback([&] {
+      auto result = call(get_system_token_list_func,
+                         fc::mutable_variant_object("token_meta", true)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   // get systoken balance
+   auto get_systoken_balance = get_systoken->add_subcommand("balance", localized("Retrieve system token balance info of an account"), false);
+   get_systoken_balance->add_option("account", accountName, localized("The name of the account to retrieve system token balance"))->required();
+   get_systoken_balance->set_callback([&] {
+      auto result = call(get_system_token_balance_func,
+                         fc::mutable_variant_object("account", accountName)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   // YOSEMITE Transaction Fee
+   // get txfee info
+   string codeName;
+   string actionName;
+   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve YOSEMITE transaction fee info"), true);
+   get_txfee->require_subcommand();
+
+   auto get_txfee_item = get_txfee->add_subcommand("item", localized("Retrieve the transaction fee info for an action"), false);
+   get_txfee_item->add_option("code", codeName, localized("contract account name (if code==\"\", retrieve txfee for common actions (e.g. standard token actions))"))->required();
+   get_txfee_item->add_option("action", actionName, localized("action name (if code==\"\" and action==\"\", retrieves default txfee info"))->required();
+   get_txfee_item->set_callback([&] {
+      auto result = call(get_txfee_item_func,
+                         fc::mutable_variant_object("code", codeName)("action", actionName)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   // get txfee list
+   string code_lower_bound;
+   string code_upper_bound;
+   uint32_t tx_fee_list_limit = 100;
+   auto get_txfee_list = get_txfee->add_subcommand("list", localized("Retrieve transaction fee list"), false);
+   get_txfee_list->add_option("-L,--code-lower", code_lower_bound, localized("lower bound (inclusive) of contract code account name (if \"\", retrieves default txfee and common built-in actions txfees)"));
+   get_txfee_list->add_option("-U,--code-upper", code_upper_bound, localized("upper bound (inclusive) of contract code account name (if empty or not specified, upper bound is the end of all tx fee list)"));
+   get_txfee_list->add_option("-l,--limit", tx_fee_list_limit, localized("max limit of result item count (default = 100)"));
+   get_txfee_list->set_callback([&] {
+      auto result = call(get_txfee_list_func,
+                         fc::mutable_variant_object("code_lower_bound", code_lower_bound)("code_upper_bound", code_upper_bound)("limit", tx_fee_list_limit)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   // yx.token accessors
+   // get yxtoken balance
+   string ysymbol;
+   auto get_yx_token = get->add_subcommand("yxtoken", localized("Retrieve information related to yosemite non-native tokens"), true);
+   get_yx_token->require_subcommand();
+
+   auto get_yx_token_balance = get_yx_token->add_subcommand("balance",
                                                 localized("Retrieve the balance of an account for a given token"),
                                                 false);
-   get_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
-   get_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
-   get_balance->set_callback([&] {
+   get_yx_token_balance->add_option("account", accountName, localized("The account to query the balance for"))->required();
+   get_yx_token_balance->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
+   get_yx_token_balance->set_callback([&] {
       try {
-         auto result = call(get_token_balance_func, fc::mutable_variant_object("json", false)
+         auto result = call(get_yx_token_balance_func, fc::mutable_variant_object("json", false)
                  ("account", accountName)
                  ("code", "yx.token")
                  ("ysymbol", ysymbol)
@@ -2106,10 +2196,10 @@ int main( int argc, char** argv ) {
       }
    });
 
-   auto get_token_stats = get_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
-   get_token_stats->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
-   get_token_stats->set_callback([&] {
-      auto result = call(get_token_stats_func, fc::mutable_variant_object("json", false)
+   auto get_yx_token_stats = get_yx_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
+   get_yx_token_stats->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
+   get_yx_token_stats->set_callback([&] {
+      auto result = call(get_yx_token_stats_func, fc::mutable_variant_object("json", false)
          ("code", "yx.token")
          ("ysymbol", ysymbol)
       );
@@ -2560,7 +2650,7 @@ int main( int argc, char** argv ) {
          localized("Transfer native token from account to account; if an issuer is not specified, native token issued by several issuers could be transferred"), false);
    ntoken_transfer->add_option("sender", sender, localized("The account sending naitve token"))->required();
    ntoken_transfer->add_option("recipient", recipient, localized("The account receiving naitve token"))->required();
-   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 10000.00 DKRW)"))->required();
+   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 100.0000 DUSD)"))->required();
    ntoken_transfer->add_option("memo", memo, localized("The memo for the transfer"));
    ntoken_transfer->add_option("--issuer", issuer, localized("The issuer account who issues the native token"));
    ntoken_transfer->add_option("--payer", payer, localized("The account who pays transfer fee"));

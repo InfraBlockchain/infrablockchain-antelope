@@ -1,6 +1,9 @@
 #pragma once
+
 #include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
+
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/trace.hpp>
 #include <signal.h>
@@ -19,6 +22,8 @@ namespace eosio { namespace chain {
          static void timer_expired(int);
          static bool initialized;
    };
+
+   using namespace yosemite::chain;
 
    class transaction_context {
       private:
@@ -60,13 +65,12 @@ namespace eosio { namespace chain {
 
       public:
          /// YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
-         void add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount);
+         void add_transaction_vote(transaction_vote_amount_type vote_amount);
          bool has_transaction_vote() const;
-         const yosemite_core::transaction_vote& get_transaction_vote() const;
+         const transaction_vote& get_transaction_vote() const;
 
-         /// YOSEMITE Delegated Transaction Fee Payment
-         bool has_delegated_tx_fee_payer() const;
-         const account_name& get_delegated_tx_fee_payer() const;
+         /// YOSEMITE Transaction-Fee-Payer
+         const account_name& get_tx_fee_payer() const;
 
       private:
 
@@ -83,6 +87,9 @@ namespace eosio { namespace chain {
          void record_transaction( const transaction_id_type& id, fc::time_point_sec expire );
 
          void validate_cpu_usage_to_bill( int64_t u, bool check_minimum = true )const;
+
+         void process_transaction_fee_payment();
+         int32_t tx_fee_for_action(const transaction_fee_manager& txfee_manager, const action_trace& action_trace);
 
       /// Fields:
       public:
@@ -114,6 +121,8 @@ namespace eosio { namespace chain {
          int64_t                       billed_cpu_time_us = 0;
          bool                          explicit_billed_cpu_time = false;
 
+         bool                          implicit_tx = false;
+
       private:
          bool                          is_initialized = false;
 
@@ -136,6 +145,8 @@ namespace eosio { namespace chain {
          fc::microseconds              billing_timer_duration_limit;
 
          deadline_timer                _deadline_timer;
+
+      friend class yosemite::chain::standard_token_manager;
    };
 
 } }

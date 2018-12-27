@@ -10,6 +10,8 @@
 #include <eosio/chain/types.hpp>
 
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/system_accounts.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/utf8.hpp>
@@ -664,7 +666,12 @@ template<typename T>
 fc::variant mongo_db_plugin_impl::to_variant_with_abi( const T& obj ) {
    fc::variant pretty_output;
    abi_serializer::to_variant( obj, pretty_output,
-                               [&]( account_name n ) { return get_abi_serializer( n ); },
+                               [&]( account_name code, action_name action ) {
+                                  if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+                                     code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                                  }
+                                  return get_abi_serializer( code );
+                               },
                                abi_serializer_max_time );
    return pretty_output;
 }

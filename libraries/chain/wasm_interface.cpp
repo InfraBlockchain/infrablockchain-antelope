@@ -12,7 +12,11 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
+
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/system_token_list.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
+
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -691,7 +695,7 @@ class producer_api : public context_aware_api {
          if( buffer_size == 0 ) return s;
 
          auto copy_size = std::min( buffer_size, s );
-         memcpy( producers, active_producers.data(), copy_size );
+         memcpy( producers, active_producers.data(),  copy_size );
 
          return copy_size;
       }
@@ -1351,7 +1355,7 @@ class transaction_api : public context_aware_api {
       int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
          auto trx_votes = context.get_transaction_votes_in_head_block();
 
-         auto s = trx_votes.size() * sizeof(struct yosemite_core::transaction_vote);
+         auto s = trx_votes.size() * sizeof(struct yosemite::chain::transaction_vote);
          if (buffer_size == 0) return s;
 
          auto copy_size = std::min( buffer_size, s );
@@ -1360,9 +1364,34 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
-      /// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
-      account_name delegated_trx_fee_payer() {
-         return context.get_delegated_transaction_fee_payer();
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      void set_trx_fee_for_action( const account_name code, const action_name action, int32_t value, uint32_t fee_type ) {
+         context.set_transaction_fee_for_action( code, action, value, fee_type );
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      void unset_trx_fee_for_action( const account_name code, const action_name action ) {
+         context.unset_transaction_fee_for_action( code, action );
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      uint32_t get_trx_fee_for_action( const account_name code, const action_name action, array_ptr<char> packed_trx_fee_for_action, size_t buffer_size ) {
+         yosemite::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
+
+         auto s = fc::raw::pack_size( tx_fee_for_action );
+         if( buffer_size == 0 ) return s;
+
+         if ( s <= buffer_size ) {
+            datastream<char*> ds( packed_trx_fee_for_action, s );
+            fc::raw::pack(ds, tx_fee_for_action);
+            return s;
+         }
+         return 0;
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Payer
+      account_name trx_fee_payer() {
+         return context.get_transaction_fee_payer();
       }
 };
 
@@ -1401,6 +1430,85 @@ class context_free_transaction_api : public context_aware_api {
 
       int get_action( uint32_t type, uint32_t index, array_ptr<char> buffer, size_t buffer_size )const {
          return context.get_action( type, index, buffer, buffer_size );
+      }
+};
+
+/**
+ * YOSEMITE Standard Token API, custom token contract code can access standard token operations
+ */
+class token_api : public context_aware_api {
+   public:
+      using context_aware_api::context_aware_api;
+
+      uint64_t get_token_symbol( account_name token_id ) {
+         return context.get_token_symbol( token_id ).value();
+      }
+
+      int64_t get_token_total_supply( account_name token_id ) {
+         return context.get_token_total_supply( token_id );
+      }
+
+      int64_t get_token_balance( account_name token_id, account_name account ) {
+         return context.get_token_balance( token_id, account );
+      }
+
+      void issue_token( account_name to, int64_t amount ) {
+         context.issue_token( to, amount );
+      }
+
+      void transfer_token( account_name from, account_name to, int64_t amount ) {
+         context.transfer_token( from, to, amount );
+      }
+
+      void redeem_token( int64_t amount ) {
+         context.redeem_token( amount );
+      }
+};
+
+/**
+ * YOSEMITE System Token APIs - system contract operated by block producers manages system tokens used for tx fee payment
+ */
+class system_token_api : public context_aware_api {
+   public:
+      using context_aware_api::context_aware_api;
+
+      int get_system_token_count() {
+         return context.control.get_token_manager().get_system_token_count();
+      }
+
+      uint32_t get_system_token_list( array_ptr<char> packed_system_token_list, size_t buffer_size ) {
+         vector<yosemite::chain::system_token> system_tokens = context.control.get_token_manager().get_system_token_list();
+
+         auto s = fc::raw::pack_size( system_tokens );
+         if( buffer_size == 0 ) return s;
+
+         if ( s <= buffer_size ) {
+            datastream<char*> ds( packed_system_token_list, s );
+            fc::raw::pack(ds, system_tokens);
+            return s;
+         }
+         return 0;
+      }
+
+      int64_t set_system_token_list( array_ptr<char> packed_system_token_list, size_t datalen) {
+         EOS_ASSERT( context.privileged, unaccessible_api, "${code} does not have permission to call this API", ("code",context.receiver) );
+         context.require_authorization(config::system_account_name);
+
+         datastream<const char*> ds( packed_system_token_list, datalen );
+         vector<yosemite::chain::system_token> system_tokens;
+         fc::raw::unpack(ds, system_tokens);
+         EOS_ASSERT(system_tokens.size() <= yosemite::chain::max_system_tokens, wasm_execution_error, "System token list exceeds the maximum system token count for this chain");
+
+         // check that system tokens are unique
+         std::set<yosemite::chain::system_token_id_type> unique_sys_tokens;
+         for (const auto& sys_token : system_tokens) {
+            EOS_ASSERT( context.is_account(sys_token.token_id), wasm_execution_error, "system token list includes a nonexisting account" );
+            EOS_ASSERT( sys_token.valid(), wasm_execution_error, "system token list includes an invalid value" );
+            unique_sys_tokens.insert(sys_token.token_id);
+         }
+         EOS_ASSERT( system_tokens.size() == unique_sys_tokens.size(), wasm_execution_error, "duplicate system token id in system token list" );
+
+         return context.control.get_mutable_token_manager().set_system_token_list( std::move(system_tokens) );
       }
 };
 
@@ -1862,7 +1970,25 @@ REGISTER_INTRINSICS(transaction_api,
    (cancel_deferred,           int(int)                     )
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
-   (delegated_trx_fee_payer,   int64_t()                    )
+   (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int) )
+   (unset_trx_fee_for_action,  void(int64_t, int64_t)       )
+   (get_trx_fee_for_action,    int(int64_t, int64_t, int, int) )
+   (trx_fee_payer,             int64_t()                    )
+);
+
+REGISTER_INTRINSICS(token_api,
+   (get_token_symbol,          int64_t(int64_t)                 )
+   (get_token_total_supply,    int64_t(int64_t)                 )
+   (get_token_balance,         int64_t(int64_t, int64_t)        )
+   (issue_token,               void(int64_t, int64_t)           )
+   (transfer_token,            void(int64_t, int64_t, int64_t)  )
+   (redeem_token,              void(int64_t)                    )
+);
+
+REGISTER_INTRINSICS(system_token_api,
+   (get_system_token_count,    int()                      )
+   (get_system_token_list,     int(int, int)              )
+   (set_system_token_list,     int64_t(int,int)           )
 );
 
 REGISTER_INTRINSICS(context_free_api,

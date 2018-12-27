@@ -4,14 +4,23 @@
 #include <eosio/chain/genesis_state.hpp>
 #include <boost/signals2/signal.hpp>
 
+#include <eosio/chain/config.hpp>
 #include <eosio/chain/abi_serializer.hpp>
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/snapshot.hpp>
+
+#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/system_accounts.hpp>
 
 namespace chainbase {
    class database;
 }
 
+namespace yosemite { namespace chain {
+   class yosemite_global_property_object;
+   class standard_token_manager;
+   class transaction_fee_manager;
+} }
 
 namespace eosio { namespace chain {
 
@@ -159,6 +168,12 @@ namespace eosio { namespace chain {
          const authorization_manager&          get_authorization_manager()const;
          authorization_manager&                get_mutable_authorization_manager();
 
+         const yosemite::chain::yosemite_global_property_object&  get_yosemite_global_properties()const;
+         const yosemite::chain::standard_token_manager&    get_token_manager()const;
+         yosemite::chain::standard_token_manager&          get_mutable_token_manager();
+         const yosemite::chain::transaction_fee_manager&   get_tx_fee_manager()const;
+         yosemite::chain::transaction_fee_manager&         get_mutable_tx_fee_manager();
+
          const flat_set<account_name>&   get_actor_whitelist() const;
          const flat_set<account_name>&   get_actor_blacklist() const;
          const flat_set<account_name>&   get_contract_whitelist() const;
@@ -263,9 +278,13 @@ namespace eosio { namespace chain {
          signal<void(const transaction_trace_ptr&)>  post_apply_action;
          */
 
+         /// YOSEMITE Built-in Actions
+         const apply_handler* find_built_in_action_apply_handler( action_name act ) const;
+
          const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;
          wasm_interface& get_wasm_interface();
 
+         fc::microseconds abi_serializer_max_time_ms;
 
          optional<abi_serializer> get_abi_serializer( account_name n, const fc::microseconds& max_serialization_time )const {
             if( n.good() ) {
@@ -283,7 +302,12 @@ namespace eosio { namespace chain {
          fc::variant to_variant_with_abi( const T& obj, const fc::microseconds& max_serialization_time ) {
             fc::variant pretty_output;
             abi_serializer::to_variant( obj, pretty_output,
-                                        [&]( account_name n ){ return get_abi_serializer( n, max_serialization_time ); },
+                                        [&]( account_name code, action_name action ) {
+                                           if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+                                              code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                                           }
+                                           return get_abi_serializer( code, max_serialization_time );
+                                        },
                                         max_serialization_time);
             return pretty_output;
          }

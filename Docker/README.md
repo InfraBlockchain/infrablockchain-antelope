@@ -20,7 +20,7 @@ cd yosemite-public-blockchain/Docker
 docker build . -t yosemitex/yosemite
 ```
 
-By default, the native token symbol is set to DKRW with precision 4. You can override this using the symbol argument while building the docker image.
+By default, the native token symbol is set to DUSD with precision 4. You can override this using the symbol argument while building the docker image.
 
 ```bash
 docker build -t yosemitex/yosemite --build-arg symbol=<symbol> .

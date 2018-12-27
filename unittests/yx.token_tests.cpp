@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
       result = token_issue(N(user1), "10000.0000 ETH@user2", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: token is not yet created", result);
 
-      result = token_issue(N(user1), "10000.00 DKRW@d1", "");
+      result = token_issue(N(user1), "10.0000 DUSD@d1", "");
       BOOST_REQUIRE_EQUAL(
             "assertion failure with message: cannot issue the native token with this action",
             result);
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
       result = token_redeem_with_simple_result("1.000 ETH@tkprovider2", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: token is not yet created", result);
 
-      result = token_redeem_with_simple_result("10000.00 DKRW@d1", "");
+      result = token_redeem_with_simple_result("100.0000 DUSD@d1", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: cannot redeem the native token with this action", result);
 
       // memo = 256 bytes
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
       result = token_transfer(N(user1), N(user2), "1.0000 ETH@tkprovider3", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: token is not yet created", result);
 
-      result = token_transfer(N(user1), N(user2), "10000.00 DKRW@d2", "");
+      result = token_transfer(N(user1), N(user2), "100.0000 DUSD@d2", "");
       BOOST_REQUIRE_EQUAL(
             "assertion failure with message: cannot transfer native token with this contract; use yx.ntoken", result);
 

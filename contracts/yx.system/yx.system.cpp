@@ -1,3 +1,9 @@
+/**
+ *  @file contracts/yx.system/yx.system.cpp
+ *  @author bezalel@yosemitex.com
+ *  @copyright defined in yosemite/LICENSE.txt
+ */
+
 #include "yx.system.hpp"
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
@@ -7,6 +13,8 @@
 #include "yx.block_producer.cpp"
 #include "yx.sys_depository.cpp"
 #include "yx.identity_authority.cpp"
+#include "yx.system_token.cpp"
+#include "yx.transaction_fee.cpp"
 
 namespace yosemitesys {
     using yosemite::yx_asset;
@@ -83,11 +91,6 @@ namespace yosemitesys {
                     eosio_assert( creator == suffix, "only suffix may create this account" );
                 }
             }
-
-            if (!yosemite::is_authorized_identity_authority(creator)) {
-                // system depositories are exempted for new account transaction fee
-                yosemite::native_token::charge_transaction_fee(creator, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT);
-            }
         }
 
         // no resource limit, Yosemite is transaction-fee based blockchain.
@@ -107,4 +110,8 @@ EOSIO_ABI( yosemitesys::system_contract,
            (regsysdepo)(authsysdepo)(rmvsysdepo)
            // yx.identity_authority.cpp
            (regidauth)(authidauth)(rmvidauth)
+           // yx.system_token.cpp
+           (addsystoken)(rmvsystoken)
+           // yx.transaction_fee.cpp
+           (settxfee)(unsettxfee)
 )

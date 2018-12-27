@@ -25,8 +25,14 @@
 
 #include <eosio/chain/eosio_contract.hpp>
 
+#include <yosemite/chain/yosemite_global_property_database.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
+#include <yosemite/chain/standard_token_action_handlers.hpp>
+
 namespace eosio { namespace chain {
 
+using namespace yosemite::chain;
 using resource_limits::resource_limits_manager;
 
 using controller_index_set = index_set<
@@ -37,6 +43,7 @@ using controller_index_set = index_set<
    block_summary_multi_index,
    transaction_multi_index,
    generated_transaction_multi_index,
+   yosemite_global_property_multi_index,
    table_id_multi_index
 >;
 
@@ -124,6 +131,8 @@ struct controller_impl {
    wasm_interface                 wasmif;
    resource_limits_manager        resource_limits;
    authorization_manager          authorization;
+   standard_token_manager         token;
+   transaction_fee_manager        txfee;
    controller::config             conf;
    chain_id_type                  chain_id;
    bool                           replaying= false;
@@ -136,6 +145,13 @@ struct controller_impl {
 
    typedef pair<scope_name,action_name>                   handler_key;
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
+
+   /**
+    * [YOSEMITE Built-in Actions Feature]
+    * predefined actions can be executed on every account even though an account doesn't have contract code.
+    * YOSEMITE Standard Token operations (issue,redeem,transfer,...) are built-in actions supported on every account
+    */
+   map< action_name, apply_handler >   built_in_action_apply_handlers;
 
    /**
     *  Transactions that were undone by pop_block or abort_block, transactions
@@ -168,6 +184,10 @@ struct controller_impl {
       apply_handlers[receiver][make_pair(contract,action)] = v;
    }
 
+   void set_built_in_action_apply_handler( action_name action, apply_handler v ) {
+      built_in_action_apply_handlers[action] = v;
+   }
+
    controller_impl( const controller::config& cfg, controller& s  )
    :self(s),
     db( cfg.state_dir,
@@ -181,6 +201,8 @@ struct controller_impl {
     wasmif( cfg.wasm_runtime ),
     resource_limits( db ),
     authorization( s, db ),
+    token ( db ),
+    txfee ( db ),
     conf( cfg ),
     chain_id( cfg.genesis.compute_chain_id() ),
     read_mode( cfg.read_mode )
@@ -203,6 +225,15 @@ struct controller_impl {
 */
 
    SET_APP_HANDLER( yosemite, yosemite, canceldelay );
+
+#define SET_BUILT_IN_ACTION_APPLY_HANDLER( action ) \
+   set_built_in_action_apply_handler( #action, &BOOST_PP_CAT(yosemite::chain::apply_, BOOST_PP_CAT(yosemite_built_in_action, BOOST_PP_CAT(_,action) ) ) )
+
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( settokenmeta );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( issue );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( transfer );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( txfee );
+   SET_BUILT_IN_ACTION_APPLY_HANDLER( redeem );
 
    fork_db.irreversible.connect( [&]( auto b ) {
                                  on_irreversible(b);
@@ -405,6 +436,9 @@ struct controller_impl {
 
       authorization.add_indices();
       resource_limits.add_indices();
+
+      token.add_indices();
+      txfee.add_indices();
    }
 
    void clear_all_undo() {
@@ -506,6 +540,9 @@ struct controller_impl {
 
       authorization.add_to_snapshot(snapshot);
       resource_limits.add_to_snapshot(snapshot);
+
+      token.add_to_snapshot(snapshot);
+      txfee.add_to_snapshot(snapshot);
    }
 
    void read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
@@ -550,6 +587,9 @@ struct controller_impl {
 
       authorization.read_from_snapshot(snapshot);
       resource_limits.read_from_snapshot(snapshot);
+
+      token.read_from_snapshot(snapshot);
+      txfee.read_from_snapshot(snapshot);
 
       db.set_revision( head->block_num );
    }
@@ -634,8 +674,13 @@ struct controller_impl {
       });
       db.create<dynamic_global_property_object>([](auto&){});
 
+      db.create<yosemite_global_property_object>([](auto&){});
+
       authorization.initialize_database();
       resource_limits.initialize_database();
+
+      token.initialize_database();
+      txfee.initialize_database();
 
       authority system_auth(conf.genesis.initial_key);
       create_native_account( config::system_account_name, system_auth, system_auth, true );
@@ -1008,15 +1053,16 @@ struct controller_impl {
 
             if( !self.skip_auth_check() && !trx->implicit ) {
 
-               // YOSEMITE Delegated Transaction Fee Payment
+               // YOSEMITE Transaction Fee Payer
                // The submitted transaction message must contain
                // crypto signature of 'transaction fee payer' account.
 
                vector<permission_level> permissions_to_check;
-               if (trx_context.has_delegated_tx_fee_payer()) {
+               auto& fee_payer = trx_context.get_tx_fee_payer();
+               if (!fee_payer.empty()) {
                   permissions_to_check.push_back(
-                        permission_level {trx_context.get_delegated_tx_fee_payer(), config::active_name}
-                        );
+                     permission_level {trx_context.get_tx_fee_payer(), config::active_name}
+                  );
                }
 
                authorization.check_authorization(
@@ -1597,6 +1643,27 @@ authorization_manager&         controller::get_mutable_authorization_manager()
    return my->authorization;
 }
 
+
+const standard_token_manager&  controller::get_token_manager()const
+{
+   return my->token;
+}
+
+standard_token_manager&        controller::get_mutable_token_manager()
+{
+   return my->token;
+}
+
+const transaction_fee_manager& controller::get_tx_fee_manager()const
+{
+   return my->txfee;
+}
+
+transaction_fee_manager&       controller::get_mutable_tx_fee_manager()
+{
+   return my->txfee;
+}
+
 controller::controller( const controller::config& cfg )
 :my( new controller_impl( cfg, *this ) )
 {
@@ -1789,6 +1856,9 @@ const dynamic_global_property_object& controller::get_dynamic_global_properties(
 const global_property_object& controller::get_global_properties()const {
   return my->db.get<global_property_object>();
 }
+const yosemite_global_property_object& controller::get_yosemite_global_properties()const {
+  return my->db.get<yosemite_global_property_object>();
+}
 
 signed_block_ptr controller::fetch_block_by_id( block_id_type id )const {
    auto state = my->fork_db.get_block(id);
@@ -1963,6 +2033,16 @@ db_read_mode controller::get_read_mode()const {
 
 validation_mode controller::get_validation_mode()const {
    return my->conf.block_validation_mode;
+}
+
+/// YOSEMITE Built-in Actions
+const apply_handler* controller::find_built_in_action_apply_handler( action_name act ) const
+{
+   auto handler = my->built_in_action_apply_handlers.find( act );
+   if ( handler != my->built_in_action_apply_handlers.end() ) {
+      return &handler->second;
+   }
+   return nullptr;
 }
 
 const apply_handler* controller::find_apply_handler( account_name receiver, account_name scope, action_name act ) const

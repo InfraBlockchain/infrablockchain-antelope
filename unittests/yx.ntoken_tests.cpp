@@ -83,13 +83,13 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       result = nissue(N(user1), to_yx_asset_string(0, "d1"), "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must be positive token", result);
 
-      result = nissue(N(user1), "1.000 DKRW@d1", "");
+      result = nissue(N(user1), "1.000 DUSD@d1", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: invalid native token", result);
 
-      result = nissue(N(user1), "10000.00 DKRW@user2", "");
+      result = nissue(N(user1), "100.0000 DUSD@user2", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: issuer account is not system depository", result);
 
-      result = nissue(N(user1), "10000.0000 DUSD@d1", "");
+      result = nissue(N(user1), "10000.0000 DABC@d1", "");
       BOOST_REQUIRE_EQUAL(
             "assertion failure with message: cannot issue non-native token with this operation or wrong precision is specified",
             result);
@@ -168,10 +168,10 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       result = nredeem_with_simple_result(to_yx_asset_string(0, "d1"), "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must be positive token", result);
 
-      result = nredeem_with_simple_result("1.000 DKRW@d1", "");
+      result = nredeem_with_simple_result("1.000 DUSD@d1", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: invalid native token", result);
 
-      result = nredeem_with_simple_result("10000.00 DKRW@user2", "");
+      result = nredeem_with_simple_result("100.0000 DUSD@user2", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: issuer account is not system depository", result);
 
       // memo = 256 bytes
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       result = ntoken_transfer(N(user1), N(user2), to_asset_string(0), "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must transfer positive amount", result);
 
-      result = ntoken_transfer(N(user1), N(user2), "1.000 DKRW", "");
+      result = ntoken_transfer(N(user1), N(user2), "1.000 DUSD", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: invalid native token", result);
 
       result = ntoken_transfer(N(user1), N(user2), to_asset_string(1000000), "");
@@ -359,10 +359,10 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       result = ntransfer(N(user1), N(user2), to_yx_asset_string(0, "d1"), "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: must transfer positive amount", result);
 
-      result = ntransfer(N(user1), N(user2), "0.000 DKRW@d1", "");
+      result = ntransfer(N(user1), N(user2), "0.000 DUSD@d1", "");
       BOOST_REQUIRE_EQUAL("assertion failure with message: invalid native token", result);
 
-      result = ntransfer(N(user1), N(user2), "10000.0000 DUSD@d2", "");
+      result = ntransfer(N(user1), N(user2), "10000.0000 DABC@d2", "");
       BOOST_REQUIRE_EQUAL(
             "assertion failure with message: only native token is supported; use yx.token::transfer instead", result);
 

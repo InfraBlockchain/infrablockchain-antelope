@@ -22,6 +22,8 @@
 #include <eosio/utilities/common.hpp>
 
 #include <yosemite/chain/system_accounts.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
 
 #include <boost/signals2/connection.hpp>
 #include <boost/algorithm/string.hpp>
@@ -618,6 +620,8 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
 
       my->chain.emplace( *my->chain_config );
       my->chain_id.emplace( my->chain->get_chain_id());
+
+      my->chain->abi_serializer_max_time_ms = my->abi_serializer_max_time_ms;
 
       // set up method providers
       my->get_block_by_number_provider = app().get_method<methods::get_block_by_number>().register_provider(
@@ -1259,7 +1263,75 @@ fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_p
    return results;
 }
 
-yx_asset read_only::get_token_balance(const read_only::get_token_balance_params &p) const {
+asset read_only::get_token_balance(const get_token_balance_params &params) const {
+
+   const auto &d = db.db();
+   const account_object *account_obj = d.find<account_object, by_name>(params.account);
+   EOS_ASSERT(account_obj != nullptr, chain::account_query_exception, "fail to retrieve account for ${account}", ("account", params.account) );
+
+   auto& yosemite_token_manager = db.get_token_manager();
+   const symbol& symbol = yosemite_token_manager.get_token_symbol(params.token);
+   share_type balance = yosemite_token_manager.get_token_balance(params.token, params.account);
+   return asset(balance, symbol);
+}
+
+fc::variant read_only::get_token_info(const get_token_info_params &params) const {
+   auto& yosemite_token_manager = db.get_token_manager();
+
+   auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.token);
+   if (!token_meta_ptr) {
+      return fc::mutable_variant_object("token_id", "");
+   }
+
+   auto token_meta_obj = *token_meta_ptr;
+   return fc::mutable_variant_object("token_id", token_meta_obj.token_id)
+      ("symbol", token_meta_obj.symbol)
+      ("total_supply", asset{token_meta_obj.total_supply, token_meta_obj.symbol})
+      ("url", token_meta_obj.url)
+      ("description", token_meta_obj.description);
+}
+
+fc::variant read_only::get_system_token_list(const get_system_token_list_params &params) const {
+   fc::mutable_variant_object result;
+   vector<fc::mutable_variant_object> sys_token_list_vars;
+   auto& yosemite_token_manager = db.get_token_manager();
+   auto sys_tokens = yosemite_token_manager.get_system_token_list();
+   for ( const auto& sys_token : sys_tokens ) {
+      fc::mutable_variant_object sys_token_var;
+      sys_token_var["id"] = sys_token.token_id;
+      sys_token_var["weight"] = sys_token.token_weight;
+      if (params.token_meta) {
+         auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(sys_token.token_id);
+         EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "no token meta info for token account ${account}", ("account", sys_token.token_id) );
+         auto token_meta_obj = *token_meta_ptr;
+         sys_token_var["symbol"] = token_meta_obj.symbol;
+         sys_token_var["total_supply"] = asset{token_meta_obj.total_supply, token_meta_obj.symbol};
+         sys_token_var["url"] = token_meta_obj.url;
+         sys_token_var["description"] = token_meta_obj.description;
+      }
+      sys_token_list_vars.push_back(sys_token_var);
+   }
+   result["count"] = sys_tokens.size();
+   result["tokens"] = sys_token_list_vars;
+   return result;
+}
+
+yosemite::chain::system_token_balance read_only::get_system_token_balance(const get_system_token_balance_params &params) const {
+   auto& yosemite_token_manager = db.get_token_manager();
+   return yosemite_token_manager.get_system_token_balance(params.account);
+}
+
+yosemite::chain::tx_fee_for_action read_only::get_txfee_item(const get_txfee_item_params &params) const {
+   auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
+   return yosemite_tx_fee_manager.get_tx_fee_for_action(params.code, params.action);
+}
+
+yosemite::chain::tx_fee_list_result read_only::get_txfee_list(const get_txfee_list_params &params) const {
+   auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
+   return yosemite_tx_fee_manager.get_tx_fee_list(params.code_lower_bound, params.code_upper_bound, params.limit);
+}
+
+yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {
    yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
    const abi_def abi = eosio::chain_apis::get_abi(db, p.code);
    yx_asset result{};
@@ -1328,7 +1400,7 @@ asset read_only::get_native_token_balance(const get_native_token_balance_params 
    }
 }
 
-read_only::get_token_stats_result read_only::get_token_stats(const read_only::get_token_stats_params &p) const {
+read_only::get_yx_token_stats_result read_only::get_yx_token_stats(const read_only::get_yx_token_stats_params &p) const {
    yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
 
    const auto &d = db.db();
@@ -1339,7 +1411,7 @@ read_only::get_token_stats_result read_only::get_token_stats(const read_only::ge
    EOS_ASSERT(itr, chain::token_not_found_exception, "Token is not created by the issuer.");
 
    fc::datastream<const char *> ds(itr->value.data(), itr->value.size());
-   read_only::get_token_stats_result result;
+   read_only::get_yx_token_stats_result result;
 
    fc::raw::unpack(ds, result.supply);
    fc::raw::unpack(ds, result.can_set_options);
@@ -1456,8 +1528,11 @@ read_only::get_producer_schedule_result read_only::get_producer_schedule( const 
 template<typename Api>
 struct resolver_factory {
    static auto make(const Api* api, const fc::microseconds& max_serialization_time) {
-      return [api, max_serialization_time](const account_name &name) -> optional<abi_serializer> {
-         const auto* accnt = api->db.db().template find<account_object, by_name>(name);
+      return [api, max_serialization_time](account_name code, action_name action) -> optional<abi_serializer> {
+         if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+            code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+         }
+         const auto* accnt = api->db.db().template find<account_object, by_name>(code);
          if (accnt != nullptr) {
             abi_def abi;
             if (abi_serializer::to_abi(accnt->abi, abi)) {
@@ -1794,31 +1869,28 @@ read_only::get_account_results read_only::get_account( const get_account_params&
       ++perm;
    }
 
+   auto& yosemite_token_manager = db.get_token_manager();
+   result.system_token_balance = yosemite_token_manager.get_system_token_balance(params.account_name);
+
+   auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.account_name);
+   if (token_meta_ptr) {
+      auto token_meta_obj = *token_meta_ptr;
+      result.token_info.emplace(
+         token_meta_obj.token_id,
+         token_meta_obj.symbol,
+         asset{token_meta_obj.total_supply, token_meta_obj.symbol},
+         token_meta_obj.url.c_str(), token_meta_obj.url.size(),
+         token_meta_obj.description.c_str(), token_meta_obj.description.size()
+         );
+   }
+
    const auto& code_account = db.db().get<account_object,by_name>( config::system_account_name );
 
    abi_def abi;
    if( abi_serializer::to_abi(code_account.abi, abi) ) {
       abi_serializer abis( abi, abi_serializer_max_time );
 
-      const auto ntoken_code = YOSEMITE_NATIVE_TOKEN_ACCOUNT;
-
-      // get total balance of native token
-      const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(ntoken_code, params.account_name, N(ntaccountstt)));
-      if( t_id != nullptr ) {
-         const auto &idx = d.get_index<key_value_index, by_scope_primary>();
-         auto it = idx.find(boost::make_tuple(t_id->id, N(totalbal)));
-         if( it != idx.end() && it->value.size() >= sizeof(int64_t) ) {
-            int64_t total_amount;
-            fc::datastream<const char *> ds(it->value.data(), it->value.size());
-            fc::raw::unpack(ds, total_amount);
-
-            if (total_amount > 0) {
-               result.core_liquid_balance = asset(total_amount, symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL));
-            }
-         }
-      }
-
-      t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, params.account_name, N(userres) ));
+      const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, params.account_name, N(userres) ));
       if (t_id != nullptr) {
          const auto &idx = d.get_index<key_value_index, by_scope_primary>();
          auto it = idx.find(boost::make_tuple( t_id->id, params.account_name ));
