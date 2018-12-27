@@ -9,7 +9,6 @@
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/identity_authority.hpp>
-#include <yosemitelib/transaction_fee.hpp>
 
 #include <eosiolib/dispatcher.hpp>
 
@@ -38,11 +37,6 @@ namespace yosemitesys {
                 info.url           = url;
                 info.location      = location;
             });
-        }
-
-        // charge transaction fee if not signed by system contract owner
-        if (!has_auth(_self)) {
-            yosemite::native_token::charge_transaction_fee(identity_authority, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_ID_AUTH);
         }
     }
 

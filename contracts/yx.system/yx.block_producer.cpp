@@ -9,7 +9,6 @@
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/transaction_fee.hpp>
 #include <yosemitelib/transaction_vote.h>
 
 #include <eosiolib/system.h>
@@ -157,11 +156,6 @@ namespace yosemitesys {
                 info.url             = url;
                 info.location        = location;
             });
-        }
-
-        // pay transaction fee if not signed by system contract owner
-        if (!has_auth(_self)) {
-            yosemite::native_token::charge_transaction_fee(producer, YOSEMITE_TX_FEE_OP_NAME_SYSTEM_REG_PRODUCER);
         }
     }
 
