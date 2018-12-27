@@ -1284,7 +1284,7 @@ fc::variant read_only::get_token_info(const get_token_info_params &params) const
    auto token_meta_obj = *token_meta_ptr;
    return fc::mutable_variant_object("token_id", token_meta_obj.token_id)
       ("symbol", token_meta_obj.symbol)
-      ("total_supply", token_meta_obj.total_supply)
+      ("total_supply", asset{token_meta_obj.total_supply, token_meta_obj.symbol})
       ("url", token_meta_obj.url)
       ("description", token_meta_obj.description);
 }
