@@ -2650,7 +2650,7 @@ int main( int argc, char** argv ) {
          localized("Transfer native token from account to account; if an issuer is not specified, native token issued by several issuers could be transferred"), false);
    ntoken_transfer->add_option("sender", sender, localized("The account sending naitve token"))->required();
    ntoken_transfer->add_option("recipient", recipient, localized("The account receiving naitve token"))->required();
-   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 10000.00 DKRW)"))->required();
+   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 100.0000 DUSD)"))->required();
    ntoken_transfer->add_option("memo", memo, localized("The memo for the transfer"));
    ntoken_transfer->add_option("--issuer", issuer, localized("The issuer account who issues the native token"));
    ntoken_transfer->add_option("--payer", payer, localized("The account who pays transfer fee"));

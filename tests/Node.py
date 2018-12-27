@@ -894,7 +894,7 @@ class Node(object):
         return balance
 
     def getAccountTotalNativeTokenBalanceStr(self, scope):
-        """Returns SYS currency0000 account balance from cleos get table command. Returned balance is string following syntax "98.0311 DKRW". """
+        """Returns SYS currency0000 account balance from cleos get table command. Returned balance is string following syntax "98.0311 DUSD". """
         assert isinstance(scope, str)
         amount = self.getTableTotalNativeTokenBalance(scope)
         if Utils.Debug : Utils.Print("getTableTotalNativeTokenBalance %s %s" % (scope, amount))
