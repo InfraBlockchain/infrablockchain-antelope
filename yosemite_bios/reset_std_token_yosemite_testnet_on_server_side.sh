@@ -8,10 +8,10 @@ YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NODE_BIN_NAME
 YOSEMITE_NODE_LOG_FILE=/mnt/$YOSEMITE_NODE_BIN_NAME.log
 YOSEMITE_CLI="$YOSEMITE_HOME/build/programs/$YOSEMITE_CLI_BIN_NAME/$YOSEMITE_CLI_BIN_NAME --wallet-url http://127.0.0.1:8900/"
-YOSEMITE_CLI_TESTNET="$YOSEMITE_CLI -u http://testnet.yosemitelabs.org:8888"
+YOSEMITE_CLI_TESTNET="$YOSEMITE_CLI -u http://testnet-sentinel.yosemitelabs.org:8888"
 YOSEMITE_KEYD=$YOSEMITE_HOME/build/programs/$YOSEMITE_KEYD_BIN_NAME/$YOSEMITE_KEYD_BIN_NAME
 YOSEMITE_KEYD_LOG_FILE=/mnt/$YOSEMITE_KEYD_BIN_NAME.log
-YOSEMITE_KEYD_WALLET_PASSWORD=PW5KH7i8ZEuVMvywMschs3TznhTfCdmgpPBGKJLUQjs6N6oQ7boZj
+YOSEMITE_KEYD_WALLET_PASSWORD=PW5Jrpn9S5ygoA9r2bv47rv9gH2jVjntdyHWKL4QdoKVFRz6U17EM
 YOSEMITE_NODE_CONFIG=$YOSEMITE_HOME/yosemite_config/config_yosemite_testnet_boot.ini
 YOSEMITE_NODE_GENESIS_JSON=$YOSEMITE_HOME/yosemite_config/genesis_yosemite_testnet.json
 YOSEMITE_NODE_DATA_DIR=/mnt/yosemite_node_data
@@ -105,6 +105,11 @@ nohup $YOSEMITE_KEYD --unlock-timeout 999999999 --http-server-address 127.0.0.1:
 sleep 10
 tail -n 300 $YOSEMITE_KEYD_LOG_FILE
 
+#$YOSEMITE_CLI wallet create --to-console
+#Creating wallet: default
+#Save password to use in the future to unlock this wallet.
+#Without password imported keys will not be retrievable.
+#"PW5Jrpn9S5ygoA9r2bv47rv9gH2jVjntdyHWKL4QdoKVFRz6U17EM"
 $YOSEMITE_CLI wallet open
 $YOSEMITE_CLI wallet unlock --password $YOSEMITE_KEYD_WALLET_PASSWORD
 
