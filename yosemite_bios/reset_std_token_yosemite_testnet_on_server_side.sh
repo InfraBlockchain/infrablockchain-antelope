@@ -529,76 +529,76 @@ sleep 2
 { print_section_title "YOSEMITE Credit Token Test"; } 2>/dev/null
 
 $YOSEMITE_CLI wallet import --private-key YPV_5KKMcPu86p6vbsuAozTT9vLxUT4GeZFqSWrbgok1LjpthJEB5Qe
-$YOSEMITE_CLI create account yosemite ycard.dusd.a YOS7mK7vvTTCDzEr8gtMjrMsbWA25UsS3WmV8WRoqC5gSMh9JLcQM -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite ycard.cusd.a YOS7mK7vvTTCDzEr8gtMjrMsbWA25UsS3WmV8WRoqC5gSMh9JLcQM -p yosemite@active --txfee-payer yosemite
 
 sleep 2
-$YOSEMITE_CLI set contract ycard.dusd.a $YOSEMITE_CONTRACTS_DIR/yosemitex.credit.token/ -p ycard.dusd.a@active --txfee-payer yosemite
+$YOSEMITE_CLI set contract ycard.cusd.a $YOSEMITE_CONTRACTS_DIR/yosemitex.credit.token/ -p ycard.cusd.a@active --txfee-payer yosemite
 sleep 2
 
-$YOSEMITE_CLI push action ycard.dusd.a settokenmeta '["4,CUSD","https://yosemitecardx.com","Yosemite Card X USD Credit Token"]' -p ycard.dusd.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action ycard.cusd.a settokenmeta '["4,CUSD","https://yosemitecardx.com","Yosemite Card X USD Credit Token"]' -p ycard.cusd.a@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite settxfee '["ycard.dusd.a","creditlimit",100,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["ycard.dusd.a","creditissue",300,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["ycard.dusd.a","creditredeem",500,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '["ycard.cusd.a","creditlimit",100,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '["ycard.cusd.a","creditissue",300,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '["ycard.cusd.a","creditredeem",500,1]' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycard.dusd.a\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"if3fhu3eu\"}" -p idauth.a@active --txfee-payer idauth.a
-$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","ycard.dusd.a","70000.0000 DUSD",""]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.a
+$YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycard.cusd.a\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"if3fhu3eu\"}" -p idauth.a@active --txfee-payer idauth.a
+$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","ycard.cusd.a","70000.0000 DUSD",""]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.a
 
-$YOSEMITE_CLI get token balance ysmt.dusd.a ycard.dusd.a
+$YOSEMITE_CLI get token balance ysmt.dusd.a ycard.cusd.a
 
 sleep 2
 
 ## issuing credit card to useraccounta by offering credit limit
-$YOSEMITE_CLI push action ycard.dusd.a creditlimit '["useraccounta","500.0000 CUSD","vhw93rh23r"]' -p ycard.dusd.a@active --txfee-payer ycard.dusd.a -v producer.b
+$YOSEMITE_CLI push action ycard.cusd.a creditlimit '["useraccounta","500.0000 CUSD","vhw93rh23r"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.b
 
-$YOSEMITE_CLI get table -L useraccounta -l 1 ycard.dusd.a ycard.dusd.a creditoffer
+$YOSEMITE_CLI get table -L useraccounta -l 1 ycard.cusd.a ycard.cusd.a creditoffer
 
 sleep 2
 
 ## useraccounta issues credit tokens and deposits to ycard service
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccounta","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.dusd.a","permission":"active"}}]}}' -p useraccounta@active --txfee-payer ycard.dusd.a -v producer.c
-$YOSEMITE_CLI push action yosemite linkauth '["useraccounta","ycard.dusd.a","creditissue","creditissue"]' -p useraccounta@active --txfee-payer ycard.dusd.a -v producer.c
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccounta","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.cusd.a","permission":"active"}}]}}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
+$YOSEMITE_CLI push action yosemite linkauth '["useraccounta","ycard.cusd.a","creditissue","creditissue"]' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 
-$YOSEMITE_CLI push action ycard.dusd.a creditissue '["useraccounta","ycard.dusd.a","500.0000 CUSD","issue credit token by user, and deposit to credit service"]' -p useraccounta@creditissue --txfee-payer ycard.dusd.a -v producer.c
-#$YOSEMITE_CLI push action ycard.dusd.a transfer '["ycard.dusd.a","useraccounta","ycard.dusd.a","500.0000 CUSD","deposit credit to service account for anonymous tx"]' -p useraccounta@active --txfee-payer ycard.dusd.a -v producer.c
+$YOSEMITE_CLI push action ycard.cusd.a creditissue '["useraccounta","ycard.cusd.a","500.0000 CUSD","issue credit token by user, and deposit to credit service"]' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.c
+#$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","useraccounta","ycard.cusd.a","500.0000 CUSD","deposit credit to service account for anonymous tx"]' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 
-$YOSEMITE_CLI get table -L useraccounta -l 1 ycard.dusd.a ycard.dusd.a creditoffer
-$YOSEMITE_CLI get token balance ycard.dusd.a useraccounta
-$YOSEMITE_CLI get token balance ycard.dusd.a ycard.dusd.a
+$YOSEMITE_CLI get table -L useraccounta -l 1 ycard.cusd.a ycard.cusd.a creditoffer
+$YOSEMITE_CLI get token balance ycard.cusd.a useraccounta
+$YOSEMITE_CLI get token balance ycard.cusd.a ycard.cusd.a
 
 sleep 2
 
 ## anonymous payment transaction to merchant useraccountb
-$YOSEMITE_CLI push action ycard.dusd.a transfer '["ycard.dusd.a","ycard.dusd.a","useraccountb","100.0000 CUSD","payment tx 1"]' -p ycard.dusd.a@active --txfee-payer ycard.dusd.a -v producer.d
-$YOSEMITE_CLI push action ycard.dusd.a transfer '["ycard.dusd.a","ycard.dusd.a","useraccountb","100.0000 CUSD","payment tx 2"]' -p ycard.dusd.a@active --txfee-payer ycard.dusd.a -v producer.d
+$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","ycard.cusd.a","useraccountb","100.0000 CUSD","payment tx 1"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.d
+$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","ycard.cusd.a","useraccountb","100.0000 CUSD","payment tx 2"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.d
 
-$YOSEMITE_CLI get token balance ycard.dusd.a useraccountb
+$YOSEMITE_CLI get token balance ycard.cusd.a useraccountb
 
 sleep 2
 
 ## monthly user credit balance settlement
-$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","ycard.dusd.a","200.0000 DUSD","useraccounta credit settlement"]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.g
+$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","ycard.cusd.a","200.0000 DUSD","useraccounta credit settlement"]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.g
 
-$YOSEMITE_CLI push action ycard.dusd.a redeem '["300.0000 CUSD","burn unused useraccounta credit"]' -p ycard.dusd.a@active --txfee-payer ycard.dusd.a -v producer.g
+$YOSEMITE_CLI push action ycard.cusd.a redeem '["300.0000 CUSD","burn unused useraccounta credit"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.g
 
-$YOSEMITE_CLI push action ycard.dusd.a creditredeem '["useraccounta","500.0000 CUSD","reset useraccounta credit offering"]' -p ycard.dusd.a@active --txfee-payer ycard.dusd.a -v producer.e
+$YOSEMITE_CLI push action ycard.cusd.a creditredeem '["useraccounta","500.0000 CUSD","reset useraccounta credit offering"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.e
 
-$YOSEMITE_CLI push action ycard.dusd.a creditissue '["useraccounta","ycard.dusd.a","500.0000 CUSD","monthly issue credit token by user, and deposit to credit service"]' -p useraccounta@creditissue --txfee-payer ycard.dusd.a -v producer.e
-#$YOSEMITE_CLI push action ycard.dusd.a transfer '["ycard.dusd.a","useraccounta","ycard.dusd.a","500.0000 CUSD","deposit credit to service account for anonymous tx"]' -p useraccounta@active --txfee-payer ycard.dusd.a -v producer.e
+$YOSEMITE_CLI push action ycard.cusd.a creditissue '["useraccounta","ycard.cusd.a","500.0000 CUSD","monthly issue credit token by user, and deposit to credit service"]' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.e
+#$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","useraccounta","ycard.cusd.a","500.0000 CUSD","deposit credit to service account for anonymous tx"]' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.e
 
 sleep 2
 
 ## merchant(useraccountb) redeems credit tokens and withdraws fiat
-$YOSEMITE_CLI push action ycard.dusd.a transfer '["ycard.dusd.a","useraccountb","ycard.dusd.a","200.0000 CUSD","request redeeming credit token"]' -p useraccountb@active --txfee-payer ycard.dusd.a -v producer.h
+$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","useraccountb","ycard.cusd.a","200.0000 CUSD","request redeeming credit token"]' -p useraccountb@active --txfee-payer ycard.cusd.a -v producer.h
 
-$YOSEMITE_CLI push action ysmt.dusd.a transfer '["ysmt.dusd.a","ycard.dusd.a","useraccountb","200.0000 DUSD","redeeming CUSD to DUSD"]' -p ycard.dusd.a@active --txfee-payer ycard.dusd.a -v producer.h
+$YOSEMITE_CLI push action ysmt.dusd.a transfer '["ysmt.dusd.a","ycard.cusd.a","useraccountb","200.0000 DUSD","redeeming CUSD to DUSD"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.h
 
-$YOSEMITE_CLI push action ycard.dusd.a redeem '["200.0000 CUSD","burn redeemed credit tokens"]' -p ycard.dusd.a@active --txfee-payer ycard.dusd.a -v producer.h
+$YOSEMITE_CLI push action ycard.cusd.a redeem '["200.0000 CUSD","burn redeemed credit tokens"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.h
 
 sleep 2
 
-$YOSEMITE_CLI get token balance ycard.dusd.a useraccountb
+$YOSEMITE_CLI get token balance ycard.cusd.a useraccountb
 $YOSEMITE_CLI get token balance ysmt.dusd.a useraccountb
 
-$YOSEMITE_CLI push action ysmt.dusd.a transfer '["ysmt.dusd.a","useraccountb","ysmt.dusd.a","200.0000 DUSD","request redeeming DUSD to fiat"]' -p useraccountb@active --txfee-payer ycard.dusd.a -v producer.i
+$YOSEMITE_CLI push action ysmt.dusd.a transfer '["ysmt.dusd.a","useraccountb","ysmt.dusd.a","200.0000 DUSD","request redeeming DUSD to fiat"]' -p useraccountb@active --txfee-payer ycard.cusd.a -v producer.i
 $YOSEMITE_CLI push action ysmt.dusd.a redeem '["200.0000 DUSD","redeem DUSD to fiat"]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.i
