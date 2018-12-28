@@ -24,13 +24,13 @@ namespace yosemite { namespace chain {
    struct token_meta_info {
       token_meta_info() {}
       token_meta_info( name t, symbol s, asset ts, const char* u_cstr, size_t u_size, const char* d_cstr, size_t d_size)
-      : token_id(t), symbol(s), total_supply(ts), url(u_cstr, u_size), description(d_cstr, d_size) {}
+      : token_id(t), sym(s), total_supply(ts), url(u_cstr, u_size), desc(d_cstr, d_size) {}
 
       name   token_id;
-      symbol symbol;
+      symbol sym;
       asset  total_supply;
       std::string url;
-      std::string description;
+      std::string desc;
    };
 
    struct token_balance {
@@ -78,6 +78,6 @@ namespace yosemite { namespace chain {
 
 } } /// yosemite::chain
 
-FC_REFLECT(yosemite::chain::token_meta_info, (token_id)(symbol)(total_supply)(url)(description) )
+FC_REFLECT(yosemite::chain::token_meta_info, (token_id)(sym)(total_supply)(url)(desc) )
 FC_REFLECT(yosemite::chain::token_balance, (t)(qty) )
 FC_REFLECT(yosemite::chain::system_token_balance, (total)(sys_tokens) )

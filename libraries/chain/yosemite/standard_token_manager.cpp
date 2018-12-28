@@ -61,25 +61,25 @@ namespace yosemite { namespace chain {
    void standard_token_manager::set_token_meta_info( apply_context& context, const token_id_type &token_id, const token::settokenmeta &token_meta ) {
 
       int64_t url_size = token_meta.url.size();
-      int64_t desc_size = token_meta.description.size();
+      int64_t desc_size = token_meta.desc.size();
 
-      EOS_ASSERT( token_meta.symbol.valid(), token_meta_validate_exception, "invalid token symbol" );
+      EOS_ASSERT( token_meta.sym.valid(), token_meta_validate_exception, "invalid token symbol" );
       EOS_ASSERT( url_size > 0 && url_size <= 255, token_meta_validate_exception, "invalid token url size" );
       EOS_ASSERT( desc_size > 0 && desc_size <= 255, token_meta_validate_exception, "invalid token description size" );
 
       auto set_token_meta_lambda = [&token_meta, token_id, url_size, desc_size](token_meta_object& token_meta_obj) {
          token_meta_obj.token_id = token_id;
-         token_meta_obj.symbol = token_meta.symbol;
+         token_meta_obj.sym = token_meta.sym;
          token_meta_obj.url.resize(url_size);
          memcpy( token_meta_obj.url.data(), token_meta.url.data(), url_size );
-         token_meta_obj.description.resize(desc_size);
-         memcpy( token_meta_obj.description.data(), token_meta.description.data(), desc_size );
+         token_meta_obj.desc.resize(desc_size);
+         memcpy( token_meta_obj.desc.data(), token_meta.desc.data(), desc_size );
       };
 
       auto* token_meta_ptr = _db.find<token_meta_object, by_token_id>(token_id);
       if ( token_meta_ptr ) {
-         EOS_ASSERT( token_meta_ptr->symbol.value() == token_meta.symbol.value(), token_meta_validate_exception, "token symbol cannot be modified once it is set" );
-         EOS_ASSERT( token_meta_ptr->url != token_meta.url.c_str() || token_meta_ptr->description != token_meta.description.c_str(),
+         EOS_ASSERT( token_meta_ptr->sym.value() == token_meta.sym.value(), token_meta_validate_exception, "token symbol cannot be modified once it is set" );
+         EOS_ASSERT( token_meta_ptr->url != token_meta.url.c_str() || token_meta_ptr->desc != token_meta.desc.c_str(),
                      token_meta_validate_exception, "attempting update token metadata, but new metadata is same as old one" );
 
          _db.modify( *token_meta_ptr, set_token_meta_lambda );
@@ -97,7 +97,7 @@ namespace yosemite { namespace chain {
    const symbol& standard_token_manager::get_token_symbol( const token_id_type& token_id ) const {
       auto* token_meta_ptr = get_token_meta_info(token_id);
       EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
-      return (*token_meta_ptr).symbol;
+      return (*token_meta_ptr).sym;
    }
 
    const share_type& standard_token_manager::get_token_total_supply( const token_id_type& token_id ) const {
@@ -205,7 +205,7 @@ namespace yosemite { namespace chain {
             trx_context.dispatch_action( trx_context.trace->action_traces.back(),
                action { vector<permission_level>{ {fee_payer, config::active_name} },
                         sys_token_id,
-                        token::txfee{ sys_token_id, fee_payer, asset(fee_for_this_token, token_meta_ptr->symbol) }
+                        token::txfee{ sys_token_id, fee_payer, asset(fee_for_this_token, token_meta_ptr->sym) }
                } );
 
             if (fee_remaining <= 0) break;

@@ -1285,10 +1285,10 @@ fc::variant read_only::get_token_info(const get_token_info_params &params) const
 
    auto token_meta_obj = *token_meta_ptr;
    return fc::mutable_variant_object("token_id", token_meta_obj.token_id)
-      ("symbol", token_meta_obj.symbol)
-      ("total_supply", asset{token_meta_obj.total_supply, token_meta_obj.symbol})
+      ("sym", token_meta_obj.sym)
+      ("total_supply", asset{token_meta_obj.total_supply, token_meta_obj.sym})
       ("url", token_meta_obj.url)
-      ("description", token_meta_obj.description);
+      ("desc", token_meta_obj.desc);
 }
 
 fc::variant read_only::get_system_token_list(const get_system_token_list_params &params) const {
@@ -1304,10 +1304,10 @@ fc::variant read_only::get_system_token_list(const get_system_token_list_params 
          auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(sys_token.token_id);
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "no token meta info for token account ${account}", ("account", sys_token.token_id) );
          auto token_meta_obj = *token_meta_ptr;
-         sys_token_var["symbol"] = token_meta_obj.symbol;
-         sys_token_var["total_supply"] = asset{token_meta_obj.total_supply, token_meta_obj.symbol};
+         sys_token_var["sym"] = token_meta_obj.sym;
+         sys_token_var["total_supply"] = asset{token_meta_obj.total_supply, token_meta_obj.sym};
          sys_token_var["url"] = token_meta_obj.url;
-         sys_token_var["description"] = token_meta_obj.description;
+         sys_token_var["desc"] = token_meta_obj.desc;
       }
       sys_token_list_vars.push_back(sys_token_var);
    }
@@ -1877,10 +1877,10 @@ read_only::get_account_results read_only::get_account( const get_account_params&
       auto token_meta_obj = *token_meta_ptr;
       result.token_info.emplace(
          token_meta_obj.token_id,
-         token_meta_obj.symbol,
-         asset{token_meta_obj.total_supply, token_meta_obj.symbol},
+         token_meta_obj.sym,
+         asset{token_meta_obj.total_supply, token_meta_obj.sym},
          token_meta_obj.url.c_str(), token_meta_obj.url.size(),
-         token_meta_obj.description.c_str(), token_meta_obj.description.size()
+         token_meta_obj.desc.c_str(), token_meta_obj.desc.size()
          );
    }
 

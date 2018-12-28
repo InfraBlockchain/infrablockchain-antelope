@@ -68,9 +68,9 @@ namespace yosemite { namespace chain {
          auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
-         EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
+         EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
-                     ("sym", token_meta_obj.symbol.to_string()) );
+                     ("sym", token_meta_obj.sym.to_string()) );
 
          // only the token account owner can issue new token
          context.require_authorization( token_id );
@@ -115,9 +115,9 @@ namespace yosemite { namespace chain {
          auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
-         EOS_ASSERT( transfer_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
+         EOS_ASSERT( transfer_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of token metadata",
-                     ("sym", token_meta_obj.symbol.to_string()) );
+                     ("sym", token_meta_obj.sym.to_string()) );
 
          // need 'from' account signature
          context.require_authorization( from_account );
@@ -164,9 +164,9 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
-         EOS_ASSERT( txfee_action.fee.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
+         EOS_ASSERT( txfee_action.fee.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of fee quantity field mismatches with the symbol(${sym}) of token metadata",
-                     ("sym", token_meta_obj.symbol.to_string()) );
+                     ("sym", token_meta_obj.sym.to_string()) );
 
          auto* payer_account_obj_ptr = db.find<account_object, by_name>( payer_account );
          EOS_ASSERT( payer_account_obj_ptr != nullptr, no_token_target_account_exception,
@@ -206,9 +206,9 @@ namespace yosemite { namespace chain {
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", context.receiver) );
          auto token_meta_obj = *token_meta_ptr;
 
-         EOS_ASSERT( redeem_action.qty.get_symbol() == token_meta_obj.symbol, token_symbol_mismatch_exception,
+         EOS_ASSERT( redeem_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of redemption quantity field mismatches with the symbol(${sym}) of token metadata",
-                     ("sym", token_meta_obj.symbol.to_string()) );
+                     ("sym", token_meta_obj.sym.to_string()) );
 
          // only the token account owner can redeem(burn) tokens held by token account
          context.require_authorization( context.receiver );

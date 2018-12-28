@@ -22,12 +22,12 @@ namespace yosemitex { namespace contract {
 
       /**
        * Set token meta info
-       * @param symbol - token symbol (precision, symbol name)
+       * @param sym - token symbol (precision, symbol name)
        * @param url - web site url providing token information managed by token issuer
        * @param description - token description
        */
       // just inherit built-in 'settokenmeta' action (YOSEMITE chain core)
-      //void settokenmeta( symbol_type symbol, string url, string description );
+      //void settokenmeta( symbol_type sym, string url, string desc );
 
       /**
        * Issue new token

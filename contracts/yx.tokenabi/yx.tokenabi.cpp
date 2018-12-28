@@ -12,8 +12,8 @@ namespace yosemite { namespace contract {
    using namespace eosio;
    using std::string;
 
-   void tokenabi::settokenmeta( symbol_type symbol, string url, string description ) {
-      print(symbol); print(":"); print(url); print(":"); print(description);
+   void tokenabi::settokenmeta( symbol_type sym, string url, string desc ) {
+      print(sym); print(":"); print(url); print(":"); print(desc);
       eosio_assert( false, "YOSEMITE blockchain core provides built-in standard token operation, settokenmeta" );
    }
 

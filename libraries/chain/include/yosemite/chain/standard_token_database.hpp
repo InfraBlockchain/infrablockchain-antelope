@@ -20,14 +20,14 @@ namespace yosemite { namespace chain {
     * @brief token information object
     */
    class token_meta_object : public chainbase::object<yosemite_token_meta_object_type, token_meta_object> {
-      OBJECT_CTOR(token_meta_object, (url)(description))
+      OBJECT_CTOR(token_meta_object, (url)(desc))
 
       id_type        id;
       token_id_type  token_id; // token id = token account name
-      symbol         symbol; // symbol name and precision
+      symbol         sym; // symbol name and precision
       share_type     total_supply = 0; // total token supply amount issued(+) and redeemed(-) by token account
       shared_string  url; // website url for token information managed by token issuer (owner of token account)
-      shared_string  description;
+      shared_string  desc; // token description
    };
 
    struct by_token_id;
@@ -90,5 +90,5 @@ namespace eosio { namespace chain { namespace config {
 CHAINBASE_SET_INDEX_TYPE(yosemite::chain::token_meta_object, yosemite::chain::token_info_multi_index)
 CHAINBASE_SET_INDEX_TYPE(yosemite::chain::token_balance_object, yosemite::chain::token_balance_multi_index)
 
-FC_REFLECT(yosemite::chain::token_meta_object, (token_id)(symbol)(total_supply)(url)(description) )
+FC_REFLECT(yosemite::chain::token_meta_object, (token_id)(sym)(total_supply)(url)(desc) )
 FC_REFLECT(yosemite::chain::token_balance_object, (token_id)(account)(balance) )

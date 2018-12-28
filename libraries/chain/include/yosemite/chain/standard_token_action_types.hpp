@@ -21,9 +21,9 @@ namespace yosemite { namespace chain { namespace token {
     */
 
    struct settokenmeta {
-      symbol       symbol;
+      symbol       sym; // token symbol
       std::string  url;
-      std::string  description;
+      std::string  desc; // token description
 
       static action_name get_name() {
          return N(settokenmeta);
@@ -84,7 +84,7 @@ namespace yosemite { namespace chain { namespace token {
 
 } } } /// yosemite::chain::token
 
-FC_REFLECT( yosemite::chain::token::settokenmeta , (symbol)(url)(description) )
+FC_REFLECT( yosemite::chain::token::settokenmeta , (sym)(url)(desc) )
 FC_REFLECT( yosemite::chain::token::issue, (t)(to)(qty)(tag) )
 FC_REFLECT( yosemite::chain::token::transfer, (t)(from)(to)(qty)(tag) )
 FC_REFLECT( yosemite::chain::token::txfee, (t)(payer)(fee) )

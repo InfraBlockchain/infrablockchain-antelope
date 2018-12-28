@@ -8,9 +8,9 @@
       "name": "settokenmeta",
       "base": "",
       "fields": [
-        {"name":"symbol", "type":"symbol"},
+        {"name":"sym", "type":"symbol"},
         {"name":"url", "type":"string"},
-        {"name":"description", "type":"string"}
+        {"name":"desc", "type":"string"}
       ]
     },{
      "name": "issue",
