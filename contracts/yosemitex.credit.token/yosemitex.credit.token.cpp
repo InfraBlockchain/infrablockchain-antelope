@@ -102,7 +102,7 @@ namespace yosemitex { namespace contract {
       credit_offering_table_idx credit_offering_table( _self, _self );
 
       auto& credit_info = credit_offering_table.get( issuer );
-      eosio_assert( issue_amount + credit_info.credit_issued <= credit_info.credit_limit, "new token issuance exceeds the issuer's credit limit" );
+      eosio_assert( credit_info.credit_limit - credit_info.credit_issued >= issue_amount, "new token issuance exceeds the issuer's credit limit" );
 
       // issue new tokens to the issuer
       issue_token( issuer, issue_amount );
@@ -127,6 +127,9 @@ namespace yosemitex { namespace contract {
       eosio_assert( token_symbol.is_valid() && token_symbol.value == qty.symbol.value, "token symbol of credit redeem quantity parameter mismatches the token symbol of current contract" );
       eosio_assert( redeem_amount > 0, "credit redeem amount must be positive value" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
+
+      // only the token account owner can change user account's credit issued
+      require_auth( _self );
 
       credit_offering_table_idx credit_offering_table( _self, _self );
 
