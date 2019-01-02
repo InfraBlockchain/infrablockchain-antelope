@@ -60,8 +60,8 @@ namespace yosemite { namespace chain {
 
    void standard_token_manager::set_token_meta_info( apply_context& context, const token_id_type &token_id, const token::settokenmeta &token_meta ) {
 
-      int64_t url_size = token_meta.url.size();
-      int64_t desc_size = token_meta.desc.size();
+      auto url_size = token_meta.url.size();
+      auto desc_size = token_meta.desc.size();
 
       EOS_ASSERT( token_meta.sym.valid(), token_meta_validate_exception, "invalid token symbol" );
       EOS_ASSERT( url_size > 0 && url_size <= 255, token_meta_validate_exception, "invalid token url size" );
@@ -242,7 +242,7 @@ namespace yosemite { namespace chain {
    }
 
    int standard_token_manager::get_system_token_count() const {
-      return _db.get<yosemite_global_property_object>().system_token_list.system_tokens.size();
+      return static_cast<int>(_db.get<yosemite_global_property_object>().system_token_list.system_tokens.size());
    }
 
    vector<system_token> standard_token_manager::get_system_token_list() const {
