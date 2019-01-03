@@ -3,8 +3,6 @@
  */
 
 #include "yx.dcontract.hpp"
-#include <yosemitelib/native_token.hpp>
-#include <yosemitelib/transaction_fee.hpp>
 
 namespace yosemite {
     static const int MAX_SIGNERS = 32;
@@ -47,8 +45,6 @@ namespace yosemite {
             i.signer_kyc = signer_kyc;
             i.options = options;
         });
-
-        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_CREATE);
     }
 
     void digital_contract::addsigners(const dcid &dc_id, const vector<account_name> &signers) {
@@ -66,8 +62,6 @@ namespace yosemite {
         dcontract_idx.modify(info, 0, [&](auto &i) {
             std::copy(signers.begin(), signers.end(), std::back_inserter(i.signers));
         });
-
-        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_ADDSIGNERS);
     }
 
     void digital_contract::sign(const dcid &dc_id, account_name signer, const string &signerinfo) {
@@ -99,8 +93,6 @@ namespace yosemite {
             i.dc_id = dc_id;
             i.signerinfo = signerinfo;
         });
-
-        native_token::charge_transaction_fee(signer, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_SIGN);
     }
 
     void digital_contract::upadddochash(const dcid &dc_id, const string &adddochash) {
@@ -115,8 +107,6 @@ namespace yosemite {
             i.adddochash.clear();
             i.adddochash = adddochash;
         });
-
-        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_UPADDDOCHASH);
     }
 
     void digital_contract::remove(const dcid &dc_id) {
@@ -135,8 +125,6 @@ namespace yosemite {
         }
 
         dcontract_idx.erase(info);
-
-        native_token::charge_transaction_fee(dc_id.creator, YOSEMITE_TX_FEE_OP_NAME_DCONTRACT_REMOVE);
     }
 }
 

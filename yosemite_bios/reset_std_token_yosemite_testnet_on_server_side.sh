@@ -139,7 +139,7 @@ $YOSEMITE_CLI create account yosemite yx.tokenabi YOS7qFXz5bvLYphF8S8XXTYgExnN2h
 $YOSEMITE_CLI create account yosemite yx.txfee YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p yosemite@active --txfee-payer yosemite
 $YOSEMITE_CLI create account yosemite yx.msig YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p yosemite@active --txfee-payer yosemite
 $YOSEMITE_CLI create account yosemite yx.identity YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p yosemite@active --txfee-payer yosemite
-
+$YOSEMITE_CLI create account yosemite yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p yosemite@active --txfee-payer yosemite
 
 { print_section_title "Create initial Identity Authority Account"; } 2>/dev/null
 
@@ -189,6 +189,13 @@ sleep 2
 $YOSEMITE_CLI set contract yx.identity $YOSEMITE_CONTRACTS_DIR/yx.identity/ -p yx.identity@active --txfee-payer yosemite
 sleep 2
 
+{ print_section_title "Install DigitalContract Contract"; } 2>/dev/null
+
+sleep 2
+$YOSEMITE_CLI set contract yx.dcontract $YOSEMITE_CONTRACTS_DIR/yx.dcontract/ -p yx.dcontract@active --txfee-payer yosemite
+sleep 2
+$YOSEMITE_CLI push action yosemite setpriv '["yx.dcontract",1]' -p yosemite@active --txfee-payer yosemite
+sleep 2
 
 { print_section_title "Register Initial Identity Authorities"; } 2>/dev/null
 
@@ -291,10 +298,10 @@ $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.identity","permiss
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.identity","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.identity@active --txfee-payer yosemite
 $YOSEMITE_CLI get account yx.identity
 
-#$YOSEMITE_CLI get account yx.dcontract
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@owner --txfee-payer yosemite
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@active --txfee-payer yosemite
-#$YOSEMITE_CLI get account yx.dcontract
+$YOSEMITE_CLI get account yx.dcontract
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@owner --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@active --txfee-payer yosemite
+$YOSEMITE_CLI get account yx.dcontract
 
 #$YOSEMITE_CLI get account yx.nft
 #$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@owner --txfee-payer yosemite
