@@ -11,6 +11,8 @@
 #include <eosiolib/symbol.hpp>
 #include <eosiolib/action.hpp>
 
+#define YOSEMITE_CREDIT_KYC_AUTH YOSEMITE_ID_KYC_REAL_NAME_AUTH | YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH
+
 namespace yosemitex { namespace contract {
 
    using namespace eosio;
@@ -21,7 +23,7 @@ namespace yosemitex { namespace contract {
 
       /// built-in action handler for 'issue' standard token action has already processed basic 'issue' operations
 
-      eosio_assert( has_all_kyc_status( to, YOSEMITE_ID_KYC_MAX_AUTH ),
+      eosio_assert( has_all_kyc_status( to, YOSEMITE_CREDIT_KYC_AUTH ),
                     "issue.to account failed to satisfy KYC constraints" );
    }
 
@@ -29,9 +31,9 @@ namespace yosemitex { namespace contract {
 
       /// built-in action handler for 'transfer' standard token action has already processed basic 'transfer' operations
 
-      eosio_assert( has_all_kyc_status( from, YOSEMITE_ID_KYC_MAX_AUTH ),
+      eosio_assert( has_all_kyc_status( from, YOSEMITE_CREDIT_KYC_AUTH ),
                     "transfer.from account failed to satisfy KYC constraints" );
-      eosio_assert( has_all_kyc_status( to, YOSEMITE_ID_KYC_MAX_AUTH ),
+      eosio_assert( has_all_kyc_status( to, YOSEMITE_CREDIT_KYC_AUTH ),
                     "transfer.to account failed to satisfy KYC constraints" );
    }
 
@@ -39,7 +41,7 @@ namespace yosemitex { namespace contract {
 
       /// built-in action handler for 'txfee' standard token action has already processed basic 'txfee' operations
 
-      eosio_assert( has_all_kyc_status( payer, YOSEMITE_ID_KYC_MAX_AUTH ),
+      eosio_assert( has_all_kyc_status( payer, YOSEMITE_CREDIT_KYC_AUTH ),
                     "transfer.to account failed to satisfy KYC constraints" );
    }
 
@@ -52,7 +54,7 @@ namespace yosemitex { namespace contract {
       eosio_assert( limit_amount >= 0, "credit limit amount must be zero or positive value" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
 
-      eosio_assert( has_all_kyc_status( account, YOSEMITE_ID_KYC_MAX_AUTH ),
+      eosio_assert( has_all_kyc_status( account, YOSEMITE_CREDIT_KYC_AUTH ),
                     "credit-limit target account failed to satisfy KYC constraints" );
 
       // only the token account owner can set user account's credit limit
@@ -93,7 +95,7 @@ namespace yosemitex { namespace contract {
       eosio_assert( issue_amount > 0, "credit issue amount must be positive value" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
 
-      eosio_assert( has_all_kyc_status( issuer, YOSEMITE_ID_KYC_MAX_AUTH ),
+      eosio_assert( has_all_kyc_status( issuer, YOSEMITE_CREDIT_KYC_AUTH ),
                     "credit-issue issuer failed to satisfy KYC constraints" );
 
       // account who is trying to issue new token needs to sign
