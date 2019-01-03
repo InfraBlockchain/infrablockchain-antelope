@@ -156,9 +156,10 @@ namespace eosio {
 
          unordered_set<ws_connection<basic_socket_endpoint>> http_connections;
          unordered_set<ws_connection<tls_socket_endpoint>> https_connections;
-         unordered_set<websocketpp::server<http_config::asio_local_with_stub_log>::connection_ptr> local_connections;
          DEFINE_ENABLE_IF_TEMPLATE_GETTERS(http_connections, https_connections, get_connection_set);
 
+         /* just for compile purpose */
+         unordered_set<websocketpp::server<http_config::asio_local_with_stub_log>::connection_ptr> local_connections;
          template<typename SocketType>
          typename std::enable_if<std::is_same<SocketType, local_socket_endpoint>::value, decltype(local_connections) &>::type
          get_connection_set() {
@@ -170,12 +171,13 @@ namespace eosio {
 
          bool is_max_connections_reached() {
             return max_connections > 0 &&
-                   (http_connections.size() + https_connections.size() + local_connections.size() + ws_connection_to_msgh_map.size() + wss_connection_to_msgh_map.size())
+                   (http_connections.size() + https_connections.size() + ws_connection_to_msgh_map.size() + wss_connection_to_msgh_map.size())
                     >= max_connections;
          }
 
          template <typename HttpConfigType, typename SocketType>
          bool is_already_connected(typename websocketpp::server<HttpConfigType>::connection_ptr ws_conn) {
+            if (std::is_same<SocketType, local_socket_endpoint>::value) return true;
             if (max_connections == 0) return true;
 
             auto &connection_set = get_connection_set<SocketType>();
@@ -184,6 +186,7 @@ namespace eosio {
 
          template <typename HttpConfigType, typename SocketType>
          void register_keep_alive_http_connection(typename websocketpp::server<HttpConfigType>::connection_ptr ws_conn) {
+            if (std::is_same<SocketType, local_socket_endpoint>::value) return;
             if (max_connections == 0) return;
 
             auto &connection_set = get_connection_set<SocketType>();
@@ -192,6 +195,7 @@ namespace eosio {
 
          template <typename HttpConfigType, typename SocketType>
          void unregister_keep_alive_http_connection(typename websocketpp::server<HttpConfigType>::connection_ptr ws_conn) {
+            if (std::is_same<SocketType, local_socket_endpoint>::value) return;
             if (max_connections == 0) return;
 
             auto &connection_set = get_connection_set<SocketType>();
