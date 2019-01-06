@@ -9,6 +9,7 @@ YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NO
 YOSEMITE_NODE_LOG_FILE=/mnt/$YOSEMITE_NODE_BIN_NAME.log
 YOSEMITE_CLI="$YOSEMITE_HOME/build/programs/$YOSEMITE_CLI_BIN_NAME/$YOSEMITE_CLI_BIN_NAME --wallet-url http://127.0.0.1:8900/"
 YOSEMITE_CLI_TESTNET="$YOSEMITE_CLI -u http://testnet-sentinel.yosemitelabs.org:8888"
+YOSEMITE_CLI_TESTNET_V1="$YOSEMITE_CLI -u http://testnet.yosemitelabs.org:8888"
 YOSEMITE_KEYD=$YOSEMITE_HOME/build/programs/$YOSEMITE_KEYD_BIN_NAME/$YOSEMITE_KEYD_BIN_NAME
 YOSEMITE_KEYD_LOG_FILE=/mnt/$YOSEMITE_KEYD_BIN_NAME.log
 YOSEMITE_KEYD_WALLET_PASSWORD=PW5Jrpn9S5ygoA9r2bv47rv9gH2jVjntdyHWKL4QdoKVFRz6U17EM
@@ -179,7 +180,7 @@ sleep 2
 sleep 2
 $YOSEMITE_CLI set contract yx.msig $YOSEMITE_CONTRACTS_DIR/eosio.msig/ -p yx.msig@active --txfee-payer yosemite
 sleep 2
-$YOSEMITE_CLI push action yosemite setpriv '["yx.msig",1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite setpriv '{"account":"yx.msig","is_priv":1}' -p yosemite@active --txfee-payer yosemite
 sleep 2
 
 
@@ -194,16 +195,14 @@ sleep 2
 sleep 2
 $YOSEMITE_CLI set contract yx.dcontract $YOSEMITE_CONTRACTS_DIR/yx.dcontract/ -p yx.dcontract@active --txfee-payer yosemite
 sleep 2
-$YOSEMITE_CLI push action yosemite setpriv '["yx.dcontract",1]' -p yosemite@active --txfee-payer yosemite
-sleep 2
 
 { print_section_title "Register Initial Identity Authorities"; } 2>/dev/null
 
-$YOSEMITE_CLI push action yosemite regidauth '["idauth.a","http://idauth-a.org",1]' -p idauth.a@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authidauth '["idauth.a"]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regidauth '{"identity_authority":"idauth.a","url":"http://idauth-a.org","location":1}' -p idauth.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authidauth '{"identity_authority":"idauth.a"}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite regidauth '["idauth.b","http://idauth-b.org",1]' -p idauth.b@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authidauth '["idauth.b"]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regidauth '{"identity_authority":"idauth.b","url":"http://idauth-b.org","location":1}' -p idauth.b@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authidauth '{"identity_authority":"idauth.b"}' -p yosemite@active --txfee-payer yosemite
 
 $YOSEMITE_CLI get table yosemite yosemite idauthority
 
@@ -243,31 +242,31 @@ $YOSEMITE_CLI create account yosemite producer.i YOS5KM5t7td26VGDSEHXPHoUHB1Md1N
 $YOSEMITE_CLI create account yosemite producer.j YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC -p yosemite@active --txfee-payer yosemite
 sleep 1
 
-$YOSEMITE_CLI push action yosemite regproducer '["producer.a","YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn","http://producera.io",1]' -p producer.a@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '["producer.b","YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm","http://producerb.io",1]' -p producer.b@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.a","producer_key":"YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn","url":"http://producera.io","location":1}' -p producer.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.b","producer_key":"YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm","url":"http://producerb.io","location":1}' -p producer.b@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite authproducer '["producer.a"]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '["producer.b"]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.a"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.b"}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite regproducer '["producer.c","YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo","http://producerc.io",1]' -p producer.c@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '["producer.d","YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy","http://producerd.io",1]' -p producer.d@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '["producer.e","YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1","http://producere.io",1]' -p producer.e@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.c","producer_key":"YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo","url":"http://producerc.io","location":1}' -p producer.c@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.d","producer_key":"YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy","url":"http://producerd.io","location":1}' -p producer.d@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.e","producer_key":"YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1","url":"http://producere.io","location":1}' -p producer.e@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite authproducer '["producer.c"]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '["producer.d"]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '["producer.e"]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.c"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.d"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.e"}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite regproducer '["producer.f","YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641","http://producerf.io",1]' -p producer.f@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '["producer.g","YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq","http://producerg.io",1]' -p producer.g@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '["producer.h","YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6","http://producerh.io",1]' -p producer.h@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '["producer.i","YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is","http://produceri.io",1]' -p producer.i@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '["producer.j","YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC","http://producerj.io",1]' -p producer.j@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.f","producer_key":"YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641","url":"http://producerf.io","location":1}' -p producer.f@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.g","producer_key":"YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq","url":"http://producerg.io","location":1}' -p producer.g@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.h","producer_key":"YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6","url":"http://producerh.io","location":1}' -p producer.h@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.i","producer_key":"YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is","url":"http://produceri.io","location":1}' -p producer.i@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.j","producer_key":"YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC","url":"http://producerj.io","location":1}' -p producer.j@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite authproducer '["producer.f"]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '["producer.g"]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '["producer.h"]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '["producer.i"]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '["producer.j"]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.f"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.g"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.h"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.i"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.j"}' -p yosemite@active --txfee-payer yosemite
 
 sleep 125
 tail -n 150 $YOSEMITE_NODE_LOG_FILE
@@ -322,9 +321,9 @@ sleep 1
 
 { print_section_title "Setup Initial System Tokens"; } 2>/dev/null
 
-$YOSEMITE_CLI push action systoken.a settokenmeta '["4,DUSD","http://sysdepo-a.org","system depository a"]' -p systoken.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action systoken.a settokenmeta '{"sym":"4,DUSD","url":"http://sysdepo-a.org","desc":"system depository a"}' -p systoken.a@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","systoken.a","1000.0000 DUSD","issue systoken.a"]' -p systoken.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"systoken.a","qty":"1000.0000 DUSD","tag":"issue systoken.a"}' -p systoken.a@active --txfee-payer yosemite
 sleep 1
 
 $YOSEMITE_CLI get token info systoken.a
@@ -332,16 +331,16 @@ $YOSEMITE_CLI get token balance systoken.a systoken.a
 $YOSEMITE_CLI get token balance systoken.a idauth.a
 $YOSEMITE_CLI get token balance systoken.a idauth.b
 
-$YOSEMITE_CLI push action systoken.b settokenmeta '["4,DUSDB","http://sysdepo-b.org","system depository b"]' -p systoken.b@active --txfee-payer yosemite
+$YOSEMITE_CLI push action systoken.b settokenmeta '{"sym":"4,DUSDB","url":"http://sysdepo-b.org","desc":"system depository b"}' -p systoken.b@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action systoken.b issue '["systoken.b","systoken.b","2000.0000 DUSDB","issue systoken.b"]' -p systoken.b@active --txfee-payer yosemite
+$YOSEMITE_CLI push action systoken.b issue '{"t":"systoken.b","to":"systoken.b","qty":"2000.0000 DUSDB","tag":"issue systoken.b"}' -p systoken.b@active --txfee-payer yosemite
 
 $YOSEMITE_CLI get token info systoken.b
 $YOSEMITE_CLI get token balance systoken.b systoken.b
 
-$YOSEMITE_CLI push action yosemite addsystoken '["systoken.a",10000]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite addsystoken '{"token":"systoken.a","weight":10000}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite addsystoken '["systoken.b",10000]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite addsystoken '{"token":"systoken.b","weight":10000}' -p yosemite@active --txfee-payer yosemite
 sleep 2
 
 $YOSEMITE_CLI get systoken list
@@ -349,32 +348,32 @@ $YOSEMITE_CLI get systoken list
 $YOSEMITE_CLI get systoken balance systoken.a
 $YOSEMITE_CLI get systoken balance systoken.b
 
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","idauth.a","5000.0000 DUSD","issue systoken.a to idauth.a"]' -p systoken.a@active --txfee-payer systoken.a
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","idauth.b","5000.0000 DUSD","issue systoken.a to idauth.b"]' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.a","qty":"5000.0000 DUSD","tag":"issue systoken.a to idauth.a"}' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"5000.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a
 
 
 { print_section_title "Setup Initial Transaction Fees for Built-in Actions"; } 2>/dev/null
 
-$YOSEMITE_CLI push action yosemite settxfee '["","",1000,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["","issue",50,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["","transfer",100,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["","redeem",200,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"","action":"","value":1000,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"","action":"issue","value":50,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"","action":"transfer","value":100,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"","action":"redeem","value":200,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite settxfee '["yosemite","newaccount",500,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["yosemite","updateauth",1000,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["yosemite","linkauth",1000,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yosemite","action":"newaccount","value":500,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yosemite","action":"updateauth","value":1000,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yosemite","action":"linkauth","value":1000,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite settxfee '["yx.identity","setidinfo",50,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yx.identity","action":"setidinfo","value":50,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 sleep 1
 $YOSEMITE_CLI get txfee list -L "yx.identity" -U "yx.identity"
-$YOSEMITE_CLI push action yosemite unsettxfee '["yx.identity","setidinfo"]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite unsettxfee '{"code":"yx.identity","action":"setidinfo"}' -p yosemite@active --txfee-payer yosemite
 sleep 1
 $YOSEMITE_CLI get txfee list -L "yx.identity" -U "yx.identity"
-$YOSEMITE_CLI push action yosemite settxfee '["yx.identity","setidinfo",0,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["yx.identity","settype",0,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["yx.identity","setkyc",0,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["yx.identity","setstate",0,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["yx.identity","setdata",0,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yx.identity","action":"setidinfo","value":0,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yx.identity","action":"settype","value":0,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yx.identity","action":"setkyc","value":0,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yx.identity","action":"setstate","value":0,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"yx.identity","action":"setdata","value":0,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 $YOSEMITE_CLI get txfee list -L "yx.identity" -U "yx.identity"
 
 $YOSEMITE_CLI get txfee item yosemite newaccount
@@ -401,7 +400,7 @@ $YOSEMITE_CLI create account idauth.a useraccount3 YOS5ubmvsnjHviACtfc9SwGbY7Spr
 $YOSEMITE_CLI create account yosemite com YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ3rNfKp96hzFxyit -p yosemite@active --txfee-payer yosemite
 
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"com\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"1f32i7t23\"}" -p idauth.a@active --txfee-payer idauth.a
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","com","3000.0000 DUSD","issue systoken.a to com"]' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"com","qty":"3000.0000 DUSD","tag":"issue systoken.a to com"}' -p systoken.a@active --txfee-payer systoken.a
 $YOSEMITE_CLI create account com acquire.com YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh -p com@active --txfee-payer com
 
 $YOSEMITE_CLI get systoken balance com
@@ -434,11 +433,11 @@ sleep 1
 
 { print_section_title "System Token Issue / Transfer"; } 2>/dev/null
 
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","useraccount2","1000.0000 DUSD","issue systoken.a"]' -p systoken.a@active --txfee-payer systoken.a
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","useraccount3","1000.0000 DUSD","issue systoken.a"]' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccount2","qty":"1000.0000 DUSD","tag":"issue systoken.a"}' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccount3","qty":"1000.0000 DUSD","tag":"issue systoken.a"}' -p systoken.a@active --txfee-payer systoken.a
 
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","useraccount2","useraccount3","100.0000 DUSD","transfer memo"]' -p useraccount2@active --txfee-payer useraccount2
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","useraccount2","useraccount3","100.0000 DUSD","transfer memo 2"]' -p useraccount2@active --txfee-payer useraccount3
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount2","to":"useraccount3","qty":"100.0000 DUSD","tag":"transfer memo"}' -p useraccount2@active --txfee-payer useraccount2
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount2","to":"useraccount3","qty":"100.0000 DUSD","tag":"transfer memo 2"}' -p useraccount2@active --txfee-payer useraccount3
 
 $YOSEMITE_CLI get systoken balance useraccount1
 $YOSEMITE_CLI get systoken balance useraccount2
@@ -451,13 +450,17 @@ sleep 1
 
 { print_section_title "Transaction Votes"; } 2>/dev/null
 
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","useraccount3","useraccount2","50.0000 DUSD","tag1"]' -p useraccount3@active --txfee-payer useraccount2 -v producer.f
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","useraccount3","useraccount2","50.0000 DUSD","tag2"]' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","useraccount3","useraccount2","50.0000 DUSD","tag3"]' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount3","to":"useraccount2","qty":"50.0000 DUSD","tag":"tag1"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.f
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount3","to":"useraccount2","qty":"50.0000 DUSD","tag":"tag2"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount3","to":"useraccount2","qty":"50.0000 DUSD","tag":"tag3"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
 sleep 2
 
 $YOSEMITE_CLI get table yosemite yosemite producers
 sleep 1
+
+
+{ print_section_title "Account Recovery"; } 2>/dev/null
+
 
 
 { print_section_title "Deploy YOSEMITE Fiat Stable Coin as a System Token"; } 2>/dev/null
@@ -469,31 +472,31 @@ sleep 2
 $YOSEMITE_CLI set contract ysmt.dusd.a $YOSEMITE_CONTRACTS_DIR/yosemitex.fiat.stable.token/ -p ysmt.dusd.a@active --txfee-payer yosemite
 sleep 2
 
-$YOSEMITE_CLI push action ysmt.dusd.a settokenmeta '["4,DUSD","https://yosemitex.com","Yosemite X Digital USD Token"]' -p ysmt.dusd.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action ysmt.dusd.a settokenmeta '{"sym":"4,DUSD","url":"https://yosemitex.com","desc":"Yosemite X Digital USD Token"}' -p ysmt.dusd.a@active --txfee-payer yosemite
 
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ysmt.dusd.a\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"ysmt.dusd.a\"}" -p idauth.a@active --txfee-payer idauth.a
-$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","ysmt.dusd.a","100000.0000 DUSD",""]' -p ysmt.dusd.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ysmt.dusd.a","qty":"100000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite settxfee '["ysmt.dusd.a","issue",0,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["ysmt.dusd.a","redeem",50,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"ysmt.dusd.a","action":"issue","value":0,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"ysmt.dusd.a","action":"redeem","value":50,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite addsystoken '["ysmt.dusd.a",10000]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite addsystoken '{"token":"ysmt.dusd.a","weight":10000}' -p yosemite@active --txfee-payer yosemite
 
 sleep 2
 
 
 { print_section_title "YOSEMITE Standard Token Test"; } 2>/dev/null
 
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","idauth.a","10000.0000 DUSD",""]' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.a","qty":"10000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
 
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","idauth.a","idauth.b","50.0000 DUSD","transfer tag"]' -p idauth.a@active --txfee-payer idauth.a
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","idauth.a","idauth.b","30.0000 DUSD","transfer tag 2"]' -p idauth.a@active --txfee-payer idauth.b
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"idauth.a","to":"idauth.b","qty":"50.0000 DUSD","tag":"transfer tag"}' -p idauth.a@active --txfee-payer idauth.a
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"idauth.a","to":"idauth.b","qty":"30.0000 DUSD","tag":"transfer tag 2"}' -p idauth.a@active --txfee-payer idauth.b
 
 $YOSEMITE_CLI get token balance systoken.a idauth.a
 $YOSEMITE_CLI get token balance systoken.a idauth.b
 
 $YOSEMITE_CLI get token balance systoken.a systoken.a
-$YOSEMITE_CLI push action systoken.a redeem '["500.0000 DUSD","redeem tag"]' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a redeem '{"qty":"500.0000 DUSD","tag":"redeem tag"}' -p systoken.a@active --txfee-payer systoken.a
 
 $YOSEMITE_CLI wallet import --private-key YPV_5JcSa5y1YQEEbxjZ7XjW2zApxDUqcuNLxA1nKji8E7Kif8b5wA4
 $YOSEMITE_CLI wallet import --private-key YPV_5J7kM4HyzZuuJ5HcoywncQScmWfMErE4sz8gMustSmoEPKBYywk
@@ -507,21 +510,21 @@ $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"useraccounta\", 
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"useraccountb\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"wef2ouih23\"}" -p idauth.a@active --txfee-payer idauth.a
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"useraccountc\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 0111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"kh23r23ruy\"}" -p idauth.a@active --txfee-payer idauth.a
 
-$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","useraccounta","50000.0000 DUSD",""]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a
-$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","useraccountb","20000.0000 DUSD",""]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a
-#$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","useraccountc","10000.0000 DUSD",""]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a
+$YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"useraccounta","qty":"50000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a
+$YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"useraccountb","qty":"20000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a
+#$YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"useraccountc","qty":"10000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a
 
 $YOSEMITE_CLI get token balance ysmt.dusd.a useraccounta
 $YOSEMITE_CLI get token balance ysmt.dusd.a useraccountb
 
-$YOSEMITE_CLI push action ysmt.dusd.a transfer '["ysmt.dusd.a","useraccounta","useraccountb","100.0000 DUSD","transfer tag"]' -p useraccounta@active --txfee-payer useraccounta -v producer.d
+$YOSEMITE_CLI push action ysmt.dusd.a transfer '{"t":"ysmt.dusd.a","from":"useraccounta","to":"useraccountb","qty":"100.0000 DUSD","tag":"transfer tag"}' -p useraccounta@active --txfee-payer useraccounta -v producer.d
 
 
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","useraccounta","1000.0000 DUSD",""]' -p systoken.a@active --txfee-payer systoken.a
-$YOSEMITE_CLI push action systoken.b issue '["systoken.b","useraccounta","1000.0000 DUSDB",""]' -p systoken.b@active --txfee-payer systoken.b
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccounta","qty":"1000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.b issue '{"t":"systoken.b","to":"useraccounta","qty":"1000.0000 DUSDB","tag":""}' -p systoken.b@active --txfee-payer systoken.b
 
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","useraccountb","2000.0000 DUSD",""]' -p systoken.a@active --txfee-payer systoken.a
-$YOSEMITE_CLI push action systoken.a issue '["systoken.a","useraccountc","3000.0000 DUSD",""]' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccountb","qty":"2000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccountc","qty":"3000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
 
 $YOSEMITE_CLI get token balance systoken.a useraccounta
 $YOSEMITE_CLI get token balance systoken.b useraccounta
@@ -530,7 +533,7 @@ $YOSEMITE_CLI get systoken balance useraccounta
 $YOSEMITE_CLI get token balance systoken.a useraccountb
 $YOSEMITE_CLI get token balance systoken.a useraccountc
 
-$YOSEMITE_CLI push action systoken.a transfer '["systoken.a","useraccounta","useraccountb","999.5000 DUSD","transfer tag"]' -p useraccounta@active --txfee-payer useraccounta -v producer.a
+$YOSEMITE_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccounta","to":"useraccountb","qty":"999.5000 DUSD","tag":"transfer tag"}' -p useraccounta@active --txfee-payer useraccounta -v producer.a
 
 $YOSEMITE_CLI get systoken balance useraccounta
 $YOSEMITE_CLI get systoken balance useraccountb
@@ -547,21 +550,21 @@ sleep 2
 $YOSEMITE_CLI set contract ycard.cusd.a $YOSEMITE_CONTRACTS_DIR/yosemitex.credit.token/ -p ycard.cusd.a@active --txfee-payer yosemite
 sleep 2
 
-$YOSEMITE_CLI push action ycard.cusd.a settokenmeta '["4,CUSD","https://yosemitecardx.com","Yosemite Card X USD Credit Token"]' -p ycard.cusd.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action ycard.cusd.a settokenmeta '{"sym":"4,CUSD","url":"https://yosemitecardx.com","desc":"Yosemite Card X USD Credit Token"}' -p ycard.cusd.a@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yosemite settxfee '["ycard.cusd.a","creditlimit",100,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["ycard.cusd.a","creditissue",300,1]' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '["ycard.cusd.a","creditredeem",500,1]' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"creditlimit","value":100,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"creditissue","value":300,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"creditredeem","value":500,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycard.cusd.a\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"if3fhu3eu\"}" -p idauth.a@active --txfee-payer idauth.a
-$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","ycard.cusd.a","70000.0000 DUSD",""]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.a
+$YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ycard.cusd.a","qty":"70000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.a
 
 $YOSEMITE_CLI get token balance ysmt.dusd.a ycard.cusd.a
 
 sleep 2
 
 ## issuing credit card to useraccounta by offering credit limit
-$YOSEMITE_CLI push action ycard.cusd.a creditlimit '["useraccounta","500.0000 CUSD","vhw93rh23r"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.b
+$YOSEMITE_CLI push action ycard.cusd.a creditlimit '{"account":"useraccounta","credit_limit":"500.0000 CUSD","tag":"vhw93rh23r"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.b
 
 $YOSEMITE_CLI get table -L useraccounta -l 1 ycard.cusd.a ycard.cusd.a creditoffer
 
@@ -569,10 +572,10 @@ sleep 2
 
 ## useraccounta issues credit tokens and deposits to ycard service
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccounta","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.cusd.a","permission":"active"}}]}}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
-$YOSEMITE_CLI push action yosemite linkauth '["useraccounta","ycard.cusd.a","creditissue","creditissue"]' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
+$YOSEMITE_CLI push action yosemite linkauth '{"account":"useraccounta","code":"ycard.cusd.a","type":"creditissue","requirement":"creditissue"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 
-$YOSEMITE_CLI push action ycard.cusd.a creditissue '["useraccounta","ycard.cusd.a","500.0000 CUSD","issue credit token by user, and deposit to credit service"]' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.c
-#$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","useraccounta","ycard.cusd.a","500.0000 CUSD","deposit credit to service account for anonymous tx"]' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
+$YOSEMITE_CLI push action ycard.cusd.a creditissue '{"issuer":"useraccounta","to":"ycard.cusd.a","qty":"500.0000 CUSD","tag":"issue credit token by user, and deposit to credit service"}' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.c
+#$YOSEMITE_CLI push action ycard.cusd.a transfer '{"t":"ycard.cusd.a","from":"useraccounta","to":"ycard.cusd.a","qty":"500.0000 CUSD","tag":"deposit credit to service account for anonymous tx"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 
 $YOSEMITE_CLI get table -L useraccounta -l 1 ycard.cusd.a ycard.cusd.a creditoffer
 $YOSEMITE_CLI get token balance ycard.cusd.a useraccounta
@@ -581,36 +584,36 @@ $YOSEMITE_CLI get token balance ycard.cusd.a ycard.cusd.a
 sleep 2
 
 ## anonymous payment transaction to merchant useraccountb
-$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","ycard.cusd.a","useraccountb","100.0000 CUSD","payment tx 1"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.d
-$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","ycard.cusd.a","useraccountb","100.0000 CUSD","payment tx 2"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.d
+$YOSEMITE_CLI push action ycard.cusd.a transfer '{"t":"ycard.cusd.a","from":"ycard.cusd.a","to":"useraccountb","qty":"100.0000 CUSD","tag":"payment tx 1"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.d
+$YOSEMITE_CLI push action ycard.cusd.a transfer '{"t":"ycard.cusd.a","from":"ycard.cusd.a","to":"useraccountb","qty":"100.0000 CUSD","tag":"payment tx 2"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.d
 
 $YOSEMITE_CLI get token balance ycard.cusd.a useraccountb
 
 sleep 2
 
 ## monthly user credit balance settlement
-$YOSEMITE_CLI push action ysmt.dusd.a issue '["ysmt.dusd.a","ycard.cusd.a","200.0000 DUSD","useraccounta credit settlement"]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.g
+$YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ycard.cusd.a","qty":"200.0000 DUSD","tag":"useraccounta credit settlement"}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.g
 
-$YOSEMITE_CLI push action ycard.cusd.a redeem '["300.0000 CUSD","burn unused useraccounta credit"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.g
+$YOSEMITE_CLI push action ycard.cusd.a redeem '{"qty":"300.0000 CUSD","tag":"burn unused useraccounta credit"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.g
 
-$YOSEMITE_CLI push action ycard.cusd.a creditredeem '["useraccounta","500.0000 CUSD","reset useraccounta credit offering"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.e
+$YOSEMITE_CLI push action ycard.cusd.a creditredeem '{"account":"useraccounta","qty":"500.0000 CUSD","tag":"reset useraccounta credit offering"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.e
 
-$YOSEMITE_CLI push action ycard.cusd.a creditissue '["useraccounta","ycard.cusd.a","500.0000 CUSD","monthly issue credit token by user, and deposit to credit service"]' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.e
-#$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","useraccounta","ycard.cusd.a","500.0000 CUSD","deposit credit to service account for anonymous tx"]' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.e
+$YOSEMITE_CLI push action ycard.cusd.a creditissue '{"issuer":"useraccounta","to":"ycard.cusd.a","qty":"500.0000 CUSD","tag":"monthly issue credit token by user, and deposit to credit service"}' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.e
+#$YOSEMITE_CLI push action ycard.cusd.a transfer '{"t":"ycard.cusd.a","from":"useraccounta","to":"ycard.cusd.a","qty":"500.0000 CUSD","tag":"deposit credit to service account for anonymous tx"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.e
 
 sleep 2
 
 ## merchant(useraccountb) redeems credit tokens and withdraws fiat
-$YOSEMITE_CLI push action ycard.cusd.a transfer '["ycard.cusd.a","useraccountb","ycard.cusd.a","200.0000 CUSD","request redeeming credit token"]' -p useraccountb@active --txfee-payer ycard.cusd.a -v producer.h
+$YOSEMITE_CLI push action ycard.cusd.a transfer '{"t":"ycard.cusd.a","from":"useraccountb","to":"ycard.cusd.a","qty":"200.0000 CUSD","tag":"request redeeming credit token"}' -p useraccountb@active --txfee-payer ycard.cusd.a -v producer.h
 
-$YOSEMITE_CLI push action ysmt.dusd.a transfer '["ysmt.dusd.a","ycard.cusd.a","useraccountb","200.0000 DUSD","redeeming CUSD to DUSD"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.h
+$YOSEMITE_CLI push action ysmt.dusd.a transfer '{"t":"ysmt.dusd.a","from":"ycard.cusd.a","to":"useraccountb","qty":"200.0000 DUSD","tag":"redeeming CUSD to DUSD"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.h
 
-$YOSEMITE_CLI push action ycard.cusd.a redeem '["200.0000 CUSD","burn redeemed credit tokens"]' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.h
+$YOSEMITE_CLI push action ycard.cusd.a redeem '{"qty":"200.0000 CUSD","tag":"burn redeemed credit tokens"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.h
 
 sleep 2
 
 $YOSEMITE_CLI get token balance ycard.cusd.a useraccountb
 $YOSEMITE_CLI get token balance ysmt.dusd.a useraccountb
 
-$YOSEMITE_CLI push action ysmt.dusd.a transfer '["ysmt.dusd.a","useraccountb","ysmt.dusd.a","200.0000 DUSD","request redeeming DUSD to fiat"]' -p useraccountb@active --txfee-payer ycard.cusd.a -v producer.i
-$YOSEMITE_CLI push action ysmt.dusd.a redeem '["200.0000 DUSD","redeem DUSD to fiat"]' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.i
+$YOSEMITE_CLI push action ysmt.dusd.a transfer '{"t":"ysmt.dusd.a","from":"useraccountb","to":"ysmt.dusd.a","qty":"200.0000 DUSD","tag":"request redeeming DUSD to fiat"}' -p useraccountb@active --txfee-payer ycard.cusd.a -v producer.i
+$YOSEMITE_CLI push action ysmt.dusd.a redeem '{"qty":"200.0000 DUSD","tag":"redeem DUSD to fiat"}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.i
