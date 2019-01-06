@@ -22,6 +22,7 @@ extern "C" {
  *  @{
  */
 
+account_name get_token_id();
 
 /**
  *  Get Token Symbol

@@ -130,6 +130,7 @@ void apply_context::finalize_trace( action_trace& trace, const fc::time_point& s
 void apply_context::exec( action_trace& trace )
 {
    _notified.push_back(receiver);
+   initial_receiver = receiver;
    exec_one( trace );
    for( uint32_t i = 1; i < _notified.size(); ++i ) {
       receiver = _notified[i];

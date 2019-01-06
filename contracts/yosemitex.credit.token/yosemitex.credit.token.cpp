@@ -23,6 +23,13 @@ namespace yosemitex { namespace contract {
 
       /// built-in action handler for 'issue' standard token action has already processed basic 'issue' operations
 
+      print("I'm "); printn(get_self()); print("\n");
+      print("get_token_id() = "); printn(get_token_id());
+
+      if (get_token_id() == N(ysmt.dusd.a)) {
+         print("I'm "); printn(get_self()); print("\n");
+      }
+
       eosio_assert( has_all_kyc_status( to, YOSEMITE_CREDIT_KYC_AUTH ),
                     "issue.to account failed to satisfy KYC constraints" );
    }

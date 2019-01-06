@@ -113,7 +113,7 @@ tail -n 300 $YOSEMITE_KEYD_LOG_FILE
 $YOSEMITE_CLI wallet open
 $YOSEMITE_CLI wallet unlock --password $YOSEMITE_KEYD_WALLET_PASSWORD
 
-# yosemite initial key
+# yosemite initial key for public key YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
 #$YOSEMITE_CLI create key --to-console
 $YOSEMITE_CLI wallet import --private-key YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
 

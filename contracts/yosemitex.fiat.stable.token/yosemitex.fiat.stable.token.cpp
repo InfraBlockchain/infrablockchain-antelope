@@ -5,6 +5,7 @@
  */
 #include "yosemitex.fiat.stable.token.hpp"
 
+#include <yosemitelib/token_api.h>
 #include <yosemitelib/identity.hpp>
 
 #define YOSEMITE_FIAT_KYC_AUTH YOSEMITE_ID_KYC_REAL_NAME_AUTH | YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH
@@ -15,10 +16,13 @@ namespace yosemitex { namespace contract {
    using namespace yosemite::identity;
    using std::string;
 
-   void fiat_stable_token::issue( account_name /*t*/, account_name to, asset /*qty*/, string /*tag*/ ) {
+   void fiat_stable_token::issue( account_name t, account_name to, asset /*qty*/, string /*tag*/ ) {
 
       /// built-in action handler for 'issue' standard token action has already processed basic 'issue' operations
 
+      print("I'm "); printn(get_self()); print("\n");
+      print("get_token_id() = "); printn(get_token_id());
+      eosio_assert(t == get_token_id(), "token is not matched");
       eosio_assert( has_all_kyc_status( to, YOSEMITE_FIAT_KYC_AUTH ),
          "issue.to account failed to satisfy KYC constraints" );
    }

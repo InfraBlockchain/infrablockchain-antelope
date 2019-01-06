@@ -649,6 +649,7 @@ class apply_context {
       transaction_context&          trx_context; ///< transaction context in which the action is running
       const action&                 act; ///< message being applied
       account_name                  receiver; ///< the code that is currently running
+      account_name                  initial_receiver; ///< the code that is running at first
       vector<bool> used_authorizations; ///< Parallel to act.authorization; tracks which permissions have been used while processing the message
       uint32_t                      recurse_depth; ///< how deep inline actions can recurse
       bool                          privileged   = false;

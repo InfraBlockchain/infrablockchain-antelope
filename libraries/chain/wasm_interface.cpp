@@ -1440,6 +1440,10 @@ class token_api : public context_aware_api {
    public:
       using context_aware_api::context_aware_api;
 
+      account_name get_token_id() {
+         return context.initial_receiver;
+      }
+
       uint64_t get_token_symbol( account_name token_id ) {
          return context.get_token_symbol( token_id ).value();
       }
@@ -1977,6 +1981,7 @@ REGISTER_INTRINSICS(transaction_api,
 );
 
 REGISTER_INTRINSICS(token_api,
+   (get_token_id,              int64_t()                        )
    (get_token_symbol,          int64_t(int64_t)                 )
    (get_token_total_supply,    int64_t(int64_t)                 )
    (get_token_balance,         int64_t(int64_t, int64_t)        )
