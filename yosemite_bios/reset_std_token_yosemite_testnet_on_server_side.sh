@@ -461,6 +461,24 @@ sleep 1
 
 { print_section_title "Account Recovery"; } 2>/dev/null
 
+$YOSEMITE_CLI wallet import --private-key YPV_5KHCnUyZWqrB73iJp8UUiWfr4Q1K8UjBqgvSJzGgA9Z621u8E8q
+$YOSEMITE_CLI wallet import --private-key YPV_5KVs1TdVEHE6FR2VXojhA71h667X2ZYfLNbi8u9hKYuVvDm3j49
+$YOSEMITE_CLI wallet import --private-key YPV_5JbyqQwnxjByH8Aw8vrhiBf6Ze4NPj7ctw91KiqD1x53Fwz2uSF
+$YOSEMITE_CLI wallet import --private-key YPV_5HvGPGhVFi9S1FmKF2wiYP3ZfQEiDvj6Q3i8X45Jhyh4xBSjXXj
+$YOSEMITE_CLI wallet import --private-key YPV_5JKgY86UPP7i6cqxoHSpXHBGnAgyUhoawRY7t69G1eJs9WBLXEo
+
+$YOSEMITE_CLI push action yosemite newaccount '{"creator":"idauth.a","name":"useraccountz","owner":{"threshold":1,"keys":[{"key":"YOS8M8gXkDHyffjeHTgmCqMapMN7LHzz8PnapVAY6GTcCChH4RGbr","weight":1}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS5LA5GcJ8xYDXD2u9wQ7A79fwBzfvU59gVw21utaWgKgcB4yWeb","weight":1}],"accounts":[],"waits":[]}}' -p idauth.a@active --txfee-payer idauth.a -v producer.c
+$YOSEMITE_CLI get account useraccountz
+sleep 1
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccountz","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"YOS6MWWFnregfdEB7txoK8enXh5jCd7967jJVSEhuhqA5xJWDhe7p","weight":1}],"waits":[],"accounts":[]}}' -p useraccountz@owner --txfee-payer idauth.a
+$YOSEMITE_CLI get account useraccountz
+sleep 1
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccountz","permission":"owner","parent":"","auth":{"threshold":2,"keys":[{"key":"YOS7g4MjVQEpDPjNxNEBtNz11GJG7tzJowwNMFLsjqS4TddaC6zeU","weight":1}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[]}}' -p useraccountz@owner --txfee-payer idauth.a
+$YOSEMITE_CLI get account useraccountz
+sleep 1
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccountz","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"YOS7j467RUtMnQ6JWkzn9L6t2TKq9uJJbDNv7oPePbn7owRGJMVZw","weight":1}],"waits":[],"accounts":[]}}' -p useraccountz@owner --txfee-payer idauth.a
+$YOSEMITE_CLI get account useraccountz
+sleep 1
 
 
 { print_section_title "Deploy YOSEMITE Fiat Stable Coin as a System Token"; } 2>/dev/null
