@@ -31,6 +31,14 @@
         {"name":"tag", "type":"string"}
       ]
     },{
+      "name": "earntoken",
+      "base": "",
+      "fields": [
+        {"name":"t", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"tag", "type":"string"}
+      ]
+    },{
       "name": "credit_offering_info",
       "base": "",
       "fields": [
@@ -51,6 +59,10 @@
     },{
       "name": "creditredeem",
       "type": "creditredeem",
+      "ricardian_contract": ""
+    },{
+      "name": "earntoken",
+      "type": "earntoken",
       "ricardian_contract": ""
     }
   ],

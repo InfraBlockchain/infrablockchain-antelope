@@ -146,8 +146,20 @@ namespace yosemitex { namespace contract {
       require_recipient( account );
    }
 
+   void credit_token::earntoken( account_name t, account_name to, string tag ) {
+      eosio_assert( t == _self, "invalid token id" );
+      eosio_assert( is_account( to ), "to account does not exist" );
+      eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
+
+      // only the credit token owner can log off-chain token transfer events on-chain.
+      require_auth( _self );
+
+      // notify 'earntoken' action to the account who receives token in the corresponding off-chain token transfer
+      require_recipient( to );
+   }
+
 } } /// namespace yosemitex::contract
 
 EOSIO_ABI( yosemitex::contract::credit_token,
            (issue)(transfer)(txfee)
-           (creditlimit)(creditissue)(creditredeem) )
+           (creditlimit)(creditissue)(creditredeem)(earntoken) )

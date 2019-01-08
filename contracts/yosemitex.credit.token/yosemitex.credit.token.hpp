@@ -100,6 +100,19 @@ namespace yosemitex { namespace contract {
        * @param tag - user tag string to identity a specific creditredeem action (application-specific purpose)
        */
       void creditredeem( account_name account, asset qty, string tag );
+
+      /**
+       * The credit token owner can log off-chain token transfer events on-chain.
+       * When a token transfer event occurs within the fund deposited to the token owner account (for anonymous token transfer transaction),
+       * the token owner account could write evidence (hash of token transfer data) of off-chain token transfer.
+       * 'earntoken' action reveals only the token receiver account name, and the actual transfer event data (token sender/receiver, amount, signatures and additional data)
+       * signed by token sender and anonymous token transfer service provider (token owner account) are stored privately on service side
+       * for on-demand evidence presentation to compliance authorities.
+       * @param t - token id (token account name)
+       * @param to - account name receiving token in off-chain token transfer transaction
+       * @param tag - hash (e.g. IPFS multihash base58 string) of off-chain token transfer transaction data
+       */
+      void earntoken( account_name t, account_name to, string tag );
    };
 
    /**
