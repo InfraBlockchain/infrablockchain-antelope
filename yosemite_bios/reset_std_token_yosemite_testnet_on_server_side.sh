@@ -582,7 +582,7 @@ $YOSEMITE_CLI push action ycard.cusd.a settokenmeta '{"sym":"4,CUSD","url":"http
 $YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"creditlimit","value":100,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 $YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"creditissue","value":300,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 $YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"creditredeem","value":500,"feetype":1}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"earntoken","value":50,"feetype":1}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.cusd.a","action":"offtransfer","value":50,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 
 $YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycard.cusd.a\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"if3fhu3eu\"}" -p idauth.a@active --txfee-payer idauth.a
 $YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ycard.cusd.a","qty":"70000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.a
@@ -618,7 +618,7 @@ $YOSEMITE_CLI push action ycard.cusd.a transfer '{"t":"ycard.cusd.a","from":"yca
 $YOSEMITE_CLI get token balance ycard.cusd.a useraccountb
 
 ## anonymous off-chain token transfer, logging just an evidence of off-chain token transfer (hash of transfer data)
-$YOSEMITE_CLI push action ycard.cusd.a earntoken '{"t":"ycard.cusd.a","to":"useraccountc","tag":"QmT4AeWE9Q9EaoyLJiqaZuYQ8mJeq4ZBncjjFH9dQ9uDVA"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.e
+$YOSEMITE_CLI push action ycard.cusd.a offtransfer '{"t":"ycard.cusd.a","to":"useraccountc","tag":"QmT4AeWE9Q9EaoyLJiqaZuYQ8mJeq4ZBncjjFH9dQ9uDVA"}' -p ycard.cusd.a@active --txfee-payer ycard.cusd.a -v producer.e
 
 sleep 2
 

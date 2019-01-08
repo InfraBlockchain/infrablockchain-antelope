@@ -31,7 +31,7 @@
         {"name":"tag", "type":"string"}
       ]
     },{
-      "name": "earntoken",
+      "name": "offtransfer",
       "base": "",
       "fields": [
         {"name":"t", "type":"account_name"},
@@ -61,8 +61,8 @@
       "type": "creditredeem",
       "ricardian_contract": ""
     },{
-      "name": "earntoken",
-      "type": "earntoken",
+      "name": "offtransfer",
+      "type": "offtransfer",
       "ricardian_contract": ""
     }
   ],

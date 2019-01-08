@@ -146,7 +146,7 @@ namespace yosemitex { namespace contract {
       require_recipient( account );
    }
 
-   void credit_token::earntoken( account_name t, account_name to, string tag ) {
+   void credit_token::offtransfer( account_name t, account_name to, string tag ) {
       eosio_assert( t == _self, "invalid token id" );
       eosio_assert( is_account( to ), "to account does not exist" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
@@ -162,4 +162,4 @@ namespace yosemitex { namespace contract {
 
 EOSIO_ABI( yosemitex::contract::credit_token,
            (issue)(transfer)(txfee)
-           (creditlimit)(creditissue)(creditredeem)(earntoken) )
+           (creditlimit)(creditissue)(creditredeem)(offtransfer) )
