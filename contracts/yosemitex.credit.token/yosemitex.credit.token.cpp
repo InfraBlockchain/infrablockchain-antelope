@@ -19,7 +19,7 @@ namespace yosemitex { namespace contract {
    using namespace yosemite::identity;
    using std::string;
 
-   void credit_token::issue( account_name /*t*/, account_name to, asset /*qty*/, string /*tag*/ ) {
+   void credit_token::issue( const account_name /*t*/, const account_name to, const asset& /*qty*/, const string& /*tag*/ ) {
 
       /// built-in action handler for 'issue' standard token action has already processed basic 'issue' operations
 
@@ -27,7 +27,7 @@ namespace yosemitex { namespace contract {
                     "issue.to account failed to satisfy KYC constraints" );
    }
 
-   void credit_token::transfer( account_name /*t*/, account_name from, account_name to, asset /*qty*/, string /*tag*/ ) {
+   void credit_token::transfer( const account_name /*t*/, const account_name from, const account_name to, const asset& /*qty*/, const string& /*tag*/ ) {
 
       /// built-in action handler for 'transfer' standard token action has already processed basic 'transfer' operations
 
@@ -37,7 +37,7 @@ namespace yosemitex { namespace contract {
                     "transfer.to account failed to satisfy KYC constraints" );
    }
 
-   void credit_token::txfee( account_name /*t*/, account_name payer, asset /*fee*/ ) {
+   void credit_token::txfee( const account_name /*t*/, const account_name payer, const asset& /*fee*/ ) {
 
       /// built-in action handler for 'txfee' standard token action has already processed basic 'txfee' operations
 
@@ -45,7 +45,7 @@ namespace yosemitex { namespace contract {
                     "transfer.to account failed to satisfy KYC constraints" );
    }
 
-   void credit_token::creditlimit( account_name account, asset credit_limit, string tag ) {
+   void credit_token::creditlimit( const account_name account, const asset& credit_limit, const string& tag ) {
 
       symbol_type token_symbol(get_token_symbol( _self )); // if current token account is not a valid token, exception will be thrown in this call
       int64_t limit_amount = credit_limit.amount;
@@ -86,7 +86,7 @@ namespace yosemitex { namespace contract {
       require_recipient( account );
    }
 
-   void credit_token::creditissue( account_name issuer, account_name to, asset qty, string tag ) {
+   void credit_token::creditissue( const account_name issuer, const account_name to, const asset& qty, const string& tag ) {
 
       symbol_type token_symbol(get_token_symbol( _self )); // if current token account is not a valid token, exception will be thrown in this call
       int64_t issue_amount = qty.amount;
@@ -121,7 +121,7 @@ namespace yosemitex { namespace contract {
       }
    }
 
-   void credit_token::creditredeem( account_name account, asset qty, string tag ) {
+   void credit_token::creditredeem( const account_name account, const asset& qty, const string& tag ) {
 
       symbol_type token_symbol(get_token_symbol( _self )); // if current token account is not a valid token, exception will be thrown in this call
       int64_t redeem_amount = qty.amount;
@@ -146,7 +146,7 @@ namespace yosemitex { namespace contract {
       require_recipient( account );
    }
 
-   void credit_token::offtransfer( account_name t, account_name to, string tag ) {
+   void credit_token::offtransfer( const account_name t, const account_name to, const string& tag ) {
       eosio_assert( t == _self, "invalid token id" );
       eosio_assert( is_account( to ), "to account does not exist" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );

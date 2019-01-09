@@ -33,7 +33,7 @@ namespace yosemite { namespace contract {
        * @param url - web site url providing token information managed by token issuer
        * @param desc - token description
        */
-      void settokenmeta( symbol_type sym, string url, string desc );
+      void settokenmeta( const symbol_type sym, const string& url, const string& desc );
 
       /**
        * Issue new token
@@ -42,7 +42,7 @@ namespace yosemite { namespace contract {
        * @param qty - token quantity (amount, symbol) to issue
        * @param tag - user tag string to identity a specific issue action (application-specific purpose)
        */
-      void issue( account_name t, account_name to, asset qty, string tag );
+      void issue( const account_name t, const account_name to, const asset& qty, const string& tag );
 
       /**
        * Transfer token
@@ -52,7 +52,7 @@ namespace yosemite { namespace contract {
        * @param qty - token quantity (amount, symbol) to transfer
        * @param tag - user tag string to identity a specific transfer action (application-specific purpose)
        */
-      void transfer( account_name t, account_name from, account_name to, asset qty, string tag );
+      void transfer( const account_name t, const account_name from, const account_name to, const asset& qty, const string& tag );
 
       /**
        * Transaction fee payment
@@ -62,7 +62,7 @@ namespace yosemite { namespace contract {
        * @param payer - account name paying transaction fee
        * @param fee - token quantity (amount, symbol) being charged as transaction fee
        */
-      void txfee( account_name t, account_name payer, asset fee );
+      void txfee( const account_name t, const account_name payer, const asset& fee );
 
       /**
        * Redeem(burn) token
@@ -70,7 +70,7 @@ namespace yosemite { namespace contract {
        * @param qty token quantity (amount, symbol) to redeem
        * @param tag user tag string to identity a specific redeem action (application-specific purpose)
        */
-      void redeem( asset qty, string tag );
+      void redeem( const asset& qty, const string& tag );
    };
 
 } } /// namespace yosemite::contract

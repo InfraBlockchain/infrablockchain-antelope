@@ -27,7 +27,7 @@ namespace yosemitex { namespace contract {
        * @param description - token description
        */
       // just inherit built-in 'settokenmeta' action (YOSEMITE chain core)
-      //void settokenmeta( symbol_type sym, string url, string desc );
+      //void settokenmeta( const symbol_type sym, const string& url, const string& desc );
 
       /**
        * Issue new token
@@ -36,7 +36,7 @@ namespace yosemitex { namespace contract {
        * @param qty - token quantity (amount, symbol) to issue
        * @param tag - user tag string to identity a specific issue action (application-specific purpose)
        */
-      void issue( account_name t, account_name to, asset qty, string tag );
+      void issue( const account_name t, const account_name to, const asset& qty, const string& tag );
 
       /**
        * Transfer token
@@ -46,7 +46,7 @@ namespace yosemitex { namespace contract {
        * @param qty - token quantity (amount, symbol) to transfer
        * @param tag - user tag string to identity a specific transfer action (application-specific purpose)
        */
-      void transfer( account_name t, account_name from, account_name to, asset qty, string tag );
+      void transfer( const account_name t, const account_name from, const account_name to, const asset& qty, const string& tag );
 
       /**
        * Transaction fee payment
@@ -56,7 +56,7 @@ namespace yosemitex { namespace contract {
        * @param payer - account name paying transaction fee
        * @param fee - token quantity (amount, symbol) being charged as transaction fee
        */
-      void txfee( account_name t, account_name payer, asset fee );
+      void txfee( const account_name t, const account_name payer, const asset& fee );
 
       /**
        * Redeem(burn) token
@@ -65,7 +65,7 @@ namespace yosemitex { namespace contract {
        * @param tag user tag string to identity a specific redeem action (application-specific purpose)
        */
       // just inherit built-in 'redeem' action (YOSEMITE chain core)
-      //void redeem( asset qty, string tag );
+      //void redeem( const asset& qty, const string& tag );
 
 
       /**
@@ -76,7 +76,7 @@ namespace yosemitex { namespace contract {
        * @param credit_limit - credit limit amount within which the target account can issue new tokens without the permission of token owner account.
        * @param tag - user tag string to identity a specific creditlimit action (application-specific purpose)
        */
-      void creditlimit( account_name account, asset credit_limit, string tag );
+      void creditlimit( const account_name account, const asset& credit_limit, const string& tag );
 
       /**
        * Issue New Token By User Account Having Credit Limit
@@ -86,7 +86,7 @@ namespace yosemitex { namespace contract {
        * @param qty - token quantity (amount, symbol) to issue
        * @param tag - user tag string to identity a specific creditissue action (application-specific purpose)
        */
-      void creditissue( account_name issuer, account_name to, asset qty, string tag );
+      void creditissue( const account_name issuer, const account_name to, const asset& qty, const string& tag );
 
       /**
        * Redeem Credit Tokens Issued By User Account
@@ -99,7 +99,7 @@ namespace yosemitex { namespace contract {
        * @param qty - token quantity (amount, symbol) to decrese issused credit amount
        * @param tag - user tag string to identity a specific creditredeem action (application-specific purpose)
        */
-      void creditredeem( account_name account, asset qty, string tag );
+      void creditredeem( const account_name account, const asset& qty, const string& tag );
 
       /**
        * The credit token owner can log off-chain token transfer events on blockchain.
@@ -112,7 +112,7 @@ namespace yosemitex { namespace contract {
        * @param to - account name receiving token in off-chain token transfer transaction
        * @param tag - hash (e.g. IPFS multihash base58 string) of off-chain token transfer transaction data
        */
-      void offtransfer( account_name t, account_name to, string tag );
+      void offtransfer( const account_name t, const account_name to, const string& tag );
    };
 
    /**

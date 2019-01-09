@@ -12,28 +12,23 @@ namespace yosemite { namespace contract {
    using namespace eosio;
    using std::string;
 
-   void tokenabi::settokenmeta( symbol_type sym, string url, string desc ) {
-      print(sym); print(":"); print(url); print(":"); print(desc);
+   void tokenabi::settokenmeta( const symbol_type /*sym*/, const string& /*url*/, const string& /*desc*/ ) {
       eosio_assert( false, "YOSEMITE blockchain core provides built-in standard token operation, settokenmeta" );
    }
 
-   void tokenabi::issue( account_name t, account_name to, asset qty, string tag ) {
-      print(t); print(":"); print(to); print(":"); print(qty); print(":"); print(tag);
+   void tokenabi::issue( const account_name /*t*/, const account_name /*to*/, const asset& /*qty*/, const string& /*tag*/ ) {
       eosio_assert( false, "YOSEMITE blockchain core provides built-in standard token operation, issue" );
    }
 
-   void tokenabi::transfer( account_name t, account_name from, account_name to, asset qty, string tag ) {
-      print(t); print(":"); print(from); print(":"); print(to); print(":"); print(qty); print(":"); print(tag);
+   void tokenabi::transfer( const account_name /*t*/, const account_name /*from*/, const account_name /*to*/, const asset& /*qty*/, const string& /*tag*/ ) {
       eosio_assert( false, "YOSEMITE blockchain core provides built-in standard token operation, transfer" );
    }
 
-   void tokenabi::txfee( account_name t, account_name payer, asset fee ) {
-      print(t); print(":"); print(payer); print(":"); print(fee);
+   void tokenabi::txfee( const account_name /*t*/, const account_name /*payer*/, const asset& /*fee*/ ) {
       eosio_assert( false, "YOSEMITE blockchain core provides built-in standard token operation, txfee" );
    }
 
-   void tokenabi::redeem( asset qty, string tag ) {
-      print(qty); print(":"); print(tag);
+   void tokenabi::redeem( const asset& /*qty*/, const string& /*tag*/ ) {
       eosio_assert( false, "YOSEMITE blockchain core provides built-in standard token operation, redeem" );
    }
 

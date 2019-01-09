@@ -15,7 +15,7 @@ namespace yosemitex { namespace contract {
    using namespace yosemite::identity;
    using std::string;
 
-   void fiat_stable_token::issue( account_name /*t*/, account_name to, asset /*qty*/, string /*tag*/ ) {
+   void fiat_stable_token::issue( const account_name /*t*/, const account_name to, const asset& /*qty*/, const string& /*tag*/ ) {
 
       /// built-in action handler for 'issue' standard token action has already processed basic 'issue' operations
 
@@ -23,7 +23,7 @@ namespace yosemitex { namespace contract {
          "issue.to account failed to satisfy KYC constraints" );
    }
 
-   void fiat_stable_token::transfer( account_name /*t*/, account_name from, account_name to, asset /*qty*/, string /*tag*/ ) {
+   void fiat_stable_token::transfer( const account_name /*t*/, const account_name from, const account_name to, const asset& /*qty*/, const string& /*tag*/ ) {
 
       /// built-in action handler for 'transfer' standard token action has already processed basic 'transfer' operations
 
@@ -33,7 +33,7 @@ namespace yosemitex { namespace contract {
          "transfer.to account failed to satisfy KYC constraints" );
    }
 
-   void fiat_stable_token::txfee( account_name /*t*/, account_name payer, asset /*fee*/ ) {
+   void fiat_stable_token::txfee( const account_name /*t*/, const account_name payer, const asset& /*fee*/ ) {
 
       /// built-in action handler for 'txfee' standard token action has already processed basic 'txfee' operations
 
