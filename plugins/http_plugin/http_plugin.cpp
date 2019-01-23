@@ -536,15 +536,15 @@ namespace eosio {
             ("verbose-http-errors", bpo::bool_switch()->default_value(false), "Append the error log to HTTP responses")
             ("http-validate-host", boost::program_options::value<bool>()->default_value(true), "If set to false, then any incoming \"Host\" header is considered valid")
             ("http-alias", bpo::value<std::vector<string>>()->composing(), "Additionaly acceptable values for the \"Host\" header of incoming HTTP requests, can be specified multiple times.  Includes http/s_server_address by default.")
-            ("idle-connection-timeout-ms", bpo::value<uint32_t>()->default_value(5000), "Timeout in milliseconds to cut idle connections out; 0 means infinite")
-            ("max-connections", bpo::value<uint32_t>()->default_value(100), "The maximum number of HTTP and WebSocket connections which is allowed to connect and keep alive; 0 means unlimited")
+            ("idle-http-connection-timeout-ms", bpo::value<uint32_t>()->default_value(5000), "Timeout in milliseconds to cut idle HTTP connections out; 0 means infinite")
+            ("max-http-connections", bpo::value<uint32_t>()->default_value(100), "The maximum number of HTTP and WebSocket connections which is allowed to connect and keep alive; 0 means unlimited")
             ;
    }
 
    void http_plugin::plugin_initialize(const variables_map& options) {
       try {
-         my->idle_connection_timeout_ms = options.at("idle-connection-timeout-ms").as<uint32_t>();
-         my->max_connections = options.at("max-connections").as<uint32_t>();
+         my->idle_connection_timeout_ms = options.at("idle-http-connection-timeout-ms").as<uint32_t>();
+         my->max_connections = options.at("max-http-connections").as<uint32_t>();
 
          my->validate_host = options.at("http-validate-host").as<bool>();
          if( options.count( "http-alias" )) {
