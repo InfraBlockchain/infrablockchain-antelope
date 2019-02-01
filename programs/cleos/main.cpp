@@ -2673,55 +2673,6 @@ int main( int argc, char** argv ) {
    // set action permission
    auto setActionPermission = set_action_permission_subcommand(setAction);
 
-   // Transfer subcommand
-   string sender;
-   string recipient;
-   string token;
-   string payer;
-   string memo;
-   auto transfer = app.add_subcommand("transfer", localized("Transfer yosemite token from account to account"), false);
-   transfer->require_subcommand();
-
-   auto token_transfer = transfer->add_subcommand("token", localized("Transfer non-native token from account to account"), false);
-   token_transfer->add_option("sender", sender, localized("The account sending token"))->required();
-   token_transfer->add_option("recipient", recipient, localized("The account receiving token"))->required();
-   token_transfer->add_option("token", token, localized("The amount, symbol and its issuer of token to send (e.g. 1.0000 BTC@d2)"))->required();
-   token_transfer->add_option("memo", memo, localized("The memo for the transfer"));
-   token_transfer->add_option("--payer", payer, localized("The account who pays transfer fee"));
-
-   add_standard_transaction_options(token_transfer, "sender@active");
-   token_transfer->set_callback([&] {
-      signed_transaction trx;
-      if (tx_force_unique && memo.size() == 0) {
-         // use the memo to add a nonce
-         memo = generate_nonce_string();
-         tx_force_unique = false;
-      }
-
-      send_actions({create_transfer("yx.token", sender, recipient, yosemite::chain::yx_asset::from_string(token), payer, memo)});
-   });
-
-   auto ntoken_transfer = transfer->add_subcommand("ntoken",
-         localized("Transfer native token from account to account; if an issuer is not specified, native token issued by several issuers could be transferred"), false);
-   ntoken_transfer->add_option("sender", sender, localized("The account sending naitve token"))->required();
-   ntoken_transfer->add_option("recipient", recipient, localized("The account receiving naitve token"))->required();
-   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 100.0000 DUSD)"))->required();
-   ntoken_transfer->add_option("memo", memo, localized("The memo for the transfer"));
-   ntoken_transfer->add_option("--issuer", issuer, localized("The issuer account who issues the native token"));
-   ntoken_transfer->add_option("--payer", payer, localized("The account who pays transfer fee"));
-
-   add_standard_transaction_options(ntoken_transfer, "sender@active");
-   ntoken_transfer->set_callback([&] {
-      signed_transaction trx;
-      if (tx_force_unique && memo.size() == 0) {
-         // use the memo to add a nonce
-         memo = generate_nonce_string();
-         tx_force_unique = false;
-      }
-
-      send_actions({create_ntransfer("yx.ntoken", sender, recipient, token, issuer, payer, memo)});
-   });
-
    // Net subcommand
    string new_host;
    auto net = app.add_subcommand( "net", localized("Interact with local p2p network connections"), false );
@@ -3022,7 +2973,6 @@ int main( int argc, char** argv ) {
       std::cout << fc::json::to_pretty_string(trxs_result) << std::endl;
    });
 
-
    // multisig subcommand
    auto msig = app.add_subcommand("multisig", localized("Multisig contract commands"), false);
    msig->require_subcommand();
@@ -3158,9 +3108,11 @@ int main( int argc, char** argv ) {
 
 
    // multisig review
+   bool show_approvals_in_multisig_review = false;
    auto review = msig->add_subcommand("review", localized("Review transaction"));
    review->add_option("proposer", proposer, localized("proposer name (string)"))->required();
    review->add_option("proposal_name", proposal_name, localized("proposal name (string)"))->required();
+   review->add_flag( "--show-approvals", show_approvals_in_multisig_review, localized("Show the status of the approvals requested within the proposal") );
 
    review->set_callback([&] {
       const auto result1 = call(get_table_func, fc::mutable_variant_object("json", true)
@@ -3200,7 +3152,7 @@ int main( int argc, char** argv ) {
 
          try {
             const auto& result2 = call(get_table_func, fc::mutable_variant_object("json", true)
-                                       ("code", "eosio.msig")
+                                       ("code", "yx.msig")
                                        ("scope", proposer)
                                        ("table", "approvals2")
                                        ("table_key", "")
@@ -3232,7 +3184,7 @@ int main( int argc, char** argv ) {
             }
          } else {
             const auto result3 = call(get_table_func, fc::mutable_variant_object("json", true)
-                                       ("code", "eosio.msig")
+                                       ("code", "yx.msig")
                                        ("scope", proposer)
                                        ("table", "approvals")
                                        ("table_key", "")
@@ -3265,8 +3217,8 @@ int main( int argc, char** argv ) {
          if( new_multisig ) {
             for( auto& a : provided_approvers ) {
                const auto result4 = call(get_table_func, fc::mutable_variant_object("json", true)
-                                          ("code", "eosio.msig")
-                                          ("scope", "eosio.msig")
+                                          ("code", "yx.msig")
+                                          ("scope", "yx.msig")
                                           ("table", "invals")
                                           ("table_key", "")
                                           ("lower_bound", a.first.value)
@@ -3371,7 +3323,7 @@ int main( int argc, char** argv ) {
       }
 
       auto accountPermissions = get_account_permissions(tx_permission, {proposer,config::active_name});
-      send_actions({chain::action{accountPermissions, "yx.msig", action, variant_to_bin( N(eosio.msig), action, args ) }});
+      send_actions({chain::action{accountPermissions, "yx.msig", action, variant_to_bin( N(yx.msig), action, args ) }});
    };
 
    // multisig approve
@@ -3401,7 +3353,7 @@ int main( int argc, char** argv ) {
          ("account", invalidator);
 
       auto accountPermissions = get_account_permissions(tx_permission, {invalidator,config::active_name});
-      send_actions({chain::action{accountPermissions, "eosio.msig", "invalidate", variant_to_bin( N(eosio.msig), "invalidate", args ) }});
+      send_actions({chain::action{accountPermissions, "yx.msig", "invalidate", variant_to_bin( N(yx.msig), "invalidate", args ) }});
    });
 
    // multisig cancel
