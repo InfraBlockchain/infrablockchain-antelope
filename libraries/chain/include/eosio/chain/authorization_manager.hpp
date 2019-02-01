@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 #pragma once
 
@@ -84,7 +84,8 @@ namespace eosio { namespace chain {
                               const flat_set<permission_level>&    provided_permissions = flat_set<permission_level>(),
                               fc::microseconds                     provided_delay = fc::microseconds(0),
                               const std::function<void()>&         checktime = std::function<void()>(),
-                              bool                                 allow_unused_keys = false
+                              bool                                 allow_unused_keys = false,
+                              const flat_set<permission_level>&    satisfied_authorizations = flat_set<permission_level>()
                             )const;
 
          /**
@@ -108,7 +109,8 @@ namespace eosio { namespace chain {
                               const flat_set<permission_level>&    provided_permissions = flat_set<permission_level>(),
                               fc::microseconds                     provided_delay = fc::microseconds(0),
                               const std::function<void()>&         checktime = std::function<void()>(),
-                              bool                                 allow_unused_keys = false
+                              bool                                 allow_unused_keys = false,
+                              const flat_set<permission_level>&    satisfied_authorizations = flat_set<permission_level>()
                             )const;
 
          /**
@@ -153,7 +155,8 @@ namespace eosio { namespace chain {
                                     const flat_set<public_key_type>&     provided_keys,
                                     const flat_set<permission_level>&    provided_permissions,
                                     fc::microseconds&                    provided_delay,
-                                    const std::function<void()>&         checktime ) const;
+                                    const std::function<void()>&         checktime,
+                                    const flat_set<permission_level>&    satisfied_authorizations ) const;
 
          void             check_updateauth_authorization( const updateauth& update, const vector<permission_level>& auths )const;
          void             check_deleteauth_authorization( const deleteauth& del, const vector<permission_level>& auths )const;

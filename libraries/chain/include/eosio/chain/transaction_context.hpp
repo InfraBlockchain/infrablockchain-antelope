@@ -40,7 +40,6 @@ namespace eosio { namespace chain {
 
          void init_for_input_trx( uint64_t packed_trx_unprunable_size,
                                   uint64_t packed_trx_prunable_size,
-                                  uint32_t num_signatures,
                                   bool skip_recording);
 
          void init_for_deferred_trx( fc::time_point published );
@@ -62,6 +61,8 @@ namespace eosio { namespace chain {
          uint32_t update_billed_cpu_time( fc::time_point now );
 
          std::tuple<int64_t, int64_t, bool, bool> max_bandwidth_billed_accounts_can_pay( bool force_elastic_limits = false )const;
+
+         void validate_referenced_accounts( const transaction& trx, bool enforce_actor_whitelist_blacklist )const;
 
       public:
          /// YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
@@ -114,7 +115,7 @@ namespace eosio { namespace chain {
          fc::microseconds              delay;
          bool                          is_input           = false;
          bool                          apply_context_free = true;
-         bool                          can_subjectively_fail = true;
+         bool                          enforce_whiteblacklist = true;
 
          fc::time_point                deadline = fc::time_point::maximum();
          fc::microseconds              leeway = fc::microseconds(3000);
