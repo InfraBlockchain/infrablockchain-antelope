@@ -578,14 +578,14 @@ void handle_mongo_exception( const std::string& desc, int line_num ) {
    }
 }
 
-// custom oid to avoid monotonic throttling
-// https://docs.mongodb.com/master/core/bulk-write-operations/#avoid-monotonic-throttling
-bsoncxx::oid make_custom_oid() {
-   bsoncxx::oid x = bsoncxx::oid();
-   const char* p = x.bytes();
-   std::swap((short&)p[0], (short&)p[10]);
-   return x;
-}
+//// custom oid to avoid monotonic throttling
+//// https://docs.mongodb.com/master/core/bulk-write-operations/#avoid-monotonic-throttling
+//bsoncxx::oid make_custom_oid() {
+//   bsoncxx::oid x = bsoncxx::oid();
+//   const char* p = x.bytes();
+//   std::swap((short&)p[0], (short&)p[10]);
+//   return x;
+//}
 
 } // anonymous namespace
 
@@ -842,8 +842,8 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       auto action_traces_doc = bsoncxx::builder::basic::document{};
       const chain::base_action_trace& base = atrace; // without inline action traces
 
-      // improve data distributivity when using mongodb sharding
-      action_traces_doc.append( kvp( "_id", make_custom_oid() ) );
+      // // improve data distributivity when using mongodb sharding
+      // action_traces_doc.append( kvp( "_id", make_custom_oid() ) );
 
       auto v = to_variant_with_abi( base );
       string json = fc::json::to_string( v );
