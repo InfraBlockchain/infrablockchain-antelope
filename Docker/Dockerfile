@@ -7,7 +7,7 @@ ARG native_token_precision=4
 RUN git clone -b $branch https://github.com/YosemiteLabs/$repository_name.git --recursive \
     && cd $repository_name && echo "$branch:$(git rev-parse HEAD)" > /etc/yosemite-version \
     && cmake -H. -B"/tmp/build" -GNinja -DCMAKE_BUILD_TYPE=Release -DWASM_ROOT=/opt/wasm -DCMAKE_CXX_COMPILER=clang++ \
-       -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX=/tmp/build  -DSecp256k1_ROOT_DIR=/usr/local -DBUILD_MONGO_DB_PLUGIN=true \
+       -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX=/tmp/build -DBUILD_MONGO_DB_PLUGIN=true \
        -DYOSEMITE_NATIVE_TOKEN_SYMBOL_NAME=$native_token_symbol -DYOSEMITE_NATIVE_TOKEN_PRECISION=$native_token_precision \
     && cmake --build /tmp/build --target install
 

@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 
 #include <eosio/chain/authorization_manager.hpp>
@@ -432,7 +432,8 @@ namespace eosio { namespace chain {
                                                const flat_set<permission_level>&    provided_permissions,
                                                fc::microseconds                     provided_delay,
                                                const std::function<void()>&         _checktime,
-                                               bool                                 allow_unused_keys
+                                               bool                                 allow_unused_keys,
+                                               const flat_set<permission_level>&    satisfied_authorizations
                                              )const
    {
       const auto& checktime = ( static_cast<bool>(_checktime) ? _checktime : _noop_checktime );
@@ -450,7 +451,7 @@ namespace eosio { namespace chain {
                                       );
 
       _check_authorization_actions(checker, delay_max_limit, effective_provided_delay,
-            actions, provided_keys, provided_permissions, provided_delay, checktime);
+            actions, provided_keys, provided_permissions, provided_delay, checktime, satisfied_authorizations);
 
       if( !allow_unused_keys ) {
          EOS_ASSERT( checker.all_keys_used(), tx_irrelevant_sig,
@@ -466,7 +467,8 @@ namespace eosio { namespace chain {
                                                const flat_set<permission_level>&    provided_permissions,
                                                fc::microseconds                     provided_delay,
                                                const std::function<void()>&         _checktime,
-                                               bool                                 allow_unused_keys
+                                               bool                                 allow_unused_keys,
+                                               const flat_set<permission_level>&    satisfied_authorizations
                                              )const
    {
       const auto& checktime = ( static_cast<bool>(_checktime) ? _checktime : _noop_checktime );
@@ -484,7 +486,7 @@ namespace eosio { namespace chain {
       );
 
       _check_authorization_actions(checker, delay_max_limit, effective_provided_delay,
-                                   actions, provided_keys, provided_permissions, provided_delay, checktime);
+                                   actions, provided_keys, provided_permissions, provided_delay, checktime, satisfied_authorizations);
 
       for(const auto& permission: permissions) {
          EOS_ASSERT( checker.satisfied(permission), unsatisfied_authorization,
@@ -515,7 +517,8 @@ namespace eosio { namespace chain {
                                                         const flat_set<public_key_type>&     provided_keys,
                                                         const flat_set<permission_level>&    provided_permissions,
                                                         fc::microseconds&                    provided_delay,
-                                                        const std::function<void()>&         checktime ) const
+                                                        const std::function<void()>&         checktime,
+                                                        const flat_set<permission_level>&    satisfied_authorizations ) const
    {
 
       map<permission_level, fc::microseconds> permissions_to_satisfy;
@@ -558,9 +561,11 @@ namespace eosio { namespace chain {
                }
             }
 
-            auto res = permissions_to_satisfy.emplace( declared_auth, delay );
-            if( !res.second && res.first->second > delay) { // if the declared_auth was already in the map and with a higher delay
-               res.first->second = delay;
+            if( satisfied_authorizations.find( declared_auth ) == satisfied_authorizations.end() ) {
+               auto res = permissions_to_satisfy.emplace( declared_auth, delay );
+               if( !res.second && res.first->second > delay) { // if the declared_auth was already in the map and with a higher delay
+                  res.first->second = delay;
+               }
             }
          }
       }

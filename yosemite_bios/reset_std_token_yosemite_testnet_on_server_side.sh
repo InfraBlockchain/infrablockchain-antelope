@@ -601,6 +601,8 @@ sleep 2
 ## useraccounta issues credit tokens and deposits to ycard service
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccounta","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.cusd.a","permission":"active"}}]}}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 $YOSEMITE_CLI push action yosemite linkauth '{"account":"useraccounta","code":"ycard.cusd.a","type":"creditissue","requirement":"creditissue"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"useraccounta","permission":"codetransfer","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.cusd.a","permission":"yx.code"}}]}}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
+$YOSEMITE_CLI push action yosemite linkauth '{"account":"useraccounta","code":"ycard.cusd.a","type":"transfer","requirement":"codetransfer"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 
 $YOSEMITE_CLI push action ycard.cusd.a creditissue '{"issuer":"useraccounta","to":"ycard.cusd.a","qty":"500.0000 CUSD","tag":"issue credit token by user, and deposit to credit service"}' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.c
 #$YOSEMITE_CLI push action ycard.cusd.a transfer '{"t":"ycard.cusd.a","from":"useraccounta","to":"ycard.cusd.a","qty":"500.0000 CUSD","tag":"deposit credit to service account for anonymous tx"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c

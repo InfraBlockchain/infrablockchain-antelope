@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 #include <eosio/mongo_db_plugin/mongo_db_plugin.hpp>
 #include <eosio/chain/eosio_contract.hpp>
@@ -578,6 +578,15 @@ void handle_mongo_exception( const std::string& desc, int line_num ) {
    }
 }
 
+//// custom oid to avoid monotonic throttling
+//// https://docs.mongodb.com/master/core/bulk-write-operations/#avoid-monotonic-throttling
+//bsoncxx::oid make_custom_oid() {
+//   bsoncxx::oid x = bsoncxx::oid();
+//   const char* p = x.bytes();
+//   std::swap((short&)p[0], (short&)p[10]);
+//   return x;
+//}
+
 } // anonymous namespace
 
 void mongo_db_plugin_impl::purge_abi_cache() {
@@ -738,10 +747,10 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
    using bsoncxx::builder::basic::make_array;
    namespace bbb = bsoncxx::builder::basic;
 
-   const auto& trx = t->trx;
+   const signed_transaction& trx = t->packed_trx->get_signed_transaction();
 
    if( !filter_include( trx ) ) return;
-
+   
    auto trans_doc = bsoncxx::builder::basic::document{};
 
    //auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -774,9 +783,10 @@ void mongo_db_plugin_impl::_process_accepted_transaction( const chain::transacti
    if( t->signing_keys.valid() ) {
       signing_keys_json = fc::json::to_string( t->signing_keys->second );
    } else {
-      auto signing_keys = trx.get_signature_keys( *chain_id, false, false );
-      if( !signing_keys.empty() ) {
-         signing_keys_json = fc::json::to_string( signing_keys );
+      flat_set<public_key_type> keys;
+      trx.get_signature_keys( *chain_id, fc::time_point::maximum(), keys, false );
+      if( !keys.empty() ) {
+         signing_keys_json = fc::json::to_string( keys );
       }
    }
 
@@ -831,6 +841,9 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
        filter_include( atrace.receipt.receiver, atrace.act.name, atrace.act.authorization ) ) {
       auto action_traces_doc = bsoncxx::builder::basic::document{};
       const chain::base_action_trace& base = atrace; // without inline action traces
+
+      // // improve data distributivity when using mongodb sharding
+      // action_traces_doc.append( kvp( "_id", make_custom_oid() ) );
 
       auto v = to_variant_with_abi( base );
       string json = fc::json::to_string( v );
@@ -1124,6 +1137,7 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
    using bsoncxx::builder::basic::make_document;
    using bsoncxx::builder::basic::kvp;
 
+
    const auto block_id = bs->block->id();
    const auto block_id_str = block_id.str();
 
@@ -1170,11 +1184,8 @@ void mongo_db_plugin_impl::_process_irreversible_block(const chain::block_state_
          string trx_id_str;
          if( receipt.trx.contains<packed_transaction>() ) {
             const auto& pt = receipt.trx.get<packed_transaction>();
-            // get id via get_raw_transaction() as packed_transaction.id() mutates internal transaction state
-            const auto& raw = pt.get_raw_transaction();
-            const auto& trx = fc::raw::unpack<transaction>( raw );
-            if( !filter_include( trx ) ) continue;
-            const auto& id = trx.id();
+            if( !filter_include( pt.get_signed_transaction() ) ) continue;
+            const auto& id = pt.id();
             trx_id_str = id.str();
          } else {
             const auto& id = receipt.trx.get<transaction_id_type>();
@@ -1313,7 +1324,7 @@ void mongo_db_plugin_impl::remove_account_control( const account_name& name, con
 
    try {
       auto result = _account_controls.delete_many( make_document( kvp( "controlled_account", name.to_string()),
-                                                                 kvp( "controlled_permission", permission.to_string())));
+                                                                  kvp( "controlled_permission", permission.to_string())));
       if( !result ) {
          EOS_ASSERT( false, chain::mongo_db_update_fail,
                      "account_controls delete failed for account: ${a}, permission: ${p}",
@@ -1408,7 +1419,7 @@ void mongo_db_plugin_impl::update_account(const chain::action& act)
 
                try {
                   if( !_accounts.update_one( make_document( kvp( "_id", account->view()["_id"].get_oid())),
-                                            update_from.view())) {
+                                             update_from.view())) {
                      EOS_ASSERT( false, chain::mongo_db_update_fail, "Failed to udpdate account ${n}", ("n", setabi.account));
                   }
                } catch( ... ) {
@@ -1484,9 +1495,9 @@ void mongo_db_plugin_impl::init() {
       auto& mongo_conn = *client;
 
       auto accounts = mongo_conn[db_name][accounts_col];
-      if ( accounts.count( make_document() ) == 0 ) {
+      if( accounts.count( make_document()) == 0 ) {
          auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()});
+               std::chrono::microseconds{fc::time_point::now().time_since_epoch().count()} );
 
          auto doc = make_document( kvp( "name", name( chain::config::system_account_name ).to_string()),
                                    kvp( "createdAt", b_date{now} ));
@@ -1496,8 +1507,8 @@ void mongo_db_plugin_impl::init() {
                EOS_ASSERT( false, chain::mongo_db_insert_fail, "Failed to insert account ${n}",
                            ("n", name( chain::config::system_account_name ).to_string()));
             }
-         } catch(...) {
-            handle_mongo_exception("account insert", __LINE__);
+         } catch (...) {
+            handle_mongo_exception( "account insert", __LINE__ );
          }
 
          try {
