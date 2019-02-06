@@ -117,7 +117,7 @@ namespace yosemitex { namespace contract {
       require_recipient( issuer );
 
       if ( issuer != to ) {
-         SEND_INLINE_ACTION( *this, transfer, {issuer, N(active)}, {_self, issuer, to, qty, tag} );
+         SEND_INLINE_ACTION( *this, transfer, {issuer, N(codetransfer)}, {_self, issuer, to, qty, tag} );
       }
    }
 
