@@ -10,6 +10,9 @@
 
 #include <iosfwd>
 
+#include <yosemite/chain/standard_token_action_types.hpp>
+#include <yosemite/chain/system_accounts.hpp>
+
 #define REQUIRE_EQUAL_OBJECTS(left, right) { auto a = fc::variant( left ); auto b = fc::variant( right ); BOOST_REQUIRE_EQUAL( true, a.is_object() ); \
    BOOST_REQUIRE_EQUAL( true, b.is_object() ); \
    BOOST_REQUIRE_EQUAL_COLLECTIONS( a.get_object().begin(), a.get_object().end(), b.get_object().begin(), b.get_object().end() ); }
@@ -91,6 +94,7 @@ namespace eosio { namespace testing {
 
          virtual signed_block_ptr produce_block( fc::microseconds skip_time = fc::milliseconds(config::block_interval_ms), uint32_t skip_flag = 0/*skip_missed_block_penalty*/ ) = 0;
          virtual signed_block_ptr produce_empty_block( fc::microseconds skip_time = fc::milliseconds(config::block_interval_ms), uint32_t skip_flag = 0/*skip_missed_block_penalty*/ ) = 0;
+         virtual signed_block_ptr finish_block() = 0;
          void                 produce_blocks( uint32_t n = 1, bool empty = false );
          void                 produce_blocks_until_end_of_round();
          void                 produce_blocks_for_n_rounds(const uint32_t num_of_rounds = 1);
@@ -225,15 +229,18 @@ namespace eosio { namespace testing {
          static action_result wasm_assert_code( uint64_t error_code ) { return "assertion failure with error code: " + std::to_string(error_code); }
 
          auto get_resolver() {
-            return [this]( const account_name& name ) -> optional<abi_serializer> {
+            return [this]( account_name code, action_name action ) -> optional<abi_serializer> {
                try {
-                  const auto& accnt = control->db().get<account_object, by_name>( name );
+                  if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+                     code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                  }
+                  const auto& accnt = control->db().get<account_object, by_name>( code );
                   abi_def abi;
                   if( abi_serializer::to_abi( accnt.abi, abi )) {
                      return abi_serializer( abi, abi_serializer_max_time );
                   }
                   return optional<abi_serializer>();
-               } FC_RETHROW_EXCEPTIONS( error, "Failed to find or parse ABI for ${name}", ("name", name))
+               } FC_RETHROW_EXCEPTIONS( error, "Failed to find or parse ABI for ${code}", ("code", code))
             };
          }
 
@@ -271,6 +278,7 @@ namespace eosio { namespace testing {
       protected:
          signed_block_ptr _produce_block( fc::microseconds skip_time, bool skip_pending_trxs = false, uint32_t skip_flag = 0 );
          void             _start_block(fc::time_point block_time);
+         signed_block_ptr _finish_block();
 
       // Fields:
       protected:
@@ -302,6 +310,10 @@ namespace eosio { namespace testing {
       signed_block_ptr produce_empty_block( fc::microseconds skip_time = fc::milliseconds(config::block_interval_ms), uint32_t skip_flag = 0/*skip_missed_block_penalty*/ )override {
          control->abort_block();
          return _produce_block(skip_time, true, skip_flag);
+      }
+
+      signed_block_ptr finish_block()override {
+         return _finish_block();
       }
 
       bool validate() { return true; }
@@ -355,7 +367,7 @@ namespace eosio { namespace testing {
 
          validating_node = std::make_unique<controller>(vcfg);
          validating_node->add_indices();
-         validating_node->startup();
+         validating_node->startup( []() { return false; } );
 
          init(true);
       }
@@ -370,14 +382,15 @@ namespace eosio { namespace testing {
 
          validating_node = std::make_unique<controller>(vcfg);
          validating_node->add_indices();
-         validating_node->startup();
+         validating_node->startup( []() { return false; } );
 
          init(config);
       }
 
       signed_block_ptr produce_block( fc::microseconds skip_time = fc::milliseconds(config::block_interval_ms), uint32_t skip_flag = 0 /*skip_missed_block_penalty*/ )override {
          auto sb = _produce_block(skip_time, false, skip_flag | 2);
-         validating_node->push_block( sb );
+         auto bs = validating_node->create_block_state_future( sb );
+         validating_node->push_block( bs );
 
          return sb;
       }
@@ -387,17 +400,21 @@ namespace eosio { namespace testing {
       }
 
       void validate_push_block(const signed_block_ptr& sb) {
-         validating_node->push_block( sb );
+         auto bs = validating_node->create_block_state_future( sb );
+         validating_node->push_block( bs );
       }
 
       signed_block_ptr produce_empty_block( fc::microseconds skip_time = fc::milliseconds(config::block_interval_ms), uint32_t skip_flag = 0 /*skip_missed_block_penalty*/ )override {
          control->abort_block();
          auto sb = _produce_block(skip_time, true, skip_flag | 2);
-         validating_node->push_block( sb );
-
-
+         auto bs = validating_node->create_block_state_future( sb );
+         validating_node->push_block( bs );
 
          return sb;
+      }
+
+      signed_block_ptr finish_block()override {
+         return _finish_block();
       }
 
       bool validate() {
@@ -415,7 +432,7 @@ namespace eosio { namespace testing {
         validating_node.reset();
         validating_node = std::make_unique<controller>(vcfg);
         validating_node->add_indices();
-        validating_node->startup();
+        validating_node->startup( []() { return false; } );
 
         return ok;
       }

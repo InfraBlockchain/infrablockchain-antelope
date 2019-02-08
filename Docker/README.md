@@ -20,7 +20,13 @@ cd yosemite-public-blockchain/Docker
 docker build . -t yosemitex/yosemite
 ```
 
-By default, the native token symbol is set to DKRW with precision 4. You can override this using the symbol argument while building the docker image.
+The above will build off the most recent commit to the master branch by default. If you would like to target a specific branch/tag, you may use a build argument. For example, if you wished to generate a docker image based off of the 1.6.0 tag, you could do the following:
+
+```bash
+docker build -t yosemitex/yosemite:1.6.0 --build-arg branch=1.6.0 .
+```
+
+By default, the native token symbol is set to DUSD with precision 4. You can override this using the symbol argument while building the docker image.
 
 ```bash
 docker build -t yosemitex/yosemite --build-arg symbol=<symbol> .

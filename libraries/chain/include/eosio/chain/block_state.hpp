@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 #pragma once
 
@@ -13,8 +13,8 @@
 namespace eosio { namespace chain {
 
    struct block_state : public block_header_state {
-      block_state( const block_header_state& cur ):block_header_state(cur){}
-      block_state( const block_header_state& prev, signed_block_ptr b, bool trust = false );
+      explicit block_state( const block_header_state& cur ):block_header_state(cur){}
+      block_state( const block_header_state& prev, signed_block_ptr b, bool skip_validate_signee );
       block_state( const block_header_state& prev, block_timestamp_type when );
       block_state() = default;
 
@@ -32,7 +32,7 @@ namespace eosio { namespace chain {
       /// the reason why transaction votes data structure is located in struct 'block_state'
       /// is because 'block_state' data structure resides only in 'fork_db' state
       /// from which the irreversible blocks are purged (evicted from memory)
-      yosemite_core::transaction_votes_in_block           trx_votes;
+      yosemite::chain::transaction_votes_in_block         trx_votes;
    };
 
    using block_state_ptr = std::shared_ptr<block_state>;

@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 #pragma once
 #include <appbase/application.hpp>
@@ -16,6 +16,8 @@
 #include <eosio/chain/plugin_interface.hpp>
 #include <eosio/chain/types.hpp>
 
+#include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
 #include <yosemite/chain/yx_symbol.hpp>
 #include <yosemite/chain/yx_asset.hpp>
 
@@ -59,7 +61,7 @@ struct permission {
 template<typename>
 struct resolver_factory;
 
-// see specialization for uint64_t in source file
+// see specializations for uint64_t and double in source file
 template<typename Type>
 Type convert_to_type(const string& str, const string& desc) {
    try {
@@ -69,6 +71,9 @@ Type convert_to_type(const string& str, const string& desc) {
 
 template<>
 uint64_t convert_to_type(const string& str, const string& desc);
+
+template<>
+double convert_to_type(const string& str, const string& desc);
 
 class read_only {
    const controller& db;
@@ -124,7 +129,9 @@ public:
       fc::time_point             last_code_update;
       fc::time_point             created;
 
-      optional<asset>            core_liquid_balance;
+      yosemite::chain::system_token_balance  system_token_balance;
+
+      optional<yosemite::chain::token_meta_info> token_info;
 
       int64_t                    ram_quota  = 0;
       int64_t                    net_weight = 0;
@@ -274,6 +281,8 @@ public:
       string      key_type;  // type of key specified by index_position
       string      index_position; // 1 - primary (first), 2 - secondary index (in order defined by multi_index), 3 - third index, etc
       string      encode_type{"dec"}; //dec, hex , default=dec
+      optional<bool>  reverse;
+      optional<bool>  show_payer; // show RAM pyer
     };
 
    struct get_table_rows_result {
@@ -289,6 +298,7 @@ public:
       string      lower_bound; // lower bound of scope, optional
       string      upper_bound; // upper bound of scope, optional
       uint32_t    limit = 10;
+      optional<bool>  reverse;
    };
    struct get_table_by_scope_result_row {
       name        code;
@@ -312,21 +322,6 @@ public:
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
 
-   struct get_token_balance_params {
-      name code;
-      name account;
-      string ysymbol;
-   };
-
-   yx_asset get_token_balance(const get_token_balance_params &params) const;
-
-   struct get_native_token_balance_params {
-      name account;
-      optional<name> issuer;
-   };
-
-   asset get_native_token_balance(const get_native_token_balance_params &params) const;
-
    struct get_currency_stats_params {
       name           code;
       string         symbol;
@@ -340,12 +335,67 @@ public:
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
-   struct get_token_stats_params {
+   struct get_token_balance_params {
+      name token;
+      name account;
+   };
+
+   asset get_token_balance(const get_token_balance_params &params) const;
+
+   struct get_token_info_params {
+      name token;
+   };
+
+   fc::variant get_token_info(const get_token_info_params &params) const;
+
+   struct get_system_token_list_params {
+      bool token_meta;
+   };
+
+   fc::variant get_system_token_list(const get_system_token_list_params &params) const;
+
+   struct get_system_token_balance_params {
+      name account;
+   };
+
+   yosemite::chain::system_token_balance get_system_token_balance(const get_system_token_balance_params &params) const;
+
+   struct get_txfee_item_params {
+      name code;
+      name action;
+   };
+
+   yosemite::chain::tx_fee_for_action get_txfee_item(const get_txfee_item_params &params) const;
+
+   struct get_txfee_list_params {
+      name code_lower_bound; // lower bound of code account name (inclusive)
+      name code_upper_bound; // upper bound of code account name (inclusive)
+      uint32_t limit = 100; // limit of result item count
+   };
+
+   yosemite::chain::tx_fee_list_result get_txfee_list(const get_txfee_list_params &params) const;
+
+   struct get_yx_token_balance_params {
+      name code;
+      name account;
+      string ysymbol;
+   };
+
+   yx_asset get_yx_token_balance(const get_yx_token_balance_params &params) const;
+
+   struct get_native_token_balance_params {
+      name account;
+      optional<name> issuer;
+   };
+
+   asset get_native_token_balance(const get_native_token_balance_params &params) const;
+
+   struct get_yx_token_stats_params {
       name code;
       string ysymbol;
    };
 
-   struct get_token_stats_result {
+   struct get_yx_token_stats_result {
       yx_asset supply;
       uint16_t can_set_options;
       uint16_t options;
@@ -353,7 +403,7 @@ public:
       vector<uint16_t> kyc_rule_flags;
    };
 
-   get_token_stats_result get_token_stats(const get_token_stats_params &params) const;
+   get_yx_token_stats_result get_yx_token_stats(const get_yx_token_stats_params &params) const;
 
    struct get_native_token_stats_params {
       account_name issuer;
@@ -444,58 +494,78 @@ public:
       const uint64_t table_with_index = get_table_index_name(p, primary);
       const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, scope, p.table));
       const auto* index_t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, scope, table_with_index));
-      if (t_id != nullptr && index_t_id != nullptr) {
-         const auto& secidx = d.get_index<IndexType, chain::by_secondary>();
-         decltype(index_t_id->id) low_tid(index_t_id->id._id);
-         decltype(index_t_id->id) next_tid(index_t_id->id._id + 1);
-         auto lower = secidx.lower_bound(boost::make_tuple(low_tid));
-         auto upper = secidx.lower_bound(boost::make_tuple(next_tid));
+      if( t_id != nullptr && index_t_id != nullptr ) {
+         using secondary_key_type = std::result_of_t<decltype(conv)(SecKeyType)>;
+         static_assert( std::is_same<typename IndexType::value_type::secondary_key_type, secondary_key_type>::value, "Return type of conv does not match type of secondary key for IndexType" );
 
-         if (p.lower_bound.size()) {
-            if (p.key_type == "name") {
+         const auto& secidx = d.get_index<IndexType, chain::by_secondary>();
+         auto lower_bound_lookup_tuple = std::make_tuple( index_t_id->id._id,
+                                                          eosio::chain::secondary_key_traits<secondary_key_type>::true_lowest(),
+                                                          std::numeric_limits<uint64_t>::lowest() );
+         auto upper_bound_lookup_tuple = std::make_tuple( index_t_id->id._id,
+                                                          eosio::chain::secondary_key_traits<secondary_key_type>::true_highest(),
+                                                          std::numeric_limits<uint64_t>::max() );
+
+         if( p.lower_bound.size() ) {
+            if( p.key_type == "name" ) {
                name s(p.lower_bound);
                SecKeyType lv = convert_to_type<SecKeyType>( s.to_string(), "lower_bound name" ); // avoids compiler error
-               lower = secidx.lower_bound( boost::make_tuple( low_tid, conv( lv )));
+               std::get<1>(lower_bound_lookup_tuple) = conv( lv );
             } else {
                SecKeyType lv = convert_to_type<SecKeyType>( p.lower_bound, "lower_bound" );
-               lower = secidx.lower_bound( boost::make_tuple( low_tid, conv( lv )));
+               std::get<1>(lower_bound_lookup_tuple) = conv( lv );
             }
          }
-         if (p.upper_bound.size()) {
-            if (p.key_type == "name") {
+
+         if( p.upper_bound.size() ) {
+            if( p.key_type == "name" ) {
                name s(p.upper_bound);
                SecKeyType uv = convert_to_type<SecKeyType>( s.to_string(), "upper_bound name" );
-               upper = secidx.lower_bound( boost::make_tuple( low_tid, conv( uv )));
+               std::get<1>(upper_bound_lookup_tuple) = conv( uv );
             } else {
                SecKeyType uv = convert_to_type<SecKeyType>( p.upper_bound, "upper_bound" );
-               upper = secidx.lower_bound( boost::make_tuple( low_tid, conv( uv )));
+               std::get<1>(upper_bound_lookup_tuple) = conv( uv );
             }
          }
 
-         vector<char> data;
+         if( upper_bound_lookup_tuple < lower_bound_lookup_tuple )
+            return result;
 
-         auto end = fc::time_point::now() + fc::microseconds(1000 * 10); /// 10ms max time
+         auto walk_table_row_range = [&]( auto itr, auto end_itr ) {
+            auto cur_time = fc::time_point::now();
+            auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
+            vector<char> data;
+            for( unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++itr, cur_time = fc::time_point::now() ) {
+               const auto* itr2 = d.find<chain::key_value_object, chain::by_scope_primary>( boost::make_tuple(t_id->id, itr->primary_key) );
+               if( itr2 == nullptr ) continue;
+               copy_inline_row(*itr2, data);
 
-         unsigned int count = 0;
-         auto itr = lower;
-         for (; itr != upper; ++itr) {
+               fc::variant data_var;
+               if( p.json ) {
+                  data_var = abis.binary_to_variant( abis.get_table_type(p.table), data, abi_serializer_max_time, shorten_abi_errors );
+               } else {
+                  data_var = fc::variant( data );
+               }
 
-            const auto* itr2 = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(t_id->id, itr->primary_key));
-            if (itr2 == nullptr) continue;
-            copy_inline_row(*itr2, data);
+               if( p.show_payer && *p.show_payer ) {
+                  result.rows.emplace_back( fc::mutable_variant_object("data", std::move(data_var))("payer", itr->payer) );
+               } else {
+                  result.rows.emplace_back( std::move(data_var) );
+               }
 
-            if (p.json) {
-               result.rows.emplace_back( abis.binary_to_variant( abis.get_table_type(p.table), data, abi_serializer_max_time, shorten_abi_errors ) );
-            } else {
-               result.rows.emplace_back(fc::variant(data));
+               ++count;
             }
-
-            if (++count == p.limit || fc::time_point::now() > end) {
-               break;
+            if( itr != end_itr ) {
+               result.more = true;
             }
-         }
-         if (itr != upper) {
-            result.more = true;
+         };
+
+         auto lower = secidx.lower_bound( lower_bound_lookup_tuple );
+         auto upper = secidx.upper_bound( upper_bound_lookup_tuple );
+         if( p.reverse && *p.reverse ) {
+            walk_table_row_range( boost::make_reverse_iterator(upper), boost::make_reverse_iterator(lower) );
+         } else {
+            walk_table_row_range( lower, upper );
          }
       }
       return result;
@@ -511,53 +581,65 @@ public:
       abi_serializer abis;
       abis.set_abi(abi, abi_serializer_max_time);
       const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, scope, p.table));
-      if (t_id != nullptr) {
+      if( t_id != nullptr ) {
          const auto& idx = d.get_index<IndexType, chain::by_scope_primary>();
-         decltype(t_id->id) next_tid(t_id->id._id + 1);
-         auto lower = idx.lower_bound(boost::make_tuple(t_id->id));
-         auto upper = idx.lower_bound(boost::make_tuple(next_tid));
+         auto lower_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::lowest() );
+         auto upper_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::max() );
 
-         if (p.lower_bound.size()) {
-            if (p.key_type == "name") {
+         if( p.lower_bound.size() ) {
+            if( p.key_type == "name" ) {
                name s(p.lower_bound);
-               lower = idx.lower_bound( boost::make_tuple( t_id->id, s.value ));
+               std::get<1>(lower_bound_lookup_tuple) = s.value;
             } else {
                auto lv = convert_to_type<typename IndexType::value_type::key_type>( p.lower_bound, "lower_bound" );
-               lower = idx.lower_bound( boost::make_tuple( t_id->id, lv ));
+               std::get<1>(lower_bound_lookup_tuple) = lv;
             }
          }
-         if (p.upper_bound.size()) {
-            if (p.key_type == "name") {
+
+         if( p.upper_bound.size() ) {
+            if( p.key_type == "name" ) {
                name s(p.upper_bound);
-               upper = idx.lower_bound( boost::make_tuple( t_id->id, s.value ));
+               std::get<1>(upper_bound_lookup_tuple) = s.value;
             } else {
                auto uv = convert_to_type<typename IndexType::value_type::key_type>( p.upper_bound, "upper_bound" );
-               upper = idx.lower_bound( boost::make_tuple( t_id->id, uv ));
+               std::get<1>(upper_bound_lookup_tuple) = uv;
             }
          }
 
-         vector<char> data;
+         if( upper_bound_lookup_tuple < lower_bound_lookup_tuple  )
+            return result;
 
-         auto end = fc::time_point::now() + fc::microseconds(1000 * 10); /// 10ms max time
+         auto walk_table_row_range = [&]( auto itr, auto end_itr ) {
+            auto cur_time = fc::time_point::now();
+            auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
+            vector<char> data;
+            for( unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now() ) {
+               copy_inline_row(*itr, data);
 
-         unsigned int count = 0;
-         auto itr = lower;
-         for (; itr != upper; ++itr) {
-            copy_inline_row(*itr, data);
+               fc::variant data_var;
+               if( p.json ) {
+                  data_var = abis.binary_to_variant( abis.get_table_type(p.table), data, abi_serializer_max_time, shorten_abi_errors );
+               } else {
+                  data_var = fc::variant( data );
+               }
 
-            if (p.json) {
-               result.rows.emplace_back( abis.binary_to_variant( abis.get_table_type(p.table), data, abi_serializer_max_time, shorten_abi_errors ) );
-            } else {
-               result.rows.emplace_back(fc::variant(data));
+               if( p.show_payer && *p.show_payer ) {
+                  result.rows.emplace_back( fc::mutable_variant_object("data", std::move(data_var))("payer", itr->payer) );
+               } else {
+                  result.rows.emplace_back( std::move(data_var) );
+               }
             }
-
-            if (++count == p.limit || fc::time_point::now() > end) {
-               ++itr;
-               break;
+            if( itr != end_itr ) {
+               result.more = true;
             }
-         }
-         if (itr != upper) {
-            result.more = true;
+         };
+
+         auto lower = idx.lower_bound( lower_bound_lookup_tuple );
+         auto upper = idx.upper_bound( upper_bound_lookup_tuple );
+         if( p.reverse && *p.reverse ) {
+            walk_table_row_range( boost::make_reverse_iterator(upper), boost::make_reverse_iterator(lower) );
+         } else {
+            walk_table_row_range( lower, upper );
          }
       }
       return result;
@@ -577,7 +659,7 @@ public:
 
    using push_block_params = chain::signed_block;
    using push_block_results = empty;
-   void push_block(const push_block_params& params, chain::plugin_interface::next_function<push_block_results> next);
+   void push_block(push_block_params&& params, chain::plugin_interface::next_function<push_block_results> next);
 
    using push_transaction_params = fc::variant_object;
    struct push_transaction_results {
@@ -668,10 +750,11 @@ public:
    void plugin_shutdown();
 
    chain_apis::read_only get_read_only_api() const { return chain_apis::read_only(chain(), get_abi_serializer_max_time()); }
-   chain_apis::read_write get_read_write_api();
+   chain_apis::read_write get_read_write_api() { return chain_apis::read_write(chain(), get_abi_serializer_max_time()); }
 
    void accept_block( const chain::signed_block_ptr& block );
    void accept_transaction(const chain::packed_transaction& trx, chain::plugin_interface::next_function<chain::transaction_trace_ptr> next);
+   void accept_transaction(const chain::transaction_metadata_ptr& trx, chain::plugin_interface::next_function<chain::transaction_trace_ptr> next);
 
    bool block_is_on_preferred_chain(const chain::block_id_type& block_id);
 
@@ -718,10 +801,10 @@ FC_REFLECT(eosio::chain_apis::read_only::get_block_header_state_params, (block_n
 
 FC_REFLECT( eosio::chain_apis::read_write::push_transaction_results, (transaction_id)(processed) )
 
-FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type)(reverse)(show_payer) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more) );
 
-FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit)(reverse) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 
@@ -729,9 +812,15 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(ac
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
 
-FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (code)(account)(ysymbol));
-FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_params, (code)(ysymbol));
-FC_REFLECT(eosio::chain_apis::read_only::get_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_balance_params, (token)(account));
+FC_REFLECT(eosio::chain_apis::read_only::get_token_info_params, (token));
+FC_REFLECT(eosio::chain_apis::read_only::get_system_token_list_params, (token_meta));
+FC_REFLECT(eosio::chain_apis::read_only::get_system_token_balance_params, (account));
+FC_REFLECT(eosio::chain_apis::read_only::get_txfee_item_params, (code)(action));
+FC_REFLECT(eosio::chain_apis::read_only::get_txfee_list_params, (code_lower_bound)(code_upper_bound)(limit));
+FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_balance_params, (code)(account)(ysymbol));
+FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_params, (code)(ysymbol));
+FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_balance_params, (account)(issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_params, (issuer));
 FC_REFLECT(eosio::chain_apis::read_only::get_native_token_stats_result, (supply)(options));
@@ -747,7 +836,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_scheduled_transactions_result, (tr
 
 FC_REFLECT( eosio::chain_apis::read_only::get_account_results,
             (account_name)(head_block_num)(head_block_time)(privileged)(last_code_update)(created)
-            (core_liquid_balance)(ram_quota)(net_weight)(cpu_weight)(net_limit)(cpu_limit)(ram_usage)(permissions)
+            (system_token_balance)(token_info)(ram_quota)(net_weight)(cpu_weight)(net_limit)(cpu_limit)(ram_usage)(permissions)
             (total_resources)(self_delegated_bandwidth)(refund_request)(voter_info) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_results, (account_name)(code_hash)(wast)(wasm)(abi) )
 FC_REFLECT( eosio::chain_apis::read_only::get_code_hash_results, (account_name)(code_hash) )

@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 #pragma once
 
@@ -64,13 +64,13 @@ namespace eosio { namespace chain {
       /// tracking transaction vote amount generated from current transaction.
       /// transaction votes collected from each transaction are accumulated in the (pending) 'block state' of each block.
       /// this field is also used for transaction-vote logging in secondary log store
-      fc::optional<yosemite_core::transaction_vote> trx_vote;
+      fc::optional<yosemite::chain::transaction_vote>  trx_vote;
 
-      /// YOSEMITE Delegated Transaction Fee Payment
-      /// YOSEMITE blockchain provides 'transaction fee payer' option for every blockchain transaction.
+      /// YOSEMITE Transaction Fee Payer
+      /// YOSEMITE blockchain provides 'transaction fee payer' field for every blockchain transaction.
       /// If 'transaction fee payer' field is specified in a submitted transaction, transaction fee is charged to
-      /// the specified transaction fee payer who additionally signed the transaction on behalf of the initial transaction sender
-      fc::optional<account_name>                 fee_payer;
+      /// the specified transaction fee payer who signed the transaction message.
+      account_name                               fee_payer = 0;
 
       transaction_trace_ptr                      failed_dtrx_trace;
       fc::optional<fc::exception>                except;

@@ -2,7 +2,7 @@
 
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 #include <eosio/http_plugin/http_plugin.hpp>
 #include <eosio/http_plugin/local_endpoint.hpp>
@@ -156,9 +156,10 @@ namespace eosio {
 
          unordered_set<ws_connection<basic_socket_endpoint>> http_connections;
          unordered_set<ws_connection<tls_socket_endpoint>> https_connections;
-         unordered_set<websocketpp::server<http_config::asio_local_with_stub_log>::connection_ptr> local_connections;
          DEFINE_ENABLE_IF_TEMPLATE_GETTERS(http_connections, https_connections, get_connection_set);
 
+         /* just for compile purpose */
+         unordered_set<websocketpp::server<http_config::asio_local_with_stub_log>::connection_ptr> local_connections;
          template<typename SocketType>
          typename std::enable_if<std::is_same<SocketType, local_socket_endpoint>::value, decltype(local_connections) &>::type
          get_connection_set() {
@@ -170,12 +171,13 @@ namespace eosio {
 
          bool is_max_connections_reached() {
             return max_connections > 0 &&
-                   (http_connections.size() + https_connections.size() + local_connections.size() + ws_connection_to_msgh_map.size() + wss_connection_to_msgh_map.size())
+                   (http_connections.size() + https_connections.size() + ws_connection_to_msgh_map.size() + wss_connection_to_msgh_map.size())
                     >= max_connections;
          }
 
          template <typename HttpConfigType, typename SocketType>
          bool is_already_connected(typename websocketpp::server<HttpConfigType>::connection_ptr ws_conn) {
+            if (std::is_same<SocketType, local_socket_endpoint>::value) return true;
             if (max_connections == 0) return true;
 
             auto &connection_set = get_connection_set<SocketType>();
@@ -184,6 +186,7 @@ namespace eosio {
 
          template <typename HttpConfigType, typename SocketType>
          void register_keep_alive_http_connection(typename websocketpp::server<HttpConfigType>::connection_ptr ws_conn) {
+            if (std::is_same<SocketType, local_socket_endpoint>::value) return;
             if (max_connections == 0) return;
 
             auto &connection_set = get_connection_set<SocketType>();
@@ -192,6 +195,7 @@ namespace eosio {
 
          template <typename HttpConfigType, typename SocketType>
          void unregister_keep_alive_http_connection(typename websocketpp::server<HttpConfigType>::connection_ptr ws_conn) {
+            if (std::is_same<SocketType, local_socket_endpoint>::value) return;
             if (max_connections == 0) return;
 
             auto &connection_set = get_connection_set<SocketType>();
@@ -532,7 +536,7 @@ namespace eosio {
             ("verbose-http-errors", bpo::bool_switch()->default_value(false), "Append the error log to HTTP responses")
             ("http-validate-host", boost::program_options::value<bool>()->default_value(true), "If set to false, then any incoming \"Host\" header is considered valid")
             ("http-alias", bpo::value<std::vector<string>>()->composing(), "Additionaly acceptable values for the \"Host\" header of incoming HTTP requests, can be specified multiple times.  Includes http/s_server_address by default.")
-            ("idle-connection-timeout-ms", bpo::value<uint32_t>()->default_value(5000), "Timeout in milliseconds to cut idle connections out; 0 means infinite")
+            ("idle-connection-timeout-ms", bpo::value<uint32_t>()->default_value(5000), "Timeout in milliseconds to cut idle HTTP connections out; 0 means infinite")
             ("max-connections", bpo::value<uint32_t>()->default_value(100), "The maximum number of HTTP and WebSocket connections which is allowed to connect and keep alive; 0 means unlimited")
             ;
    }
@@ -688,6 +692,8 @@ namespace eosio {
          my->server.stop_listening();
       if(my->https_server.is_listening())
          my->https_server.stop_listening();
+      if(my->unix_server.is_listening())
+         my->unix_server.stop_listening();
    }
 
    void http_plugin::add_handler(const string& url, const url_handler& handler) {
@@ -701,6 +707,9 @@ namespace eosio {
       try {
          try {
             throw;
+         } catch (chain::unknown_block_exception& e) {
+            error_results results{400, "Unknown Block", error_results::error_info(e, verbose_http_errors)};
+            cb( 400, fc::json::to_string( results ));
          } catch (chain::unsatisfied_authorization& e) {
             error_results results{401, "UnAuthorized", error_results::error_info(e, verbose_http_errors)};
             cb( 401, fc::json::to_string( results ));

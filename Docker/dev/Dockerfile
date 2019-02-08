@@ -1,6 +1,6 @@
 FROM eosio/builder
 ARG branch=yosemite-master
-ARG native_token_symbol=DKRW
+ARG native_token_symbol=DUSD
 ARG native_token_precision=4
 
 RUN git clone -b $branch https://github.com/YosemiteLabs/yosemite-public-blockchain.git --recursive \

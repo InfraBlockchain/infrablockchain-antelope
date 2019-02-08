@@ -1,5 +1,6 @@
 /**
- *  @file
+ *  @file contracts/yx.system/yx.system.hpp
+ *  @author bezalel@yosemitex.com
  *  @copyright defined in yosemite/LICENSE.txt
  */
 #pragma once
@@ -129,6 +130,19 @@ namespace yosemitesys {
 
         void rmvidauth( const account_name identity_authority );
 
+
+        // System Token Management (yx.system_token.cpp)
+
+        void addsystoken( const account_name token, const uint32_t weight );
+
+        void rmvsystoken( const account_name token );
+
+
+        // Transaction Fee Management (yx.transaction_fee.cpp)
+
+        void settxfee( const account_name code, const action_name action, const int32_t value, const uint32_t feetype );
+
+        void unsettxfee( const account_name code, const action_name action );
 
     private:
         void update_elected_producers( block_timestamp timestamp );

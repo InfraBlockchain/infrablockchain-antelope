@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE.txt
+ *  @copyright defined in eos/LICENSE
  */
 #include <eosio/wallet_plugin/wallet.hpp>
 
@@ -92,7 +92,7 @@ public:
          ++suffix;
          dest_path = destination_filename + "-" + std::to_string( suffix ) + _wallet_filename_extension;
       }
-      wlog( "backing up wallet ${src} to ${dest}",
+      dlog( "backing up wallet ${src} to ${dest}",
             ("src", src_path)
             ("dest", dest_path) );
 
@@ -220,7 +220,7 @@ public:
       if( wallet_filename == "" )
          wallet_filename = _wallet_filename;
 
-      wlog( "saving wallet to file ${fn}", ("fn", wallet_filename) );
+      dlog( "saving wallet to file ${fn}", ("fn", wallet_filename) );
 
       string data = fc::json::to_pretty_string( _wallet );
       try

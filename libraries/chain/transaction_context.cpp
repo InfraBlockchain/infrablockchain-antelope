@@ -7,6 +7,8 @@
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 
+#include <yosemite/chain/standard_token_manager.hpp>
+
 #pragma push_macro("N")
 #undef N
 #include <boost/accumulators/accumulators.hpp>
@@ -26,7 +28,7 @@ namespace bacc = boost::accumulators;
    struct deadline_timer_verify {
       deadline_timer_verify() {
          //keep longest first in list. You're effectively going to take test_intervals[0]*sizeof(test_intervals[0])
-         //time to do the the "calibration" 
+         //time to do the the "calibration"
          int test_intervals[] = {50000, 10000, 5000, 1000, 500, 100, 50, 10};
 
          struct sigaction act;
@@ -145,6 +147,8 @@ namespace bacc = boost::accumulators;
    volatile sig_atomic_t deadline_timer::expired = 0;
    bool deadline_timer::initialized = false;
 
+   using namespace yosemite::chain;
+
    transaction_context::transaction_context( controller& c,
                                              const signed_transaction& t,
                                              const transaction_id_type& trx_id,
@@ -169,29 +173,29 @@ namespace bacc = boost::accumulators;
       //EOS_ASSERT( trx.transaction_extensions.size() == 0, unsupported_feature, "we don't support any extensions yet" );
 
       auto &tx_ext = trx.transaction_extensions;
-      // YOSEMITE "Transaction-as-a-vote", "Delegated Transaction Fee Payment" Transaction-Extension support
-      EOS_ASSERT( tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, delegated-transaction-fee-payment)" );
+      // YOSEMITE "Transaction-as-a-vote", "Transaction Fee Payer" Transaction-Extension support
+      EOS_ASSERT( tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, transaction-fee-payer)" );
 
-      if (tx_ext.size() > 0) {
-         for (auto&& tx_ext_item: tx_ext) {
-            if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
+      for (auto&& tx_ext_item: tx_ext) {
+         if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
 
-               try {
-                  trace->trx_vote = yosemite_core::transaction_vote(
-                        fc::raw::unpack<yosemite_core::transaction_vote_to_name_type>(tx_ext_item.second), 0);
-               } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
+            try {
+               trace->trx_vote = transaction_vote(
+                  fc::raw::unpack<transaction_vote_to_name_type>(tx_ext_item.second), 0);
+            } EOS_RETHROW_EXCEPTIONS(invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
 
-            } else if (tx_ext_item.first == YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
+         } else if (tx_ext_item.first == YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
 
-               try {
-                  trace->fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
-               } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_delegated_trx_fee_payer_account, "Invalid delegated transaction fee payer account name");
+            try {
+               trace->fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
+            } EOS_RETHROW_EXCEPTIONS(invalid_trx_fee_payer_account, "Invalid transaction fee payer account name");
 
-            } else {
-               EOS_ASSERT( false, unsupported_feature, "unsupported transaction extension code" );
-            }
+         } else {
+            EOS_ASSERT( false, unsupported_feature, "unsupported transaction extension code" );
          }
       }
+
+      //EOS_ASSERT( !trace->fee_payer.empty(), invalid_trx_fee_payer_account, "transaction fee payer field is required" );
    }
 
    void transaction_context::init(uint64_t initial_net_usage)
@@ -303,13 +307,13 @@ namespace bacc = boost::accumulators;
 
    void transaction_context::init_for_implicit_trx( uint64_t initial_net_usage  )
    {
+      implicit_tx = true;
       published = control.pending_block_time();
       init( initial_net_usage);
    }
 
    void transaction_context::init_for_input_trx( uint64_t packed_trx_unprunable_size,
                                                  uint64_t packed_trx_prunable_size,
-                                                 uint32_t num_signatures,
                                                  bool skip_recording )
    {
       const auto& cfg = control.get_global_properties().configuration;
@@ -339,7 +343,7 @@ namespace bacc = boost::accumulators;
       if (!control.skip_trx_checks()) {
          control.validate_expiration(trx);
          control.validate_tapos(trx);
-         control.validate_referenced_accounts(trx);
+         validate_referenced_accounts( trx, enforce_whiteblacklist && control.is_producing_block() );
       }
       init( initial_net_usage);
       if (!skip_recording)
@@ -369,10 +373,52 @@ namespace bacc = boost::accumulators;
             trace->action_traces.emplace_back();
             dispatch_action( trace->action_traces.back(), act );
          }
+         process_transaction_fee_payment();
       } else {
+         process_transaction_fee_payment(); // delayed transaction is charged default tx fee before it is scheduled
          schedule_transaction();
       }
    }
+
+   /// YOSEMITE transaction fee payment processing
+   void transaction_context::process_transaction_fee_payment() {
+
+      if ( implicit_tx ) return;
+
+      auto& fee_payer = get_tx_fee_payer();
+      if (fee_payer == config::system_account_name) {
+         // system account is exempt from transaction fee
+         return;
+      }
+
+      int32_t txfee_to_pay = 0;
+      auto& txfee_manager = control.get_tx_fee_manager();
+
+      for( const auto& act_trace : trace->action_traces ) {
+         txfee_to_pay += tx_fee_for_action( txfee_manager, act_trace );
+      }
+
+      EOS_ASSERT( txfee_to_pay >= 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than 0" );
+
+//      if (txfee_to_pay == 0) {
+//         txfee_to_pay = txfee_manager.get_default_tx_fee().value;
+//      }
+
+      if ( txfee_to_pay > 0 ) {
+         EOS_ASSERT( !fee_payer.empty(), invalid_trx_fee_payer_account, "transaction fee payer field is required" );
+         // dispatch 'txfee' actions to system token accounts
+         control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, static_cast<uint32_t>(txfee_to_pay) );
+      }
+   }
+
+   int32_t transaction_context::tx_fee_for_action(const transaction_fee_manager& txfee_manager, const action_trace& action_trace) {
+      int32_t txfee = txfee_manager.get_tx_fee_for_action_trace(action_trace).value;
+      for( const auto& inline_act_trace : action_trace.inline_traces ) {
+         txfee += tx_fee_for_action(txfee_manager, inline_act_trace);
+      }
+      return txfee;
+   }
+
 
    void transaction_context::finalize() {
       EOS_ASSERT( is_initialized, transaction_exception, "must first initialize" );
@@ -592,7 +638,7 @@ namespace bacc = boost::accumulators;
       return std::make_tuple(account_net_limit, account_cpu_limit, greylisted_net, greylisted_cpu);
    }
 
-   void transaction_context::add_transaction_vote(yosemite_core::transaction_vote_amount_type vote_amount) {
+   void transaction_context::add_transaction_vote(transaction_vote_amount_type vote_amount) {
 
       if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->to.empty()) {
          trace->trx_vote->amt += vote_amount;
@@ -603,17 +649,13 @@ namespace bacc = boost::accumulators;
       return trace->trx_vote.valid() && trace->trx_vote->has_vote();
    }
 
-   const yosemite_core::transaction_vote& transaction_context::get_transaction_vote() const {
+   const transaction_vote& transaction_context::get_transaction_vote() const {
       return (*(trace->trx_vote));
    }
 
 
-   bool transaction_context::has_delegated_tx_fee_payer() const {
-      return trace->fee_payer.valid() && !(trace->fee_payer->empty());
-   }
-
-   const account_name& transaction_context::get_delegated_tx_fee_payer() const {
-      return (*(trace->fee_payer));
+   const account_name& transaction_context::get_tx_fee_payer() const {
+      return trace->fee_payer;
    }
 
    void transaction_context::dispatch_action( action_trace& trace, const action& a, account_name receiver, bool context_free, uint32_t recurse_depth ) {
@@ -663,6 +705,44 @@ namespace bacc = boost::accumulators;
                      "duplicate transaction ${id}", ("id", id ) );
       }
    } /// record_transaction
+
+   void transaction_context::validate_referenced_accounts( const transaction& trx, bool enforce_actor_whitelist_blacklist )const {
+      const auto& db = control.db();
+      const auto& auth_manager = control.get_authorization_manager();
+
+      for( const auto& a : trx.context_free_actions ) {
+         auto* code = db.find<account_object, by_name>(a.account);
+         EOS_ASSERT( code != nullptr, transaction_exception,
+                     "action's code account '${account}' does not exist", ("account", a.account) );
+         EOS_ASSERT( a.authorization.size() == 0, transaction_exception,
+                     "context-free actions cannot have authorizations" );
+      }
+
+      flat_set<account_name> actors;
+
+      bool one_auth = false;
+      for( const auto& a : trx.actions ) {
+         auto* code = db.find<account_object, by_name>(a.account);
+         EOS_ASSERT( code != nullptr, transaction_exception,
+                     "action's code account '${account}' does not exist", ("account", a.account) );
+         for( const auto& auth : a.authorization ) {
+            one_auth = true;
+            auto* actor = db.find<account_object, by_name>(auth.actor);
+            EOS_ASSERT( actor  != nullptr, transaction_exception,
+                        "action's authorizing actor '${account}' does not exist", ("account", auth.actor) );
+            EOS_ASSERT( auth_manager.find_permission(auth) != nullptr, transaction_exception,
+                        "action's authorizations include a non-existent permission: {permission}",
+                        ("permission", auth) );
+            if( enforce_actor_whitelist_blacklist )
+               actors.insert( auth.actor );
+         }
+      }
+      EOS_ASSERT( one_auth, tx_no_auths, "transaction must have at least one authorization" );
+
+      if( enforce_actor_whitelist_blacklist ) {
+         control.check_actor_list( actors );
+      }
+   }
 
 
 } } /// eosio::chain

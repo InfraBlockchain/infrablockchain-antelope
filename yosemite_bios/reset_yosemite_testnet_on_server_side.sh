@@ -12,7 +12,7 @@ YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NODE_BIN_NAME
 YOSEMITE_NODE_LOG_FILE=/mnt/$YOSEMITE_NODE_BIN_NAME.log
 YOSEMITE_CLI="$YOSEMITE_HOME/build/programs/$YOSEMITE_CLI_BIN_NAME/$YOSEMITE_CLI_BIN_NAME --wallet-url http://127.0.0.1:8900/"
-YOSEMITE_CLI_TESTNET="$YOSEMITE_CLI -u http://testnet.yosemitelabs.org:8888 --wallet-url http://127.0.0.1:8900/"
+YOSEMITE_CLI_TESTNET="$YOSEMITE_CLI -u http://testnet.yosemitelabs.org:8888"
 YOSEMITE_KEYD=$YOSEMITE_HOME/build/programs/$YOSEMITE_KEYD_BIN_NAME/$YOSEMITE_KEYD_BIN_NAME
 YOSEMITE_KEYD_LOG_FILE=/mnt/$YOSEMITE_KEYD_BIN_NAME.log
 YOSEMITE_KEYD_WALLET_PASSWORD=PW5KH7i8ZEuVMvywMschs3TznhTfCdmgpPBGKJLUQjs6N6oQ7boZj
@@ -520,10 +520,10 @@ sleep 2
 $YOSEMITE_CLI get table yosemite yosemite producers
 sleep 1
 
-{ print_section_title "Delegated Transaction Fee Payment"; } 2>/dev/null
+{ print_section_title "Transaction Fee Payer"; } 2>/dev/null
 
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer useraccount2 -p useraccount3 -p useraccount2
-$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --fee-payer producer.c -p useraccount3 -p producer.c
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --txfee-payer useraccount2 -p useraccount3 -p useraccount2
+$YOSEMITE_CLI push action yx.ntoken transfer '[ "useraccount3", "useraccount2", "5000.00 DKRW", "memo1" ]' -v producer.g --txfee-payer producer.c -p useraccount3 -p producer.c
 
 sleep 1
 

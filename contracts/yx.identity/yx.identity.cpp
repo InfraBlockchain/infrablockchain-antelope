@@ -16,7 +16,7 @@ namespace yosemite { namespace identity {
 
         eosio_assert( is_account(account), "account does not exist");
         eosio_assert( is_authorized_identity_authority(identity_authority),
-                      "identity_authority is not authorized identity authority");
+                      "identity_authority is not authorized by block producers");
         eosio_assert( is_valid_account_type(type), "invalid account type value");
         eosio_assert( is_valid_kyc_status(kyc), "invalid kyc status value");
         eosio_assert( is_valid_account_state(state), "invalid account state value");
@@ -59,7 +59,7 @@ namespace yosemite { namespace identity {
 
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
-                      "existing identity authority is not authorized identity authority");
+                      "existing identity authority is not authorized by block producers");
         require_auth( existing_id_auth );
         require_recipient( account );
 
@@ -77,7 +77,7 @@ namespace yosemite { namespace identity {
 
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
-                      "existing identity authority is not authorized identity authority");
+                      "existing identity authority is not authorized by block producers");
 
         eosio_assert( id_it->type != type, "same type value" );
 
@@ -100,7 +100,7 @@ namespace yosemite { namespace identity {
 
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
-                      "existing identity authority is not authorized identity authority");
+                      "existing identity authority is not authorized by block producers");
 
         eosio_assert( id_it->kyc != kyc, "same kyc value" );
 
@@ -123,7 +123,7 @@ namespace yosemite { namespace identity {
 
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
-                      "existing identity authority is not authorized identity authority");
+                      "existing identity authority is not authorized by block producers");
 
         eosio_assert( id_it->state != state, "same state value" );
 
@@ -146,7 +146,7 @@ namespace yosemite { namespace identity {
 
         const account_name &existing_id_auth = id_it->identity_authority;
         eosio_assert( is_authorized_identity_authority(existing_id_auth),
-                      "existing identity authority is not authorized identity authority");
+                      "existing identity authority is not authorized by block producers");
 
         eosio_assert( id_it->data != data, "same data value" );
 

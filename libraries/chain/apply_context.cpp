@@ -10,10 +10,14 @@
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
+
 #include <yosemite/chain/transaction_extensions.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_fee_manager.hpp>
 #include <yosemite/chain/exceptions.hpp>
 
 using boost::container::flat_set;
+using namespace yosemite::chain;
 
 namespace eosio { namespace chain {
 
@@ -51,9 +55,20 @@ void apply_context::exec_one( action_trace& trace )
       try {
          const auto& a = control.get_account( receiver );
          privileged = a.privileged;
-         auto native = control.find_apply_handler( receiver, act.account, act.name );
+
+         const apply_handler* native = nullptr;
+
+         /// YOSEMITE Built-in Actions
+         if (receiver == act.account) {
+            native = control.find_built_in_action_apply_handler(act.name);
+         }
+
+         if (native == nullptr) {
+            native = control.find_apply_handler( receiver, act.account, act.name );
+         }
+
          if( native ) {
-            if( trx_context.can_subjectively_fail && control.is_producing_block() ) {
+            if( trx_context.enforce_whiteblacklist && control.is_producing_block() ) {
                control.check_contract_list( receiver );
                control.check_action_list( act.account, act.name );
             }
@@ -63,7 +78,7 @@ void apply_context::exec_one( action_trace& trace )
          if( a.code.size() > 0
              && !(act.account == config::system_account_name && act.name == N( setcode ) &&
                   receiver == config::system_account_name) ) {
-            if( trx_context.can_subjectively_fail && control.is_producing_block() ) {
+            if( trx_context.enforce_whiteblacklist && control.is_producing_block() ) {
                control.check_contract_list( receiver );
                control.check_action_list( act.account, act.name );
             }
@@ -207,6 +222,18 @@ void apply_context::execute_inline( action&& a ) {
    EOS_ASSERT( code != nullptr, action_validate_exception,
                "inline action's code account ${account} does not exist", ("account", a.account) );
 
+   bool enforce_actor_whitelist_blacklist = trx_context.enforce_whiteblacklist && control.is_producing_block();
+   flat_set<account_name> actors;
+
+   bool disallow_send_to_self_bypass = false; // eventually set to whether the appropriate protocol feature has been activated
+   bool send_to_self = (a.account == receiver);
+   bool inherit_parent_authorizations = (!disallow_send_to_self_bypass && send_to_self && (receiver == act.account) && control.is_producing_block());
+
+   flat_set<permission_level> inherited_authorizations;
+   if( inherit_parent_authorizations ) {
+      inherited_authorizations.reserve( a.authorization.size() );
+   }
+
    for( const auto& auth : a.authorization ) {
       auto* actor = control.db().find<account_object, by_name>(auth.actor);
       EOS_ASSERT( actor != nullptr, action_validate_exception,
@@ -214,22 +241,51 @@ void apply_context::execute_inline( action&& a ) {
       EOS_ASSERT( control.get_authorization_manager().find_permission(auth) != nullptr, action_validate_exception,
                   "inline action's authorizations include a non-existent permission: ${permission}",
                   ("permission", auth) );
+      if( enforce_actor_whitelist_blacklist )
+         actors.insert( auth.actor );
+
+      if( inherit_parent_authorizations && std::find(act.authorization.begin(), act.authorization.end(), auth) != act.authorization.end() ) {
+         inherited_authorizations.insert( auth );
+      }
    }
 
-   // No need to check authorization if: replaying irreversible blocks; contract is privileged; or, contract is calling itself.
-   if( !control.skip_auth_check() && !privileged && a.account != receiver ) {
-      control.get_authorization_manager()
-             .check_authorization( {a},
-                                   {},
-                                   {{receiver, config::eosio_code_name}},
-                                   control.pending_block_time() - trx_context.published,
-                                   std::bind(&transaction_context::checktime, &this->trx_context),
-                                   false
-                                 );
+   if( enforce_actor_whitelist_blacklist ) {
+      control.check_actor_list( actors );
+   }
 
-      //QUESTION: Is it smart to allow a deferred transaction that has been delayed for some time to get away
-      //          with sending an inline action that requires a delay even though the decision to send that inline
-      //          action was made at the moment the deferred transaction was executed with potentially no forewarning?
+   // No need to check authorization if replaying irreversible blocks or contract is privileged
+   if( !control.skip_auth_check() && !privileged ) {
+      try {
+         control.get_authorization_manager()
+                .check_authorization( {a},
+                                      {},
+                                      {{receiver, config::eosio_code_name}},
+                                      control.pending_block_time() - trx_context.published,
+                                      std::bind(&transaction_context::checktime, &this->trx_context),
+                                      false,
+                                      inherited_authorizations
+                                    );
+
+         //QUESTION: Is it smart to allow a deferred transaction that has been delayed for some time to get away
+         //          with sending an inline action that requires a delay even though the decision to send that inline
+         //          action was made at the moment the deferred transaction was executed with potentially no forewarning?
+      } catch( const fc::exception& e ) {
+         if( disallow_send_to_self_bypass || !send_to_self ) {
+            throw;
+         } else if( control.is_producing_block() ) {
+            subjective_block_production_exception new_exception(FC_LOG_MESSAGE( error, "Authorization failure with inline action sent to self"));
+            for (const auto& log: e.get_log()) {
+               new_exception.append_log(log);
+            }
+            throw new_exception;
+         }
+      } catch( ... ) {
+         if( disallow_send_to_self_bypass || !send_to_self ) {
+            throw;
+         } else if( control.is_producing_block() ) {
+            EOS_THROW(subjective_block_production_exception, "Unexpected exception occurred validating inline action sent to self");
+         }
+      }
    }
 
    _inline_actions.emplace_back( move(a) );
@@ -249,17 +305,13 @@ void apply_context::execute_context_free_inline( action&& a ) {
 
 void apply_context::schedule_deferred_transaction( const uint128_t& sender_id, account_name payer, transaction&& trx, bool replace_existing ) {
    EOS_ASSERT( trx.context_free_actions.size() == 0, cfa_inside_generated_tx, "context free actions are not currently allowed in generated transactions" );
-   auto &tx_ext = trx.transaction_extensions;
-   if (tx_ext.size() > 0) {
-      for (auto&& tx_ext_item: tx_ext) {
-         EOS_ASSERT( tx_ext_item.first != YOSEMITE_DELEGATED_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
-               yosemite::chain::dtfp_inside_generated_tx, "delegated transaction fee payment is not currently allowed in generated transactions" );
-      }
-   }
 
    trx.expiration = control.pending_block_time() + fc::microseconds(999'999); // Rounds up to nearest second (makes expiration check unnecessary)
    trx.set_reference_block(control.head_block_id()); // No TaPoS check necessary
-   control.validate_referenced_accounts( trx );
+
+   bool enforce_actor_whitelist_blacklist = trx_context.enforce_whiteblacklist && control.is_producing_block()
+                                             && !control.sender_avoids_whitelist_blacklist_enforcement( receiver );
+   trx_context.validate_referenced_accounts( trx, enforce_actor_whitelist_blacklist );
 
    // Charge ahead of time for the additional net usage needed to retire the deferred transaction
    // whether that be by successfully executing, soft failure, hard failure, or expiration.
@@ -274,16 +326,30 @@ void apply_context::schedule_deferred_transaction( const uint128_t& sender_id, a
          require_authorization(payer); /// uses payer's storage
       }
 
-      // if a contract is deferring only actions to itself then there is no need
-      // to check permissions, it could have done everything anyway.
-      bool check_auth = false;
-      for( const auto& act : trx.actions ) {
-         if( act.account != receiver ) {
-            check_auth = true;
-            break;
+      // Originally this code bypassed authorization checks if a contract was deferring only actions to itself.
+      // The idea was that the code could already do whatever the deferred transaction could do, so there was no point in checking authorizations.
+      // But this is not true. The original implementation didn't validate the authorizations on the actions which allowed for privilege escalation.
+      // It would make it possible to bill RAM to some unrelated account.
+      // Furthermore, even if the authorizations were forced to be a subset of the current action's authorizations, it would still violate the expectations
+      // of the signers of the original transaction, because the deferred transaction would allow billing more CPU and network bandwidth than the maximum limit
+      // specified on the original transaction.
+      // So, the deferred transaction must always go through the authorization checking if it is not sent by a privileged contract.
+      // However, the old logic must still be considered because it cannot objectively change until a consensus protocol upgrade.
+
+      bool disallow_send_to_self_bypass = false; // eventually set to whether the appropriate protocol feature has been activated
+
+      auto is_sending_only_to_self = [&trx]( const account_name& self ) {
+         bool send_to_self = true;
+         for( const auto& act : trx.actions ) {
+            if( act.account != self ) {
+               send_to_self = false;
+               break;
+            }
          }
-      }
-      if( check_auth ) {
+         return send_to_self;
+      };
+
+      try {
          control.get_authorization_manager()
                 .check_authorization( trx.actions,
                                       {},
@@ -292,6 +358,22 @@ void apply_context::schedule_deferred_transaction( const uint128_t& sender_id, a
                                       std::bind(&transaction_context::checktime, &this->trx_context),
                                       false
                                     );
+      } catch( const fc::exception& e ) {
+         if( disallow_send_to_self_bypass || !is_sending_only_to_self(receiver) ) {
+            throw;
+         } else if( control.is_producing_block() ) {
+            subjective_block_production_exception new_exception(FC_LOG_MESSAGE( error, "Authorization failure with sent deferred transaction consisting only of actions to self"));
+            for (const auto& log: e.get_log()) {
+               new_exception.append_log(log);
+            }
+            throw new_exception;
+         }
+      } catch( ... ) {
+         if( disallow_send_to_self_bypass || !is_sending_only_to_self(receiver) ) {
+            throw;
+         } else if( control.is_producing_block() ) {
+            EOS_THROW(subjective_block_production_exception, "Unexpected exception occurred validating sent deferred transaction consisting only of actions to self");
+         }
       }
    }
 
@@ -355,23 +437,138 @@ void apply_context::cast_transaction_vote(uint32_t vote_amount) {
     trx_context.add_transaction_vote(vote_amount);
 }
 
-vector<yosemite_core::transaction_vote> apply_context::get_transaction_votes_in_head_block() {
+vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
    auto head_block_ptr = control.head_block_state();
    if (!head_block_ptr) {
-       return vector<yosemite_core::transaction_vote>();
+       return vector<transaction_vote>();
    }
    return head_block_ptr->trx_votes.get_tx_vote_list();
 }
 
 //////////////////////////////////////
-/// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
+/// YOSEMITE Core API - Transaction-Fee
 
-account_name apply_context::get_delegated_transaction_fee_payer() {
-   if (trx_context.has_delegated_tx_fee_payer()) {
-      return trx_context.get_delegated_tx_fee_payer();
-   } else {
-      return account_name(0);
+void apply_context::set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call set_trx_fee_for_action API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   if ( !code.empty() ) {
+      EOS_ASSERT( is_account(code), account_query_exception, "account ${code} does not exist", ("code", code) );
+      if ( !yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+         auto abis = control.get_abi_serializer( code, control.abi_serializer_max_time_ms );
+         EOS_ASSERT( abis.valid(), abi_not_found_exception, "failed to get abi_serializer for account ${code}", ("code", code) );
+         EOS_ASSERT( abis->get_action_type( action ).size() > 0, abi_exception, "abi does not contain action ${action}", ("action", action) );
+      }
    }
+
+   control.get_mutable_tx_fee_manager().set_tx_fee_for_action( code, action, value, fee_type );
+}
+
+void apply_context::unset_transaction_fee_for_action( const account_name& code, const action_name& action ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call unset_trx_fee_for_action API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   control.get_mutable_tx_fee_manager().delete_set_tx_fee_entry_for_action(code, action);
+}
+
+tx_fee_for_action apply_context::get_transaction_fee_for_action( const account_name& code, const action_name& action ) const {
+   return control.get_tx_fee_manager().get_tx_fee_for_action( code, action );
+}
+
+account_name apply_context::get_transaction_fee_payer() const {
+   return trx_context.get_tx_fee_payer();
+}
+
+//////////////////////////////////////
+/// YOSEMITE Core API - Standard-Token
+
+symbol apply_context::get_token_symbol( const account_name token_id ) const {
+   return control.get_token_manager().get_token_symbol(token_id);
+}
+
+share_type apply_context::get_token_total_supply( const account_name token_id ) const {
+   return control.get_token_manager().get_token_total_supply(token_id);
+}
+
+share_type apply_context::get_token_balance( const account_name token_id, const account_name account ) const {
+   return control.get_token_manager().get_token_balance( token_id, account );
+}
+
+void apply_context::issue_token( const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can issue its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token issuance must be greater than 0" );
+
+   token_id_type token_id = receiver;
+   auto& token_manager = control.get_mutable_token_manager();
+
+   auto* token_meta_ptr = token_manager.get_token_meta_info(token_id);
+   EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
+   auto token_meta_obj = *token_meta_ptr;
+
+   EOS_ASSERT( is_account(to), no_token_target_account_exception,
+               "token issuance target account ${account} does not exist", ("account", to) );
+
+   const share_type old_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( old_total_supply + amount > 0, token_balance_overflow_exception, "total supply balance overflow" );
+
+   // update total supply
+   token_manager.update_token_total_supply(token_meta_ptr, amount);
+
+   // issue new token to 'to' account
+   token_manager.add_token_balance( *this, token_id, to, amount );
+}
+
+void apply_context::transfer_token( const account_name from, const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can process transfering its own (action receiver's) tokens
+   /// Authorization check(require_authorization) and action notification(require_recipient) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( from.good(), token_action_validate_exception, "invalid from account name" );
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token transfer must be greater than 0" );
+
+   token_id_type token_id = receiver;
+
+   auto& token_manager = control.get_mutable_token_manager();
+
+   EOS_ASSERT( is_account( from ), no_token_target_account_exception,
+               "transfer from account ${account} does not exist", ("account", from) );
+
+   EOS_ASSERT( is_account( to ), no_token_target_account_exception,
+               "transfer to account ${account} does not exist", ("account", to) );
+
+   token_manager.subtract_token_balance( *this, token_id, from, amount );
+   token_manager.add_token_balance( *this, token_id, to, amount );
+}
+
+void apply_context::redeem_token( const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can redeem(burn) its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
+
+   token_id_type token_account = receiver;
+
+   auto& token_manager = control.get_mutable_token_manager();
+
+   auto* token_meta_ptr = token_manager.get_token_meta_info(token_account);
+   EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_account) );
+   auto token_meta_obj = *token_meta_ptr;
+
+   share_type current_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( current_total_supply - amount > 0, token_balance_underflow_exception, "total supply balance underflow" );
+
+   // update total supply
+   token_manager.update_token_total_supply(token_meta_ptr, -amount);
+
+   // redeem(burn) tokens
+   token_manager.subtract_token_balance( *this, token_account, token_account, amount );
 }
 
 //////////////////////////////////////
@@ -488,9 +685,8 @@ int apply_context::db_store_i64( uint64_t code, uint64_t scope, uint64_t table, 
    const auto& obj = db.create<key_value_object>( [&]( auto& o ) {
       o.t_id        = tableid;
       o.primary_key = id;
-      o.value.resize( buffer_size );
+      o.value.assign( buffer, buffer_size );
       o.payer       = payer;
-      memcpy( o.value.data(), buffer, buffer_size );
    });
 
    db.modify( tab, [&]( auto& t ) {
@@ -529,8 +725,7 @@ void apply_context::db_update_i64( int iterator, account_name payer, const char*
    }
 
    db.modify( obj, [&]( auto& o ) {
-     o.value.resize( buffer_size );
-     memcpy( o.value.data(), buffer, buffer_size );
+     o.value.assign( buffer, buffer_size );
      o.payer = payer;
    });
 }

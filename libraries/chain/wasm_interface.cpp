@@ -12,7 +12,11 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
+
 #include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/system_token_list.hpp>
+#include <yosemite/chain/standard_token_manager.hpp>
+
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -238,8 +242,8 @@ class softfloat_api : public context_aware_api {
          if (is_nan(b)) {
             return bf;
          }
-         if ( sign_bit(a) != sign_bit(b) ) {
-            return sign_bit(a) ? af : bf;
+         if ( f32_sign_bit(a) != f32_sign_bit(b) ) {
+            return f32_sign_bit(a) ? af : bf;
          }
          return f32_lt(a,b) ? af : bf;
       }
@@ -252,8 +256,8 @@ class softfloat_api : public context_aware_api {
          if (is_nan(b)) {
             return bf;
          }
-         if ( sign_bit(a) != sign_bit(b) ) {
-            return sign_bit(a) ? bf : af;
+         if ( f32_sign_bit(a) != f32_sign_bit(b) ) {
+            return f32_sign_bit(a) ? bf : af;
          }
          return f32_lt( a, b ) ? bf : af;
       }
@@ -405,8 +409,8 @@ class softfloat_api : public context_aware_api {
             return af;
          if (is_nan(b))
             return bf;
-         if (sign_bit(a) != sign_bit(b))
-            return sign_bit(a) ? af : bf;
+         if (f64_sign_bit(a) != f64_sign_bit(b))
+            return f64_sign_bit(a) ? af : bf;
          return f64_lt( a, b ) ? af : bf;
       }
       double _eosio_f64_max( double af, double bf ) {
@@ -416,8 +420,8 @@ class softfloat_api : public context_aware_api {
             return af;
          if (is_nan(b))
             return bf;
-         if (sign_bit(a) != sign_bit(b))
-            return sign_bit(a) ? bf : af;
+         if (f64_sign_bit(a) != f64_sign_bit(b))
+            return f64_sign_bit(a) ? bf : af;
          return f64_lt( a, b ) ? bf : af;
       }
       double _eosio_f64_copysign( double af, double bf ) {
@@ -651,32 +655,17 @@ class softfloat_api : public context_aware_api {
       }
 
       static bool is_nan( const float32_t f ) {
-         return ((f.v & 0x7FFFFFFF) > 0x7F800000);
+         return f32_is_nan( f );
       }
       static bool is_nan( const float64_t f ) {
-         return ((f.v & 0x7FFFFFFFFFFFFFFF) > 0x7FF0000000000000);
+         return f64_is_nan( f );
       }
       static bool is_nan( const float128_t& f ) {
-         return (((~(f.v[1]) & uint64_t( 0x7FFF000000000000 )) == 0) && (f.v[0] || ((f.v[1]) & uint64_t( 0x0000FFFFFFFFFFFF ))));
+         return f128_is_nan( f );
       }
-      static float32_t to_softfloat32( float f ) {
-         return *reinterpret_cast<float32_t*>(&f);
-      }
-      static float64_t to_softfloat64( double d ) {
-         return *reinterpret_cast<float64_t*>(&d);
-      }
-      static float from_softfloat32( float32_t f ) {
-         return *reinterpret_cast<float*>(&f);
-      }
-      static double from_softfloat64( float64_t d ) {
-         return *reinterpret_cast<double*>(&d);
-      }
+
       static constexpr uint32_t inv_float_eps = 0x4B000000;
       static constexpr uint64_t inv_double_eps = 0x4330000000000000;
-
-      static bool sign_bit( float32_t f ) { return f.v >> 31; }
-      static bool sign_bit( float64_t f ) { return f.v >> 63; }
-
 };
 
 class producer_api : public context_aware_api {
@@ -691,7 +680,7 @@ class producer_api : public context_aware_api {
          if( buffer_size == 0 ) return s;
 
          auto copy_size = std::min( buffer_size, s );
-         memcpy( producers, active_producers.data(), copy_size );
+         memcpy( producers, active_producers.data(),  copy_size );
 
          return copy_size;
       }
@@ -923,7 +912,6 @@ public:
    :context_aware_api(ctx,true){}
 
    void abort() {
-      edump(("abort() called"));
       EOS_ASSERT( false, abort_called, "abort() called");
    }
 
@@ -931,7 +919,6 @@ public:
    void eosio_assert( bool condition, null_terminated_ptr msg ) {
       if( BOOST_UNLIKELY( !condition ) ) {
          std::string message( msg );
-         edump((message));
          EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
       }
    }
@@ -939,14 +926,12 @@ public:
    void eosio_assert_message( bool condition, array_ptr<const char> msg, size_t msg_len ) {
       if( BOOST_UNLIKELY( !condition ) ) {
          std::string message( msg, msg_len );
-         edump((message));
          EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
       }
    }
 
    void eosio_assert_code( bool condition, uint64_t error_code ) {
       if( BOOST_UNLIKELY( !condition ) ) {
-         edump((error_code));
          EOS_THROW( eosio_assert_code_exception,
                     "assertion failure with error code: ${error_code}", ("error_code", error_code) );
       }
@@ -1083,12 +1068,16 @@ class console_api : public context_aware_api {
             auto& console = context.get_console_stream();
             auto orig_prec = console.precision();
 
+#ifdef __x86_64__
             console.precision( std::numeric_limits<long double>::digits10 );
-
             extFloat80_t val_approx;
             f128M_to_extF80M(&val, &val_approx);
             context.console_append( *(long double*)(&val_approx) );
-
+#else
+            console.precision( std::numeric_limits<double>::digits10 );
+            double val_approx = from_softfloat64( f128M_to_f64(&val) );
+            context.console_append(val_approx);
+#endif
             console.precision( orig_prec );
          }
       }
@@ -1330,11 +1319,9 @@ class transaction_api : public context_aware_api {
       }
 
       void send_deferred( const uint128_t& sender_id, account_name payer, array_ptr<char> data, size_t data_len, uint32_t replace_existing) {
-         try {
-            transaction trx;
-            fc::raw::unpack<transaction>(data, data_len, trx);
-            context.schedule_deferred_transaction(sender_id, payer, std::move(trx), replace_existing);
-         } FC_RETHROW_EXCEPTIONS(warn, "data as hex: ${data}", ("data", fc::to_hex(data, data_len)))
+         transaction trx;
+         fc::raw::unpack<transaction>(data, data_len, trx);
+         context.schedule_deferred_transaction(sender_id, payer, std::move(trx), replace_existing);
       }
 
       bool cancel_deferred( const unsigned __int128& val ) {
@@ -1351,7 +1338,7 @@ class transaction_api : public context_aware_api {
       int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
          auto trx_votes = context.get_transaction_votes_in_head_block();
 
-         auto s = trx_votes.size() * sizeof(struct yosemite_core::transaction_vote);
+         auto s = trx_votes.size() * sizeof(struct yosemite::chain::transaction_vote);
          if (buffer_size == 0) return s;
 
          auto copy_size = std::min( buffer_size, s );
@@ -1360,9 +1347,34 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
-      /// YOSEMITE Core API - Delegated-Transaction-Fee-Payment
-      account_name delegated_trx_fee_payer() {
-         return context.get_delegated_transaction_fee_payer();
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      void set_trx_fee_for_action( const account_name code, const action_name action, int32_t value, uint32_t fee_type ) {
+         context.set_transaction_fee_for_action( code, action, value, fee_type );
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      void unset_trx_fee_for_action( const account_name code, const action_name action ) {
+         context.unset_transaction_fee_for_action( code, action );
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Setup
+      uint32_t get_trx_fee_for_action( const account_name code, const action_name action, array_ptr<char> packed_trx_fee_for_action, size_t buffer_size ) {
+         yosemite::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
+
+         auto s = fc::raw::pack_size( tx_fee_for_action );
+         if( buffer_size == 0 ) return s;
+
+         if ( s <= buffer_size ) {
+            datastream<char*> ds( packed_trx_fee_for_action, s );
+            fc::raw::pack(ds, tx_fee_for_action);
+            return s;
+         }
+         return 0;
+      }
+
+      /// YOSEMITE Core API - Transaction-Fee-Payer
+      account_name trx_fee_payer() {
+         return context.get_transaction_fee_payer();
       }
 };
 
@@ -1401,6 +1413,85 @@ class context_free_transaction_api : public context_aware_api {
 
       int get_action( uint32_t type, uint32_t index, array_ptr<char> buffer, size_t buffer_size )const {
          return context.get_action( type, index, buffer, buffer_size );
+      }
+};
+
+/**
+ * YOSEMITE Standard Token API, custom token contract code can access standard token operations
+ */
+class token_api : public context_aware_api {
+   public:
+      using context_aware_api::context_aware_api;
+
+      uint64_t get_token_symbol( account_name token_id ) {
+         return context.get_token_symbol( token_id ).value();
+      }
+
+      int64_t get_token_total_supply( account_name token_id ) {
+         return context.get_token_total_supply( token_id );
+      }
+
+      int64_t get_token_balance( account_name token_id, account_name account ) {
+         return context.get_token_balance( token_id, account );
+      }
+
+      void issue_token( account_name to, int64_t amount ) {
+         context.issue_token( to, amount );
+      }
+
+      void transfer_token( account_name from, account_name to, int64_t amount ) {
+         context.transfer_token( from, to, amount );
+      }
+
+      void redeem_token( int64_t amount ) {
+         context.redeem_token( amount );
+      }
+};
+
+/**
+ * YOSEMITE System Token APIs - system contract operated by block producers manages system tokens used for tx fee payment
+ */
+class system_token_api : public context_aware_api {
+   public:
+      using context_aware_api::context_aware_api;
+
+      int get_system_token_count() {
+         return context.control.get_token_manager().get_system_token_count();
+      }
+
+      uint32_t get_system_token_list( array_ptr<char> packed_system_token_list, size_t buffer_size ) {
+         vector<yosemite::chain::system_token> system_tokens = context.control.get_token_manager().get_system_token_list();
+
+         auto s = fc::raw::pack_size( system_tokens );
+         if( buffer_size == 0 ) return s;
+
+         if ( s <= buffer_size ) {
+            datastream<char*> ds( packed_system_token_list, s );
+            fc::raw::pack(ds, system_tokens);
+            return s;
+         }
+         return 0;
+      }
+
+      int64_t set_system_token_list( array_ptr<char> packed_system_token_list, size_t datalen) {
+         EOS_ASSERT( context.privileged, unaccessible_api, "${code} does not have permission to call this API", ("code",context.receiver) );
+         context.require_authorization(config::system_account_name);
+
+         datastream<const char*> ds( packed_system_token_list, datalen );
+         vector<yosemite::chain::system_token> system_tokens;
+         fc::raw::unpack(ds, system_tokens);
+         EOS_ASSERT(system_tokens.size() <= yosemite::chain::max_system_tokens, wasm_execution_error, "System token list exceeds the maximum system token count for this chain");
+
+         // check that system tokens are unique
+         std::set<yosemite::chain::system_token_id_type> unique_sys_tokens;
+         for (const auto& sys_token : system_tokens) {
+            EOS_ASSERT( context.is_account(sys_token.token_id), wasm_execution_error, "system token list includes a nonexisting account" );
+            EOS_ASSERT( sys_token.valid(), wasm_execution_error, "system token list includes an invalid value" );
+            unique_sys_tokens.insert(sys_token.token_id);
+         }
+         EOS_ASSERT( system_tokens.size() == unique_sys_tokens.size(), wasm_execution_error, "duplicate system token id in system token list" );
+
+         return context.control.get_mutable_token_manager().set_system_token_list( std::move(system_tokens) );
       }
 };
 
@@ -1541,18 +1632,18 @@ class compiler_builtins : public context_aware_api {
 
       // conversion long double
       void __extendsftf2( float128_t& ret, float f ) {
-         ret = f32_to_f128( softfloat_api::to_softfloat32(f) );
+         ret = f32_to_f128( to_softfloat32(f) );
       }
       void __extenddftf2( float128_t& ret, double d ) {
-         ret = f64_to_f128( softfloat_api::to_softfloat64(d) );
+         ret = f64_to_f128( to_softfloat64(d) );
       }
       double __trunctfdf2( uint64_t l, uint64_t h ) {
          float128_t f = {{ l, h }};
-         return softfloat_api::from_softfloat64(f128_to_f64( f ));
+         return from_softfloat64(f128_to_f64( f ));
       }
       float __trunctfsf2( uint64_t l, uint64_t h ) {
          float128_t f = {{ l, h }};
-         return softfloat_api::from_softfloat32(f128_to_f32( f ));
+         return from_softfloat32(f128_to_f32( f ));
       }
       int32_t __fixtfsi( uint64_t l, uint64_t h ) {
          float128_t f = {{ l, h }};
@@ -1579,19 +1670,19 @@ class compiler_builtins : public context_aware_api {
          ret = ___fixunstfti( f );
       }
       void __fixsfti( __int128& ret, float a ) {
-         ret = ___fixsfti( softfloat_api::to_softfloat32(a).v );
+         ret = ___fixsfti( to_softfloat32(a).v );
       }
       void __fixdfti( __int128& ret, double a ) {
-         ret = ___fixdfti( softfloat_api::to_softfloat64(a).v );
+         ret = ___fixdfti( to_softfloat64(a).v );
       }
       void __fixunssfti( unsigned __int128& ret, float a ) {
-         ret = ___fixunssfti( softfloat_api::to_softfloat32(a).v );
+         ret = ___fixunssfti( to_softfloat32(a).v );
       }
       void __fixunsdfti( unsigned __int128& ret, double a ) {
-         ret = ___fixunsdfti( softfloat_api::to_softfloat64(a).v );
+         ret = ___fixunsdfti( to_softfloat64(a).v );
       }
       double __floatsidf( int32_t i ) {
-         return softfloat_api::from_softfloat64(i32_to_f64(i));
+         return from_softfloat64(i32_to_f64(i));
       }
       void __floatsitf( float128_t& ret, int32_t i ) {
          ret = i32_to_f128(i);
@@ -1862,7 +1953,25 @@ REGISTER_INTRINSICS(transaction_api,
    (cancel_deferred,           int(int)                     )
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
-   (delegated_trx_fee_payer,   int64_t()                    )
+   (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int) )
+   (unset_trx_fee_for_action,  void(int64_t, int64_t)       )
+   (get_trx_fee_for_action,    int(int64_t, int64_t, int, int) )
+   (trx_fee_payer,             int64_t()                    )
+);
+
+REGISTER_INTRINSICS(token_api,
+   (get_token_symbol,          int64_t(int64_t)                 )
+   (get_token_total_supply,    int64_t(int64_t)                 )
+   (get_token_balance,         int64_t(int64_t, int64_t)        )
+   (issue_token,               void(int64_t, int64_t)           )
+   (transfer_token,            void(int64_t, int64_t, int64_t)  )
+   (redeem_token,              void(int64_t)                    )
+);
+
+REGISTER_INTRINSICS(system_token_api,
+   (get_system_token_count,    int()                      )
+   (get_system_token_list,     int(int, int)              )
+   (set_system_token_list,     int64_t(int,int)           )
 );
 
 REGISTER_INTRINSICS(context_free_api,

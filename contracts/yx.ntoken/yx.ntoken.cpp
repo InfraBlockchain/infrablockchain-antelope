@@ -113,8 +113,8 @@ namespace yosemite { namespace native_token {
         eosio_assert(static_cast<uint32_t>(check_identity_auth_for_transfer(to, NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE)),
                      "KYC authentication for to account is failed");
 
-        const account_name delegated_payer = delegated_trx_fee_payer();
-        const account_name payer = delegated_payer != 0 ? delegated_payer : from;
+        const account_name tx_fee_payer = trx_fee_payer();
+        const account_name payer = tx_fee_payer != 0 ? tx_fee_payer : from;
 
         accounts_native accounts_table_native(get_self(), from);
         for (auto &balance_holder : accounts_table_native) {
