@@ -280,19 +280,21 @@ configure_file(${CMAKE_SOURCE_DIR}/CMakeModules/EosioTester.cmake.in ${CMAKE_BIN
 install(FILES ${CMAKE_BINARY_DIR}/modules/EosioTester.cmake DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/eosio)
 
 configure_file(${CMAKE_SOURCE_DIR}/LICENSE 
-               ${CMAKE_BINARY_DIR}/licenses/eosio/LICENSE COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/libraries/wabt/LICENSE 
-               ${CMAKE_BINARY_DIR}/licenses/eosio/LICENSE.wabt COPYONLY)
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/LICENSE.eosio
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE.eosio COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/libraries/wabt/LICENSE
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE.wabt COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/libraries/softfloat/COPYING.txt 
-               ${CMAKE_BINARY_DIR}/licenses/eosio/LICENSE.softfloat COPYONLY)
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE.softfloat COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/libraries/wasm-jit/LICENSE 
-               ${CMAKE_BINARY_DIR}/licenses/eosio/LICENSE.wavm COPYONLY)
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE.wavm COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/libraries/fc/secp256k1/upstream/COPYING 
-               ${CMAKE_BINARY_DIR}/licenses/eosio/LICENSE.secp256k1 COPYONLY)
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE.secp256k1 COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/libraries/fc/src/network/LICENSE.go 
-               ${CMAKE_BINARY_DIR}/licenses/eosio/LICENSE.go COPYONLY)
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE.go COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/externals/binaryen/LICENSE 
-               ${CMAKE_BINARY_DIR}/licenses/eosio/LICENSE.binaryen COPYONLY)
+               ${CMAKE_BINARY_DIR}/licenses/${REPRESENTATIVE_INSTALL_NAME}/LICENSE.binaryen COPYONLY)
 
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/licenses/eosio/)
 install(FILES libraries/wabt/LICENSE DESTINATION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/licenses/eosio/ RENAME LICENSE.wabt)
