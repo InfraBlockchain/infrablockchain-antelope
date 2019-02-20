@@ -967,6 +967,7 @@ class Node(object):
         cmd="%s %s -v set contract -j %s %s" % (Utils.EosClientPath, self.eosClientArgs(), account, contractDir)
         cmd += "" if wasmFile is None else (" "+ wasmFile)
         cmd += "" if abiFile is None else (" " + abiFile)
+        cmd += " " + Utils.DefaultTxFeePayerArg
         if Utils.Debug: Utils.Print("cmd: %s" % (cmd))
         trans=None
         start=time.perf_counter()
@@ -1025,6 +1026,7 @@ class Node(object):
     # returns tuple with transaction and
     def pushMessage(self, account, action, data, opts, silentErrors=False):
         cmd="%s %s push action -j %s %s" % (Utils.EosClientPath, self.eosClientArgs(), account, action)
+        cmd += " " + Utils.DefaultTxFeePayerArg
         cmdArr=cmd.split()
         if data is not None:
             cmdArr.append(data)

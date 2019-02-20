@@ -8,6 +8,8 @@
 #include <eosio.bios/eosio.bios.abi.hpp>
 #include <fstream>
 
+#include <yosemite/chain/transaction_extensions.hpp>
+
 eosio::chain::asset core_from_string(const std::string& s) {
   return eosio::chain::asset::from_string(s + " " CORE_SYMBOL_NAME);
 }
@@ -427,6 +429,11 @@ namespace eosio { namespace testing {
       for (const auto& auth : auths) {
          trx.sign( get_private_key( auth.actor, auth.permission.to_string() ), control->get_chain_id() );
       }
+      //if (!auths.empty()) {
+      //   trx.transaction_extensions.push_back(
+      //      std::make_pair(YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
+      //                     fc::raw::pack(auths[0].actor)));
+      //}
 
       return push_transaction( trx );
    } FC_CAPTURE_AND_RETHROW( (code)(acttype)(auths)(data)(expiration)(delay_sec) ) }
@@ -623,6 +630,10 @@ namespace eosio { namespace testing {
          trx.sign( key, control->get_chain_id()  );
       }
 
+      trx.transaction_extensions.push_back(
+         std::make_pair(YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
+                        fc::raw::pack(account)));
+
       push_transaction( trx );
    } FC_CAPTURE_AND_RETHROW( (account)(perm)(auth)(parent) ) }
 
@@ -680,6 +691,10 @@ namespace eosio { namespace testing {
       } else {
          trx.sign( get_private_key( account, "active" ), control->get_chain_id()  );
       }
+      trx.transaction_extensions.push_back(
+         std::make_pair(YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
+                        fc::raw::pack(account)));
+
       push_transaction( trx );
    } FC_CAPTURE_AND_RETHROW( (account) )
 
@@ -699,6 +714,10 @@ namespace eosio { namespace testing {
       } else {
          trx.sign( get_private_key( account, "active" ), control->get_chain_id()  );
       }
+      trx.transaction_extensions.push_back(
+         std::make_pair(YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
+                        fc::raw::pack(account)));
+
       push_transaction( trx );
    }
 

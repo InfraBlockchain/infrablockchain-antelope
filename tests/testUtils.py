@@ -20,6 +20,9 @@ class Utils:
 
     EosClientPath="programs/clyos/clyos"
     MiscEosClientArgs="--no-auto-keyos"
+    TxFeePayerArgName = "--txfee-payer"
+    DefaultTxFeePayer = "yosemite"
+    DefaultTxFeePayerArg = TxFeePayerArgName + " " + DefaultTxFeePayer
 
     EosWalletName="keyos"
     EosWalletPath="programs/keyos/"+ EosWalletName

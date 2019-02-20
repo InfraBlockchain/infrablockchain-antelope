@@ -140,7 +140,7 @@ using namespace eosio::client::config;
 using namespace boost::filesystem;
 
 FC_DECLARE_EXCEPTION( explained_exception, 9000000, "explained exception, see error log" );
-FC_DECLARE_EXCEPTION( localized_exception, 10000000, "an error occured" );
+FC_DECLARE_EXCEPTION( localized_exception, 10000000, "an error occurred" );
 #define EOSC_ASSERT( TEST, ... ) \
   FC_EXPAND_MACRO( \
     FC_MULTILINE_MACRO_BEGIN \
@@ -620,18 +620,65 @@ chain::action create_open(const string& contract, const name& owner, symbol sym,
    };
 }
 
-chain::action create_transfer(const string& contract, const name& sender, const name& recipient, asset amount, const string& memo ) {
+chain::action create_transfer(const string& contract, const name& sender, const name& recipient, yx_asset token,
+                              const string& payer, const string& memo) {
 
    auto transfer = fc::mutable_variant_object
-      ("from", sender)
-      ("to", recipient)
-      ("quantity", amount)
-      ("memo", memo);
+           ("from", sender)
+           ("to", recipient)
+           ("token", token)
+           ("memo", memo);
+   if (!payer.empty()) {
+      transfer["payer"] = name(payer);
+   }
 
+   auto perm_vector = tx_permission.empty() ? vector<chain::permission_level>{{sender, config::active_name}} : get_account_permissions(tx_permission);
+   if (tx_permission.empty() && !payer.empty()) {
+      perm_vector.push_back({payer, config::active_name});
+   }
    return action {
-      get_account_permissions(tx_permission, {sender,config::active_name}),
-      contract, "transfer", variant_to_bin( contract, N(transfer), transfer )
+           perm_vector, contract, payer.empty() ? "transfer" : "wptransfer",
+           variant_to_bin(contract, payer.empty() ? N(transfer) : N(wptransfer), transfer)
    };
+}
+
+chain::action create_ntransfer(const string& contract, const name& sender, const name& recipient, const string &amount,
+                               const string& issuer, const string& payer, const string& memo) {
+
+   auto perm_vector = tx_permission.empty() ? vector<chain::permission_level>{{sender, config::active_name}} : get_account_permissions(tx_permission);
+   if (tx_permission.empty() && !payer.empty()) {
+      perm_vector.push_back({payer, config::active_name});
+   }
+
+   if (issuer.empty()) {
+      auto transfer = fc::mutable_variant_object
+              ("from", sender)
+              ("to", recipient)
+              ("amount", asset::from_string(amount))
+              ("memo", memo);
+      if (!payer.empty()) {
+         transfer["payer"] = name(payer);
+      }
+
+      return action{
+              perm_vector, contract, payer.empty() ? "transfer" : "wptransfer",
+              variant_to_bin(contract, payer.empty() ? N(transfer) : N(wptransfer), transfer)
+      };
+   } else {
+      auto ntransfer = fc::mutable_variant_object
+              ("from", sender)
+              ("to", recipient)
+              ("token", yx_asset(asset::from_string(amount), issuer))
+              ("memo", memo);
+      if (!payer.empty()) {
+         ntransfer["payer"] = name(payer);
+      }
+
+      return action{
+              perm_vector, contract, payer.empty() ? "ntransfer" : "wpntransfer",
+              variant_to_bin(contract, payer.empty() ? N(ntransfer) : N(wpntransfer), ntransfer)
+      };
+   }
 }
 
 chain::action create_setabi(const name& account, const bytes& abi) {
@@ -2672,6 +2719,57 @@ int main( int argc, char** argv ) {
 
    // set action permission
    auto setActionPermission = set_action_permission_subcommand(setAction);
+
+   // Transfer subcommand
+   string sender;
+   string recipient;
+   string token;
+   string payer;
+   string memo;
+   auto transfer = app.add_subcommand("transfer", localized("Transfer yosemite token from account to account"), false);
+   transfer->require_subcommand();
+
+   auto token_transfer = transfer->add_subcommand("token", localized("Transfer non-native token from account to account"), false);
+   token_transfer->add_option("sender", sender, localized("The account sending token"))->required();
+   token_transfer->add_option("recipient", recipient, localized("The account receiving token"))->required();
+   token_transfer->add_option("token", token, localized("The amount, symbol and its issuer of token to send (e.g. 1.0000 BTC@d2)"))->required();
+   token_transfer->add_option("memo", memo, localized("The memo for the transfer"));
+   token_transfer->add_option("--payer", payer, localized("The account who pays transfer fee"));
+
+   add_standard_transaction_options(token_transfer, "sender@active");
+   token_transfer->set_callback([&] {
+       signed_transaction trx;
+       if (tx_force_unique && memo.size() == 0) {
+          // use the memo to add a nonce
+          memo = generate_nonce_string();
+          tx_force_unique = false;
+       }
+       trx_fee_payer_account = payer.empty() ? sender : payer;
+
+       send_actions({create_transfer("yx.token", sender, recipient, yosemite::chain::yx_asset::from_string(token), payer, memo)});
+   });
+
+   auto ntoken_transfer = transfer->add_subcommand("ntoken",
+                                                   localized("Transfer native token from account to account; if an issuer is not specified, native token issued by several issuers could be transferred"), false);
+   ntoken_transfer->add_option("sender", sender, localized("The account sending naitve token"))->required();
+   ntoken_transfer->add_option("recipient", recipient, localized("The account receiving naitve token"))->required();
+   ntoken_transfer->add_option("amount", token, localized("The amount and symbol of native token to send (e.g. 100.0000 DUSD)"))->required();
+   ntoken_transfer->add_option("memo", memo, localized("The memo for the transfer"));
+   ntoken_transfer->add_option("--issuer", issuer, localized("The issuer account who issues the native token"));
+   ntoken_transfer->add_option("--payer", payer, localized("The account who pays transfer fee"));
+
+   add_standard_transaction_options(ntoken_transfer, "sender@active");
+   ntoken_transfer->set_callback([&] {
+       signed_transaction trx;
+       if (tx_force_unique && memo.size() == 0) {
+          // use the memo to add a nonce
+          memo = generate_nonce_string();
+          tx_force_unique = false;
+       }
+       trx_fee_payer_account = payer.empty() ? sender : payer;
+
+       send_actions({create_ntransfer("yx.ntoken", sender, recipient, token, issuer, payer, memo)});
+   });
 
    // Net subcommand
    string new_host;
