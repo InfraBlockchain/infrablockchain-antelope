@@ -19,7 +19,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 if (UNIX)
    if (APPLE)
       if (LLVM_DIR STREQUAL "" OR NOT LLVM_DIR)
-         set(LLVM_DIR "/usr/local/opt/llvm@4/lib/cmake/llvm")
+         set(LLVM_DIR "/usr/local/opt/llvm@4/lib/cmake/llvm/")
       endif()
    endif()
 endif()
@@ -37,7 +37,7 @@ set( CXX_STANDARD_REQUIRED ON)
 
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 6)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 3)
 
 if(VERSION_SUFFIX)
     set(VERSION_FULL "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}-${VERSION_SUFFIX}")
@@ -243,7 +243,7 @@ message( STATUS "Using S(${YOSEMITE_NATIVE_TOKEN_PRECISION},${YOSEMITE_NATIVE_TO
 
 
 if ("${EOSIO_ROOT_KEY}" STREQUAL "")
-    set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
+   set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
 endif()
 
 message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'yosemite' account" )
