@@ -28,9 +28,9 @@ namespace yosemite { namespace chain {
       tx_votes_sum_weighted_type  tx_votes_weighted;
    };
 
-   class received_transaction_votes_manager {
+   class transaction_vote_stat_manager {
    public:
-      explicit received_transaction_votes_manager( chainbase::database &db );
+      explicit transaction_vote_stat_manager( chainbase::database &db );
 
       void add_indices();
       void initialize_database();
