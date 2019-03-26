@@ -18,7 +18,7 @@ namespace yosemite { namespace chain {
 
    using namespace eosio::chain;
 
-   using received_transaction_votes_db_index_set = index_set<
+   using transaction_vote_stat_db_index_set = index_set<
       received_transaction_votes_multi_index
    >;
 
@@ -27,7 +27,7 @@ namespace yosemite { namespace chain {
    }
 
    void transaction_vote_stat_manager::add_indices() {
-      received_transaction_votes_db_index_set::add_indices(_db);
+      transaction_vote_stat_db_index_set::add_indices(_db);
    }
 
    void transaction_vote_stat_manager::initialize_database() {
@@ -35,7 +35,7 @@ namespace yosemite { namespace chain {
    }
 
    void transaction_vote_stat_manager::add_to_snapshot( const snapshot_writer_ptr& snapshot ) const {
-      received_transaction_votes_db_index_set::walk_indices([this, &snapshot]( auto utils ){
+      transaction_vote_stat_db_index_set::walk_indices([this, &snapshot]( auto utils ){
          snapshot->write_section<typename decltype(utils)::index_t::value_type>([this]( auto& section ){
             decltype(utils)::walk(_db, [this, &section]( const auto &row ) {
                section.add_row(row, _db);
@@ -45,7 +45,7 @@ namespace yosemite { namespace chain {
    }
 
    void transaction_vote_stat_manager::read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
-      received_transaction_votes_db_index_set::walk_indices([this, &snapshot]( auto utils ){
+      transaction_vote_stat_db_index_set::walk_indices([this, &snapshot]( auto utils ){
          snapshot->read_section<typename decltype(utils)::index_t::value_type>([this]( auto& section ) {
             bool more = !section.empty();
             while(more) {

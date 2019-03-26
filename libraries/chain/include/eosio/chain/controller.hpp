@@ -23,6 +23,7 @@ namespace yosemite { namespace chain {
    class yosemite_global_property_object;
    class standard_token_manager;
    class transaction_fee_manager;
+   class transaction_vote_stat_manager;
 } }
 
 namespace eosio { namespace chain {
@@ -164,6 +165,9 @@ namespace eosio { namespace chain {
          yosemite::chain::standard_token_manager&          get_mutable_token_manager();
          const yosemite::chain::transaction_fee_manager&   get_tx_fee_manager()const;
          yosemite::chain::transaction_fee_manager&         get_mutable_tx_fee_manager();
+         const yosemite::chain::transaction_vote_stat_manager&   get_tx_vote_stat_manager()const;
+         yosemite::chain::transaction_vote_stat_manager&         get_mutable_tx_vote_stat_manager();
+
 
          const flat_set<account_name>&   get_actor_whitelist() const;
          const flat_set<account_name>&   get_actor_blacklist() const;

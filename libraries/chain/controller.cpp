@@ -28,6 +28,7 @@
 #include <yosemite/chain/yosemite_global_property_database.hpp>
 #include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/transaction_fee_manager.hpp>
+#include <yosemite/chain/transaction_vote_stat_manager.hpp>
 #include <yosemite/chain/standard_token_action_handlers.hpp>
 
 namespace eosio { namespace chain {
@@ -133,6 +134,7 @@ struct controller_impl {
    authorization_manager          authorization;
    standard_token_manager         token;
    transaction_fee_manager        txfee;
+   transaction_vote_stat_manager  tx_vote_stat;
    controller::config             conf;
    chain_id_type                  chain_id;
    bool                           replaying= false;
@@ -202,8 +204,9 @@ struct controller_impl {
     wasmif( cfg.wasm_runtime ),
     resource_limits( db ),
     authorization( s, db ),
-    token ( db ),
-    txfee ( db ),
+    token( db ),
+    txfee( db ),
+    tx_vote_stat( db ),
     conf( cfg ),
     chain_id( cfg.genesis.compute_chain_id() ),
     read_mode( cfg.read_mode ),
@@ -453,6 +456,7 @@ struct controller_impl {
 
       token.add_indices();
       txfee.add_indices();
+      tx_vote_stat.add_indices();
    }
 
    void clear_all_undo() {
@@ -557,6 +561,7 @@ struct controller_impl {
 
       token.add_to_snapshot(snapshot);
       txfee.add_to_snapshot(snapshot);
+      tx_vote_stat.add_to_snapshot(snapshot);
    }
 
    void read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
@@ -604,6 +609,7 @@ struct controller_impl {
 
       token.read_from_snapshot(snapshot);
       txfee.read_from_snapshot(snapshot);
+      tx_vote_stat.read_from_snapshot(snapshot);
 
       db.set_revision( head->block_num );
    }
@@ -695,6 +701,7 @@ struct controller_impl {
 
       token.initialize_database();
       txfee.initialize_database();
+      tx_vote_stat.initialize_database();
 
       authority system_auth(conf.genesis.initial_key);
       create_native_account( config::system_account_name, system_auth, system_auth, true );
@@ -1809,6 +1816,16 @@ const transaction_fee_manager& controller::get_tx_fee_manager()const
 transaction_fee_manager&       controller::get_mutable_tx_fee_manager()
 {
    return my->txfee;
+}
+
+const transaction_vote_stat_manager&   controller::get_tx_vote_stat_manager()const
+{
+   return my->tx_vote_stat;
+}
+
+transaction_vote_stat_manager&   controller::get_mutable_tx_vote_stat_manager()
+{
+   return my->tx_vote_stat;
 }
 
 controller::controller( const controller::config& cfg )
