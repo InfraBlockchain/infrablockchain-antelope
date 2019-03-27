@@ -19,12 +19,12 @@ namespace yosemite { namespace chain {
    using namespace eosio::chain;
 
    struct transaction_vote_receiver {
-      transaction_vote_receiver( account_name a, tx_votes_sum_type v, tx_votes_sum_weighted_type wv )
-      : account(a), tx_votes(v), tx_votes_weighted(wv) {}
+      transaction_vote_receiver( account_name a, tx_votes_sum_weighted_type wv, tx_votes_sum_type v )
+      : account(a), tx_votes_weighted(wv), tx_votes(v) {}
 
       account_name                account;
-      tx_votes_sum_type           tx_votes;
       tx_votes_sum_weighted_type  tx_votes_weighted;
+      tx_votes_sum_type           tx_votes;
    };
 
    class transaction_vote_stat_manager {
@@ -38,18 +38,16 @@ namespace yosemite { namespace chain {
 
       void add_transaction_vote_to_target_account( transaction_context& context, const account_name vote_target_account, const transaction_vote_amount_type tx_vote_amount );
 
-      //tx_votes_sum_weighted_type get_weighted_transaction_vote_sum( const transaction_vote_to_name_type vote_target_account ) const;
-      //tx_votes_sum_type get_transaction_vote_sum( const transaction_vote_to_name_type vote_target_account ) const;
-      transaction_vote_receiver get_received_transaction_votes( const transaction_vote_to_name_type vote_target_account );
+      transaction_vote_receiver get_transaction_vote_stat_for_account( const transaction_vote_to_name_type vote_target_account ) const;
 
       vector<transaction_vote_receiver> get_top_sorted_transaction_vote_receivers(const uint32_t offset, const uint32_t size) const;
 
    private:
-      double weighted_tx_vote( uint32_t now, uint32_t vote );
+      double weighted_tx_vote_time_decayed( uint32_t now, uint32_t vote );
 
       chainbase::database &_db;
    };
 
 } } /// yosemite::chain
 
-FC_REFLECT(yosemite::chain::transaction_vote_receiver, (account)(tx_votes)(tx_votes_weighted) )
+FC_REFLECT(yosemite::chain::transaction_vote_receiver, (account)(tx_votes_weighted)(tx_votes))

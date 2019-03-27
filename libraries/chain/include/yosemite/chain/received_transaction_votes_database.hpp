@@ -12,7 +12,7 @@ namespace yosemite { namespace chain {
 
    using namespace eosio::chain;
 
-   using tx_votes_sum_type = eosio::chain::int128_t; //share_type;
+   using tx_votes_sum_type = uint64_t; //eosio::chain::int128_t; // share_type
    using tx_votes_sum_weighted_type = double;
 
    /**
@@ -23,8 +23,9 @@ namespace yosemite { namespace chain {
 
       id_type                     id;
       account_name                account; // transaction vote target account
-      tx_votes_sum_type           tx_votes; // sum of received transaction votes
-      tx_votes_sum_weighted_type  tx_votes_weighted; // weighted (time-decaying) sum of received transaction votes
+      tx_votes_sum_weighted_type  tx_votes_weighted = 0.0; // weighted (time-decaying) sum of received transaction votes
+      tx_votes_sum_type           tx_votes = 0; // sum of received transaction votes
+      uint64_t                    reserved = 0;
    };
 
    struct by_tx_votes_account;
@@ -44,4 +45,4 @@ namespace yosemite { namespace chain {
 
 CHAINBASE_SET_INDEX_TYPE(yosemite::chain::received_transaction_votes_object, yosemite::chain::received_transaction_votes_multi_index)
 
-FC_REFLECT(yosemite::chain::received_transaction_votes_object, (account)(tx_votes)(tx_votes_weighted) )
+FC_REFLECT(yosemite::chain::received_transaction_votes_object, (account)(tx_votes)(tx_votes_weighted)(reserved))

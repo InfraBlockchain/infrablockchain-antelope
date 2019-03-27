@@ -19,8 +19,10 @@ namespace yosemite { namespace chain {
 
       id_type                        id;
       shared_system_token_list_type  system_token_list;
+      tx_votes_sum_weighted_type     total_tx_votes_weighted = 0.0; /// the sum of all transaction votes (weighted sum for vote decay)
       tx_votes_sum_type              total_tx_votes = 0; /// the sum of all transaction votes (un-weighted sum)
-      tx_votes_sum_weighted_type     total_tx_votes_weighted = 0; /// the sum of all transaction votes (weighted sum for vote decay)
+      uint64_t                       reserved1 = 0;
+      uint64_t                       reserved2 = 0;
    };
 
    using yosemite_global_property_multi_index = chainbase::shared_multi_index_container<
@@ -34,4 +36,4 @@ namespace yosemite { namespace chain {
 
 CHAINBASE_SET_INDEX_TYPE(yosemite::chain::yosemite_global_property_object, yosemite::chain::yosemite_global_property_multi_index)
 
-FC_REFLECT(yosemite::chain::yosemite_global_property_object, (system_token_list)(total_tx_votes)(total_tx_votes_weighted))
+FC_REFLECT(yosemite::chain::yosemite_global_property_object, (system_token_list)(total_tx_votes_weighted)(total_tx_votes)(reserved1)(reserved2))
