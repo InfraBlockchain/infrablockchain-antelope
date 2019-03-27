@@ -8,6 +8,8 @@
 #include <eosio/chain/global_property_object.hpp>
 
 #include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
+#include <yosemite/chain/transaction_vote_stat_manager.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -398,7 +400,8 @@ namespace bacc = boost::accumulators;
          txfee_to_pay += tx_fee_for_action( txfee_manager, act_trace );
       }
 
-      EOS_ASSERT( txfee_to_pay >= 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than 0" );
+      EOS_ASSERT( txfee_to_pay >= 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than or equal to 0" );
+      EOS_ASSERT( txfee_to_pay <= YOSEMITE_MAX_TRANSACTION_FEE_AMOUNT_PER_TRANSACTION, yosemite_transaction_fee_exception, "transaction fee amount exceeds max transaction fee amount per transaction" );
 
 //      if (txfee_to_pay == 0) {
 //         txfee_to_pay = txfee_manager.get_default_tx_fee().value;
@@ -406,8 +409,13 @@ namespace bacc = boost::accumulators;
 
       if ( txfee_to_pay > 0 ) {
          EOS_ASSERT( !fee_payer.empty(), invalid_trx_fee_payer_account, "transaction fee payer field is required" );
+
+         uint32_t tx_fee_amount = static_cast<uint32_t>(txfee_to_pay);
          // dispatch 'txfee' actions to system token accounts
-         control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, static_cast<uint32_t>(txfee_to_pay) );
+         control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, tx_fee_amount );
+
+         // Cast Transaction Vote - YOSEMITE Proof-of-Transaction / Transaction-as-a-Vote
+         cast_transaction_vote( tx_fee_amount );
       }
    }
 
@@ -638,10 +646,13 @@ namespace bacc = boost::accumulators;
       return std::make_tuple(account_net_limit, account_cpu_limit, greylisted_net, greylisted_cpu);
    }
 
-   void transaction_context::add_transaction_vote(transaction_vote_amount_type vote_amount) {
+   void transaction_context::cast_transaction_vote(transaction_vote_amount_type vote_amount) {
 
       if (vote_amount > 0 && trace->trx_vote.valid() && !trace->trx_vote->to.empty()) {
          trace->trx_vote->amt += vote_amount;
+
+         // update transaction vote statistics database
+         control.get_mutable_tx_vote_stat_manager().add_transaction_vote_to_target_account( *this, trace->trx_vote->to, vote_amount );
       }
    }
 

@@ -213,9 +213,6 @@ namespace yosemite { namespace chain {
       }
 
       EOS_ASSERT( fee_remaining <= 0, yosemite_transaction_fee_exception, "fee payer ${payer} does not have enough system token", ("payer", fee_payer) );
-
-      // Cast Transaction Vote - YOSEMITE Proof-of-Transaction / Transaction-as-a-Vote
-      trx_context.add_transaction_vote(fee_amount);
    }
 
 
@@ -235,7 +232,7 @@ namespace yosemite { namespace chain {
 
       int64_t version = new_sys_token_list.version;
 
-         _db.modify( ygpo, [&]( auto& ygp ) {
+      _db.modify( ygpo, [&]( auto& ygp ) {
          ygp.system_token_list = std::move(new_sys_token_list);
       });
       return version;

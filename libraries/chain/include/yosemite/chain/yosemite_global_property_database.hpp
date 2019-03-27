@@ -8,6 +8,7 @@
 #include <eosio/chain/database_utils.hpp>
 #include <eosio/chain/multi_index_includes.hpp>
 #include <yosemite/chain/system_token_list.hpp>
+#include <yosemite/chain/received_transaction_votes_database.hpp>
 
 namespace yosemite { namespace chain {
 
@@ -18,6 +19,8 @@ namespace yosemite { namespace chain {
 
       id_type                        id;
       shared_system_token_list_type  system_token_list;
+      tx_votes_sum_type              total_tx_votes = 0; /// the sum of all transaction votes (un-weighted sum)
+      tx_votes_sum_weighted_type     total_tx_votes_weighted = 0; /// the sum of all transaction votes (weighted sum for vote decay)
    };
 
    using yosemite_global_property_multi_index = chainbase::shared_multi_index_container<
@@ -31,4 +34,4 @@ namespace yosemite { namespace chain {
 
 CHAINBASE_SET_INDEX_TYPE(yosemite::chain::yosemite_global_property_object, yosemite::chain::yosemite_global_property_multi_index)
 
-FC_REFLECT(yosemite::chain::yosemite_global_property_object, (system_token_list))
+FC_REFLECT(yosemite::chain::yosemite_global_property_object, (system_token_list)(total_tx_votes)(total_tx_votes_weighted))

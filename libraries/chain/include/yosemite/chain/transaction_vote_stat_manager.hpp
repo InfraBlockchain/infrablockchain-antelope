@@ -10,9 +10,8 @@
 
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/snapshot.hpp>
-#include <eosio/chain/trace.hpp>
 #include <eosio/chain/transaction_context.hpp>
-#include <eosio/chain/apply_context.hpp>
+
 #include <chainbase/chainbase.hpp>
 
 namespace yosemite { namespace chain {
@@ -37,7 +36,7 @@ namespace yosemite { namespace chain {
       void add_to_snapshot( const snapshot_writer_ptr &snapshot ) const;
       void read_from_snapshot( const snapshot_reader_ptr &snapshot );
 
-      void add_transaction_vote( apply_context& context, const account_name vote_target_account, const transaction_vote_amount_type tx_vote_amount );
+      void add_transaction_vote_to_target_account( transaction_context& context, const account_name vote_target_account, const transaction_vote_amount_type tx_vote_amount );
 
       //tx_votes_sum_weighted_type get_weighted_transaction_vote_sum( const transaction_vote_to_name_type vote_target_account ) const;
       //tx_votes_sum_type get_transaction_vote_sum( const transaction_vote_to_name_type vote_target_account ) const;

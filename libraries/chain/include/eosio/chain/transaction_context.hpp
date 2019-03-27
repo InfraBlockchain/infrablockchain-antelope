@@ -66,7 +66,7 @@ namespace eosio { namespace chain {
 
       public:
          /// YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
-         void add_transaction_vote(transaction_vote_amount_type vote_amount);
+         void cast_transaction_vote(transaction_vote_amount_type vote_amount);
          bool has_transaction_vote() const;
          const transaction_vote& get_transaction_vote() const;
 

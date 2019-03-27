@@ -431,12 +431,6 @@ bool apply_context::cancel_deferred_transaction( const uint128_t& sender_id, acc
 //////////////////////////////////////
 /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
 
-void apply_context::cast_transaction_vote(uint32_t vote_amount) {
-    // only system contracts on privileged account can call transaction vote API
-    require_authorization(config::system_account_name);
-    trx_context.add_transaction_vote(vote_amount);
-}
-
 vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
    auto head_block_ptr = control.head_block_state();
    if (!head_block_ptr) {

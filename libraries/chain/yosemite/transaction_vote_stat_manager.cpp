@@ -7,11 +7,8 @@
 #include <yosemite/chain/transaction_vote_stat_manager.hpp>
 #include <yosemite/chain/softfloat64.hpp>
 #include <yosemite/chain/yosemite_global_property_database.hpp>
-#include <yosemite/chain/standard_token_action_types.hpp>
-#include <yosemite/chain/exceptions.hpp>
+#include <yosemite/chain/transaction_as_a_vote.hpp>
 
-#include <eosio/chain/config.hpp>
-#include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/database_utils.hpp>
 
 namespace yosemite { namespace chain {
@@ -65,28 +62,33 @@ namespace yosemite { namespace chain {
       return from_softfloat64( f64_mul( ui32_to_f64(vote), softfloat64::pow( ui32_to_f64(2), weight ) ) );
    }
 
-   const uint32_t MAX_TRANSACTION_VOTE_PER_TRANSACTION = 100000000;
+   void transaction_vote_stat_manager::add_transaction_vote_to_target_account( transaction_context& context, const transaction_vote_to_name_type vote_target_account, const transaction_vote_amount_type tx_vote_amount ) {
 
-   void transaction_vote_stat_manager::add_transaction_vote( apply_context& context, const transaction_vote_to_name_type vote_target_account, const transaction_vote_amount_type tx_vote_amount ) {
-
-      if (tx_vote_amount == 0 || tx_vote_amount > MAX_TRANSACTION_VOTE_PER_TRANSACTION) {
+      if (tx_vote_amount == 0 || tx_vote_amount > YOSEMITE_MAX_TRANSACTION_FEE_AMOUNT_PER_TRANSACTION) {
          return;
       }
 
       uint32_t now = static_cast<uint64_t>( context.control.pending_block_time().time_since_epoch().count() ) / 1000000;
+      tx_votes_sum_weighted_type weighted_tx_vote_amount = weighted_tx_vote( now, tx_vote_amount );
 
       auto* tx_votes_ptr = _db.find<received_transaction_votes_object, by_tx_votes_account>( vote_target_account );
       if ( tx_votes_ptr ) {
          _db.modify<received_transaction_votes_object>( *tx_votes_ptr, [&]( received_transaction_votes_object& tx_votes_obj ) {
             tx_votes_obj.tx_votes += tx_vote_amount;
-            tx_votes_obj.tx_votes_weighted = softfloat64::add( tx_votes_obj.tx_votes_weighted, weighted_tx_vote( now, tx_vote_amount ) );
+            tx_votes_obj.tx_votes_weighted = softfloat64::add( tx_votes_obj.tx_votes_weighted, weighted_tx_vote_amount );
          });
       } else {
          _db.create<received_transaction_votes_object>( [&](received_transaction_votes_object& tx_votes_obj) {
             tx_votes_obj.tx_votes = tx_vote_amount;
-            tx_votes_obj.tx_votes_weighted = weighted_tx_vote( now, tx_vote_amount );
+            tx_votes_obj.tx_votes_weighted = weighted_tx_vote_amount;
          });
       }
+
+      auto& ygpo = _db.get<yosemite_global_property_object>();
+      _db.modify( ygpo, [&]( auto& ygp ) {
+         ygp.total_tx_votes += tx_vote_amount;
+         ygp.total_tx_votes_weighted = softfloat64::add( ygp.total_tx_votes_weighted, weighted_tx_vote_amount );
+      });
    }
 
    transaction_vote_receiver transaction_vote_stat_manager::get_received_transaction_votes( const transaction_vote_to_name_type vote_target_account ) {

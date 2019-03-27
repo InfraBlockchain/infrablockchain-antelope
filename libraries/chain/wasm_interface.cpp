@@ -1336,7 +1336,7 @@ class transaction_api : public context_aware_api {
 
       /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       void cast_transaction_vote(uint32_t vote_amount) {
-          context.cast_transaction_vote(vote_amount);
+//          context.cast_transaction_vote(vote_amount);
       }
 
       /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)

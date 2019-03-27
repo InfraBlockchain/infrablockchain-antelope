@@ -489,10 +489,6 @@ class apply_context {
 
    /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
    public:
-
-      /// contribute transaction voting from an action in current transaction
-      void cast_transaction_vote(uint32_t vote_amount);
-
       /// get transaction vote data accumulated in the head block (previous block)
       vector<transaction_vote> get_transaction_votes_in_head_block() const;
 
