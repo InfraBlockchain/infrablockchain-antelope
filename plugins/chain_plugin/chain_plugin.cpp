@@ -1389,6 +1389,16 @@ yosemite::chain::tx_fee_list_result read_only::get_txfee_list(const get_txfee_li
    return yosemite_tx_fee_manager.get_tx_fee_list(params.code_lower_bound, params.code_upper_bound, params.limit);
 }
 
+yosemite::chain::tx_vote_stat_for_account read_only::get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const {
+   auto& yosemite_tx_vote_stat_manager = db.get_tx_vote_stat_manager();
+   return yosemite_tx_vote_stat_manager.get_transaction_vote_stat_for_account( params.account );
+}
+
+yosemite::chain::tx_vote_receiver_list_result read_only::get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const {
+   auto& yosemite_tx_vote_stat_manager = db.get_tx_vote_stat_manager();
+   return yosemite_tx_vote_stat_manager.get_top_sorted_transaction_vote_receivers( params.offset, params.limit, true );
+}
+
 yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {
    yx_symbol target_symbol = yx_symbol::from_string(p.ysymbol);
    const abi_def abi = eosio::chain_apis::get_abi(db, p.code);

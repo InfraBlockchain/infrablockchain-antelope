@@ -57,8 +57,8 @@ namespace yosemite { namespace chain {
    const int64_t   __tx_vote_weight_timestamp_epoch__ = 1514764800ll;  // 01/01/2018 @ 12:00am (UTC)
    const uint32_t  __seconds_per_week__ = 24 * 3600 * 7;
 
-   double transaction_vote_stat_manager::weighted_tx_vote_time_decayed( uint32_t now, uint32_t vote ) {
-      float64_t weight = f64_div( i64_to_f64(int64_t( now - __tx_vote_weight_timestamp_epoch__ )), i64_to_f64( __seconds_per_week__ * 52 ) );
+   double transaction_vote_stat_manager::weighted_tx_vote_time_decayed( uint32_t curren_block_time_sec, uint32_t vote ) {
+      float64_t weight = f64_div( i64_to_f64(int64_t( curren_block_time_sec - __tx_vote_weight_timestamp_epoch__ )), i64_to_f64( __seconds_per_week__ * 52 ) );
       return from_softfloat64( f64_mul( ui32_to_f64(vote), softfloat64::pow( ui32_to_f64(2), weight ) ) );
    }
 
@@ -68,8 +68,8 @@ namespace yosemite { namespace chain {
          return;
       }
 
-      uint32_t now = (uint32_t)( static_cast<uint64_t>( context.control.pending_block_time().time_since_epoch().count() ) / 1000000 );
-      tx_votes_sum_weighted_type weighted_tx_vote_amount = weighted_tx_vote_time_decayed( now, tx_vote_amount );
+      uint32_t curren_block_time_sec = (uint32_t)( static_cast<uint64_t>( context.control.pending_block_time().time_since_epoch().count() ) / 1000000 );
+      tx_votes_sum_weighted_type weighted_tx_vote_amount = weighted_tx_vote_time_decayed( curren_block_time_sec, tx_vote_amount );
 
       auto* tx_votes_ptr = _db.find<received_transaction_votes_object, by_tx_votes_account>( vote_target_account );
       if ( tx_votes_ptr ) {
@@ -92,20 +92,21 @@ namespace yosemite { namespace chain {
       });
    }
 
-   transaction_vote_receiver transaction_vote_stat_manager::get_transaction_vote_stat_for_account( const transaction_vote_to_name_type vote_target_account ) const {
+   tx_vote_stat_for_account transaction_vote_stat_manager::get_transaction_vote_stat_for_account( const transaction_vote_to_name_type vote_target_account ) const {
 
       auto* tx_votes_ptr = _db.find<received_transaction_votes_object, by_tx_votes_account>( vote_target_account );
       if ( tx_votes_ptr ) {
-         return transaction_vote_receiver( vote_target_account, (*tx_votes_ptr).tx_votes_weighted, (*tx_votes_ptr).tx_votes );
+         return tx_vote_stat_for_account( vote_target_account, (*tx_votes_ptr).tx_votes_weighted, (*tx_votes_ptr).tx_votes );
       } else {
-         return transaction_vote_receiver( vote_target_account, 0.0, 0 );
+         return tx_vote_stat_for_account( vote_target_account, 0.0, 0 );
       }
    }
 
-   vector<transaction_vote_receiver> transaction_vote_stat_manager::get_top_sorted_transaction_vote_receivers(const uint32_t offset, const uint32_t size) const {
+   tx_vote_receiver_list_result transaction_vote_stat_manager::get_top_sorted_transaction_vote_receivers( const uint32_t offset, const uint32_t limit, const bool retrieve_total_votes ) const {
 
-      vector<transaction_vote_receiver> tx_vote_receivers;
-      tx_vote_receivers.reserve( size );
+      tx_vote_receiver_list_result result;
+      vector<tx_vote_stat_for_account>& tx_vote_receivers = result.tx_vote_receiver_list;
+      tx_vote_receivers.reserve( limit );
 
       const auto& idx = _db.get_index<received_transaction_votes_multi_index, by_tx_votes_weighted>();
       auto itr = idx.rbegin();
@@ -113,7 +114,7 @@ namespace yosemite { namespace chain {
 
       uint32_t skip_cnt = 0;
 
-      while ( itr != itr_rend && tx_vote_receivers.size() < size ) {
+      while ( itr != itr_rend && tx_vote_receivers.size() < limit ) {
          if ( skip_cnt == offset ) {
             tx_vote_receivers.emplace_back( itr->account, itr->tx_votes_weighted, itr->tx_votes );
          } else {
@@ -121,7 +122,18 @@ namespace yosemite { namespace chain {
          }
          itr++;
       }
-      return tx_vote_receivers;
+
+      if (itr != itr_rend) {
+         result.more = true;
+      }
+
+      if ( retrieve_total_votes ) {
+         auto& ygpo = _db.get<yosemite_global_property_object>();
+         result.total_tx_votes_weighted = ygpo.total_tx_votes_weighted;
+         result.total_tx_votes = ygpo.total_tx_votes;
+      }
+
+      return result;
    }
 
 
