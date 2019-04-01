@@ -45,9 +45,11 @@ namespace yosemite { namespace chain {
 
       void add_transaction_vote_to_target_account( transaction_context& context, const account_name vote_target_account, const transaction_vote_amount_type tx_vote_amount );
 
+      tx_votes_sum_weighted_type get_total_weighted_transaction_vote_amount() const;
+
       tx_vote_stat_for_account get_transaction_vote_stat_for_account( const transaction_vote_to_name_type vote_target_account ) const;
 
-      tx_vote_receiver_list_result get_top_sorted_transaction_vote_receivers( const uint32_t offset, const uint32_t limit, const bool retrieve_total_votes ) const;
+      tx_vote_receiver_list_result get_top_sorted_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit, const bool retrieve_total_votes ) const;
 
    private:
       double weighted_tx_vote_time_decayed( uint32_t curren_block_time_sec, uint32_t vote );

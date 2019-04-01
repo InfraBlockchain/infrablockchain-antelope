@@ -92,6 +92,10 @@ namespace yosemite { namespace chain {
       });
    }
 
+   tx_votes_sum_weighted_type transaction_vote_stat_manager::get_total_weighted_transaction_vote_amount() const {
+      return _db.get<yosemite_global_property_object>().total_tx_votes_weighted;
+   }
+
    tx_vote_stat_for_account transaction_vote_stat_manager::get_transaction_vote_stat_for_account( const transaction_vote_to_name_type vote_target_account ) const {
 
       auto* tx_votes_ptr = _db.find<received_transaction_votes_object, by_tx_votes_account>( vote_target_account );
@@ -102,7 +106,7 @@ namespace yosemite { namespace chain {
       }
    }
 
-   tx_vote_receiver_list_result transaction_vote_stat_manager::get_top_sorted_transaction_vote_receivers( const uint32_t offset, const uint32_t limit, const bool retrieve_total_votes ) const {
+   tx_vote_receiver_list_result transaction_vote_stat_manager::get_top_sorted_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit, const bool retrieve_total_votes ) const {
 
       tx_vote_receiver_list_result result;
       vector<tx_vote_stat_for_account>& tx_vote_receivers = result.tx_vote_receiver_list;
@@ -115,7 +119,7 @@ namespace yosemite { namespace chain {
       uint32_t skip_cnt = 0;
 
       while ( itr != itr_rend && tx_vote_receivers.size() < limit ) {
-         if ( skip_cnt == offset ) {
+         if ( skip_cnt == offset_rank ) {
             tx_vote_receivers.emplace_back( itr->account, itr->tx_votes_weighted, itr->tx_votes );
          } else {
             skip_cnt++;

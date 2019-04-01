@@ -14,6 +14,7 @@
 #include <yosemite/chain/transaction_extensions.hpp>
 #include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/transaction_fee_manager.hpp>
+#include <yosemite/chain/transaction_vote_stat_manager.hpp>
 #include <yosemite/chain/exceptions.hpp>
 
 using boost::container::flat_set;
@@ -431,12 +432,21 @@ bool apply_context::cancel_deferred_transaction( const uint128_t& sender_id, acc
 //////////////////////////////////////
 /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
 
+/// Deprecated
 vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
    auto head_block_ptr = control.head_block_state();
    if (!head_block_ptr) {
        return vector<transaction_vote>();
    }
    return head_block_ptr->trx_votes.get_tx_vote_list();
+}
+
+vector<tx_vote_stat_for_account> apply_context::get_top_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit ) const {
+   return control.get_tx_vote_stat_manager().get_top_sorted_transaction_vote_receivers( offset_rank, limit, false ).tx_vote_receiver_list;
+}
+
+double apply_context::get_total_weighted_transaction_votes() const {
+   return control.get_tx_vote_stat_manager().get_total_weighted_transaction_vote_amount();
 }
 
 //////////////////////////////////////
