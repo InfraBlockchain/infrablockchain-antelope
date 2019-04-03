@@ -6,20 +6,15 @@
 
 #include "yx.system.hpp"
 
-#include <yosemitelib/native_token.hpp>
-#include <yosemitelib/yx_asset.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_vote.h>
 
 #include <eosiolib/system.h>
 #include <eosiolib/memory.hpp>
-#include <eosiolib/dispatcher.hpp>
 
 #include <cmath>
 
 namespace yosemitesys {
-
-    using yosemite::yx_asset;
 
 //    const uint32_t blocks_per_year       = 52*7*24*2*3600;   // half seconds per year
 //    const uint32_t seconds_per_year      = 52*7*24*3600;
@@ -95,40 +90,79 @@ namespace yosemitesys {
         }
     }
 
+    const uint32_t top_tx_vote_receiver_list_fetch_count = 30;
+
     void system_contract::update_elected_producers( block_timestamp block_time ) {
-        _gstate.last_producer_schedule_update = block_time;
+       _gstate.last_producer_schedule_update = block_time;
 
-        auto idx = _producers.get_index<N(prototalvote)>();
+       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
+       top_producers.reserve( YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT );
 
-        std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
-        top_producers.reserve(YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT);
+       uint32_t offset_rank = 0;
+       uint32_t fetched_list_packed_size = get_top_transaction_vote_receivers(nullptr, 0, offset_rank, top_tx_vote_receiver_list_fetch_count);
 
-        for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && 0 <= it->total_votes_weight && it->active() && it->is_trusted_seed; ++it ) {
-            top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
-        }
+       while ( fetched_list_packed_size > 0 /*&& top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT*/ ) {
+          uint32_t fetched_cnt = fetched_list_packed_size / sizeof(struct yosemite_tx_vote_stat_for_account);
 
-//       if ( top_producers.size() < _gstate.last_producer_schedule_size ) {
+          /// allocate buffer memory through memory manager
+          char *buf_top_tx_vote_receivers_data_packed = static_cast<char *>(malloc(fetched_list_packed_size));
+          eosio_assert(buf_top_tx_vote_receivers_data_packed != nullptr, "malloc failed for top tx vote receiver list packed data");
+
+          // fetch top tx vote account list from chain core
+          get_top_transaction_vote_receivers(buf_top_tx_vote_receivers_data_packed, fetched_list_packed_size, offset_rank, top_tx_vote_receiver_list_fetch_count);
+
+          yosemite_tx_vote_stat_for_account *tx_vote_receiver_stat_arr = reinterpret_cast<struct yosemite_tx_vote_stat_for_account *>(buf_top_tx_vote_receivers_data_packed);
+
+          for (uint32_t i = 0; i < fetched_cnt; i++) {
+             yosemite_tx_vote_stat_for_account &tx_vote_stat_for_account = tx_vote_receiver_stat_arr[i];
+
+             auto producer_itr = _producers.find( tx_vote_stat_for_account.account );
+             if (producer_itr != _producers.cend()) {
+                if ( top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && producer_itr->active() && producer_itr->is_trusted_seed ) {
+                   top_producers.emplace_back(std::pair<eosio::producer_key, uint16_t>({{producer_itr->owner, producer_itr->producer_key}, producer_itr->location}));
+
+                   if ( top_producers.size() == YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT ) {
+                      break;
+                   }
+                }
+             }
+          }
+
+          /// deallocate buffer memory
+          free(buf_top_tx_vote_receivers_data_packed);
+
+          if ( top_producers.size() < YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT && fetched_cnt == top_tx_vote_receiver_list_fetch_count ) {
+             offset_rank += fetched_cnt;
+             fetched_list_packed_size = get_top_transaction_vote_receivers(nullptr, 0, offset_rank, top_tx_vote_receiver_list_fetch_count);
+          } else {
+             // if the fetched item count is less than requested fetch count, there is no more transaction vote receiver list items on blockchain core,
+             // and if max number of block producers are already selected as top producers, then there is no need to fetch additional transaction vote receiver list.
+             fetched_list_packed_size = 0;
+          }
+       }
+
+       if ( top_producers.size() < _gstate.last_producer_schedule_size ) {
+          return;
+       }
+
+//       if (top_producers.empty()) {
 //          return;
 //       }
 
-        if (top_producers.empty()) {
-            return;
-        }
+       /// sort by producer name
+       std::sort( top_producers.begin(), top_producers.end() );
 
-        /// sort by producer name
-        std::sort( top_producers.begin(), top_producers.end() );
+       std::vector<eosio::producer_key> producers;
 
-        std::vector<eosio::producer_key> producers;
+       producers.reserve(top_producers.size());
+       for( const auto& item : top_producers )
+          producers.push_back(item.first);
 
-        producers.reserve(top_producers.size());
-        for( const auto& item : top_producers )
-            producers.push_back(item.first);
+       bytes packed_schedule = pack(producers);
 
-        bytes packed_schedule = pack(producers);
-
-        if( set_proposed_producers( packed_schedule.data(),  packed_schedule.size() ) >= 0 ) {
-            _gstate.last_producer_schedule_size = static_cast<decltype(_gstate.last_producer_schedule_size)>( top_producers.size() );
-        }
+       if( set_proposed_producers( packed_schedule.data(),  packed_schedule.size() ) >= 0 ) {
+          _gstate.last_producer_schedule_size = static_cast<decltype(_gstate.last_producer_schedule_size)>( top_producers.size() );
+       }
     }
 
     void system_contract::regproducer( const account_name producer, const eosio::public_key& producer_key, const std::string& url, uint16_t location ) {
@@ -200,30 +234,7 @@ namespace yosemitesys {
         eosio_assert( prod.active(), "producer does not have an active key" );
         eosio_assert( prod.is_trusted_seed, "producer is not trusted seed producer" );
 
-        int64_t tx_fee_accumulated = native_token::get_total_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT);
-        eosio_assert( tx_fee_accumulated > 0, "no tx fee accumulated");
-
-        auto ct = current_time();
-
-        eosio_assert( ct - prod.last_claim_time > useconds_per_day, "already claimed rewards within past day" );
-
-        int64_t producer_per_block_pay = 0;
-        if( _gstate.total_unpaid_blocks > 0 ) {
-            producer_per_block_pay = (tx_fee_accumulated * prod.unpaid_blocks) / _gstate.total_unpaid_blocks;
-        }
-
-        _gstate.total_unpaid_blocks -= prod.unpaid_blocks;
-
-        _producers.modify( prod, 0, [&](auto& p) {
-            p.last_claim_time = ct;
-            p.unpaid_blocks = 0;
-        });
-
-        if( producer_per_block_pay > 0 ) {
-            INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
-                    (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {YOSEMITE_SYSTEM_ACCOUNT, N(active)},
-                     { YOSEMITE_TX_FEE_ACCOUNT, owner, asset(producer_per_block_pay, YOSEMITE_NATIVE_TOKEN_SYMBOL), "producer pay" });
-        }
+        eosio_assert( false, "claimrewards not yet supported");
     }
 
 } //namespace yosemitesys

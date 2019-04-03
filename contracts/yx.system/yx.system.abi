@@ -197,15 +197,6 @@
          {"name":"location",            "type":"uint16"}
       ]
     },{
-      "name": "sys_depository_info",
-      "base": "",
-      "fields": [
-         {"name":"owner",           "type":"account_name"},
-         {"name":"is_authorized",   "type":"bool"},
-         {"name":"url",             "type":"string"},
-         {"name":"location",        "type":"uint16"}
-      ]
-    },{
       "name": "identity_authority_info",
       "base": "",
       "fields": [
@@ -252,26 +243,6 @@
       "base": "",
       "fields": [
         {"name":"owner",   "type":"account_name"}
-      ]
-    },{
-      "name": "regsysdepo",
-      "base": "",
-      "fields": [
-        {"name":"depository",   "type":"account_name"},
-        {"name":"url",          "type":"string"},
-        {"name":"location",     "type":"uint16"}
-      ]
-    },{
-      "name": "authsysdepo",
-      "base": "",
-      "fields": [
-        {"name":"depository",   "type":"account_name"}
-      ]
-    },{
-      "name": "rmvsysdepo",
-      "base": "",
-      "fields": [
-        {"name":"depository",   "type":"account_name"}
       ]
     },{
       "name": "regidauth",
@@ -444,18 +415,6 @@
    },{
       "name": "claimrewards",
       "type": "claimrewards",
-      "ricardian_contract": ""
-   },{
-      "name": "regsysdepo",
-      "type": "regsysdepo",
-      "ricardian_contract": ""
-   },{
-      "name": "authsysdepo",
-      "type": "authsysdepo",
-      "ricardian_contract": ""
-   },{
-      "name": "rmvsysdepo",
-      "type": "rmvsysdepo",
       "ricardian_contract": ""
    },{
       "name": "regidauth",

@@ -7,11 +7,9 @@
 #include "yx.system.hpp"
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/system_depository.hpp>
 #include <yosemitelib/transaction_fee.hpp>
 #include <eosiolib/dispatcher.hpp>
 #include "yx.block_producer.cpp"
-#include "yx.sys_depository.cpp"
 #include "yx.identity_authority.cpp"
 #include "yx.system_token.cpp"
 #include "yx.transaction_fee.cpp"
@@ -22,7 +20,6 @@ namespace yosemitesys {
     system_contract::system_contract( account_name s )
             :native(s),
              _producers(_self,_self),
-             _sys_depositories(_self,_self),
              _identity_authorities(_self,_self),
              _global(_self,_self)
     {
@@ -106,8 +103,6 @@ EOSIO_ABI( yosemitesys::system_contract,
            (setram)(setparams)(setpriv)
            // yx.block_producer.cpp
            (onblock)(regproducer)(authproducer)(unregprod)(rmvproducer)(claimrewards)
-           // yx.sys_depository.cpp
-           (regsysdepo)(authsysdepo)(rmvsysdepo)
            // yx.identity_authority.cpp
            (regidauth)(authidauth)(rmvidauth)
            // yx.system_token.cpp
