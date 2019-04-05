@@ -49,41 +49,6 @@ namespace yosemitesys {
             });
         }
 
-        /// read tran transaction votes sum data for each vote-to(candidate) account,
-        /// accumulated from the transactions in the previous block right before current pending block
-        uint32_t tx_votes_packed_size = read_head_block_trx_votes_data(nullptr, 0);
-
-        if (tx_votes_packed_size > 0) {
-
-            int cnt = tx_votes_packed_size / sizeof(struct yosemite_transaction_vote);
-
-            /// allocate buffer memory through memory manager
-            char* buf_tx_votes_data_packed = static_cast<char*>(malloc(tx_votes_packed_size));
-            eosio_assert( buf_tx_votes_data_packed != nullptr, "malloc failed for tx votes packed data" );
-
-            read_head_block_trx_votes_data(buf_tx_votes_data_packed, tx_votes_packed_size);
-            yosemite_transaction_vote* votes_arr = reinterpret_cast<struct yosemite_transaction_vote *>(buf_tx_votes_data_packed);
-
-            for (int i = 0; i < cnt; i++) {
-                yosemite_transaction_vote &trx_vote = votes_arr[i];
-
-                auto prod_vote = _producers.find( trx_vote.to );
-
-                if (prod_vote != _producers.end()) {
-                    _producers.modify( prod_vote, 0, [&]( producer_info& info ){
-                        double trx_vote_amount = static_cast<double>(trx_vote.amount);
-                        info.total_votes += trx_vote_amount;
-                        _gstate.total_producer_vote += trx_vote_amount;
-                        double weighted_vote_amount = weighted_vote(trx_vote.amount);
-                        info.total_votes_weight += weighted_vote_amount;
-                        _gstate.total_producer_vote_weight += weighted_vote_amount;
-                    });
-                }
-            }
-
-            free(buf_tx_votes_data_packed);
-        }
-
         /// only update block producers once every minute, block_timestamp is in half seconds
         if( timestamp.slot - _gstate.last_producer_schedule_update.slot > 120 ) {
             update_elected_producers( timestamp );
