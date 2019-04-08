@@ -90,3 +90,4 @@ yosemite_bios/reset_yosemite_testnet_on_local.sh
 yosemite_bios/reset_std_token_yosemite_testnet_on_local.sh
 yosemite_bios/stop_yosemite_testnet_node_local.sh
 yosemite_bios/start_yosemite_testnet_node_local.sh
+yosemite_bios/clean_data_yosemite_testnet_on_local.sh
