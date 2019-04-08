@@ -100,6 +100,8 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_system_token_balance, 200),
       CHAIN_RO_CALL(get_txfee_item, 200),
       CHAIN_RO_CALL(get_txfee_list, 200),
+      CHAIN_RO_CALL(get_tx_vote_stat_for_account, 200),
+      CHAIN_RO_CALL(get_top_tx_vote_receiver_list, 200),
       CHAIN_RO_CALL(get_yx_token_balance, 200),
       CHAIN_RO_CALL(get_yx_token_stats, 200),
       CHAIN_RO_CALL(get_native_token_balance, 200),

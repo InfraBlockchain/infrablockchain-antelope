@@ -18,6 +18,7 @@
 
 #include <yosemite/chain/standard_token_manager.hpp>
 #include <yosemite/chain/transaction_fee_manager.hpp>
+#include <yosemite/chain/transaction_vote_stat_manager.hpp>
 #include <yosemite/chain/yx_symbol.hpp>
 #include <yosemite/chain/yx_asset.hpp>
 
@@ -374,6 +375,19 @@ public:
    };
 
    yosemite::chain::tx_fee_list_result get_txfee_list(const get_txfee_list_params &params) const;
+
+   struct get_tx_vote_stat_for_account_params {
+      name account;
+   };
+
+   yosemite::chain::tx_vote_stat_for_account get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const;
+
+   struct get_top_tx_vote_receiver_list_params {
+      uint32_t offset = 0;
+      uint32_t limit = 30;
+   };
+
+   yosemite::chain::tx_vote_receiver_list_result get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const;
 
    struct get_yx_token_balance_params {
       name code;
@@ -818,6 +832,8 @@ FC_REFLECT(eosio::chain_apis::read_only::get_system_token_list_params, (token_me
 FC_REFLECT(eosio::chain_apis::read_only::get_system_token_balance_params, (account));
 FC_REFLECT(eosio::chain_apis::read_only::get_txfee_item_params, (code)(action));
 FC_REFLECT(eosio::chain_apis::read_only::get_txfee_list_params, (code_lower_bound)(code_upper_bound)(limit));
+FC_REFLECT(eosio::chain_apis::read_only::get_tx_vote_stat_for_account_params, (account));
+FC_REFLECT(eosio::chain_apis::read_only::get_top_tx_vote_receiver_list_params, (offset)(limit));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_balance_params, (code)(account)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_params, (code)(ysymbol));
 FC_REFLECT(eosio::chain_apis::read_only::get_yx_token_stats_result, (supply)(can_set_options)(options)(kyc_rule_types)(kyc_rule_flags));

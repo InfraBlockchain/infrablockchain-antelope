@@ -192,7 +192,8 @@ namespace eosio { namespace chain {
       yosemite_global_property_object_type,
       yosemite_token_meta_object_type,
       yosemite_token_balance_object_type,
-      yosemite_transaction_fee_object_type
+      yosemite_transaction_fee_object_type,
+      yosemite_received_transaction_votes_object_type
    };
 
    class account_object;

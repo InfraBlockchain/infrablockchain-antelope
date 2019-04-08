@@ -44,6 +44,8 @@ add_library( eosio_chain
 
              yosemite/standard_token_manager.cpp
              yosemite/transaction_fee_manager.cpp
+             yosemite/softfloat64.cpp
+             yosemite/transaction_vote_stat_manager.cpp
              yosemite/standard_token_action_handlers.cpp
 
 #             get_config.cpp

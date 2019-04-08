@@ -10,6 +10,7 @@
 
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <yosemite/chain/transaction_fee_manager.hpp>
+#include <yosemite/chain/transaction_vote_stat_manager.hpp>
 
 #include <fc/utility.hpp>
 #include <sstream>
@@ -489,12 +490,15 @@ class apply_context {
 
    /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
    public:
-
-      /// contribute transaction voting from an action in current transaction
-      void cast_transaction_vote(uint32_t vote_amount);
-
+      /// Deprecated
       /// get transaction vote data accumulated in the head block (previous block)
       vector<transaction_vote> get_transaction_votes_in_head_block() const;
+
+      /// get top sorted transaction vote receiver list
+      vector<tx_vote_stat_for_account> get_top_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit ) const;
+
+      /// get total weighted transaction vote amount summed up
+      double get_total_weighted_transaction_votes() const;
 
    /// YOSEMITE Core API - Transaction-Fee
    public:

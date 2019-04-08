@@ -8,7 +8,6 @@
 #include "yx.native.hpp"
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/system_depository.hpp>
 #include <yosemitelib/identity_authority.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/time.hpp>
@@ -24,7 +23,6 @@ namespace yosemitesys {
     using eosio::indexed_by;
     using eosio::const_mem_fun;
     using eosio::block_timestamp;
-    using yosemite::sys_depository_table;
     using yosemite::identity_authority_table;
 
     static const uint32_t YOSEMITE_MAX_ELECTED_BLOCK_PRODUCER_COUNT = 5;
@@ -39,8 +37,8 @@ namespace yosemitesys {
         block_timestamp      last_producer_schedule_update;
         uint32_t             total_unpaid_blocks = 0; /// all blocks which have been produced but not paid
         uint16_t             last_producer_schedule_size = 0;
-        double               total_producer_vote = 0; /// the sum of all producer votes (un-weighted sum)
-        double               total_producer_vote_weight = 0; /// the sum of all producer votes (weighted sum for vote decay)
+        /* deprecated */ double total_producer_vote = 0; /// the sum of all producer votes (un-weighted sum)
+        /* deprecated */ double total_producer_vote_weight = 0; /// the sum of all producer votes (weighted sum for vote decay)
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE_DERIVED( yosemite_global_state, eosio::blockchain_parameters,
@@ -80,7 +78,6 @@ namespace yosemitesys {
     class system_contract : public native {
     private:
         producers_table          _producers;
-        sys_depository_table     _sys_depositories;
         identity_authority_table _identity_authorities;
         global_state_singleton   _global;
 
@@ -111,16 +108,6 @@ namespace yosemitesys {
         void rmvproducer( account_name producer );
 
         void claimrewards( const account_name& owner );
-
-
-        // System Depositories (yx.sys_depository.cpp)
-
-        void regsysdepo( const account_name depository, const std::string& url, uint16_t location );
-
-        void authsysdepo( const account_name depository );
-
-        void rmvsysdepo( const account_name depository );
-
 
         // Identity Authorities (yx.identity_authority.cpp)
 

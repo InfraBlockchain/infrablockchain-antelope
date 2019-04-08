@@ -53,7 +53,7 @@ set -x
 
 { set +x; } 2>/dev/null
 echo "${red}Really want to reset Testnet node data?${reset}"
-echo "${red}[WARNING] all data including yosemite node data and mongo db data will be deleted permanately.${reset}"
+echo "${red}[WARNING] all data including yosemite node data and mongo db data will be deleted permanantely.${reset}"
 echo "write YES to proceed reset process."
 read USER_CONFIRM_TO_PROCEED
 if [ "$USER_CONFIRM_TO_PROCEED" != "YES" ]; then

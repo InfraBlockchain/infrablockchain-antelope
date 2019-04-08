@@ -1,7 +1,7 @@
 #include <yosemitelib/native_token.hpp>
 #include <yosemitelib/system_accounts.hpp>
 #include <yosemitelib/transaction_fee.hpp>
-#include <yosemitelib/system_depository.hpp>
+//#include <yosemitelib/system_depository.hpp>
 #include <yosemitelib/transaction_vote.h>
 
 namespace yosemite { namespace native_token {
@@ -37,8 +37,8 @@ namespace yosemite { namespace native_token {
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(token.issuer);
-        eosio_assert(static_cast<uint32_t>(is_authorized_sys_depository(token.issuer)),
-                     "issuer account is not system depository");
+        //eosio_assert(static_cast<uint32_t>(is_authorized_sys_depository(token.issuer)),
+        //             "issuer account is not system depository");
 
         stats_native stats(get_self(), token.issuer);
         const auto &tstats = stats.find(NTOKEN_BASIC_STATS_KEY);
@@ -75,8 +75,8 @@ namespace yosemite { namespace native_token {
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
         require_auth(token.issuer);
-        eosio_assert(static_cast<uint32_t>(is_authorized_sys_depository(token.issuer)),
-                     "issuer account is not system depository");
+        //eosio_assert(static_cast<uint32_t>(is_authorized_sys_depository(token.issuer)),
+        //             "issuer account is not system depository");
 
         stats_native stats(get_self(), token.issuer);
         const auto &tstats = stats.get(NTOKEN_BASIC_STATS_KEY, "createn for the issuer is not called");

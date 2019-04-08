@@ -16,6 +16,7 @@
 #include <yosemite/chain/transaction_as_a_vote.hpp>
 #include <yosemite/chain/system_token_list.hpp>
 #include <yosemite/chain/standard_token_manager.hpp>
+#include <yosemite/chain/transaction_vote_stat_manager.hpp>
 
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
@@ -27,6 +28,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
+#include <string.h>
 
 namespace eosio { namespace chain {
    using namespace webassembly;
@@ -906,6 +908,8 @@ class system_api : public context_aware_api {
 
 };
 
+constexpr size_t max_assert_message = 1024;
+
 class context_free_system_api :  public context_aware_api {
 public:
    explicit context_free_system_api( apply_context& ctx )
@@ -918,14 +922,16 @@ public:
    // Kept as intrinsic rather than implementing on WASM side (using eosio_assert_message and strlen) because strlen is faster on native side.
    void eosio_assert( bool condition, null_terminated_ptr msg ) {
       if( BOOST_UNLIKELY( !condition ) ) {
-         std::string message( msg );
+         const size_t sz = strnlen( msg, max_assert_message );
+         std::string message( msg, sz );
          EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
       }
    }
 
    void eosio_assert_message( bool condition, array_ptr<const char> msg, size_t msg_len ) {
       if( BOOST_UNLIKELY( !condition ) ) {
-         std::string message( msg, msg_len );
+         const size_t sz = msg_len > max_assert_message ? max_assert_message : msg_len;
+         std::string message( msg, sz );
          EOS_THROW( eosio_assert_message_exception, "assertion failure with message: ${s}", ("s",message) );
       }
    }
@@ -1329,11 +1335,13 @@ class transaction_api : public context_aware_api {
          return context.cancel_deferred_transaction( (unsigned __int128)sender_id );
       }
 
+      /// Deprecated
       /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       void cast_transaction_vote(uint32_t vote_amount) {
-          context.cast_transaction_vote(vote_amount);
+//          context.cast_transaction_vote(vote_amount);
       }
 
+      /// Deprecated
       /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
          auto trx_votes = context.get_transaction_votes_in_head_block();
@@ -1345,6 +1353,24 @@ class transaction_api : public context_aware_api {
          memcpy( memory, trx_votes.data(), copy_size );
 
          return copy_size;
+      }
+
+      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      int get_top_transaction_vote_receivers(array_ptr<char> memory, size_t buffer_size, uint32_t offset_rank, uint32_t limit) {
+         auto trx_vote_receivers = context.get_top_transaction_vote_receivers( offset_rank, limit );
+
+         auto s = trx_vote_receivers.size() * sizeof(struct yosemite::chain::tx_vote_stat_for_account);
+         if (buffer_size == 0) return s;
+
+         auto copy_size = std::min( buffer_size, s );
+         memcpy( memory, trx_vote_receivers.data(), copy_size );
+
+         return copy_size;
+      }
+
+      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      double get_total_weighted_transaction_votes() {
+         return context.get_total_weighted_transaction_votes();
       }
 
       /// YOSEMITE Core API - Transaction-Fee-Setup
@@ -1953,6 +1979,8 @@ REGISTER_INTRINSICS(transaction_api,
    (cancel_deferred,           int(int)                     )
    (cast_transaction_vote,     void(int)                    )
    (read_head_block_trx_votes_data,     int(int, int)       )
+   (get_top_transaction_vote_receivers, int(int, int, int, int) )
+   (get_total_weighted_transaction_votes,  double()         )
    (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int) )
    (unset_trx_fee_for_action,  void(int64_t, int64_t)       )
    (get_trx_fee_for_action,    int(int64_t, int64_t, int, int) )

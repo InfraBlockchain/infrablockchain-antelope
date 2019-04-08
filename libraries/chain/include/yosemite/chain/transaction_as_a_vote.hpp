@@ -145,5 +145,7 @@ namespace yosemite { namespace chain {
 
 } } /// yosemite::chain
 
+#define YOSEMITE_MAX_TRANSACTION_FEE_AMOUNT_PER_TRANSACTION 1000000000
+
 FC_REFLECT(yosemite::chain::transaction_vote, (to)(amt))
 FC_REFLECT(yosemite::chain::transaction_votes_in_block, (tx_votes))
