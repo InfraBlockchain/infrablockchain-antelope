@@ -452,12 +452,6 @@
       "key_names" : ["owner"],
       "key_types" : ["uint64"]
     },{
-      "name": "sysdepos",
-      "type": "sys_depository_info",
-      "index_type": "i64",
-      "key_names" : ["owner"],
-      "key_types" : ["uint64"]
-    },{
       "name": "idauthority",
       "type": "identity_authority_info",
       "index_type": "i64",
