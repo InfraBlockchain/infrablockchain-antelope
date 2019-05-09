@@ -216,109 +216,6 @@ $YOSEMITE_CLI get table yosemite yosemite idauthority
 $YOSEMITE_CLI get table yosemite yosemite producers
 
 
-{ print_section_title "Initial Block Producer Setup"; } 2>/dev/null
-
-$YOSEMITE_CLI wallet import --private-key YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
-$YOSEMITE_CLI wallet import --private-key YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
-$YOSEMITE_CLI wallet import --private-key YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
-$YOSEMITE_CLI wallet import --private-key YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
-$YOSEMITE_CLI wallet import --private-key YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
-$YOSEMITE_CLI wallet import --private-key YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
-$YOSEMITE_CLI wallet import --private-key YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
-$YOSEMITE_CLI wallet import --private-key YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
-$YOSEMITE_CLI wallet import --private-key YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
-$YOSEMITE_CLI wallet import --private-key YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
-sleep 1
-
-$YOSEMITE_CLI create account yosemite producer.a YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.b YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.c YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.d YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.e YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1 -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.f YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641 -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.g YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.h YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6 -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.i YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI create account yosemite producer.j YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC -p yosemite@active --txfee-payer yosemite
-sleep 1
-
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.a","producer_key":"YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn","url":"http://producera.io","location":1}' -p producer.a@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.b","producer_key":"YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm","url":"http://producerb.io","location":1}' -p producer.b@active --txfee-payer yosemite
-
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.a"}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.b"}' -p yosemite@active --txfee-payer yosemite
-
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.c","producer_key":"YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo","url":"http://producerc.io","location":1}' -p producer.c@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.d","producer_key":"YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy","url":"http://producerd.io","location":1}' -p producer.d@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.e","producer_key":"YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1","url":"http://producere.io","location":1}' -p producer.e@active --txfee-payer yosemite
-
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.c"}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.d"}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.e"}' -p yosemite@active --txfee-payer yosemite
-
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.f","producer_key":"YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641","url":"http://producerf.io","location":1}' -p producer.f@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.g","producer_key":"YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq","url":"http://producerg.io","location":1}' -p producer.g@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.h","producer_key":"YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6","url":"http://producerh.io","location":1}' -p producer.h@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.i","producer_key":"YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is","url":"http://produceri.io","location":1}' -p producer.i@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.j","producer_key":"YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC","url":"http://producerj.io","location":1}' -p producer.j@active --txfee-payer yosemite
-
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.f"}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.g"}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.h"}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.i"}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.j"}' -p yosemite@active --txfee-payer yosemite
-
-sleep 125
-tail -n 150 $YOSEMITE_NODE_LOG_FILE
-
-{ print_section_title "Resign \"yosemite\" delegating authority to \"yx.prods\""; } 2>/dev/null
-
-$YOSEMITE_CLI get account yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@owner --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@active --txfee-payer yosemite
-$YOSEMITE_CLI get account yosemite
-$YOSEMITE_CLI get account yx.prods
-
-sleep 1
-
-{ print_section_title "Resign \"yx.msig\" delegating authority to \"yosemite\""; } 2>/dev/null
-
-$YOSEMITE_CLI get account yx.msig
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.msig","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.msig@owner --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.msig","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.msig@active --txfee-payer yosemite
-$YOSEMITE_CLI get account yx.msig
-
-sleep 1
-
-{ print_section_title "Resign Yosemite Contract Accounts delegating authority to \"yosemite\""; } 2>/dev/null
-
-$YOSEMITE_CLI get account yx.identity
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.identity","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.identity@owner --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.identity","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.identity@active --txfee-payer yosemite
-$YOSEMITE_CLI get account yx.identity
-
-$YOSEMITE_CLI get account yx.dcontract
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@owner --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@active --txfee-payer yosemite
-$YOSEMITE_CLI get account yx.dcontract
-
-#$YOSEMITE_CLI get account yx.nft
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@owner --txfee-payer yosemite
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@active --txfee-payer yosemite
-#$YOSEMITE_CLI get account yx.nft
-
-#$YOSEMITE_CLI get account yx.nftex
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@owner --txfee-payer yosemite
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@active --txfee-payer yosemite
-#$YOSEMITE_CLI get account yx.nftex
-
-#$YOSEMITE_CLI get account yx.escrow
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@owner --txfee-payer yosemite
-#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@active --txfee-payer yosemite
-#$YOSEMITE_CLI get account yx.escrow
-
-sleep 1
-
 { print_section_title "Setup Initial System Tokens"; } 2>/dev/null
 
 $YOSEMITE_CLI push action systoken.a settokenmeta '{"sym":"4,DUSD","url":"http://sysdepo-a.org","desc":"system depository a"}' -p systoken.a@active --txfee-payer yosemite
@@ -382,6 +279,126 @@ $YOSEMITE_CLI get txfee item "" ""
 $YOSEMITE_CLI get txfee list -L "" -U 1
 $YOSEMITE_CLI get txfee list -L yosemite -U yosemite -l 50
 $YOSEMITE_CLI get txfee list
+
+
+{ print_section_title "Initial Block Producer Setup"; } 2>/dev/null
+
+$YOSEMITE_CLI wallet import --private-key YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
+$YOSEMITE_CLI wallet import --private-key YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
+$YOSEMITE_CLI wallet import --private-key YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
+$YOSEMITE_CLI wallet import --private-key YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
+$YOSEMITE_CLI wallet import --private-key YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
+$YOSEMITE_CLI wallet import --private-key YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
+$YOSEMITE_CLI wallet import --private-key YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
+$YOSEMITE_CLI wallet import --private-key YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
+$YOSEMITE_CLI wallet import --private-key YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
+$YOSEMITE_CLI wallet import --private-key YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
+sleep 1
+
+$YOSEMITE_CLI create account yosemite producer.a YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.b YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.c YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.d YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.e YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1 -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.f YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641 -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.g YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.h YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6 -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.i YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI create account yosemite producer.j YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC -p yosemite@active --txfee-payer yosemite
+sleep 1
+
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.a","producer_key":"YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn","url":"http://producera.io","location":1}' -p producer.a@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.b","producer_key":"YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm","url":"http://producerb.io","location":1}' -p producer.b@active --txfee-payer yosemite
+
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.a"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.b"}' -p yosemite@active --txfee-payer yosemite
+
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.c","producer_key":"YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo","url":"http://producerc.io","location":1}' -p producer.c@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.d","producer_key":"YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy","url":"http://producerd.io","location":1}' -p producer.d@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.e","producer_key":"YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1","url":"http://producere.io","location":1}' -p producer.e@active --txfee-payer yosemite
+
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.c"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.d"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.e"}' -p yosemite@active --txfee-payer yosemite
+
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.f","producer_key":"YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641","url":"http://producerf.io","location":1}' -p producer.f@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.g","producer_key":"YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq","url":"http://producerg.io","location":1}' -p producer.g@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.h","producer_key":"YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6","url":"http://producerh.io","location":1}' -p producer.h@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.i","producer_key":"YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is","url":"http://produceri.io","location":1}' -p producer.i@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite regproducer '{"producer":"producer.j","producer_key":"YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC","url":"http://producerj.io","location":1}' -p producer.j@active --txfee-payer yosemite
+
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.f"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.g"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.h"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.i"}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite authproducer '{"producer":"producer.j"}' -p yosemite@active --txfee-payer yosemite
+
+## Transaction votes for initial block producer election
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"10.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"20.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.b
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"30.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.c
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"40.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.d
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"50.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.e
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"60.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.f
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"70.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.g
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"80.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.h
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"90.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.i
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"100.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.j
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"110.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.a
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"120.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.b
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"130.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.c
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"140.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.d
+$YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"150.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.e
+
+
+sleep 125
+tail -n 150 $YOSEMITE_NODE_LOG_FILE
+
+{ print_section_title "Resign \"yosemite\" delegating authority to \"yx.prods\""; } 2>/dev/null
+
+$YOSEMITE_CLI get account yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@owner --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI get account yosemite
+$YOSEMITE_CLI get account yx.prods
+
+sleep 1
+
+{ print_section_title "Resign \"yx.msig\" delegating authority to \"yosemite\""; } 2>/dev/null
+
+$YOSEMITE_CLI get account yx.msig
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.msig","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.msig@owner --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.msig","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.msig@active --txfee-payer yosemite
+$YOSEMITE_CLI get account yx.msig
+
+sleep 1
+
+{ print_section_title "Resign Yosemite Contract Accounts delegating authority to \"yosemite\""; } 2>/dev/null
+
+$YOSEMITE_CLI get account yx.identity
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.identity","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.identity@owner --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.identity","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.identity@active --txfee-payer yosemite
+$YOSEMITE_CLI get account yx.identity
+
+$YOSEMITE_CLI get account yx.dcontract
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@owner --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.dcontract","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.dcontract@active --txfee-payer yosemite
+$YOSEMITE_CLI get account yx.dcontract
+
+#$YOSEMITE_CLI get account yx.nft
+#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@owner --txfee-payer yosemite
+#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nft","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nft@active --txfee-payer yosemite
+#$YOSEMITE_CLI get account yx.nft
+
+#$YOSEMITE_CLI get account yx.nftex
+#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@owner --txfee-payer yosemite
+#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.nftex","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.nftex@active --txfee-payer yosemite
+#$YOSEMITE_CLI get account yx.nftex
+
+#$YOSEMITE_CLI get account yx.escrow
+#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@owner --txfee-payer yosemite
+#$YOSEMITE_CLI push action yosemite updateauth '{"account":"yx.escrow","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yosemite","permission":"active"}}]}}' -p yx.escrow@active --txfee-payer yosemite
+#$YOSEMITE_CLI get account yx.escrow
 
 sleep 1
 
