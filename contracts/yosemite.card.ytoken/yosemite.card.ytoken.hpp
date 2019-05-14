@@ -29,53 +29,6 @@ namespace yosemitex { namespace contract {
       explicit yosemite_card_ytoken( account_name self ) : contract(self) {}
 
       /**
-       * Set token meta info
-       * @param sym - token symbol (precision, symbol name)
-       * @param url - web site url providing token information managed by token issuer
-       * @param description - token description
-       */
-      // just inherit built-in 'settokenmeta' action (YOSEMITE chain core)
-      //void settokenmeta( const symbol_type sym, const string& url, const string& desc );
-
-      /**
-       * Issue new token
-       * @param t - token id (token account name)
-       * @param to - account name receiving the issued tokens
-       * @param qty - token quantity (amount, symbol) to issue
-       * @param tag - user tag string to identity a specific issue action (application-specific purpose)
-       */
-      void issue( const account_name t, const account_name to, const asset& qty, const string& tag );
-
-      /**
-       * Transfer token
-       * @param t - token id (token account name)
-       * @param from - account name sending tokens
-       * @param to - account name receiving tokens
-       * @param qty - token quantity (amount, symbol) to transfer
-       * @param tag - user tag string to identity a specific transfer action (application-specific purpose)
-       */
-      void transfer( const account_name t, const account_name from, const account_name to, const asset& qty, const string& tag );
-
-      /**
-       * Transaction fee payment
-       * if current token account is selected as a system token,
-       * 'txfee' actions are generated from YOSEMITE blockchain core after processing actions on a submitted transaction
-       * @param t - token id (token account name)
-       * @param payer - account name paying transaction fee
-       * @param fee - token quantity (amount, symbol) being charged as transaction fee
-       */
-      void txfee( const account_name t, const account_name payer, const asset& fee );
-
-      /**
-       * Redeem(burn) token
-       * only token issuer can redeem(burn) its own token
-       * @param qty token quantity (amount, symbol) to redeem
-       * @param tag user tag string to identity a specific redeem action (application-specific purpose)
-       */
-      void redeem( const asset& qty, const string& tag );
-
-
-      /**
        * TODO
        *
        * @param merchant TODO
@@ -145,7 +98,7 @@ namespace yosemitex { namespace contract {
       void redeemfiatrq( const account_name account, const asset& qty /* YUSD */, const string& tag );
 
       /**
-       * Cancel Redeem Fiat-Token Request
+       * Cancel Redeem-Fiat-Token-Request
        *
        * @param account TODO
        * @param qty TODO
@@ -216,6 +169,56 @@ namespace yosemitex { namespace contract {
        * @param tag TODO
        */
       void creditburn( const asset& qty /* CREDIT */, const string& tag );
+
+
+      ///////////////////////////////////////////////////////
+      /// YOSEMITE Standard Token Actions
+
+      /**
+       * Set token meta info
+       * @param sym - token symbol (precision, symbol name)
+       * @param url - web site url providing token information managed by token issuer
+       * @param description - token description
+       */
+      // just inherit built-in 'settokenmeta' action (YOSEMITE chain core)
+      //void settokenmeta( const symbol_type sym, const string& url, const string& desc );
+
+      /**
+       * Issue new token
+       * @param t - token id (token account name)
+       * @param to - account name receiving the issued tokens
+       * @param qty - token quantity (amount, symbol) to issue
+       * @param tag - user tag string to identity a specific issue action (application-specific purpose)
+       */
+      void issue( const account_name t, const account_name to, const asset& qty, const string& tag );
+
+      /**
+       * Transfer token
+       * @param t - token id (token account name)
+       * @param from - account name sending tokens
+       * @param to - account name receiving tokens
+       * @param qty - token quantity (amount, symbol) to transfer
+       * @param tag - user tag string to identity a specific transfer action (application-specific purpose)
+       */
+      void transfer( const account_name t, const account_name from, const account_name to, const asset& qty, const string& tag );
+
+      /**
+       * Transaction fee payment
+       * if current token account is selected as a system token,
+       * 'txfee' actions are generated from YOSEMITE blockchain core after processing actions on a submitted transaction
+       * @param t - token id (token account name)
+       * @param payer - account name paying transaction fee
+       * @param fee - token quantity (amount, symbol) being charged as transaction fee
+       */
+      void txfee( const account_name t, const account_name payer, const asset& fee );
+
+      /**
+       * Redeem(burn) token
+       * only token issuer can redeem(burn) its own token
+       * @param qty token quantity (amount, symbol) to redeem
+       * @param tag user tag string to identity a specific redeem action (application-specific purpose)
+       */
+      void redeem( const asset& qty, const string& tag );
 
    private:
 

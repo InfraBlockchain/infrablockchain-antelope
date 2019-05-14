@@ -15,44 +15,13 @@
 #define YOSEMITE_CREDIT_TOKEN_KYC_REQUIRED_AUTH (YOSEMITE_ID_KYC_EMAIL_AUTH | YOSEMITE_ID_KYC_PHONE_AUTH | YOSEMITE_ID_KYC_REAL_NAME_AUTH | YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH)
 
 #define YOSEMITE_TOKEN_FIAT_BACKED N(fiatbacked)
-#define YOSEMITE_TOKEN_YCARD_USERS_ACCOUNT N(ycard.users)
+#define YOSEMITE_TOKEN_YCARD_USERS_POOL_ACCOUNT N(ycard.users)
 
 namespace yosemitex { namespace contract {
 
    using namespace eosio;
    using namespace yosemite::identity;
    using std::string;
-
-   /// @action issue - inherited YOSEMITE Standard Token Action
-   void yosemite_card_ytoken::issue( const account_name /*t*/, const account_name /*to*/, const asset& /*qty*/, const string& /*tag*/ ) {
-
-      /// built-in action handler for 'issue' standard token action has already processed basic 'issue' operations
-
-      eosio_assert( false, "use ytokenissue, issuefiatyt actions" );
-      //eosio_assert( has_all_kyc_status( to, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "issue.to account failed to satisfy KYC constraints" );
-   }
-
-   /// @action transfer - inherited YOSEMITE Standard Token Action
-   void yosemite_card_ytoken::transfer( const account_name /*t*/, const account_name from, const account_name to, const asset& /*qty*/, const string& /*tag*/ ) {
-
-      /// built-in action handler for 'transfer' standard token action has already processed basic 'transfer' operations
-
-      eosio_assert( has_all_kyc_status( from, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transfer.from account failed to satisfy KYC constraints" );
-      eosio_assert( has_all_kyc_status( to, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transfer.to account failed to satisfy KYC constraints" );
-   }
-
-   /// @action txfee - inherited YOSEMITE Standard Token Action
-   void yosemite_card_ytoken::txfee( const account_name /*t*/, const account_name payer, const asset& /*fee*/ ) {
-
-      /// built-in action handler for 'txfee' standard token action has already processed basic 'txfee' operations
-
-      // Yosemite Token (YTOKEN) can be used as a transaction fee token if selected by block producers
-      eosio_assert( has_all_kyc_status( payer, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transfer.to account failed to satisfy KYC constraints" );
-   }
-
-   void yosemite_card_ytoken::redeem( const asset& /*qty*/, const string& /*tag*/ ) {
-      eosio_assert( false, "use ytokenredeem, redeemfiatrq, cnclrdfiatrq, redeemedfiat actions" );
-   }
 
    /// @action ytokenissue
    void yosemite_card_ytoken::ytokenissue( const account_name merchant, const asset& qty /* YTOKEN */, const asset& fiat_paid /* YUSD */, const string& tag ) {
@@ -124,13 +93,13 @@ namespace yosemitex { namespace contract {
       eosio_assert( fiat_token_redeemed_amount >= 0, "fiat token amount must be zero or positive value" );
       eosio_assert( fiat_token_redeemed_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
-      eosio_assert( ytoken_amount >= fiat_token_redeemed_amount, "redeemd fiat token amount must be equal or less than yosemite token amount" );
+      eosio_assert( ytoken_amount >= fiat_token_redeemed_amount, "redeemed fiat token amount must be equal or less than yosemite token amount" );
 
       // Both Yosemite-Token holder and contract owner (yosemite card) need to sign ytokenredeem action
       require_auth( account );
       require_auth( _self );
 
-      // transfer Yosemite Token to contract owner account to convert Yosemite Token to fiat-token
+      // transfer Yosemite Token (YTOKEN) to contract owner account to convert Yosemite Token to fiat-token
       // (through YOSEMITE Standard Token API)
       transfer_token( account, _self, ytoken_amount );
 
@@ -152,61 +121,121 @@ namespace yosemitex { namespace contract {
       int64_t customer_reward_ytoken_amount = reward.amount;
       symbol_type customer_reward_ytoken_symbol = reward.symbol;
 
-      eosio_assert( price_ytoken_amount > 0, "price yosemite token amount must be positive value" );
-      eosio_assert( price_ytoken_symbol.value == S(4,YTOKEN), "price yosemite token symbol must be YTOKEN" );
-      eosio_assert( customer_used_credit_token_amount >= 0, "credit token amount must be zero or positive value" );
-      eosio_assert( customer_used_credit_token_symbol.value == S(4,CREDIT), "credit token symbol must be CREDIT" );
-      eosio_assert( customer_used_ytoken_amount >= 0, "customer used yosemite token amount must be zero or positive value" );
-      eosio_assert( customer_used_ytoken_symbol.value == S(4,YTOKEN), "customer used yosemite token symbol must be YTOKEN" );
-      eosio_assert( customer_reward_ytoken_amount >= 0, "customer reward yosemite token amount must be zero positive value" );
-      eosio_assert( customer_reward_ytoken_symbol.value == S(4,YTOKEN), "customer reward yosemite token symbol must be YTOKEN" );
-      eosio_assert( price_ytoken_amount == customer_used_credit_token_amount + customer_used_ytoken_amount, "price != credit + ytoken" );
-      eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
-
       // Both merchant and contract owner (yosemite card) need to sign ytokenpay action
       require_auth( merchant );
       require_auth( _self );
 
-      // is customer uses his own Yosemite Tokens in this payment,
-      // transfer Yosemite Token from ycard.users pool account to yosemite card service account
-      // (through YOSEMITE Standard Token API)
-      if ( customer_used_ytoken_amount > 0 ) {
-         transfer_token( YOSEMITE_TOKEN_YCARD_USERS_ACCOUNT, _self, customer_used_ytoken_amount );
-      }
+      // price_ytoken_amount > 0 : payment action
+      // price_ytoken_amount < 0 : cancel payment action
 
-      int64_t consumed_merchant_issued_ytoken_amount = 0;
+      eosio_assert( price_ytoken_amount != 0, "price yosemite token amount must be not zero" );
 
-      yosemite_token_issue_table_idx ytoken_issue_table( _self, _self );
-      auto yosemite_token_issue_info_it = ytoken_issue_table.find( merchant );
-      if ( yosemite_token_issue_info_it != ytoken_issue_table.end() ) {
+      eosio_assert( price_ytoken_symbol.value == S(4,YTOKEN), "price yosemite token symbol must be YTOKEN" );
+      eosio_assert( customer_used_credit_token_symbol.value == S(4,CREDIT), "credit token symbol must be CREDIT" );
+      eosio_assert( customer_used_ytoken_symbol.value == S(4,YTOKEN), "customer used yosemite token symbol must be YTOKEN" );
+      eosio_assert( customer_reward_ytoken_symbol.value == S(4,YTOKEN), "customer reward yosemite token symbol must be YTOKEN" );
+      eosio_assert( price_ytoken_amount == customer_used_credit_token_amount + customer_used_ytoken_amount, "price != credit + ytoken" );
+      eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
 
-         int64_t merchant_issued_ytoken_available = (*yosemite_token_issue_info_it).available;
-         if ( merchant_issued_ytoken_available >= price_ytoken_amount ) {
-            // consume merchant-issued Yosemite Tokens
-            burn_yosemite_token( merchant, price_ytoken_amount, true /*is_consumed_by_customer*/ );
-            consumed_merchant_issued_ytoken_amount = price_ytoken_amount;
-         } else {
-            // consume merchant-issued Yosemite Tokens
-            burn_yosemite_token( merchant, merchant_issued_ytoken_available, true /*is_consumed_by_customer*/ );
-            consumed_merchant_issued_ytoken_amount = merchant_issued_ytoken_available;
+      if ( price_ytoken_amount > 0 ) {
+         // normal payment transaction processing
+         eosio_assert( customer_used_credit_token_amount >= 0, "credit token amount must be zero or positive value" );
+         eosio_assert( customer_used_ytoken_amount >= 0, "customer used yosemite token amount must be zero or positive value" );
+         eosio_assert( customer_reward_ytoken_amount >= 0, "customer reward yosemite token amount must be zero positive value" );
+
+         // if customer uses his own Yosemite Tokens in this payment,
+         // transfer Yosemite Token from ycard.users pool account to yosemite card service account
+         // (through YOSEMITE Standard Token API)
+         if ( customer_used_ytoken_amount > 0 ) {
+            transfer_token( YOSEMITE_TOKEN_YCARD_USERS_POOL_ACCOUNT, _self, customer_used_ytoken_amount );
          }
-      }
 
-      // if there is no merchant-issued Yosemite Token, or merchant-issued Yosemite Tokens are insufficient to be consumed,
-      // transfer contract owner(yosemite card)'s Yosemite Token(fiat-backed, redeemable to fiat money) to merchant account.
-      // (through YOSEMITE Standard Token API)
-      if ( consumed_merchant_issued_ytoken_amount < price_ytoken_amount ) {
-         transfer_token( _self, merchant, price_ytoken_amount - consumed_merchant_issued_ytoken_amount );
-      }
+         int64_t consumed_merchant_issued_ytoken_amount = 0;
 
-      // transfer customer reward Yosemite Token amount to ycard.users pool account
-      if (customer_reward_ytoken_amount > 0 ) {
-         transfer_token( _self, YOSEMITE_TOKEN_YCARD_USERS_ACCOUNT, customer_reward_ytoken_amount );
-      }
+         yosemite_token_issue_table_idx ytoken_issue_table( _self, _self );
+         auto yosemite_token_issue_info_it = ytoken_issue_table.find( merchant );
+         if ( yosemite_token_issue_info_it != ytoken_issue_table.end() ) {
 
-      // burn used CREDIT token amount
-      if ( customer_used_credit_token_amount > 0 ) {
-         SEND_INLINE_ACTION( *this, creditburn, {_self, N(active)}, {credit, tag} )
+            int64_t merchant_issued_ytoken_available = (*yosemite_token_issue_info_it).available;
+            if ( merchant_issued_ytoken_available >= price_ytoken_amount ) {
+               // consume merchant-issued Yosemite Tokens
+               burn_yosemite_token( merchant, price_ytoken_amount, true /*is_consumed_by_customer*/ );
+               consumed_merchant_issued_ytoken_amount = price_ytoken_amount;
+            } else {
+               // consume merchant-issued Yosemite Tokens
+               burn_yosemite_token( merchant, merchant_issued_ytoken_available, true /*is_consumed_by_customer*/ );
+               consumed_merchant_issued_ytoken_amount = merchant_issued_ytoken_available;
+            }
+         }
+
+         // if there is no merchant-issued Yosemite Token, or merchant-issued Yosemite Tokens are insufficient to be consumed,
+         // transfer contract owner(yosemite card)'s Yosemite Token(fiat-backed, redeemable to fiat money) to merchant account.
+         // (through YOSEMITE Standard Token API)
+         if ( consumed_merchant_issued_ytoken_amount < price_ytoken_amount ) {
+            transfer_token( _self, merchant, price_ytoken_amount - consumed_merchant_issued_ytoken_amount );
+         }
+
+         // transfer customer reward Yosemite Token amount to ycard.users pool account
+         if (customer_reward_ytoken_amount > 0 ) {
+            transfer_token( _self, YOSEMITE_TOKEN_YCARD_USERS_POOL_ACCOUNT, customer_reward_ytoken_amount );
+         }
+
+         // burn used CREDIT token amount
+         if ( customer_used_credit_token_amount > 0 ) {
+            SEND_INLINE_ACTION( *this, creditburn, {_self, N(active)}, {credit, tag} )
+         }
+
+      } else {
+         ////////////////////////////////////////////////////
+         /// cancel-payment transaction processing
+         /// price_ytoken_amount < 0
+
+         eosio_assert( customer_used_credit_token_amount <= 0, "credit token amount for cancel-payment must be zero or negative value" );
+         eosio_assert( customer_used_ytoken_amount <= 0, "customer used yosemite token amount for cancel-payment must be zero or negative value" );
+         eosio_assert( customer_reward_ytoken_amount <= 0, "customer reward yosemite token amount for cancel-payment must be zero negative value" );
+
+         // rollback burned CREDIT token amount
+         if ( customer_used_credit_token_amount < 0 ) {
+            asset credit_to_rollback(-customer_used_credit_token_amount,S(4,CREDIT));
+            SEND_INLINE_ACTION( *this, creditissue, {_self, N(active)}, {_self, _self, credit_to_rollback, tag} )
+         }
+
+         // rollback customer reward Yosemite Token transfer
+         if (customer_reward_ytoken_amount < 0 ) {
+            transfer_token( YOSEMITE_TOKEN_YCARD_USERS_POOL_ACCOUNT, _self, -customer_reward_ytoken_amount );
+         }
+
+         int64_t rollbacked_from_merchant_ytoken_balance = 0;
+         int64_t merchant_ytoken_balance = get_token_balance( _self, merchant );
+         if ( merchant_ytoken_balance > 0 ) {
+            if ( merchant_ytoken_balance <= -price_ytoken_amount ) {
+               rollbacked_from_merchant_ytoken_balance = merchant_ytoken_balance;
+            } else {
+               rollbacked_from_merchant_ytoken_balance = -price_ytoken_amount;
+            }
+            transfer_token( merchant, _self, rollbacked_from_merchant_ytoken_balance );
+         }
+
+         if ( rollbacked_from_merchant_ytoken_balance < -price_ytoken_amount ) {
+            yosemite_token_issue_table_idx ytoken_issue_table( _self, _self );
+            auto yosemite_token_issue_info_it = ytoken_issue_table.find( merchant );
+            eosio_assert( yosemite_token_issue_info_it != ytoken_issue_table.end(), "cancel payment failed. insufficient yosemite tokens roll-backed" );
+
+            // rollback consumed merchant-issued ytoken 'available' balance
+            int64_t ytoken_issue_available_amount_to_recover = -price_ytoken_amount - rollbacked_from_merchant_ytoken_balance;
+            ytoken_issue_table.modify( yosemite_token_issue_info_it, 0, [&](yosemite_token_issue_info& info) {
+               info.total_consumed -= ytoken_issue_available_amount_to_recover;
+               info.available += ytoken_issue_available_amount_to_recover;
+            });
+
+            // rollback burned(consumed) Yosemite Token balance
+            issue_token( _self, ytoken_issue_available_amount_to_recover );
+         }
+
+         // rollback customer-used ytoken amount
+         if ( customer_used_ytoken_amount < 0 ) {
+            transfer_token( _self, YOSEMITE_TOKEN_YCARD_USERS_POOL_ACCOUNT, -customer_used_ytoken_amount );
+         }
       }
 
       // notify 'ytokenpay' action to merchant account
@@ -423,17 +452,19 @@ namespace yosemitex { namespace contract {
       // account who is trying to issue new token needs to sign
       require_auth( issuer );
 
-      credit_offering_table_idx credit_offering_table( _self, _self );
+      if ( issuer != _self ) {
+         credit_offering_table_idx credit_offering_table( _self, _self );
 
-      auto& credit_info = credit_offering_table.get( issuer );
-      eosio_assert( credit_info.credit_limit - credit_info.credit_issued >= credit_token_issue_amount, "newly issued credit token amount exceeds the issuer's credit limit" );
+         auto& credit_info = credit_offering_table.get( issuer );
+         eosio_assert( credit_info.credit_limit - credit_info.credit_issued >= credit_token_issue_amount, "newly issued credit token amount exceeds the issuer's credit limit" );
+
+         credit_offering_table.modify( credit_info, 0, [&](credit_offering_info& info) {
+            info.credit_issued += credit_token_issue_amount;
+         });
+      }
 
       // issue new credit tokens to the issuer
       add_credit_token_balance( issuer, credit_token_issue_amount );
-
-      credit_offering_table.modify( credit_info, 0, [&](credit_offering_info& info) {
-         info.credit_issued += credit_token_issue_amount;
-      });
 
       // update credit token stat
       stat_add_credit_token_total_supply( credit_token_issue_amount );
@@ -516,6 +547,40 @@ namespace yosemitex { namespace contract {
 
       // update credit token stat
       stat_subtract_credit_token_total_supply( credit_token_burn_amount );
+   }
+
+   ///////////////////////////////////////////////////////
+   /// YOSEMITE Standard Token Actions
+
+   /// @action issue - inherited YOSEMITE Standard Token Action
+   void yosemite_card_ytoken::issue( const account_name /*t*/, const account_name /*to*/, const asset& /*qty*/, const string& /*tag*/ ) {
+
+      /// built-in action handler for 'issue' standard token action has already processed basic 'issue' operations
+
+      eosio_assert( false, "use ytokenissue, issuefiatyt actions" );
+      //eosio_assert( has_all_kyc_status( to, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "issue.to account failed to satisfy KYC constraints" );
+   }
+
+   /// @action transfer - inherited YOSEMITE Standard Token Action
+   void yosemite_card_ytoken::transfer( const account_name /*t*/, const account_name from, const account_name to, const asset& /*qty*/, const string& /*tag*/ ) {
+
+      /// built-in action handler for 'transfer' standard token action has already processed basic 'transfer' operations
+
+      eosio_assert( has_all_kyc_status( from, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transfer.from account failed to satisfy KYC constraints" );
+      eosio_assert( has_all_kyc_status( to, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transfer.to account failed to satisfy KYC constraints" );
+   }
+
+   /// @action txfee - inherited YOSEMITE Standard Token Action
+   void yosemite_card_ytoken::txfee( const account_name /*t*/, const account_name payer, const asset& /*fee*/ ) {
+
+      /// built-in action handler for 'txfee' standard token action has already processed basic 'txfee' operations
+
+      // Yosemite Token (YTOKEN) can be used as a transaction fee token if selected by block producers
+      eosio_assert( has_all_kyc_status( payer, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transfer.to account failed to satisfy KYC constraints" );
+   }
+
+   void yosemite_card_ytoken::redeem( const asset& /*qty*/, const string& /*tag*/ ) {
+      eosio_assert( false, "use ytokenredeem, redeemfiatrq, cnclrdfiatrq, redeemedfiat actions" );
    }
 
 
@@ -708,7 +773,7 @@ namespace yosemitex { namespace contract {
 } } /// namespace yosemitex::contract
 
 EOSIO_ABI( yosemitex::contract::yosemite_card_ytoken,
-           (issue)(transfer)(txfee)(redeem)
            (ytokenissue)(ytokenburn)(ytokenredeem)(ytokenpay)
            (issuefiatyt)(transferfiat)(redeemfiatrq)(cnclrdfiatrq)(redeemedfiat)
-           (creditlimit)(creditissue)(credittxfer)(creditsettle)(creditburn) )
+           (creditlimit)(creditissue)(credittxfer)(creditsettle)(creditburn)
+           (issue)(transfer)(txfee)(redeem) )
