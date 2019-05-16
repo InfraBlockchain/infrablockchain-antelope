@@ -14,7 +14,7 @@
 #define YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH (YOSEMITE_ID_KYC_EMAIL_AUTH | YOSEMITE_ID_KYC_REAL_NAME_AUTH | YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH)
 #define YOSEMITE_CREDIT_TOKEN_KYC_REQUIRED_AUTH (YOSEMITE_ID_KYC_EMAIL_AUTH | YOSEMITE_ID_KYC_PHONE_AUTH | YOSEMITE_ID_KYC_REAL_NAME_AUTH | YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH)
 
-#define YOSEMITE_TOKEN_FIAT_BACKED N(fiatbacked)
+#define YOSEMITE_TOKEN_USD_FIAT_BACKED N(usdbacked)
 #define YOSEMITE_TOKEN_YCARD_USERS_POOL_ACCOUNT N(ycard.users)
 
 namespace yosemitex { namespace contract {
@@ -24,18 +24,21 @@ namespace yosemitex { namespace contract {
    using std::string;
 
    /// @action ytokenissue
-   void yosemite_card_ytoken::ytokenissue( const account_name merchant, const asset& qty /* YTOKEN */, const asset& fiat_paid /* YUSD */, const string& tag ) {
+   void yosemite_card_ytoken::ytokenissue( const account_name merchant, const asset& qty /* YTOKEN */, const asset& paid /* USD or YUSD */, const string& tag ) {
 
       int64_t ytoken_amount = qty.amount;
       symbol_type ytoken_symbol = qty.symbol;
-      int64_t fiat_paid_amount = fiat_paid.amount;
-      symbol_type fiat_paid_symbol = fiat_paid.symbol;
+      int64_t fiat_paid_amount = paid.amount;
+      symbol_type fiat_paid_symbol = paid.symbol;
 
-      eosio_assert( merchant != YOSEMITE_TOKEN_FIAT_BACKED, "fiatbacked is not allowed merchant account name" );
+      bool is_USD_paid = fiat_paid_symbol.value == S(4,USD);
+      bool is_YUSD_paid = fiat_paid_symbol.value == S(4,YUSD);
+
+      eosio_assert( merchant != YOSEMITE_TOKEN_USD_FIAT_BACKED, "fiatbacked is not allowed merchant account name" );
       eosio_assert( ytoken_amount > 0, "yosemite token amount must be positive value" );
       eosio_assert( ytoken_symbol.value == S(4,YTOKEN), "yosemite token symbol must be YTOKEN" );
       eosio_assert( fiat_paid_amount >= 0, "fiat token amount paid for the newly issued yosemite token must be zero or positive value" );
-      eosio_assert( fiat_paid_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
+      eosio_assert( is_USD_paid || is_YUSD_paid, "paid fiat token symbol must be USD or YUSD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
       eosio_assert( ytoken_amount >= fiat_paid_amount, "paid fiat amount must be equal or less than yosemite token amount" );
 
@@ -49,7 +52,14 @@ namespace yosemitex { namespace contract {
       stat_add_ytoken_issue_total_available( ytoken_amount );
 
       if ( fiat_paid_amount > 0 ) {
-         SEND_INLINE_ACTION( *this, transferfiat, {_self, N(active)}, {_self, merchant, fiat_paid, tag} )
+         if ( is_USD_paid ) {
+            // paid : USD
+            SEND_INLINE_ACTION( *this, usdredeemto, {_self, N(active)}, {merchant, paid, tag} )
+         }
+         if ( is_YUSD_paid ) {
+            // paid : YUSD
+            SEND_INLINE_ACTION( *this, yusdtransfer, {_self, N(active)}, {_self, merchant, paid, tag} )
+         }
       }
 
       // notify 'ytokenissue' action to merchant account
@@ -62,7 +72,7 @@ namespace yosemitex { namespace contract {
       int64_t ytoken_amount = qty.amount;
       symbol_type ytoken_symbol = qty.symbol;
 
-      eosio_assert( merchant != YOSEMITE_TOKEN_FIAT_BACKED, "fiatbacked is not allowed merchant account name" );
+      eosio_assert( merchant != YOSEMITE_TOKEN_USD_FIAT_BACKED, "fiatbacked is not allowed merchant account name" );
       eosio_assert( ytoken_amount > 0, "yosemite token amount must be positive value" );
       eosio_assert( ytoken_symbol.value == S(4,YTOKEN), "yosemite token symbol must be YTOKEN" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
@@ -80,18 +90,21 @@ namespace yosemitex { namespace contract {
    }
 
    /// @action ytokenredeem
-   void yosemite_card_ytoken::ytokenredeem( const account_name account, const asset& qty /* YTOKEN */, const asset& fiat_token_redeemed /* YUSD */, const string& tag ) {
+   void yosemite_card_ytoken::ytokenredeem( const account_name account, const asset& qty /* YTOKEN */, const asset& redeemed /* USD or YUSD */, const string& tag ) {
 
       int64_t ytoken_amount = qty.amount;
       symbol_type ytoken_symbol = qty.symbol;
-      int64_t fiat_token_redeemed_amount = fiat_token_redeemed.amount;
-      symbol_type fiat_token_redeemed_symbol = fiat_token_redeemed.symbol;
+      int64_t fiat_token_redeemed_amount = redeemed.amount;
+      symbol_type fiat_token_redeemed_symbol = redeemed.symbol;
+
+      bool is_USD_redeemed = fiat_token_redeemed_symbol.value == S(4,USD);
+      bool is_YUSD_redeemed = fiat_token_redeemed_symbol.value == S(4,YUSD);
 
       eosio_assert( account != _self, "contract owner is not allowed to use ytokenredeem action" );
       eosio_assert( ytoken_amount > 0, "yosemite token amount must be positive value" );
       eosio_assert( ytoken_symbol.value == S(4,YTOKEN), "yosemite token symbol must be YTOKEN" );
       eosio_assert( fiat_token_redeemed_amount >= 0, "fiat token amount must be zero or positive value" );
-      eosio_assert( fiat_token_redeemed_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
+      eosio_assert( is_USD_redeemed || is_YUSD_redeemed, "fiat token symbol must be USD or YUSD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
       eosio_assert( ytoken_amount >= fiat_token_redeemed_amount, "redeemed fiat token amount must be equal or less than yosemite token amount" );
 
@@ -99,13 +112,18 @@ namespace yosemitex { namespace contract {
       require_auth( account );
       require_auth( _self );
 
-      // transfer Yosemite Token (YTOKEN) to contract owner account to convert Yosemite Token to fiat-token
+      // transfer Yosemite Token (YTOKEN) to contract owner account
       // (through YOSEMITE Standard Token API)
       transfer_token( account, _self, ytoken_amount );
 
-      // convert Yosemite Token to fiat-token owned by redeem requester
       if ( fiat_token_redeemed_amount > 0 ) {
-         SEND_INLINE_ACTION( *this, transferfiat, {_self, N(active)}, {_self, account, fiat_token_redeemed, tag} )
+         if ( is_USD_redeemed ) {
+            SEND_INLINE_ACTION( *this, usdredeemto, {_self, N(active)}, {account, redeemed, tag} )
+         }
+         if ( is_YUSD_redeemed ) {
+            // convert Yosemite Token to YUSD-token owned by redeem requester
+            SEND_INLINE_ACTION( *this, yusdtransfer, {_self, N(active)}, {_self, account, redeemed, tag} )
+         }
       }
    }
 
@@ -242,36 +260,73 @@ namespace yosemitex { namespace contract {
       require_recipient( merchant );
    }
 
-   /// @action issuefiatyt
-   void yosemite_card_ytoken::issuefiatyt( const asset& qty /* YTOKEN */, const string& tag ) {
+   /// @action usdytissue
+   void yosemite_card_ytoken::usdytissue( const asset& qty /* USD */, const string& tag ) {
 
-      int64_t ytoken_amount = qty.amount;
-      symbol_type ytoken_symbol = qty.symbol;
+      int64_t token_amount = qty.amount;
+      symbol_type token_symbol = qty.symbol;
 
-      eosio_assert( ytoken_symbol.value == S(4,YTOKEN), "yosemite token symbol must be YTOKEN" );
+      eosio_assert( token_symbol.value == S(4,USD), "symbol of quantity must be USD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
       eosio_assert( qty.is_valid(), "invalid fiat token quantity" );
-      eosio_assert( ytoken_amount > 0, "must issue positive yosemite token quantity" );
+      eosio_assert( token_amount > 0, "must issue positive yosemite token quantity" );
 
       // only the contract owner account can issue fiat-backed Yosemite Token
       require_auth( _self );
 
-      // issue fiat-backed Yosemite Token
-      issue_yosemite_token( YOSEMITE_TOKEN_FIAT_BACKED, ytoken_amount, false /*write_last_issued*/ );
-      stat_add_ytoken_issue_total_available( ytoken_amount );
+      // issue USD fiat-backed Yosemite Token
+      issue_yosemite_token( YOSEMITE_TOKEN_USD_FIAT_BACKED, token_amount, false /*write_last_issued*/ );
+      stat_add_ytoken_issue_total_available( token_amount );
    }
 
-   /// @action transferfiat
-   void yosemite_card_ytoken::transferfiat( const account_name from, const account_name to, const asset& qty /* YUSD */, const string& tag ) {
+   /// @action usdredeemto
+   void yosemite_card_ytoken::usdredeemto( const account_name to, const asset& qty /* USD or YUSD */, const string& tag ) {
 
       int64_t fiat_token_amount = qty.amount;
       symbol_type fiat_token_symbol = qty.symbol;
 
-      eosio_assert( from != to, "cannot transfer to self" );
-      eosio_assert( fiat_token_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
+      bool is_USD_redeem = fiat_token_symbol.value == S(4,USD);
+      bool is_YUSD_redeem = fiat_token_symbol.value == S(4,YUSD);
+
+      eosio_assert( is_USD_redeem || is_YUSD_redeem, "fiat token symbol must be USD or YUSD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
       eosio_assert( qty.is_valid(), "invalid fiat token quantity" );
-      eosio_assert( fiat_token_amount > 0, "must transfer positive fiat token quantity" );
+      eosio_assert( fiat_token_amount > 0, "fiat token quantity must be positive" );
+
+      if ( is_YUSD_redeem ) {
+         eosio_assert( to != _self, "YUSD redeem is not allowed for contract owner" );
+      }
+
+      // only the contract owner (yosemite card) can redeem YUSD-token or fiat-backed Yosemite Token to real fiat money
+      require_auth( _self );
+
+      if ( is_USD_redeem ) {
+         // redeem fiat(USD)-backed Yosemite Tokens to real fiat money
+         burn_yosemite_token( YOSEMITE_TOKEN_USD_FIAT_BACKED, fiat_token_amount, false /*is_consumed_by_customer*/ );
+         stat_subtract_ytoken_issue_total_available( fiat_token_amount );
+      }
+
+      if ( is_YUSD_redeem ) {
+         // burn the redeem-requested YUSD-tokens held by contract owner
+         subtract_yusd_token_balance( _self, fiat_token_amount );
+         stat_subtract_yusd_token_total_supply( fiat_token_amount );
+      }
+
+      // notify 'usdredeemto' action to account who received redeemed fiat money
+      require_recipient( to );
+   }
+
+   /// @action yusdtransfer
+   void yosemite_card_ytoken::yusdtransfer( const account_name from, const account_name to, const asset& qty /* YUSD */, const string& tag ) {
+
+      int64_t yusd_token_amount = qty.amount;
+      symbol_type yusd_token_symbol = qty.symbol;
+
+      eosio_assert( from != to, "cannot transfer to self" );
+      eosio_assert( yusd_token_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
+      eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
+      eosio_assert( qty.is_valid(), "invalid fiat token quantity" );
+      eosio_assert( yusd_token_amount > 0, "must transfer positive fiat token quantity" );
 
       eosio_assert( has_all_kyc_status( from, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transferfiat.from account failed to satisfy KYC constraints" );
       eosio_assert( has_all_kyc_status( to, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "transferfiat.to account failed to satisfy KYC constraints" );
@@ -279,31 +334,31 @@ namespace yosemitex { namespace contract {
       // 'from' account needs to sign
       require_auth( from );
 
-      fiat_token_table_idx fiat_token_table( _self, _self );
+      yusd_token_table_idx yusd_token_table( _self, _self );
 
-      // if fiat-tokens are transferred from/to the contract owner account (yosemite card),
-      // fiat-tokens are automatically converted to the fiat-backed Yosemite Tokens (YTOKEN)
+      // if YUSD-tokens are transferred from/to the contract owner account (yosemite card),
+      // YUSD-tokens are automatically converted to the fiat-backed Yosemite Tokens (YTOKEN)
 
       if ( from == _self ) {
-         // convert contract owner(yosemite card)'s fiat-backed Yosemite Token to fiat-token,
-         // and transfer the converted fiat-token
-         burn_yosemite_token( YOSEMITE_TOKEN_FIAT_BACKED, fiat_token_amount, false /*is_consumed_by_customer*/ );
-         stat_subtract_ytoken_issue_total_available( fiat_token_amount );
-         stat_add_fiat_token_total_supply( fiat_token_amount );
+         // convert contract owner(yosemite card)'s fiat-backed Yosemite Token to YUSD-token,
+         // and transfer the converted YUSD-token
+         burn_yosemite_token( YOSEMITE_TOKEN_USD_FIAT_BACKED, yusd_token_amount, false /*is_consumed_by_customer*/ );
+         stat_subtract_ytoken_issue_total_available( yusd_token_amount );
+         stat_add_yusd_token_total_supply( yusd_token_amount );
       } else {
          // fiat token ledger table update for 'from' account
-         subtract_fiat_token_balance( from, fiat_token_amount );
+         subtract_yusd_token_balance( from, yusd_token_amount );
       }
 
       if ( to == _self ) {
-         // convert the received fiat-token to contract owner(yosemite card)'s fiat-backed Yosemite Token
-         issue_yosemite_token( YOSEMITE_TOKEN_FIAT_BACKED, fiat_token_amount, false /*write_last_issued*/ );
-         stat_add_ytoken_issue_total_available( fiat_token_amount );
-         // the converted fiat-tokens are burned
-         stat_subtract_fiat_token_total_supply( fiat_token_amount );
+         // convert the received YUSD-token to contract owner(yosemite card)'s fiat-backed Yosemite Token
+         issue_yosemite_token( YOSEMITE_TOKEN_USD_FIAT_BACKED, yusd_token_amount, false /*write_last_issued*/ );
+         stat_add_ytoken_issue_total_available( yusd_token_amount );
+         // the converted YUSD-tokens are burned
+         stat_subtract_yusd_token_total_supply( yusd_token_amount );
       } else {
          // fiat token ledger table update for 'to' account
-         add_fiat_token_balance( to, fiat_token_amount );
+         add_yusd_token_balance( to, yusd_token_amount );
       }
 
       // notify 'transferfiat' action to 'from' and 'to' accounts
@@ -311,82 +366,54 @@ namespace yosemitex { namespace contract {
       require_recipient( to );
    }
 
-   /// @action redeemfiatrq
-   void yosemite_card_ytoken::redeemfiatrq( const account_name account, const asset& qty /* YUSD */, const string& tag ) {
+   /// @action yusdredeemrq
+   void yosemite_card_ytoken::yusdredeemrq( const account_name account, const asset& qty /* YUSD */, const string& tag ) {
 
-      int64_t fiat_token_amount = qty.amount;
-      symbol_type fiat_token_symbol = qty.symbol;
+      int64_t yusd_token_amount = qty.amount;
+      symbol_type yusd_token_symbol = qty.symbol;
 
       eosio_assert( account != _self, "contract owner is not allowed to send redeemfiatrq action" );
-      eosio_assert( fiat_token_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
+      eosio_assert( yusd_token_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
       eosio_assert( qty.is_valid(), "invalid fiat token quantity" );
-      eosio_assert( fiat_token_amount > 0, "must redeem-request positive fiat token quantity" );
+      eosio_assert( yusd_token_amount > 0, "must redeem-request positive fiat token quantity" );
 
-      eosio_assert( has_all_kyc_status( account, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "redeem-fiat-token requester account failed to satisfy KYC constraints" );
+      eosio_assert( has_all_kyc_status( account, YOSEMITE_YTOKEN_KYC_REQUIRED_AUTH ), "redeem-YUSD-token requester account failed to satisfy KYC constraints" );
 
       // account who requests fiat token redeem needs to sign transaction
       require_auth( account );
 
       // move fiat token balance from the requested account to contract owner (yosemite card) account
       // fiat token balance of contract owner is only burnable by contract owner
-      // when the redeemed real fiat money is deposited to the fiat-token redeem requester
-      subtract_fiat_token_balance( account, fiat_token_amount );
-      add_fiat_token_balance( _self, fiat_token_amount );
+      // when the redeemed real fiat money is deposited to the YUSD-token redeem requester
+      subtract_yusd_token_balance( account, yusd_token_amount );
+      add_yusd_token_balance( _self, yusd_token_amount );
 
       // notify 'redeemfiatrq' action to requester account
       require_recipient( account );
    }
 
-   /// @action cnclrdfiatrq
-   void yosemite_card_ytoken::cnclrdfiatrq( const account_name account, const asset& qty /* YUSD */, const string& tag ) {
+   /// @action yusdcnclrdrq
+   void yosemite_card_ytoken::cnclyusdrdrq( const account_name account, const asset& qty /* YUSD */, const string& tag ) {
 
-      int64_t fiat_token_amount = qty.amount;
-      symbol_type fiat_token_symbol = qty.symbol;
+      int64_t yusd_token_amount = qty.amount;
+      symbol_type yusd_token_symbol = qty.symbol;
 
       eosio_assert( account != _self, "contract owner is not allowed to send redeemfiatrq and cnclrdfiatrq action" );
-      eosio_assert( fiat_token_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
+      eosio_assert( yusd_token_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
       eosio_assert( qty.is_valid(), "invalid fiat token quantity" );
-      eosio_assert( fiat_token_amount > 0, "must cancel-redeem-request positive fiat token quantity" );
+      eosio_assert( yusd_token_amount > 0, "must cancel-redeem-request positive fiat token quantity" );
 
       // only the contract owner (yosemite card) can cancel redeem-fiat request
       require_auth( _self );
 
-      // return the requested fiat-token amount to the redeem request
-      subtract_fiat_token_balance( _self, fiat_token_amount );
-      add_fiat_token_balance( account, fiat_token_amount );
+      // return the requested YUSD-token amount to the redeem request
+      subtract_yusd_token_balance( _self, yusd_token_amount );
+      add_yusd_token_balance( account, yusd_token_amount );
 
       // notify 'cnclrdfiatrq' action to requester account
       require_recipient( account );
-   }
-
-   /// @action redeemedfiat
-   void yosemite_card_ytoken::redeemedfiat( const account_name account, const asset& qty /* YUSD */, const string& tag ) {
-
-      int64_t fiat_token_amount = qty.amount;
-      symbol_type fiat_token_symbol = qty.symbol;
-
-      eosio_assert( fiat_token_symbol.value == S(4,YUSD), "fiat token symbol must be YUSD" );
-      eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
-      eosio_assert( qty.is_valid(), "invalid fiat token quantity" );
-      eosio_assert( fiat_token_amount > 0, "fiat token quantity must be positive" );
-
-      // only the contract owner (yosemite card) can redeem fiat-token or fiat-backed Yosemite Token to real fiat money
-      require_auth( _self );
-
-      if ( account == _self ) {
-         // contract owner (yosemite card) can redeem fiat-backed Yosemite Tokens to real fiat money
-         burn_yosemite_token( YOSEMITE_TOKEN_FIAT_BACKED, fiat_token_amount, false /*is_consumed_by_customer*/ );
-         stat_subtract_ytoken_issue_total_available( fiat_token_amount );
-      } else {
-         // burn the redeem-requested fiat-tokens held by contract owner
-         subtract_fiat_token_balance( _self, fiat_token_amount );
-         stat_subtract_fiat_token_total_supply( fiat_token_amount );
-
-         // notify 'redeemedfiat' action to redeem-requester account
-         require_recipient( account );
-      }
    }
 
    /// @action creditlimit
@@ -660,50 +687,50 @@ namespace yosemitex { namespace contract {
       ytoken_issue_stat_singleton.set( ytoken_issue_stat, _self );
    }
 
-   void yosemite_card_ytoken::add_fiat_token_balance( const account_name account, const int64_t fiat_token_amount ) {
+   void yosemite_card_ytoken::add_yusd_token_balance( const account_name account, const int64_t yusd_token_amount ) {
 
-      fiat_token_table_idx fiat_token_table( _self, _self );
-      auto fiat_token_info_it = fiat_token_table.find( account );
-      if ( fiat_token_info_it == fiat_token_table.end() ) {
-         fiat_token_table.emplace( _self, [&](fiat_token_balance_info& info) {
+      yusd_token_table_idx yusd_token_table( _self, _self );
+      auto yusd_token_info_it = yusd_token_table.find( account );
+      if ( yusd_token_info_it == yusd_token_table.end() ) {
+         yusd_token_table.emplace( _self, [&](yusd_token_balance_info& info) {
             info.account = account;
-            info.fiat_token_balance = fiat_token_amount;
+            info.yusd_token_balance = yusd_token_amount;
          });
       } else {
-         fiat_token_table.modify( fiat_token_info_it, 0, [&](fiat_token_balance_info& info) {
-            info.fiat_token_balance += fiat_token_amount;
+         yusd_token_table.modify( yusd_token_info_it, 0, [&](yusd_token_balance_info& info) {
+            info.yusd_token_balance += yusd_token_amount;
          });
       }
    }
 
-   void yosemite_card_ytoken::subtract_fiat_token_balance( const account_name account, const int64_t fiat_token_amount ) {
+   void yosemite_card_ytoken::subtract_yusd_token_balance( const account_name account, const int64_t yusd_token_amount ) {
 
-      fiat_token_table_idx fiat_token_table( _self, _self );
-      auto fiat_token_info_it = fiat_token_table.find( account );
-      eosio_assert ( fiat_token_info_it != fiat_token_table.end(), "account has insufficient fiat-token, no fiat token info" );
-      auto fiat_token_info = *fiat_token_info_it;
-      eosio_assert( fiat_token_info.fiat_token_balance >= fiat_token_amount, "account has insufficient fiat-token" );
-      fiat_token_table.modify( fiat_token_info_it, 0, [&](fiat_token_balance_info& info) {
-         info.fiat_token_balance -= fiat_token_amount;
+      yusd_token_table_idx yusd_token_table( _self, _self );
+      auto yusd_token_info_it = yusd_token_table.find( account );
+      eosio_assert ( yusd_token_info_it != yusd_token_table.end(), "account has insufficient YUSD-token, no fiat token info" );
+      auto yusd_token_info = *yusd_token_info_it;
+      eosio_assert( yusd_token_info.yusd_token_balance >= yusd_token_amount, "account has insufficient YUSD-token" );
+      yusd_token_table.modify( yusd_token_info_it, 0, [&](yusd_token_balance_info& info) {
+         info.yusd_token_balance -= yusd_token_amount;
       });
    }
 
-   void yosemite_card_ytoken::stat_add_fiat_token_total_supply( const int64_t fiat_token_amount ) {
+   void yosemite_card_ytoken::stat_add_yusd_token_total_supply( const int64_t yusd_token_amount ) {
 
-      fiat_token_stat_singleton fiat_stat_singleton( _self, _self );
-      fiat_token_stat fiat_stat = fiat_stat_singleton.get_or_default({asset(0,S(4,YUSD))});
-      fiat_stat.total_fiat_token_supply.amount += fiat_token_amount;
-      fiat_stat_singleton.set( fiat_stat, _self );
+      yusd_token_stat_singleton yusd_stat_singleton( _self, _self );
+      yusd_token_stat yusd_stat = yusd_stat_singleton.get_or_default({asset(0,S(4,YUSD))});
+      yusd_stat.total_yusd_token_supply.amount += yusd_token_amount;
+      yusd_stat_singleton.set( yusd_stat, _self );
    }
 
-   void yosemite_card_ytoken::stat_subtract_fiat_token_total_supply( const int64_t fiat_token_amount ) {
+   void yosemite_card_ytoken::stat_subtract_yusd_token_total_supply( const int64_t yusd_token_amount ) {
 
-      fiat_token_stat_singleton fiat_stat_singleton( _self, _self );
-      eosio_assert( fiat_stat_singleton.exists(), "crashed fiat_token_stat state, no fiat_token_stat_singleton" );
-      fiat_token_stat fiat_stat = fiat_stat_singleton.get();
-      eosio_assert( fiat_stat.total_fiat_token_supply.amount >= fiat_token_amount, "crashed fiat_token_stat state" );
-      fiat_stat.total_fiat_token_supply.amount -= fiat_token_amount;
-      fiat_stat_singleton.set( fiat_stat, _self );
+      yusd_token_stat_singleton yusd_stat_singleton( _self, _self );
+      eosio_assert( yusd_stat_singleton.exists(), "crashed yusd_token_stat state, no yusd_token_stat_singleton" );
+      yusd_token_stat yusd_stat = yusd_stat_singleton.get();
+      eosio_assert( yusd_stat.total_yusd_token_supply.amount >= yusd_token_amount, "crashed yusd_token_stat state" );
+      yusd_stat.total_yusd_token_supply.amount -= yusd_token_amount;
+      yusd_stat_singleton.set( yusd_stat, _self );
    }
 
    void yosemite_card_ytoken::add_credit_token_balance( const account_name account, const int64_t credit_token_amount ) {
@@ -774,6 +801,7 @@ namespace yosemitex { namespace contract {
 
 EOSIO_ABI( yosemitex::contract::yosemite_card_ytoken,
            (ytokenissue)(ytokenburn)(ytokenredeem)(ytokenpay)
-           (issuefiatyt)(transferfiat)(redeemfiatrq)(cnclrdfiatrq)(redeemedfiat)
+           (usdytissue)(usdredeemto)
+           (yusdtransfer)(yusdredeemrq)(cnclyusdrdrq)
            (creditlimit)(creditissue)(credittxfer)(creditsettle)(creditburn)
            (issue)(transfer)(txfee)(redeem) )

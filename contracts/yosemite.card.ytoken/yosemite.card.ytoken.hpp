@@ -33,10 +33,10 @@ namespace yosemitex { namespace contract {
        *
        * @param merchant TODO
        * @param qty TODO
-       * @param fiat_paid TODO
+       * @param paid TODO
        * @param tag TODO
        */
-      void ytokenissue( const account_name merchant, const asset& qty /* YTOKEN */, const asset& fiat_paid /* YUSD */, const string& tag );
+      void ytokenissue( const account_name merchant, const asset& qty /* YTOKEN */, const asset& paid /* USD or YUSD */, const string& tag );
 
       /**
        * TODO
@@ -52,10 +52,10 @@ namespace yosemitex { namespace contract {
        *
        * @param account TODO
        * @param qty TODO
-       * @param fiat_token_redeemed TODO
+       * @param redeemed TODO
        * @param tag TODO
        */
-      void ytokenredeem( const account_name account, const asset& qty /* YTOKEN */, const asset& fiat_token_redeemed /* YUSD */, const string& tag );
+      void ytokenredeem( const account_name account, const asset& qty /* YTOKEN */, const asset& redeemed /* USD or YUSD */, const string& tag );
 
       /**
        * TODO
@@ -71,12 +71,22 @@ namespace yosemitex { namespace contract {
 
 
       /**
-       * Issue fiat-backed Yosemite Token
+       * Issue Fiat(USD)-backed Yosemite Token
        *
        * @param qty TODO
        * @param tag TODO
        */
-      void issuefiatyt( const asset& qty /* YUSD */, const string& tag );
+      void usdytissue( const asset& qty /* USD */, const string& tag );
+
+
+      /**
+       * TODO
+       *
+       * @param to TODO
+       * @param qty TODO
+       * @param tag TODO
+       */
+      void usdredeemto( const account_name to, const asset& qty /* USD or YUSD */, const string& tag );
 
       /**
        * TODO
@@ -86,7 +96,7 @@ namespace yosemitex { namespace contract {
        * @param qty TODO
        * @param tag TODO
        */
-      void transferfiat( const account_name from, const account_name to, const asset& qty /* YUSD */, const string& tag );
+      void yusdtransfer( const account_name from, const account_name to, const asset& qty /* YUSD */, const string& tag );
 
       /**
        * Redeem Fiat-Token Request
@@ -95,7 +105,7 @@ namespace yosemitex { namespace contract {
        * @param qty TODO
        * @param tag TODO
        */
-      void redeemfiatrq( const account_name account, const asset& qty /* YUSD */, const string& tag );
+      void yusdredeemrq( const account_name account, const asset& qty /* YUSD */, const string& tag );
 
       /**
        * Cancel Redeem-Fiat-Token-Request
@@ -104,17 +114,17 @@ namespace yosemitex { namespace contract {
        * @param qty TODO
        * @param tag TODO
        */
-      void cnclrdfiatrq( const account_name account, const asset& qty /* YUSD */, const string& tag );
+      void cnclyusdrdrq( const account_name account, const asset& qty /* YUSD */, const string& tag );
 
 
-      /**
-       * TODO
-       *
-       * @param account TODO
-       * @param qty TODO
-       * @param tag TODO
-       */
-      void redeemedfiat( const account_name account, const asset& qty /* YUSD */, const string& tag );
+//      /**
+//       * TODO
+//       *
+//       * @param account TODO
+//       * @param qty TODO
+//       * @param tag TODO
+//       */
+//      void yusdredeemed( const account_name account, const asset& qty /* YUSD */, const string& tag );
 
       /**
        * Set Credit Limit
@@ -228,11 +238,11 @@ namespace yosemitex { namespace contract {
       void stat_add_ytoken_issue_total_available( const int64_t ytoken_amount );
       void stat_subtract_ytoken_issue_total_available( const int64_t ytoken_amount );
 
-      void add_fiat_token_balance( const account_name account, const int64_t fiat_token_amount );
-      void subtract_fiat_token_balance( const account_name account, const int64_t fiat_token_amount );
+      void add_yusd_token_balance( const account_name account, const int64_t yusd_token_amount );
+      void subtract_yusd_token_balance( const account_name account, const int64_t yusd_token_amount );
 
-      void stat_add_fiat_token_total_supply( const int64_t fiat_token_amount );
-      void stat_subtract_fiat_token_total_supply( const int64_t fiat_token_amount );
+      void stat_add_yusd_token_total_supply( const int64_t yusd_token_amount );
+      void stat_subtract_yusd_token_total_supply( const int64_t yusd_token_amount );
 
       void add_credit_token_balance( const account_name account, const int64_t credit_token_amount );
       void subtract_credit_token_balance( const account_name account, const int64_t credit_token_amount );
@@ -317,27 +327,27 @@ namespace yosemitex { namespace contract {
 
    typedef eosio::singleton< N(ytokenstat), yosemite_token_issue_stat > yosemite_token_issue_stat_singleton;
 
-   // fiat-token can be created by converting fiat-backed Yosemite Token owned by the contract owner(yosemite card)
+   // YUSD-token can be created by converting fiat(USD)-backed Yosemite Token owned by the contract owner(yosemite card)
    // and can be redeemed to real fiat money through contract owner.
-   struct fiat_token_balance_info {
+   struct yusd_token_balance_info {
       account_name    account;
-      int64_t         fiat_token_balance;
+      int64_t         yusd_token_balance;
 
       uint64_t primary_key() const { return account; }
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE( fiat_token_balance_info, (account)(fiat_token_balance) )
+      EOSLIB_SERIALIZE( yusd_token_balance_info, (account)(yusd_token_balance) )
    };
 
-   typedef eosio::multi_index< N(fiattoken), fiat_token_balance_info > fiat_token_table_idx;
+   typedef eosio::multi_index< N(yusdtoken), yusd_token_balance_info > yusd_token_table_idx;
 
-   struct fiat_token_stat {
-      asset total_fiat_token_supply;
+   struct yusd_token_stat {
+      asset total_yusd_token_supply;
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE( fiat_token_stat, (total_fiat_token_supply) )
+      EOSLIB_SERIALIZE( yusd_token_stat, (total_yusd_token_supply) )
    };
 
-   typedef eosio::singleton< N(ftstat), fiat_token_stat > fiat_token_stat_singleton;
+   typedef eosio::singleton< N(yusdstat), yusd_token_stat > yusd_token_stat_singleton;
 
 } } /// namespace yosemite::contract
