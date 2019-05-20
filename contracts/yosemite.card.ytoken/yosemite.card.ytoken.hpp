@@ -316,7 +316,7 @@ namespace yosemitex { namespace contract {
       EOSLIB_SERIALIZE( yosemite_token_issue_info, (account)(total_issued)(total_consumed)(total_burned)(last_issued)(available) )
    };
 
-   typedef eosio::multi_index< N(ytokenissued), yosemite_token_issue_info > yosemite_token_issue_table_idx;
+   typedef eosio::multi_index< N(ytokenissue), yosemite_token_issue_info > yosemite_token_issue_table_idx;
 
    struct yosemite_token_issue_stat {
       asset total_available;

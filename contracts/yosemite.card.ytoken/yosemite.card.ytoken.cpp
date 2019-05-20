@@ -176,12 +176,14 @@ namespace yosemitex { namespace contract {
 
             int64_t merchant_issued_ytoken_available = (*yosemite_token_issue_info_it).available;
             if ( merchant_issued_ytoken_available >= price_ytoken_amount ) {
-               // consume merchant-issued Yosemite Tokens
+               // consume merchant-issued Yosemite Tokens ( ytokenissue.merchant.availble (-), ytoken.contract_owner.balance (-) )
                burn_yosemite_token( merchant, price_ytoken_amount, true /*is_consumed_by_customer*/ );
+               stat_subtract_ytoken_issue_total_available( price_ytoken_amount );
                consumed_merchant_issued_ytoken_amount = price_ytoken_amount;
             } else {
                // consume merchant-issued Yosemite Tokens
                burn_yosemite_token( merchant, merchant_issued_ytoken_available, true /*is_consumed_by_customer*/ );
+               stat_subtract_ytoken_issue_total_available( merchant_issued_ytoken_available );
                consumed_merchant_issued_ytoken_amount = merchant_issued_ytoken_available;
             }
          }
@@ -194,7 +196,7 @@ namespace yosemitex { namespace contract {
          }
 
          // transfer customer reward Yosemite Token amount to ycard.users pool account
-         if (customer_reward_ytoken_amount > 0 ) {
+         if ( customer_reward_ytoken_amount > 0 ) {
             transfer_token( _self, YOSEMITE_TOKEN_YCARD_USERS_POOL_ACCOUNT, customer_reward_ytoken_amount );
          }
 
@@ -237,7 +239,7 @@ namespace yosemitex { namespace contract {
          if ( rollbacked_from_merchant_ytoken_balance < -price_ytoken_amount ) {
             yosemite_token_issue_table_idx ytoken_issue_table( _self, _self );
             auto yosemite_token_issue_info_it = ytoken_issue_table.find( merchant );
-            eosio_assert( yosemite_token_issue_info_it != ytoken_issue_table.end(), "cancel payment failed. insufficient yosemite tokens roll-backed" );
+            eosio_assert( yosemite_token_issue_info_it != ytoken_issue_table.end(), "cancel payment failed. insufficient yosemite tokens to be roll-backed" );
 
             // rollback consumed merchant-issued ytoken 'available' balance
             int64_t ytoken_issue_available_amount_to_recover = -price_ytoken_amount - rollbacked_from_merchant_ytoken_balance;
@@ -248,6 +250,8 @@ namespace yosemitex { namespace contract {
 
             // rollback burned(consumed) Yosemite Token balance
             issue_token( _self, ytoken_issue_available_amount_to_recover );
+
+            stat_add_ytoken_issue_total_available( ytoken_issue_available_amount_to_recover );
          }
 
          // rollback customer-used ytoken amount
@@ -264,9 +268,9 @@ namespace yosemitex { namespace contract {
    void yosemite_card_ytoken::usdytissue( const asset& qty /* USD */, const string& tag ) {
 
       int64_t token_amount = qty.amount;
-      symbol_type token_symbol = qty.symbol;
+      symbol_type fiat_token_symbol = qty.symbol;
 
-      eosio_assert( token_symbol.value == S(4,USD), "symbol of quantity must be USD" );
+      eosio_assert( fiat_token_symbol.value == S(4,USD), "symbol of quantity must be USD" );
       eosio_assert( tag.size() <= 256, "too long tag string, max tag string size is 256 bytes" );
       eosio_assert( qty.is_valid(), "invalid fiat token quantity" );
       eosio_assert( token_amount > 0, "must issue positive yosemite token quantity" );
@@ -500,7 +504,7 @@ namespace yosemitex { namespace contract {
       require_recipient( issuer );
 
       if ( issuer != to ) {
-         SEND_INLINE_ACTION( *this, credittxfer, {issuer, N(crdtransfer)}, {issuer, to, qty, tag} )
+         SEND_INLINE_ACTION( *this, credittxfer, {issuer, N(codecrdtxfer)}, {issuer, to, qty, tag} )
       }
    }
 
@@ -656,9 +660,9 @@ namespace yosemitex { namespace contract {
 
       yosemite_token_issue_table_idx ytoken_issue_table( _self, _self );
       auto yosemite_token_issue_info_it = ytoken_issue_table.find( ytoken_issuer );
-      eosio_assert ( yosemite_token_issue_info_it != ytoken_issue_table.end(), "no yosemite token issue info" );
+      eosio_assert ( yosemite_token_issue_info_it != ytoken_issue_table.end(), "insufficient available yosemite token amount to burn, no yosemite token issue info" );
       auto current_fiat_backed_ytoken_issue_info = *yosemite_token_issue_info_it;
-      eosio_assert( current_fiat_backed_ytoken_issue_info.available >= ytoken_amount, "insufficient available yosemite token amount" );
+      eosio_assert( current_fiat_backed_ytoken_issue_info.available >= ytoken_amount, "insufficient available yosemite token amount to burn" );
       ytoken_issue_table.modify( yosemite_token_issue_info_it, 0, [&](yosemite_token_issue_info& info) {
          if ( is_consumed_by_customer ) {
             info.total_consumed += ytoken_amount;
