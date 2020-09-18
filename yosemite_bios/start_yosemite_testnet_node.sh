@@ -6,7 +6,7 @@
 #scp -i ${YSMT_TESTNET_SSH_KEY_FILE} ./start_yosemite_testnet_node.sh ${YSMT_TESTNET_NODE_USER_HOST}:/mnt/yosemite_testnet_mgmt/start_yosemite_testnet_node.sh
 
 YOSEMITE_NODE_BIN_NAME=yosemite
-YOSEMITE_CLI_BIN_NAME=clyos
+YOSEMITE_CLI_BIN_NAME=infra-cli
 YOSEMITE_KEYD_BIN_NAME=keyos
 YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NODE_BIN_NAME

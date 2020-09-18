@@ -67,17 +67,17 @@
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.nissue", "fee":"0.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.nredeem", "fee":"1000.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.ntransfer", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.transfer", "fee":"20.00 DKRW"}}' -p yosemite
 ```
 
 ## setkycrule : setting KYC vector
 * Active block producers sets KYC vector to determine who can send, receive, or do both the native token with `setkycrule` operation.
 ```
-clyos push action yx.ntoken setkycrule '{"type":0, "kyc":15}' -p yosemite
-clyos push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p yosemite
+infra-cli push action yx.ntoken setkycrule '{"type":0, "kyc":15}' -p yosemite
+infra-cli push action yx.ntoken setkycrule '{"type":1, "kyc":15}' -p yosemite
 ```
 
 ### parameters of setkycrule
@@ -94,7 +94,7 @@ Issue native token to an account by the system depository
 * d1 must be the system depository registered and authroized by [yx.system](../../contracts/yx.system/).
 * In this example, 2,DKRW is the native token.
 ```
-clyos push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.00 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
+infra-cli push action yx.ntoken nissue '{"to":"user1", "token":{"amount":"100000.00 DKRW","issuer":"d1"}, "memo":"my memo"}' -p d1
 ```
 
 ### parameters of nissue
@@ -124,12 +124,12 @@ Redeem(burn) native token from an account by the system depository
 
 * At first, the account transfers the native token to the system depository.
 ```
-clyos push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.00 DKRW","memo":"my memo"}' -p user1
+infra-cli push action yx.ntoken transfer '{"from":"user1","to":"d1","amount":"10000.00 DKRW","memo":"my memo"}' -p user1
 ```
    * The account user1 can send the native token issued by other system depositories like d2 to the system depository d1. In such case, d1 will call the transfer action to d2 to redeem the native token from d2 at any time. It's natural to request redemption between system depositories.
 * Then the system depository checks the transfer action is irreversible and calls nredeem action.
 ```
-clyos push action yx.ntoken nredeem '{"token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
+infra-cli push action yx.ntoken nredeem '{"token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}' -p d1
 ```
 
 ### parameters of nredeem
@@ -153,7 +153,7 @@ Transfer the native token regardless of the system depository
 
 * The native token issued by any system depositories can be transferred.
 ```
-clyos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.00 DKRW","memo":"my memo"}' -p user1
+infra-cli push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"10000.00 DKRW","memo":"my memo"}' -p user1
 ```
 ### parameters of transfer
 1. from : account name to transfer from
@@ -193,7 +193,7 @@ clyos push action yx.ntoken transfer '{"from":"user1","to":"user2","amount":"100
 Transfer the native token designating the system depository
 
 ```
-clyos push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
+infra-cli push action yx.ntoken ntransfer '{"from":"user1","to":"user2","token":{"amount":"10000.00 DKRW","issuer":"d1"},"memo":"my memo"}' -p user1
 ```
 
 ### parameters of ntransfer
@@ -224,7 +224,7 @@ Get the stats of native token for the system depository
 
 * If d1 is the name of system depository, its current supply information is shown.
 ```
-clyos get table yx.ntoken d1 ntstats
+infra-cli get table yx.ntoken d1 ntstats
 ```
 ### Result of ntstats
 ```
@@ -243,7 +243,7 @@ clyos get table yx.ntoken d1 ntstats
 Get the native token balance of the user for all system depositories
 
 ```
-clyos get table yx.ntoken user1 ntaccounts
+infra-cli get table yx.ntoken user1 ntaccounts
 ```
 ### Result of ntaccounts
 * The user1 account has 50000.00 DKRW@d1 and 1000.00 DKRW@d2.
@@ -269,7 +269,7 @@ clyos get table yx.ntoken user1 ntaccounts
 Get the sum of native token balance for all system depositories of the user
 
 ```
-clyos get table yx.ntoken user1 ntaccountstt
+infra-cli get table yx.ntoken user1 ntaccountstt
 ```
 ### Result of ntaccounts
 ```

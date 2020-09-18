@@ -40,7 +40,7 @@ Create NFT with its symbol
 * The NFT creator naturally becomes the NFT depository.
 * Enabling the setting of options cannot be done any more after creation, because the owners of the NFT should know about what options can be set and it must not be changed after they own.
 ```
-clyos push action yx.nft create '{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"can_set_options":0}' -p gameprovider
+infra-cli push action yx.nft create '{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"can_set_options":0}' -p gameprovider
 ```
 
 ### parameters of create
@@ -52,8 +52,8 @@ clyos push action yx.nft create '{"ysymbol":{"tsymbol":"0,GIT","issuer":"gamepro
 Issue one or multiple NFTs to an account by the NFT depository
 
 ```
-clyos push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[0],"uris":["item1"],"name":"basicsword","memo":"my memo"}' -p gameprovider
-clyos push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[1,2],"uris":["item2-1", "item2-2"],"name":"potion1","memo":"my memo"}' -p gameprovider
+infra-cli push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[0],"uris":["item1"],"name":"basicsword","memo":"my memo"}' -p gameprovider
+infra-cli push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[1,2],"uris":["item2-1", "item2-2"],"name":"potion1","memo":"my memo"}' -p gameprovider
 ```
 
 ### parameters of issue
@@ -102,11 +102,11 @@ Redeem(burn) NFT from an account by the NFT depository
 
 * At first, the account transfers the NFT to the depository.
 ```
-clyos push action yx.nft transferid '{"from":"user1","to":"gameprovider","issuer":"gameprovider","ids":[0,1],"memo":"transfer for redeem"}' -p user1
+infra-cli push action yx.nft transferid '{"from":"user1","to":"gameprovider","issuer":"gameprovider","ids":[0,1],"memo":"transfer for redeem"}' -p user1
 ```
 * Then the NFT depository checks the transfer action is irreversible and calls redeem action.
 ```
-clyos push action yx.nft redeem '{"issuer":"gameprovider","ids":[0,1],"memo":"redeem for user1"}' -p gameprovider
+infra-cli push action yx.nft redeem '{"issuer":"gameprovider","ids":[0,1],"memo":"redeem for user1"}' -p gameprovider
 ```
 
 ### parameters of redeem
@@ -119,7 +119,7 @@ Transfer NFTs
 
 * Note that transfer action is not supported for NFT. All NFTs are different each other so that it cannot be distinguishable with just the token symbol and issuer.
 ```
-clyos push action yx.nft transferid '{"from":"user2","to":"user3","issuer":"gameprovider","ids":[0,1],"memo":"my memo"}' -p user2
+infra-cli push action yx.nft transferid '{"from":"user2","to":"user3","issuer":"gameprovider","ids":[0,1],"memo":"my memo"}' -p user2
 ```
 
 ### parameters of transferid
@@ -151,7 +151,7 @@ See [`yx.token` taccounts](../../contracts/yx.token#taccounts)
 ## nftokens
 Get all the NFTs issued by the NFT depository
 ```
-clyos get table yx.nft gameprovider nftokens
+infra-cli get table yx.nft gameprovider nftokens
 ```
 
 ### results of nftokens
@@ -174,5 +174,5 @@ clyos get table yx.nft gameprovider nftokens
 
 ### get the NFTS by the owner
 ```
-clyos get table yx.nft gameprovider nftokens --index 2 --key-type i64 -L user1
+infra-cli get table yx.nft gameprovider nftokens --index 2 --key-type i64 -L user1
 ```

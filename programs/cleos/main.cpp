@@ -9,16 +9,16 @@
 /**
   @defgroup yosclienttool
 
-  @section intro Introduction to clyos
+  @section intro Introduction to infra-cli
 
-  `clyos` is a command line tool that interfaces with the REST api exposed by @ref yosemite. In order to use `clyos` you will need to
+  `infra-cli` is a command line tool that interfaces with the REST api exposed by @ref yosemite. In order to use `infra-cli` you will need to
   have a local copy of `yosemite` running and configured to load the 'eosio::chain_api_plugin'.
 
-   clyos contains documentation for all of its commands. For a list of all commands known to clyos, simply run it with no arguments:
+   infra-cli contains documentation for all of its commands. For a list of all commands known to infra-cli, simply run it with no arguments:
 ```
-$ ./clyos
+$ ./infra-cli
 Command Line Interface to YOSEMITE Client
-Usage: programs/clyos/clyos [OPTIONS] SUBCOMMAND
+Usage: programs/infra-cli/infra-cli [OPTIONS] SUBCOMMAND
 
 Options:
   -h,--help                   Print this help message and exit
@@ -45,17 +45,17 @@ Subcommands:
 ```
 To get help with any particular subcommand, run it with no arguments as well:
 ```
-$ ./clyos create
+$ ./infra-cli create
 Create various items, on and off the blockchain
-Usage: ./clyos create SUBCOMMAND
+Usage: ./infra-cli create SUBCOMMAND
 
 Subcommands:
   key                         Create a new keypair and print the public and private keys
   account                     Create a new account on the blockchain (assumes system contract does not restrict RAM usage)
 
-$ ./clyos create account
+$ ./infra-cli create account
 Create a new account on the blockchain
-Usage: ./clyos create account [OPTIONS] creator name OwnerKey ActiveKey
+Usage: ./infra-cli create account [OPTIONS] creator name OwnerKey ActiveKey
 
 Positionals:
   creator TEXT                The name of the account creating the new account
@@ -941,10 +941,10 @@ void ensure_keosd_running(CLI::App* app) {
 
     boost::filesystem::path binPath = boost::dll::program_location();
     binPath.remove_filename();
-    // This extra check is necessary when running clyos like this: ./clyos ...
+    // This extra check is necessary when running infra-cli like this: ./infra-cli ...
     if (binPath.filename_is_dot())
         binPath.remove_filename();
-    binPath.append(key_store_executable_name); // if clyos and keosd are in the same installation directory
+    binPath.append(key_store_executable_name); // if infra-cli and keosd are in the same installation directory
     if (!boost::filesystem::exists(binPath)) {
         binPath.remove_filename().remove_filename().append(key_store_executable_name).append(key_store_executable_name);
     }
@@ -1621,7 +1621,7 @@ void get_account( const string& accountName, const string& coresym, bool json_fo
          auto net_total = to_asset(res.total_resources.get_object()["net_weight"].as_string());
 
          if( net_total.get_symbol() != unstaking.get_symbol() ) {
-            // Core symbol of yosemite responding to the request is different than core symbol built into clyos
+            // Core symbol of yosemite responding to the request is different than core symbol built into infra-cli
             unstaking = asset( 0, net_total.get_symbol() ); // Correct core symbol for unstaking asset.
             staked = asset( 0, net_total.get_symbol() ); // Correct core symbol for staked asset.
          }
@@ -3154,14 +3154,14 @@ int main( int argc, char** argv ) {
                                  ("table_key", "")
                                  ("lower_bound", name(proposal_name).value)
                                  ("upper_bound", name(proposal_name).value + 1)
-                                 // Less than ideal upper_bound usage preserved so cleos can still work with old buggy nodeos versions
-                                 // Change to name(proposal_name).value when cleos no longer needs to support nodeos versions older than 1.5.0
+                                 // Less than ideal upper_bound usage preserved so infra-cli can still work with old buggy nodeos versions
+                                 // Change to name(proposal_name).value when infra-cli no longer needs to support nodeos versions older than 1.5.0
                                  ("limit", 1)
                            );
       //std::cout << fc::json::to_pretty_string(result) << std::endl;
 
       const auto& rows1 = result1.get_object()["rows"].get_array();
-      // Condition in if statement below can simply be rows.empty() when cleos no longer needs to support nodeos versions older than 1.5.0
+      // Condition in if statement below can simply be rows.empty() when infra-cli no longer needs to support nodeos versions older than 1.5.0
       if( rows1.empty() || rows1[0].get_object()["proposal_name"] != proposal_name ) {
          std::cerr << "Proposal not found" << std::endl;
          return;
@@ -3190,8 +3190,8 @@ int main( int argc, char** argv ) {
                                        ("table_key", "")
                                        ("lower_bound", name(proposal_name).value)
                                        ("upper_bound", name(proposal_name).value + 1)
-                                       // Less than ideal upper_bound usage preserved so cleos can still work with old buggy nodeos versions
-                                       // Change to name(proposal_name).value when cleos no longer needs to support nodeos versions older than 1.5.0
+                                       // Less than ideal upper_bound usage preserved so infra-cli can still work with old buggy nodeos versions
+                                       // Change to name(proposal_name).value when infra-cli no longer needs to support nodeos versions older than 1.5.0
                                        ("limit", 1)
                                  );
             rows2 = result2.get_object()["rows"].get_array();
@@ -3222,8 +3222,8 @@ int main( int argc, char** argv ) {
                                        ("table_key", "")
                                        ("lower_bound", name(proposal_name).value)
                                        ("upper_bound", name(proposal_name).value + 1)
-                                       // Less than ideal upper_bound usage preserved so cleos can still work with old buggy nodeos versions
-                                       // Change to name(proposal_name).value when cleos no longer needs to support nodeos versions older than 1.5.0
+                                       // Less than ideal upper_bound usage preserved so infra-cli can still work with old buggy nodeos versions
+                                       // Change to name(proposal_name).value when infra-cli no longer needs to support nodeos versions older than 1.5.0
                                        ("limit", 1)
                                  );
             const auto& rows3 = result3.get_object()["rows"].get_array();
@@ -3255,8 +3255,8 @@ int main( int argc, char** argv ) {
                                           ("table_key", "")
                                           ("lower_bound", a.first.value)
                                           ("upper_bound", a.first.value + 1)
-                                          // Less than ideal upper_bound usage preserved so cleos can still work with old buggy nodeos versions
-                                          // Change to name(proposal_name).value when cleos no longer needs to support nodeos versions older than 1.5.0
+                                          // Less than ideal upper_bound usage preserved so infra-cli can still work with old buggy nodeos versions
+                                          // Change to name(proposal_name).value when infra-cli no longer needs to support nodeos versions older than 1.5.0
                                           ("limit", 1)
                                     );
                const auto& rows4 = result4.get_object()["rows"].get_array();

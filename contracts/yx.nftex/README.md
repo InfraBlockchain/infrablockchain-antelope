@@ -11,9 +11,9 @@
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.nftsell", "fee":"500.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.nftbuy", "fee":"500.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.nftsellc", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.nftsell", "fee":"500.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.nftbuy", "fee":"500.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.nftsellc", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
 
@@ -25,7 +25,7 @@ Sell NFT with the specified token
 * NFT is transferred from the seller to `yx.nftex` account.
 * Price token must be created if it is not the native token. See [`yx.token`](../../contracts/yx.token/README.md).
 ```
-clyos push action yx.nftex sell '{"seller":"user1","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"},"price":{"amount":"1000.00 GMT","issuer":"gameprovider"},"expiration":"2018-10-24T02:49:57","memo":"my memo"}' -p user1
+infra-cli push action yx.nftex sell '{"seller":"user1","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"},"price":{"amount":"1000.00 GMT","issuer":"gameprovider"},"expiration":"2018-10-24T02:49:57","memo":"my memo"}' -p user1
 ```
 
 ### parameters of sell
@@ -57,7 +57,7 @@ Cancel the sell order of NFT
 
 * NFT is transferred from `yx.nftex` account to the seller.
 ```
-clyos push action yx.nftex cancelsell '{"nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"}}' -p user1
+infra-cli push action yx.nftex cancelsell '{"nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"}}' -p user1
 ```
 
 ### parameters of cancelsell
@@ -80,7 +80,7 @@ clyos push action yx.nftex cancelsell '{"nft":{"ysymbol":{"tsymbol":"0,GIT","iss
 Buy NFT on the sell order book
 
 ```
-clyos push action yx.nftex buy '{"buyer":"user2","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"},"price":{"amount":"1000.00 GMT","issuer":"gameprovider"},"memo":""}' -p user2
+infra-cli push action yx.nftex buy '{"buyer":"user2","nft":{"ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"id":"0"},"price":{"amount":"1000.00 GMT","issuer":"gameprovider"},"memo":""}' -p user2
 ```
 
 ### parameters of buy
@@ -114,7 +114,7 @@ Get all sell orders for each NFT symbol
 
 The value 518171862 is [FNV-1a hash](https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1a_hash) result of `0,GIT@gameprovider`.
 ```
-clyos get table yx.nftex 518171862 sellbook
+infra-cli get table yx.nftex 518171862 sellbook
 ```
 
 ### results of nftokens

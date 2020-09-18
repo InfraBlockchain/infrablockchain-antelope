@@ -66,7 +66,7 @@ docker volume create --name=keyos-data-volume
 docker-compose up -d
 ```
 
-After `docker-compose up -d`, two services named `yosemited` and `keyos` will be started. The yosemited service would expose ports 8888 and 9876 to the host. The keyos service does not expose any port to the host, it is only accessible to infra-cli when running cleos is running inside the keyos container as described in "Execute infra-cli commands" section.
+After `docker-compose up -d`, two services named `yosemited` and `keyos` will be started. The yosemited service would expose ports 8888 and 9876 to the host. The keyos service does not expose any port to the host, it is only accessible to infra-cli when running infra-cli is running inside the keyos container as described in "Execute infra-cli commands" section.
 
 ### Execute infra-cli commands
 

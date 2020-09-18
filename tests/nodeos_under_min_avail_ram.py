@@ -72,7 +72,7 @@ killEosInstances=not dontKill
 killWallet=not dontKill
 
 WalletdName=Utils.EosWalletName
-ClientName="cleos"
+ClientName="infra-cli"
 
 try:
     TestHelper.printSystemInfo("BEGIN")

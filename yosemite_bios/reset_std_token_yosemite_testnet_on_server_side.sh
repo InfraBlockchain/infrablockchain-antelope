@@ -2,7 +2,7 @@
 # chmod +x ./reset_std_token_yosemite_testnet_on_server_side.sh
 
 YOSEMITE_NODE_BIN_NAME=yosemite
-YOSEMITE_CLI_BIN_NAME=clyos
+YOSEMITE_CLI_BIN_NAME=infra-cli
 YOSEMITE_KEYD_BIN_NAME=keyos
 YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NODE_BIN_NAME

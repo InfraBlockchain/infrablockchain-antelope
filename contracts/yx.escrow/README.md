@@ -13,9 +13,9 @@
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 * It shares with transaction fee of yx.token.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.esescrow", "fee":"100.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.esproceed", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.escancel", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.esescrow", "fee":"100.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.esproceed", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.escancel", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
 # Actions
@@ -26,7 +26,7 @@ Request escrow to the third party to transfer the YOSEMITE token
 * The amount of token is transferred to the `thirdparty` account. Only when the third party calls 'proceed' action with the specified id, it is transferred to the 'to' account.
 * The native token with the specific system depository can be in escrow with this action.
 ```
-clyos push action yx.escrow escrow '{"thirdparty":"servprovider","id":1,"from":"user2","to":"user1","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"my memo"}' -p servprovider user2
+infra-cli push action yx.escrow escrow '{"thirdparty":"servprovider","id":1,"from":"user2","to":"user1","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"my memo"}' -p servprovider user2
 ```
 ### parameters of escrow
 1. thirdparty : account name of the third party providing escrow service
@@ -51,7 +51,7 @@ Request escrow to the third party to transfer the native token regardless of the
 
 * The amount of native token is transferred to the `thirdparty` account. Only when the third party calls 'proceed' action with the specified id, it is transferred to the 'to' account.
 ```
-clyos push action yx.escrow escrownt '{"thirdparty":"servprovider","id":0,"from":"user1","to":"user2","amount":"10000.00 DKRW","memo":"my memo"}' -p servprovider user1
+infra-cli push action yx.escrow escrownt '{"thirdparty":"servprovider","id":0,"from":"user1","to":"user2","amount":"10000.00 DKRW","memo":"my memo"}' -p servprovider user1
 ```
 ### parameters of escrownt
 1. thirdparty : account name of the third party providing escrow service
@@ -75,7 +75,7 @@ Confirm transfer of token to 'to' account by the third party
 
 * The escrow request pointed by 'id' is removed.
 ```
-clyos push action yx.escrow proceed '{"thirdparty":"servprovider","id":0}' -p servprovider
+infra-cli push action yx.escrow proceed '{"thirdparty":"servprovider","id":0}' -p servprovider
 ```
 
 ### inline actions and notifications of proceed
@@ -93,7 +93,7 @@ Cancel transfer of token by the third party
 * Token is returned back to 'from' account.
 * The escrow request pointed by 'id' is removed.
 ```
-clyos push action yx.escrow cancel '{"thirdparty":"servprovider","id":1}' -p servprovider
+infra-cli push action yx.escrow cancel '{"thirdparty":"servprovider","id":1}' -p servprovider
 ```
 ### inline actions and notifications of cancel
 ```
@@ -109,7 +109,7 @@ clyos push action yx.escrow cancel '{"thirdparty":"servprovider","id":1}' -p ser
 Get the list of escrow requests of the third party
 
 ```
-clyos get table yx.escrow servprovider escrows
+infra-cli get table yx.escrow servprovider escrows
 ```
 ### result of escrows
 ```

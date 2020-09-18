@@ -7,7 +7,7 @@ Testnet Public Access Node URL
 * [http://testnet.yosemitelabs.org:8888](http://testnet.yosemitelabs.org:8888)
 
 ```bash
-YOSEMITE_CLI_TESTNET="$YOSEMITE_HOME/build/programs/clyos/clyos -u http://testnet.yosemitelabs.org:8888"
+YOSEMITE_CLI_TESTNET="$YOSEMITE_HOME/build/programs/infra-cli/infra-cli -u http://testnet.yosemitelabs.org:8888"
 $YOSEMITE_CLI_TESTNET get info
 {
   "server_version": "a5287943",
@@ -30,7 +30,7 @@ Environment Var.
 
 ```bash
 YOSEMITE_NODE_BIN_NAME=yosemite
-YOSEMITE_CLI_BIN_NAME=clyos
+YOSEMITE_CLI_BIN_NAME=infra-cli
 YOSEMITE_KEYD_BIN_NAME=keyos
 YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NODE_BIN_NAME
@@ -747,7 +747,7 @@ Transaction Vote
 ```bash
 $YOSEMITE_CLI push action --help
 Push a transaction with a single action
-Usage: cleos push action [OPTIONS] account action data
+Usage: infra-cli push action [OPTIONS] account action data
 
 Options:
 ...

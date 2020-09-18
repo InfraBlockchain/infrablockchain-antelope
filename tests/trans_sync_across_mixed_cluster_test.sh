@@ -80,7 +80,7 @@ cleanup()
 getHeadBlockNum()
 {
   INFO="$(programs/infra-cli/infra-cli get info)"
-  verifyErrorCode "cleos get info"
+  verifyErrorCode "infra-cli get info"
   HEAD_BLOCK_NUM="$(echo "$INFO" | awk '/head_block_num/ {print $2}')"
   # remove trailing coma
   HEAD_BLOCK_NUM=${HEAD_BLOCK_NUM%,}
@@ -126,22 +126,22 @@ echo endPort: $endPort
 port2=$startPort
 while [ $port2  -ne $endport ]; do
     echo Request block 1 from node on port $port2
-    TRANS_INFO="$(programs/clyos/clyos --port $port2 get block 1)"
-    verifyErrorCode "cleos get block"
+    TRANS_INFO="$(programs/infra-cli/infra-cli --port $port2 get block 1)"
+    verifyErrorCode "infra-cli get block"
     port2=`expr $port2 + 1`
 done
 
 # create 3 keys
-KEYS="$(programs/clyos/clyos create key)"
-verifyErrorCode "cleos create key"
+KEYS="$(programs/infra-cli/infra-cli create key)"
+verifyErrorCode "infra-cli create key"
 PRV_KEY1="$(echo "$KEYS" | awk '/Private/ {print $3}')"
 PUB_KEY1="$(echo "$KEYS" | awk '/Public/ {print $3}')"
-KEYS="$(programs/clyos/clyos create key)"
-verifyErrorCode "cleos create key"
+KEYS="$(programs/infra-cli/infra-cli create key)"
+verifyErrorCode "infra-cli create key"
 PRV_KEY2="$(echo "$KEYS" | awk '/Private/ {print $3}')"
 PUB_KEY2="$(echo "$KEYS" | awk '/Public/ {print $3}')"
-KEYS="$(programs/clyos/clyos create key)"
-verifyErrorCode "cleos create key"
+KEYS="$(programs/infra-cli/infra-cli create key)"
+verifyErrorCode "infra-cli create key"
 PRV_KEY3="$(echo "$KEYS" | awk '/Private/ {print $3}')"
 PUB_KEY3="$(echo "$KEYS" | awk '/Public/ {print $3}')"
 if [ -z "$PRV_KEY1" ] || [ -z "$PRV_KEY2" ] || [ -z "$PRV_KEY3" ] || [ -z "$PUB_KEY1" ] || [ -z "$PUB_KEY2" ] || [ -z "$PUB_KEY3" ]; then
@@ -150,21 +150,21 @@ fi
 
 
 # create wallet for inita
-PASSWORD_INITA="$(programs/clyos/clyos wallet create --name inita)"
-verifyErrorCode "cleos wallet create"
+PASSWORD_INITA="$(programs/infra-cli/infra-cli wallet create --name inita)"
+verifyErrorCode "infra-cli wallet create"
 # strip out password from output
 PASSWORD_INITA="$(echo "$PASSWORD_INITA" | awk '/PW/ {print $1}')"
 # remove leading/trailing quotes
 PASSWORD_INITA=${PASSWORD_INITA#\"}
 PASSWORD_INITA=${PASSWORD_INITA%\"}
-programs/clyos/clyos wallet import --name inita --private-key $INITA_PRV_KEY
-verifyErrorCode "cleos wallet import"
-programs/clyos/clyos wallet import --name inita --private-key $PRV_KEY1
-verifyErrorCode "cleos wallet import"
-programs/clyos/clyos wallet import --name inita --private-key $PRV_KEY2
-verifyErrorCode "cleos wallet import"
-programs/clyos/clyos wallet import --name inita --private-key $PRV_KEY3
-verifyErrorCode "cleos wallet import"
+programs/infra-cli/infra-cli wallet import --name inita --private-key $INITA_PRV_KEY
+verifyErrorCode "infra-cli wallet import"
+programs/infra-cli/infra-cli wallet import --name inita --private-key $PRV_KEY1
+verifyErrorCode "infra-cli wallet import"
+programs/infra-cli/infra-cli wallet import --name inita --private-key $PRV_KEY2
+verifyErrorCode "infra-cli wallet import"
+programs/infra-cli/infra-cli wallet import --name inita --private-key $PRV_KEY3
+verifyErrorCode "infra-cli wallet import"
 
 #
 # Account and Transfer Tests
@@ -172,12 +172,12 @@ verifyErrorCode "cleos wallet import"
 
 # create new account
 echo Creating account testera
-ACCOUNT_INFO="$(programs/clyos/clyos create account inita testera $PUB_KEY1 $PUB_KEY3)"
-verifyErrorCode "cleos create account"
+ACCOUNT_INFO="$(programs/infra-cli/infra-cli create account inita testera $PUB_KEY1 $PUB_KEY3)"
+verifyErrorCode "infra-cli create account"
 waitForNextBlock
 # verify account created
-ACCOUNT_INFO="$(programs/clyos/clyos get account testera)"
-verifyErrorCode "cleos get account"
+ACCOUNT_INFO="$(programs/infra-cli/infra-cli get account testera)"
+verifyErrorCode "infra-cli get account"
 count=`echo $ACCOUNT_INFO | grep -c "staked_balance"`
 if [ $count == 0 ]; then
   error "FAILURE - account creation failed: $ACCOUNT_INFO"
@@ -189,8 +189,8 @@ echo Producing node port: $pPort
 while [ $port  -ne $endport ]; do
 
     echo Sending transfer request to node on port $port.
-    TRANSFER_INFO="$(programs/clyos/clyos transfer inita testera 975321 "test transfer")"
-    verifyErrorCode "cleos transfer"
+    TRANSFER_INFO="$(programs/infra-cli/infra-cli transfer inita testera 975321 "test transfer")"
+    verifyErrorCode "infra-cli transfer"
     getTransactionId "$TRANSFER_INFO"
     echo Transaction id: $TRANS_ID
 
@@ -200,8 +200,8 @@ while [ $port  -ne $endport ]; do
     port2=$startPort
     while [ $port2  -ne $endport ]; do
 	echo Verifying transaction exists on node on port $port2
-   TRANS_INFO="$(programs/clyos/clyos --port $port2 get transaction $TRANS_ID)"
-   verifyErrorCode "cleos get transaction trans_id of <$TRANS_INFO> from node on port $port2"
+   TRANS_INFO="$(programs/infra-cli/infra-cli --port $port2 get transaction $TRANS_ID)"
+   verifyErrorCode "infra-cli get transaction trans_id of <$TRANS_INFO> from node on port $port2"
 	port2=`expr $port2 + 1`
     done
 

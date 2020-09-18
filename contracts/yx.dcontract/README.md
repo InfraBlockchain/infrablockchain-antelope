@@ -30,11 +30,11 @@
 ## setting fee for actions
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.dcsign", "fee":"30.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.dcupadd", "fee":"5.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.dcsign", "fee":"30.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.dcupadd", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.00 DKRW"}}' -p yosemite
 ```
 
 
@@ -44,7 +44,7 @@ clyos push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.00 DKR
 Create a digital contract
 
 ```
-clyos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequence":1},"conhash":"123456","adddochash":"","signers":["user1", "user2"],"expiration":"2018-08-31T02:49:57","signer_type":0,"signer_kyc":0,"options":0}' -p servprovider
+infra-cli push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequence":1},"conhash":"123456","adddochash":"","signers":["user1", "user2"],"expiration":"2018-08-31T02:49:57","signer_type":0,"signer_kyc":0,"options":0}' -p servprovider
 ```
 
 ### parameters of create
@@ -70,8 +70,8 @@ clyos push action yx.dcontract create '{"dcid":{"creator":"servprovider","sequen
 Sign the digital contract by the signer
 
 ```
-clyos push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signer":"user1", "signerinfo":""}' -p user1
-clyos push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signer":"user2", "signerinfo":"foo"}' -p user2
+infra-cli push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signer":"user1", "signerinfo":""}' -p user1
+infra-cli push action yx.dcontract sign '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signer":"user2", "signerinfo":"foo"}' -p user2
 ```
 
 ### parameters of sign
@@ -86,7 +86,7 @@ Add additional signers to the created digital contract
 * The action only succeeds when none of the signers has signed the contract.
 * The type and/or the KYC status of the signer account are checked if the creator set `signer_type` and/or `signer_kyc`.
 ```
-clyos push action yx.dcontract addsigners '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signers":["user3"]}' -p servprovider
+infra-cli push action yx.dcontract addsigners '{"dcid":{"creator":"servprovider", "sequence":"1"}, "signers":["user3"]}' -p servprovider
 ```
 
 ### parameters of addsigners
@@ -100,7 +100,7 @@ Update the additional document hash string
 
 * This action succeeds even if the signing has all done or the contract has been expired.
 ```
-clyos push action yx.dcontract upadddochash '{"dcid":{"creator":"servprovider", "sequence":"1"}, "adddochash":"updated"}' -p servprovider
+infra-cli push action yx.dcontract upadddochash '{"dcid":{"creator":"servprovider", "sequence":"1"}, "adddochash":"updated"}' -p servprovider
 ```
 
 ### parameters of upadddochash
@@ -114,7 +114,7 @@ Remove the digital contract from the YosemiteChain RAM database
 
 * It is recommended to use this action regularly to save the storage of YosemiteChain RAM database.
 ```
-clyos push action yx.dcontract remove '{"dcid":{"creator":"servprovider", "sequence":"1"}}' -p servprovider
+infra-cli push action yx.dcontract remove '{"dcid":{"creator":"servprovider", "sequence":"1"}}' -p servprovider
 ```
 ### parameters of remove
 1. dcid : digital contract identifier provided to `create` action
@@ -126,7 +126,7 @@ clyos push action yx.dcontract remove '{"dcid":{"creator":"servprovider", "seque
 Get digital contract information
 
 ```
-clyos get table yx.dcontract servprovider dcontracts
+infra-cli get table yx.dcontract servprovider dcontracts
 ```
 ### result of dcontracts
 * Other than done_signers, the meaning of paramters are the same as the create action.
@@ -174,15 +174,15 @@ clyos get table yx.dcontract servprovider dcontracts
 Get the signer information
 
 ```
-clyos get table yx.dcontract user1 signers
-clyos get table yx.dcontract user2 signers
+infra-cli get table yx.dcontract user1 signers
+infra-cli get table yx.dcontract user2 signers
 ```
 ### result of signers
 1. id : This is just for internal managing purpose. 
 1. dcid : digital contract id type which are creator and sequence
 1. signerinfo : additional information string for the signer saved by the sign action
 ```
-$ clyos get table yx.dcontract user1 signers
+$ infra-cli get table yx.dcontract user1 signers
 {
   "rows": [{
       "id": 0,
@@ -196,7 +196,7 @@ $ clyos get table yx.dcontract user1 signers
   "more": false
 }
 
-$ clyos get table yx.dcontract user2 signers
+$ infra-cli get table yx.dcontract user2 signers
 {
   "rows": [{
       "id": 0,
@@ -216,5 +216,5 @@ $ clyos get table yx.dcontract user2 signers
    * | the creator(64-bit integer) | sequence (64-bit integer) |
    * Web Assembly VM follows little endian.
 ```
-clyos get table yx.dcontract user2 signers --index 2 --key-type i128 -L 0x01000000000000007055729bdebaafc2 -l 1
+infra-cli get table yx.dcontract user2 signers --index 2 --key-type i128 -L 0x01000000000000007055729bdebaafc2 -l 1
 ```
