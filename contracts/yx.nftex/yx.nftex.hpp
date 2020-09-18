@@ -4,7 +4,7 @@
  */
 #include <string>
 #include <eosiolib/time.hpp>
-#include <yosemitelib/yx_contract.hpp>
+#include <infrablockchainlib/yx_contract.hpp>
 
 namespace yosemite {
 

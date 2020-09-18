@@ -6,8 +6,8 @@
 
 #include "yx.system.hpp"
 
-#include <yosemitelib/token_api.h>
-#include <yosemitelib/system_token_api.h>
+#include <infrablockchainlib/token_api.h>
+#include <infrablockchainlib/system_token_api.h>
 
 #include <eosiolib/symbol.hpp>
 #include <eosiolib/memory.hpp>

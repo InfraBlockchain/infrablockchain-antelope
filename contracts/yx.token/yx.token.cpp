@@ -1,6 +1,6 @@
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/transaction_fee.hpp>
-#include <yosemitelib/native_token.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/transaction_fee.hpp>
+#include <infrablockchainlib/native_token.hpp>
 #include "yx.token.hpp"
 
 namespace yosemite { namespace non_native_token {

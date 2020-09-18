@@ -5,7 +5,7 @@
  */
 #include "yosemitex.fiat.stable.token.hpp"
 
-#include <yosemitelib/identity.hpp>
+#include <infrablockchainlib/identity.hpp>
 
 #define YOSEMITE_FIAT_KYC_AUTH YOSEMITE_ID_KYC_REAL_NAME_AUTH | YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH
 

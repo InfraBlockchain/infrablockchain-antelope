@@ -1,5 +1,5 @@
 /**
- *  @file yosemitelib/trx_fee_api.h
+ *  @file infrablockchainlib/trx_fee_api.h
  *  @author bezalel@yosemitex.com
  *  @copyright defined in yosemite/LICENSE.txt
  */

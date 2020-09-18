@@ -6,7 +6,7 @@
 
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
-#include <yosemitelib/system_accounts.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
 
 #define YOSEMITE_ID_ACC_TYPE_NORMAL        0b0000000000000000
 #define YOSEMITE_ID_ACC_TYPE_SYSTEM        0b1000000000000000

@@ -21,7 +21,7 @@ $INFRA_CLI set contract yx.txfee $YOSEMITE_CONTRACTS_DIR/yx.txfee/ -p yx.txfee@a
 
 YOSEMITE Transaction Fee Operation Names
 ---
-[`yosemitelib/transaction_fee.hpp`](../../contracts/yosemitelib/transaction_fee.hpp)
+[`infrablockchainlib/transaction_fee.hpp`](../../contracts/infrablockchainlib/transaction_fee.hpp)
 
 Setup Transaction Fees
 ---

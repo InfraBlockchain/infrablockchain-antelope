@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include <yosemitelib/system_accounts.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
 #include <eosiolib/eosio.hpp>
 #include <string>
 

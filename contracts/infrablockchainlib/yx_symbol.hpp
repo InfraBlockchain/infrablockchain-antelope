@@ -2,7 +2,7 @@
 #define YX_SYMBOL_HPP
 
 #include <eosiolib/symbol.hpp>
-#include <yosemitelib/native_token_symbol.hpp>
+#include <infrablockchainlib/native_token_symbol.hpp>
 
 namespace yosemite {
 

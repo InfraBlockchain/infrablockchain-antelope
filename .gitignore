@@ -26,7 +26,7 @@ moc_*
 genesis.json
 hardfork.hpp
 
-contracts/yosemitelib/native_token_symbol.hpp
+contracts/infrablockchainlib/native_token_symbol.hpp
 
 libraries/utilities/git_revision.cpp
 libraries/egenesis/egenesis_brief.cpp

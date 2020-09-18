@@ -6,8 +6,8 @@
 
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
-#include <yosemitelib/native_token_symbol.hpp>
-#include <yosemitelib/system_accounts.hpp>
+#include <infrablockchainlib/native_token_symbol.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
 
 // yx.system
 #define YOSEMITE_TX_FEE_OP_NAME_SYSTEM_NEW_ACCOUNT     N(tf.newacc)

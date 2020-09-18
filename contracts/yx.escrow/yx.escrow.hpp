@@ -4,8 +4,8 @@
  */
 #pragma once
 
-#include <yosemitelib/native_token.hpp>
-#include <yosemitelib/token.hpp>
+#include <infrablockchainlib/native_token.hpp>
+#include <infrablockchainlib/token.hpp>
 
 namespace yosemite {
    using std::string;

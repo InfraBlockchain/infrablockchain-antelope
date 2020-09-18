@@ -6,9 +6,9 @@
 
 #include "yx.system.hpp"
 
-#include <yosemitelib/native_token.hpp>
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/identity_authority.hpp>
+#include <infrablockchainlib/native_token.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/identity_authority.hpp>
 
 #include <eosiolib/dispatcher.hpp>
 

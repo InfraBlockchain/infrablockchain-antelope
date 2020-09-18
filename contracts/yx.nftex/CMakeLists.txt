@@ -1,7 +1,7 @@
 file(GLOB ABI_FILES "*.abi")
 add_wast_executable(TARGET yx.nftex
         INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}"
-        LIBRARIES libc++ libc eosiolib yosemitelib
+        LIBRARIES libc++ libc eosiolib infrablockchainlib
         DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR})
 configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
 

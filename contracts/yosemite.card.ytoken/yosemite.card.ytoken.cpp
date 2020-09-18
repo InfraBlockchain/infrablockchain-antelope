@@ -5,8 +5,8 @@
  */
 #include "yosemite.card.ytoken.hpp"
 
-#include <yosemitelib/identity.hpp>
-#include <yosemitelib/token_api.h>
+#include <infrablockchainlib/identity.hpp>
+#include <infrablockchainlib/token_api.h>
 
 #include <eosiolib/symbol.hpp>
 #include <eosiolib/action.hpp>

@@ -1,5 +1,5 @@
 /**
- *  @file yosemitelib/token_api.h
+ *  @file infrablockchainlib/token_api.h
  *  @author bezalel@yosemitex.com
  *  @copyright defined in yosemite/LICENSE.txt
  */

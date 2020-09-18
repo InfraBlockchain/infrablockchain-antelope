@@ -1,8 +1,8 @@
-#include <yosemitelib/native_token.hpp>
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/transaction_fee.hpp>
-//#include <yosemitelib/system_depository.hpp>
-#include <yosemitelib/transaction_vote.h>
+#include <infrablockchainlib/native_token.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/transaction_fee.hpp>
+//#include <infrablockchainlib/system_depository.hpp>
+#include <infrablockchainlib/transaction_vote.h>
 
 namespace yosemite { namespace native_token {
 

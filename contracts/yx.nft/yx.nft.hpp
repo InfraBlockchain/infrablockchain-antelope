@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include <yosemitelib/token.hpp>
+#include <infrablockchainlib/token.hpp>
 #include <string>
 
 namespace yosemite { namespace non_native_token {

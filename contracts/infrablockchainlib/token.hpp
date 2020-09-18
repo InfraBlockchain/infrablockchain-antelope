@@ -4,9 +4,9 @@
  */
 #pragma once
 
-#include <yosemitelib/yx_asset.hpp>
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/identity.hpp>
+#include <infrablockchainlib/yx_asset.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/identity.hpp>
 #include <eosiolib/eosio.hpp>
 #include <string>
 
@@ -47,7 +47,7 @@ namespace yosemite { namespace non_native_token {
         uint16_t can_set_options = TOKEN_CAN_SET_OPTIONS_NONE; // can set only at token creation time
         uint16_t options = TOKEN_OPTIONS_NONE;
         std::vector<token_rule_t> kyc_rules;
-        std::vector<identity::identity_kyc_t> kyc_rule_flags; // from yosemitelib/identity.hpp
+        std::vector<identity::identity_kyc_t> kyc_rule_flags; // from infrablockchainlib/identity.hpp
 
         uint64_t primary_key() const { return supply.issuer; }
     };

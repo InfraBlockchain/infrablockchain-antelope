@@ -3,7 +3,7 @@ configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
 
 add_wast_executable(TARGET yx.escrow
   INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}"
-  LIBRARIES libc++ libc eosiolib yosemitelib
+  LIBRARIES libc++ libc eosiolib infrablockchainlib
   DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
 )
 

@@ -5,9 +5,9 @@
 #include "yx.identity.hpp"
 
 #include <eosiolib/action.h>
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/identity.hpp>
-#include <yosemitelib/identity_authority.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/identity.hpp>
+#include <infrablockchainlib/identity_authority.hpp>
 #include <yx.system/yx.system.hpp>
 
 namespace yosemite { namespace identity {

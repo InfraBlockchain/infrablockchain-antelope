@@ -2,12 +2,12 @@
 #define YX_NATIVE_TOKEN_HPP
 
 #include <eosiolib/multi_index.hpp>
-#include <yosemitelib/native_token_symbol.hpp>
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/transaction_fee.hpp>
-#include <yosemitelib/yx_asset.hpp>
-#include <yosemitelib/identity.hpp>
-#include <yosemitelib/trx_fee_api.h>
+#include <infrablockchainlib/native_token_symbol.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/transaction_fee.hpp>
+#include <infrablockchainlib/yx_asset.hpp>
+#include <infrablockchainlib/identity.hpp>
+#include <infrablockchainlib/trx_fee_api.h>
 
 /* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
 
@@ -52,7 +52,7 @@ namespace yosemite { namespace native_token {
 
         struct kyc_rule {
             uint8_t type = 0; // == ntoken_kyc_rule_type
-            identity::identity_kyc_t kyc_flags = 0; // from yosemitelib/identity.hpp
+            identity::identity_kyc_t kyc_flags = 0; // from infrablockchainlib/identity.hpp
 
             uint64_t primary_key() const { return type; }
         };

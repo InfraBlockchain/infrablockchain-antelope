@@ -4,11 +4,11 @@
  */
 
 #include <eosiolib/action.hpp>
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/transaction_fee.hpp>
-#include <yosemitelib/native_token.hpp>
-#include <yosemitelib/token.hpp>
-#include <yosemitelib/yx_contract.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/transaction_fee.hpp>
+#include <infrablockchainlib/native_token.hpp>
+#include <infrablockchainlib/token.hpp>
+#include <infrablockchainlib/yx_contract.hpp>
 #include "token.hpp"
 
 namespace yosemite {

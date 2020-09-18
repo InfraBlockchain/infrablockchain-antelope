@@ -6,7 +6,7 @@
 
 #include "yx.system.hpp"
 
-#include <yosemitelib/trx_fee_api.h>
+#include <infrablockchainlib/trx_fee_api.h>
 
 namespace yosemitesys {
 

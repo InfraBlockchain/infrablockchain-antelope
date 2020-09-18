@@ -6,7 +6,7 @@
 
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
-#include <yosemitelib/transaction_fee.hpp>
+#include <infrablockchainlib/transaction_fee.hpp>
 
 namespace yosemite {
 

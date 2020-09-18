@@ -5,8 +5,8 @@
 #pragma once
 
 #include <musl/upstream/include/bits/stdint.h>
-#include <yosemitelib/token.hpp>
-#include <yosemitelib/number.hpp>
+#include <infrablockchainlib/token.hpp>
+#include <infrablockchainlib/number.hpp>
 #include <string>
 
 namespace yosemite { namespace non_native_token {

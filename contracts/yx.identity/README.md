@@ -48,7 +48,7 @@ YOSEMITE Identity Codes
 #define YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE  0x00000004
 #define YOSEMITE_ID_ACC_STATE_MAX                         0x00000007
 ```
-@see https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/yosemite-master/contracts/yosemitelib/identity.hpp
+@see https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/yosemite-master/contracts/infrablockchainlib/identity.hpp
 
 Managing Account Identity Info (including KYC)
 ---

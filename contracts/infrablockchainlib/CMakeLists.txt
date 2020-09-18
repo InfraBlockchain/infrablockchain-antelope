@@ -1,12 +1,12 @@
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/native_token_symbol.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/native_token_symbol.hpp)
 
-add_wast_library(TARGET yosemitelib
+add_wast_library(TARGET infrablockchainlib
   INCLUDE_FOLDERS "${STANDARD_INCLUDE_FOLDERS}" ${CMAKE_SOURCE_DIR}/externals/magic_get/include
   DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 if ($ENV{CLION_IDE})
-    set(CONTRACT_MODULE_NAME "yosemitelib")
+    set(CONTRACT_MODULE_NAME "infrablockchainlib")
     message( STATUS "CLION - contracts/${CONTRACT_MODULE_NAME}" )
     file(GLOB HEADERS "*.hpp" "*.h")
     file(GLOB SOURCES "*.cpp")

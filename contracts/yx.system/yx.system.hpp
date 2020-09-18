@@ -6,9 +6,9 @@
 #pragma once
 
 #include "yx.native.hpp"
-#include <yosemitelib/native_token.hpp>
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/identity_authority.hpp>
+#include <infrablockchainlib/native_token.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/identity_authority.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/time.hpp>
 #include <eosiolib/privileged.hpp>

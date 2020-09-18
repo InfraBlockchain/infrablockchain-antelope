@@ -3,8 +3,8 @@
  * @copyright defined in yosemite-public-blockchain/LICENSE
  */
 #include "yx.escrow.hpp"
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/transaction_fee.hpp>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/transaction_fee.hpp>
 
 namespace yosemite {
 

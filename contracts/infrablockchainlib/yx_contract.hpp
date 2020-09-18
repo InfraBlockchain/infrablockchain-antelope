@@ -5,7 +5,7 @@
 #pragma once
 
 #include <eosiolib/contract.hpp>
-#include <yosemitelib/yx_asset.hpp>
+#include <infrablockchainlib/yx_asset.hpp>
 
 namespace yosemite {
 

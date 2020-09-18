@@ -2,7 +2,7 @@
  * @file
  * @copyright defined in yosemite-public-blockchain/LICENSE
  */
-#include <yosemitelib/transaction_fee.hpp>
+#include <infrablockchainlib/transaction_fee.hpp>
 #include "yx.nft.hpp"
 
 namespace yosemite { namespace non_native_token {

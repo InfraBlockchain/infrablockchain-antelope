@@ -6,8 +6,8 @@
 
 #include "yx.system.hpp"
 
-#include <yosemitelib/system_accounts.hpp>
-#include <yosemitelib/transaction_vote.h>
+#include <infrablockchainlib/system_accounts.hpp>
+#include <infrablockchainlib/transaction_vote.h>
 
 #include <eosiolib/system.h>
 #include <eosiolib/memory.hpp>

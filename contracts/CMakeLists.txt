@@ -32,7 +32,7 @@ add_subdirectory(integration_test)
 
 add_subdirectory(eosio.msig)
 add_subdirectory(eosio.sudo)
-add_subdirectory(yosemitelib)
+add_subdirectory(infrablockchainlib)
 add_subdirectory(yx.system)
 add_subdirectory(yx.tokenabi)
 add_subdirectory(yx.txfee)

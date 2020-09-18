@@ -2,7 +2,7 @@
 #define YX_ASSET_HPP
 
 #include <eosiolib/asset.hpp>
-#include <yosemitelib/yx_symbol.hpp>
+#include <infrablockchainlib/yx_symbol.hpp>
 
 namespace yosemite {
 

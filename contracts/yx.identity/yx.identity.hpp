@@ -5,7 +5,7 @@
 #pragma once
 
 #include <eosiolib/eosio.hpp>
-#include <yosemitelib/identity.hpp>
+#include <infrablockchainlib/identity.hpp>
 
 #include <string>
 
