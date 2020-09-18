@@ -66,16 +66,16 @@ docker volume create --name=keyos-data-volume
 docker-compose up -d
 ```
 
-After `docker-compose up -d`, two services named `yosemited` and `keyos` will be started. The yosemited service would expose ports 8888 and 9876 to the host. The keyos service does not expose any port to the host, it is only accessible to clyos when running cleos is running inside the keyos container as described in "Execute clyos commands" section.
+After `docker-compose up -d`, two services named `yosemited` and `keyos` will be started. The yosemited service would expose ports 8888 and 9876 to the host. The keyos service does not expose any port to the host, it is only accessible to infra-cli when running cleos is running inside the keyos container as described in "Execute infra-cli commands" section.
 
-### Execute clyos commands
+### Execute infra-cli commands
 
-You can run the `clyos` commands via a bash alias.
+You can run the `infra-cli` commands via a bash alias.
 
 ```bash
-alias clyos='docker-compose exec keyos /opt/yosemite/bin/clyos -u http://yosemited:8888 --wallet-url http://localhost:8900'
-cleos get info
-cleos get account inita
+alias infra-cli='docker-compose exec keyos /opt/yosemite/bin/infra-cli -u http://yosemited:8888 --wallet-url http://localhost:8900'
+infra-cli get info
+infra-cli get account inita
 ```
 
 If you don't need keyos afterwards, you can stop the keyos service using

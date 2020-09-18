@@ -20,7 +20,7 @@ namespace yosemite { namespace contract {
     * Every account on YOSEMITE blockchain can process built-in standard token actions (settokenmeta, issue, transfer, redeem)
     * without custom smart contract code deployed to an account.
     * This system contract (yx.tokenabi) provide standard application binary interface(abi) for standard token actions.
-    * Client tools such as clyos encoding YOSEMITE blockchain transactions could refer 'yx.tokenabi' contract account
+    * Client tools such as infra-cli encoding YOSEMITE blockchain transactions could refer 'yx.tokenabi' contract account
     * to retrieve abi information for standard token actions.
     */
    class tokenabi : public eosio::contract {

@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Usage:
-# Go into cmd loop: sudo ./clyos.sh
-# Run single cmd:  sudo ./clyos.sh <clyos paramers>
+# Go into cmd loop: sudo ./infra-cli.sh
+# Run single cmd:  sudo ./infra-cli.sh <infra-cli paramers>
 
-PREFIX="docker-compose exec yosemited clyos"
+PREFIX="docker-compose exec yosemited infra-cli"
 if [ -z $1 ] ; then
   while :
   do
-    read -e -p "clyos " cmd
+    read -e -p "infra-cli " cmd
     history -s "$cmd"
     $PREFIX $cmd
   done

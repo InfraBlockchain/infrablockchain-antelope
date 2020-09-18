@@ -79,7 +79,7 @@ cleanup()
 # result stored in HEAD_BLOCK_NUM
 getHeadBlockNum()
 {
-  INFO="$(programs/clyos/clyos get info)"
+  INFO="$(programs/infra-cli/infra-cli get info)"
   verifyErrorCode "cleos get info"
   HEAD_BLOCK_NUM="$(echo "$INFO" | awk '/head_block_num/ {print $2}')"
   # remove trailing coma

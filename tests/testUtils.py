@@ -18,7 +18,7 @@ class Utils:
     Debug=False
     FNull = open(os.devnull, 'w')
 
-    EosClientPath="programs/clyos/clyos"
+    EosClientPath="programs/infra-cli/infra-cli"
     MiscEosClientArgs="--no-auto-keyos"
 
     EosWalletName="keyos"

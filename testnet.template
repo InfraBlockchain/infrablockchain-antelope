@@ -44,9 +44,9 @@ sleep 1
 
 ecmd () {
     echo ===== Start: $step ============ >> $logfile
-    echo executing: clyos --wallet-url $wdurl --url http://$bioshost:$biosport "$@" | tee -a $logfile
+    echo executing: infra-cli --wallet-url $wdurl --url http://$bioshost:$biosport "$@" | tee -a $logfile
     echo ----------------------- >> $logfile
-    programs/clyos/clyos  --wallet-url $wdurl --url http://$bioshost:$biosport "$@" >> $logfile 2>&1
+    programs/infra-cli/infra-cli  --wallet-url $wdurl --url http://$bioshost:$biosport "$@" >> $logfile 2>&1
     echo ==== End: $step ============== >> $logfile
     step=$(($step + 1))
 }
@@ -56,7 +56,7 @@ wcmd () {
 }
 
 cacmd () {
-    programs/clyos/clyos  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount yosemite "$@" >> $logfile 2>&1
+    programs/infra-cli/infra-cli  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount yosemite "$@" >> $logfile 2>&1
     ecmd system regproducer $1 $2
     ecmd push action yosemite authproducer "[\"$1\"]" -p yosemite
     ecmd push action yx.ntoken nissue "{\"to\":\"$1\", \"token\":{\"amount\":\"1000000.00 DKRW\",\"issuer\":\"sysdepo1\"}, \"memo\":\"my memo\"}" -p sysdepo1

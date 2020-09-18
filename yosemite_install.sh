@@ -56,7 +56,7 @@ create_symlink() {
 
 install_symlinks() {
   printf "\\n\\tInstalling YOSEMITE Binary Symlinks\\n\\n"
-  create_symlink "clyos"
+  create_symlink "infra-cli"
   create_symlink "keyos"
   create_symlink "yosemite"
 }

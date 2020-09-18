@@ -103,11 +103,11 @@ YOSEMITE is based on [EOSIO software](https://github.com/EOSIO/eos). So instruct
 But the names of programs and scripts are changed.
 ```
 nodeos -> yosemite
-cleos  -> clyos ('cl'ient + 'yos'emite)
+cleos  -> infra-cli
 keosd  -> keyos (key + 'yos'emite)
 ```
 ### Client Tool
-clyos : https://developers.eos.io/eosio-nodeos/docs/cleos-overview
+infra-cli : https://developers.eos.io/eosio-nodeos/docs/cleos-overview
 
 ### Key Store Daemon
 keyos : https://developers.eos.io/eosio-nodeos/docs/keosd-overview

@@ -28,7 +28,7 @@
 # https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/master/LICENSE
 ############################################################################################
 
-binaries=(clyos
+binaries=(infra-cli
           keyos
           yosemite)
 

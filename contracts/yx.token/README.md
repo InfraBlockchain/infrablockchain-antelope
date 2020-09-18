@@ -24,17 +24,17 @@ You must consider the decision points carefully because it cannot be changed onc
 ## setting fee for operations
 * Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
 ```
-clyos push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tsetuilim", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tissuebyu", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.ttrustui", "fee":"10.00 DKRW"}}' -p yosemite
-clyos push action yx.txfee settxfee '{"operation":"tf.tchangeis", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tsetuilim", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tissuebyu", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.ttrustui", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action yx.txfee settxfee '{"operation":"tf.tchangeis", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
 # Actions
@@ -45,7 +45,7 @@ Create a (non-native) token with its symbol and precision
 * The token creator naturally becomes the token depository.
 * Enabling the setting of options cannot be done any more after creation, because the owners of the token should know about what options can be set and it must not be changed after they own.
 ```
-clyos push action yx.token create '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
+infra-cli push action yx.token create '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"},"can_set_options":0}' -p d2
 ```
 
 ### parameters of create
@@ -68,7 +68,7 @@ clyos push action yx.token create '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"},
 Issue the token to an account by the token depository
 
 ```
-clyos push action yx.token issue '{"to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}' -p d2
+infra-cli push action yx.token issue '{"to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}' -p d2
 ```
 
 ### parameters of issue
@@ -103,11 +103,11 @@ Redeem(burn) token from an account by the token depository
 
 * At first, the account transfers the token to the depository.
 ```
-clyos push action yx.token transfer '{"from":"user2","to":"d2","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem by user2"}' -p user2
+infra-cli push action yx.token transfer '{"from":"user2","to":"d2","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem by user2"}' -p user2
 ```
 * Then the token depository checks the transfer action is irreversible and calls redeem action.
 ```
-clyos push action yx.token redeem '{"token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem for user2"}' -p d2
+infra-cli push action yx.token redeem '{"token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"redeem for user2"}' -p d2
 ```
 
 ### parameters of redeem
@@ -121,7 +121,7 @@ clyos push action yx.token redeem '{"token":{"amount":"10000.0000 BTC","issuer":
 Transfer token
 
 ```
-clyos push action yx.token transfer '{"from":"user2","to":"user3","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"my memo"}' -p user2
+infra-cli push action yx.token transfer '{"from":"user2","to":"user3","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"my memo"}' -p user2
 ```
 
 ### parameters of transfer
@@ -138,8 +138,8 @@ Set the KYC vector for send or receive
 
 * SET_KYC_RULE flag of can_set_options must be set at token creation time.
 ```
-clyos push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":0, "kyc":4}' -p d2
-clyos push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":1, "kyc":4}' -p d2
+infra-cli push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":0, "kyc":4}' -p d2
+infra-cli push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "type":1, "kyc":4}' -p d2
 ```
 
 ### parameters of setkycrule
@@ -156,7 +156,7 @@ set or add token options
    * FREEZE_TOKEN_TRANSFER flag of can_set_options must be set at token creation time.
 
 ```
-clyos push action yx.token setoptions '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "options":1, "reset":1}' -p d2
+infra-cli push action yx.token setoptions '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "options":1, "reset":1}' -p d2
 ```
 
 ### parameters of setoptions
@@ -173,8 +173,8 @@ Freeze an account which has the token by its issuer
 
 * FREEZE_ACCOUNT flag of can_set_options must be set at token creation time.
 ```
-clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user1","user2"], "freeze":1}' -p d2
-clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user2"], "freeze":0}' -p d2
+infra-cli push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user1","user2"], "freeze":1}' -p d2
+infra-cli push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}, "accs":["user2"], "freeze":0}' -p d2
 ```
 
 ### parameters of freezeacc
@@ -186,7 +186,7 @@ clyos push action yx.token freezeacc '{"ysymbol":{"tsymbol":"4,BTC","issuer":"d2
 ## setuilimit
 Set the limit of user issue amount by the token depository.
 ```
-clyos push action yx.token setuilimit '{"to":"user1", "limit":{"amount":"1000000.0000 BTC","issuer":"d2"}}' -p d2
+infra-cli push action yx.token setuilimit '{"to":"user1", "limit":{"amount":"1000000.0000 BTC","issuer":"d2"}}' -p d2
 ```
 
 ### parameters of setuilimit
@@ -201,7 +201,7 @@ Issue the token by the user with the user issue authority and the limit
 * The total 'issued' amount of the user is incresed by the amount of token.
 * The total 'issued' amount of the user cannot exceed the issue limit granted by the token issuer.
 ```
-clyos push action yx.token issuebyuser '{"user":"user1","to":"user1","token":{"amount":"100000.0000 BTC","issuer":"d2"}, "memo":"my memo"}' -p user1
+infra-cli push action yx.token issuebyuser '{"user":"user1","to":"user1","token":{"amount":"100000.0000 BTC","issuer":"d2"}, "memo":"my memo"}' -p user1
 ```
 
 ### parameters of issuebyuser
@@ -218,7 +218,7 @@ Entrust the user issue authority to another account
 
 * Agreed by the user under the terms and conditions, the delegated account can issue the amount of the token by the issue limit.
 ```
-clyos push action yx.token entrustui '{"user":"user1","to":"d2","ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}}' -p user1
+infra-cli push action yx.token entrustui '{"user":"user1","to":"d2","ysymbol":{"tsymbol":"4,BTC","issuer":"d2"}}' -p user1
 ```
 
 ### parameters of issuebyuser
@@ -231,7 +231,7 @@ clyos push action yx.token entrustui '{"user":"user1","to":"d2","ysymbol":{"tsym
 ## changeissued
 Decrease or increase the total user-issued amount of token of the user
 ```
-clyos push action yx.token changeissued '{"user":"user1", "delta":{"amount":"1000000.0000 BTC","issuer":"d2"}, "decrease":1}' -p d2
+infra-cli push action yx.token changeissued '{"user":"user1", "delta":{"amount":"1000000.0000 BTC","issuer":"d2"}, "decrease":1}' -p d2
 ```
 
 ### parameters of changeissued
@@ -247,7 +247,7 @@ clyos push action yx.token changeissued '{"user":"user1", "delta":{"amount":"100
 ## tstats
 Get the token statistics
 ```
-clyos get table yx.token 4,BTC tstats
+infra-cli get table yx.token 4,BTC tstats
 ```
 
 ### results of tstats
@@ -270,7 +270,7 @@ clyos get table yx.token 4,BTC tstats
 ## taccounts
 Get all the token balances of the user
 ```
-clyos get table yx.token user2 taccounts
+infra-cli get table yx.token user2 taccounts
 ```
 
 ### results of taccounts
@@ -297,5 +297,5 @@ clyos get table yx.token user2 taccounts
    * | the symbol(64-bit integer) | issuer (64-bit integer) |
    * Web Assembly VM follows little endian.
 ```
-clyos get table yx.token user2 taccounts --index 2 --key-type i128 -L 0x00000000000080480654455354000000 -l 1
+infra-cli get table yx.token user2 taccounts --index 2 --key-type i128 -L 0x00000000000080480654455354000000 -l 1
 ```

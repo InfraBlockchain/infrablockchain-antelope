@@ -9,7 +9,7 @@ YOSEMITE Public Key, Private Key, Signature Format
 ## YOSEMITE Keys
 
 ```bash
-$YOSEMITE_CLYOS create key --to-console
+$INFRA_CLI create key --to-console
 Private key: YPV_5Jx4aC6fGkv5eaoYfKobibRGruV8xpgWWNXpojSNghJDehwrkhJ
 Public key: YOS7Te8Jd4fF6HbTJH2BUYADBucb2yYYSRh3mVv4hgjkAJL15rzjF
 ```
@@ -30,7 +30,7 @@ Public key: YOS7Te8Jd4fF6HbTJH2BUYADBucb2yYYSRh3mVv4hgjkAJL15rzjF
 ## R1 Elliptic Curve Keys (secp256r1(=prime256v1))
 
 ```bash
-$YOSEMITE_CLYOS create key --r1 --to-console
+$INFRA_CLI create key --r1 --to-console
 Private key: PVT_R1_C6ShjLAkRV7ULfzQQfYTWjjDL7HBUhGs7aXStgpWjkKLrTmdC
 Public key: PUB_R1_6X2tkauA9gH3j2AujQCM79FR83jTf9MiRhZhubNmpt7146AWhu
 ```
