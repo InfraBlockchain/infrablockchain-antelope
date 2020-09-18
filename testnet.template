@@ -37,9 +37,9 @@ echo Initializing ignition sequence  at $(date) | tee $logfile
 
 echo "http-server-address = $wdaddr" > $wddir/config.ini
 
-programs/keyos/keyos --config-dir $wddir --data-dir $wddir 2> $wddir/wdlog.txt &
+programs/infra-keystore/infra-keystore --config-dir $wddir --data-dir $wddir 2> $wddir/wdlog.txt &
 echo $$ > ignition_wallet.pid
-echo keyos log in $wddir/wdlog.txt >> $logfile
+echo infra-keystore log in $wddir/wdlog.txt >> $logfile
 sleep 1
 
 ecmd () {
@@ -158,4 +158,4 @@ ecmd push action yx.ntoken nissue '{"to":"yosemite", "token":{"amount":"10000000
 # ------ DO NOT ALTER THE NEXT LINE -------
 ###INSERT cacmd
 
-pkill -15 keyos
+pkill -15 infra-keystore

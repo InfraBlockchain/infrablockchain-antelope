@@ -19,10 +19,10 @@ class Utils:
     FNull = open(os.devnull, 'w')
 
     EosClientPath="programs/infra-cli/infra-cli"
-    MiscEosClientArgs="--no-auto-keyos"
+    MiscEosClientArgs="--no-auto-keystore"
 
-    EosWalletName="keyos"
-    EosWalletPath="programs/keyos/"+ EosWalletName
+    EosWalletName="infra-keystore"
+    EosWalletPath="programs/infra-keystore/"+ EosWalletName
 
     EosServerName="yosemite"
     EosServerPath="programs/yosemite/"+ EosServerName

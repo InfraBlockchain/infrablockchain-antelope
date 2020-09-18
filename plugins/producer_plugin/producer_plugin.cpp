@@ -534,11 +534,11 @@ void producer_plugin::set_program_options(
           "Where:\n"
           "  <public-key>    \tis a string form of a vaild YOSEMITE public key\n\n"
           "  <provider-spec> \tis a string in the form <provider-type>:<data>\n\n"
-          "    <provider-type> \tis KEY, or KEYOS\n\n"
+          "    <provider-type> \tis KEY, or KEYSTORE\n\n"
           "      KEY:<data>      \tis a string form of a valid YOSEMITE private key which maps to the provided public key\n\n"
-          "      KEYOS:<data>    \tis the URL where keyos is available and the approptiate wallet(s) are unlocked")
-         ("keyos-provider-timeout", boost::program_options::value<int32_t>()->default_value(5),
-          "Limits the maximum time (in milliseconds) that is allowd for sending blocks to a keyos provider for signing")
+          "      KEYSTORE:<data>    \tis the URL where infra-keystore is available and the appropriate wallet(s) are unlocked")
+         ("keystore-provider-timeout", boost::program_options::value<int32_t>()->default_value(5),
+          "Limits the maximum time (in milliseconds) that is allowd for sending blocks to a infra-keystore provider for signing")
          ("greylist-account", boost::program_options::value<vector<string>>()->composing()->multitoken(),
           "account that can not access to extended CPU/NET virtual resources")
          ("produce-time-offset-us", boost::program_options::value<int32_t>()->default_value(0),
@@ -661,7 +661,7 @@ void producer_plugin::plugin_initialize(const boost::program_options::variables_
 
             if (spec_type_str == "KEY") {
                my->_signature_providers[pubkey] = make_key_signature_provider(private_key_type(spec_data));
-            } else if (spec_type_str == "KEYOS") {
+            } else if (spec_type_str == "KEYSTORE") {
                my->_signature_providers[pubkey] = make_keosd_signature_provider(my, spec_data, pubkey);
             }
 
@@ -671,7 +671,7 @@ void producer_plugin::plugin_initialize(const boost::program_options::variables_
       }
    }
 
-   my->_keosd_provider_timeout_us = fc::milliseconds(options.at("keyos-provider-timeout").as<int32_t>());
+   my->_keosd_provider_timeout_us = fc::milliseconds(options.at("keystore-provider-timeout").as<int32_t>());
 
    my->_produce_time_offset_us = options.at("produce-time-offset-us").as<int32_t>();
 

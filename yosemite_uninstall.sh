@@ -29,7 +29,7 @@
 ############################################################################################
 
 binaries=(infra-cli
-          keyos
+          infra-keystore
           yosemite)
 
 if [ -d "/usr/local/yosemite" ]; then

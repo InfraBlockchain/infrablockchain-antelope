@@ -69,7 +69,7 @@ def sleep(t):
 def startWallet():
     run('rm -rf ' + os.path.abspath(args.wallet_dir))
     run('mkdir -p ' + os.path.abspath(args.wallet_dir))
-    background(args.keosd + ' --unlock-timeout %d --http-server-address 127.0.0.1:6666 --wallet-dir %s' % (unlockTimeout, os.path.abspath(args.wallet_dir)))
+    background(args.keystore + ' --unlock-timeout %d --http-server-address 127.0.0.1:6666 --wallet-dir %s' % (unlockTimeout, os.path.abspath(args.wallet_dir)))
     sleep(.4)
     run(args.cli + 'wallet create --to-console')
 
@@ -275,7 +275,7 @@ def produceNewAccounts():
             f.write('        {"name":"%s", "pvt":"%s", "pub":"%s"},\n' % (name, r[1], r[2]))
 
 def stepKillAll():
-    run('killall keosd nodeos || true')
+    run('killall infra-keystore nodeos || true')
     sleep(1.5)
 def stepStartWallet():
     startWallet()
@@ -329,8 +329,8 @@ def stepLog():
 parser = argparse.ArgumentParser()
 
 commands = [
-    ('k', 'kill',               stepKillAll,                True,    "Kill all nodeos and keosd processes"),
-    ('w', 'wallet',             stepStartWallet,            True,    "Start keosd, create wallet, fill with keys"),
+    ('k', 'kill',               stepKillAll,                True,    "Kill all nodeos and infra-keystore processes"),
+    ('w', 'wallet',             stepStartWallet,            True,    "Start infra-keystore, create wallet, fill with keys"),
     ('b', 'boot',               stepStartBoot,              True,    "Start boot node"),
     ('s', 'sys',                createSystemAccounts,       True,    "Create system accounts (eosio.*)"),
     ('c', 'contracts',          stepInstallSystemContracts, True,    "Install system contracts (token, msig)"),
@@ -353,7 +353,7 @@ parser.add_argument('--public-key', metavar='', help="EOSIO Public Key", default
 parser.add_argument('--private-Key', metavar='', help="EOSIO Private Key", default='5K463ynhZoCDDa4RDcr63cUwWLTnKqmdcoTKTHBjqoKfv4u5V7p', dest="private_key")
 parser.add_argument('--cli', metavar='', help="cli command", default='../../build/programs/infra-cli/infra-cli --wallet-url http://127.0.0.1:6666 ')
 parser.add_argument('--nodeos', metavar='', help="Path to nodeos binary", default='../../build/programs/nodeos/nodeos')
-parser.add_argument('--keosd', metavar='', help="Path to keosd binary", default='../../build/programs/keosd/keosd')
+parser.add_argument('--keystore', metavar='', help="Path to infra-keystore binary", default='../../build/programs/infra-keystore/infra-keystore')
 parser.add_argument('--contracts-dir', metavar='', help="Path to contracts directory", default='../../build/contracts/')
 parser.add_argument('--nodes-dir', metavar='', help="Path to nodes directory", default='./nodes/')
 parser.add_argument('--genesis', metavar='', help="Path to genesis.json", default="./genesis.json")

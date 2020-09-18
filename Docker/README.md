@@ -58,30 +58,30 @@ docker run --name yosemite -v /path-to-data-dir:/opt/yosemite/bin/data-dir -p 88
 curl http://127.0.0.1:8888/v1/chain/get_info
 ```
 
-## Start both yosemite and keyos containers
+## Start both yosemite and infra-keystore containers
 
 ```bash
 docker volume create --name=yosemite-data-volume
-docker volume create --name=keyos-data-volume
+docker volume create --name=infra-keystore-data-volume
 docker-compose up -d
 ```
 
-After `docker-compose up -d`, two services named `yosemited` and `keyos` will be started. The yosemited service would expose ports 8888 and 9876 to the host. The keyos service does not expose any port to the host, it is only accessible to infra-cli when running infra-cli is running inside the keyos container as described in "Execute infra-cli commands" section.
+After `docker-compose up -d`, two services named `yosemited` and `infra-keystore` will be started. The yosemited service would expose ports 8888 and 9876 to the host. The infra-keystore service does not expose any port to the host, it is only accessible to infra-cli when running infra-cli is running inside the infra-keystore container as described in "Execute infra-cli commands" section.
 
 ### Execute infra-cli commands
 
 You can run the `infra-cli` commands via a bash alias.
 
 ```bash
-alias infra-cli='docker-compose exec keyos /opt/yosemite/bin/infra-cli -u http://yosemited:8888 --wallet-url http://localhost:8900'
+alias infra-cli='docker-compose exec infra-keystore /opt/yosemite/bin/infra-cli -u http://yosemited:8888 --wallet-url http://localhost:8900'
 infra-cli get info
 infra-cli get account inita
 ```
 
-If you don't need keyos afterwards, you can stop the keyos service using
+If you don't need infra-keystore afterwards, you can stop the infra-keystore service using
 
 ```bash
-docker-compose stop keyos
+docker-compose stop infra-keystore
 ```
 
 ### Change default configuration
@@ -111,7 +111,7 @@ The data volume created by docker-compose can be deleted as follows:
 
 ```bash
 docker volume rm yosemite-data-volume
-docker volume rm keyos-data-volume
+docker volume rm infra-keystore-data-volume
 ```
 
 ### Docker Hub
@@ -135,18 +135,18 @@ services:
     volumes:
       - yosemite-data-volume:/opt/yosemite/bin/data-dir
 
-  keyos:
+  infra-keystore:
     image: yosemitex/yosemite:latest
-    command: /opt/yosemite/bin/keyos --wallet-dir /opt/yosemite/bin/data-dir --http-server-address=127.0.0.1:8900 --http-alias=localhost:8900 --http-alias=keyos:8900
-    hostname: keyos
+    command: /opt/yosemite/bin/infra-keystore --wallet-dir /opt/yosemite/bin/data-dir --http-server-address=127.0.0.1:8900 --http-alias=localhost:8900 --http-alias=infrakeystore:8900
+    hostname: infrakeystore
     links:
       - yosemited
     volumes:
-      - keyos-data-volume:/opt/yosemite/bin/data-dir
+      - infra-keystore-data-volume:/opt/yosemite/bin/data-dir
 
 volumes:
   yosemite-data-volume:
-  keyos-data-volume:
+  infra-keystore-data-volume:
 
 ```
 
@@ -165,7 +165,7 @@ Note: if you want to use the mongo db plugin, you have to enable it in your `dat
 ```
 # create volume
 docker volume create --name=yosemite-data-volume
-docker volume create --name=keyos-data-volume
+docker volume create --name=infra-keystore-data-volume
 # pull images and start containers
 docker-compose -f docker-compose-yosemite-latest.yaml up -d
 # get chain info

@@ -55,7 +55,7 @@ programs/infra-cli/config.hpp
 programs/eosio-applesedemo/eosio-applesedemo
 programs/eosio-launcher/config.hpp
 programs/eosio-launcher/eosio-launcher
-programs/keosd/keosd
+programs/infra-keystore/infra-keystore
 programs/nodeos/config.hpp
 programs/nodeos/nodeos
 

@@ -16,18 +16,18 @@ services:
       - IPC_LOCK
     stop_grace_period: 10m
 
-  keyos:
+  infra-keystore:
     image: yosemitex/yosemite:latest
-    command: /opt/yosemite/bin/keyos --wallet-dir /opt/yosemite/bin/data-dir --http-server-address=127.0.0.1:8900 --http-alias=keyos:8900 --http-alias=localhost:8900
-    hostname: keyos
+    command: /opt/yosemite/bin/infra-keystore --wallet-dir /opt/yosemite/bin/data-dir --http-server-address=127.0.0.1:8900 --http-alias=infrakeystore:8900 --http-alias=localhost:8900
+    hostname: infrakeystore
     links:
       - yosemited
     volumes:
-      - keyos-data-volume:/opt/yosemite/bin/data-dir
+      - infra-keystore-data-volume:/opt/yosemite/bin/data-dir
     stop_grace_period: 10m
 
 volumes:
  yosemite-data-volume:
    external: true
- keyos-data-volume:
+ infra-keystore-data-volume:
    external: true

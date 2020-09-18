@@ -104,13 +104,13 @@ But the names of programs and scripts are changed.
 ```
 nodeos -> yosemite
 cleos  -> infra-cli
-keosd  -> keyos (key + 'yos'emite)
+keosd  -> infra-keystore (key + 'yos'emite)
 ```
 ### Client Tool
 infra-cli : https://developers.eos.io/eosio-nodeos/docs/cleos-overview
 
 ### Key Store Daemon
-keyos : https://developers.eos.io/eosio-nodeos/docs/keosd-overview
+infra-keystore : https://developers.eos.io/eosio-nodeos/docs/keosd-overview
 
 ## Build and Install
 To build YOSEMITE, use `yosemite_build.sh`. To install and unsintall, use `yosemite_install.sh` and `yosemite_uninstall.sh`.

@@ -25,7 +25,7 @@ Options:
   -u,--url TEXT=http://localhost:8888/
                               the http/https URL where yosemite is running
   --wallet-url TEXT=http://localhost:8888/
-                              the http/https URL where keyos is running
+                              the http/https URL where infra-keystore is running
   -r,--header                 pass specific HTTP header, repeat this option to pass multiple headers
   -n,--no-verify              don't verify peer certificate when using HTTPS
   -v,--verbose                output verbose actions on error
@@ -152,7 +152,7 @@ FC_DECLARE_EXCEPTION( localized_exception, 10000000, "an error occured" );
     FC_MULTILINE_MACRO_END \
   )
 
-//copy pasta from keosd's main.cpp
+//copy pasta from infra-keystore's main.cpp
 bfs::path determine_home_directory()
 {
    bfs::path home;
@@ -267,7 +267,7 @@ fc::variant call( const std::string& url,
       if(url == ::url)
          std::cerr << localized("Failed to connect to yosemite at ${u}; is yosemite running?", ("u", url)) << std::endl;
       else if(url == ::wallet_url)
-         std::cerr << localized("Failed to connect to keyos at ${u}; is keyos running?", ("u", url)) << std::endl;
+         std::cerr << localized("Failed to connect to infra-keystore at ${u}; is infra-keystore running?", ("u", url)) << std::endl;
       throw connection_exception(fc::log_messages{FC_LOG_MESSAGE(error, e.what())});
    }
 }
@@ -911,8 +911,8 @@ void try_local_port(uint32_t duration) {
    auto start_time = duration_cast<std::chrono::milliseconds>( system_clock::now().time_since_epoch() ).count();
    while ( !local_port_used()) {
       if (duration_cast<std::chrono::milliseconds>( system_clock::now().time_since_epoch()).count() - start_time > duration ) {
-         std::cerr << "Unable to connect to keyos, if keyos is running please kill the process and try again.\n";
-         throw connection_exception(fc::log_messages{FC_LOG_MESSAGE(error, "Unable to connect to keyos")});
+         std::cerr << "Unable to connect to infra-keystore, if infra-keystore is running please kill the process and try again.\n";
+         throw connection_exception(fc::log_messages{FC_LOG_MESSAGE(error, "Unable to connect to infra-keystore")});
       }
    }
 }
@@ -920,7 +920,7 @@ void try_local_port(uint32_t duration) {
 void ensure_keosd_running(CLI::App* app) {
    if (no_auto_keosd)
       return;
-   // get, version, net do not require keosd
+   // get, version, net do not require infra-keystore
    if (tx_skip_sign || app->got_subcommand("get") || app->got_subcommand("version") || app->got_subcommand("net"))
       return;
    if (app->get_subcommand("create")->got_subcommand("key")) // create key does not require wallet
@@ -944,7 +944,7 @@ void ensure_keosd_running(CLI::App* app) {
     // This extra check is necessary when running infra-cli like this: ./infra-cli ...
     if (binPath.filename_is_dot())
         binPath.remove_filename();
-    binPath.append(key_store_executable_name); // if infra-cli and keosd are in the same installation directory
+    binPath.append(key_store_executable_name); // if infra-cli and infra-keystore are in the same installation directory
     if (!boost::filesystem::exists(binPath)) {
         binPath.remove_filename().remove_filename().append(key_store_executable_name).append(key_store_executable_name);
     }
@@ -974,7 +974,7 @@ void ensure_keosd_running(CLI::App* app) {
         }
     } else {
         std::cerr << "No wallet service listening on "
-                  << ". Cannot automatically start keyos because keyos was not found." << std::endl;
+                  << ". Cannot automatically start infra-keystore because infra-keystore was not found." << std::endl;
     }
 }
 
@@ -1802,15 +1802,15 @@ int main( int argc, char** argv ) {
    app.require_subcommand();
    app.add_option( "-H,--host", obsoleted_option_host_port, localized("the host where yosemite is running") )->group("hidden");
    app.add_option( "-p,--port", obsoleted_option_host_port, localized("the port where yosemite is running") )->group("hidden");
-   app.add_option( "--wallet-host", obsoleted_option_host_port, localized("the host where keyos is running") )->group("hidden");
-   app.add_option( "--wallet-port", obsoleted_option_host_port, localized("the port where keyos is running") )->group("hidden");
+   app.add_option( "--wallet-host", obsoleted_option_host_port, localized("the host where infra-keystore is running") )->group("hidden");
+   app.add_option( "--wallet-port", obsoleted_option_host_port, localized("the port where infra-keystore is running") )->group("hidden");
 
    app.add_option( "-u,--url", url, localized("the http/https URL where yosemite is running"), true );
-   app.add_option( "--wallet-url", wallet_url, localized("the http/https URL where keyos is running"), true );
+   app.add_option( "--wallet-url", wallet_url, localized("the http/https URL where infra-keystore is running"), true );
 
    app.add_option( "-r,--header", header_opt_callback, localized("pass specific HTTP header; repeat this option to pass multiple headers"));
    app.add_flag( "-n,--no-verify", no_verify, localized("don't verify peer certificate when using HTTPS"));
-   app.add_flag( "--no-auto-keyos", no_auto_keosd, localized("don't automatically launch a keyos if one is not currently running"));
+   app.add_flag( "--no-auto-keystore", no_auto_keosd, localized("don't automatically launch a infra-keystore if one is not currently running"));
    app.set_callback([&app]{ ensure_keosd_running(&app);});
 
    bool verbose_errors = false;
@@ -2886,10 +2886,10 @@ int main( int argc, char** argv ) {
       std::cout << fc::json::to_pretty_string(v) << std::endl;
    });
 
-   auto stopKeosd = wallet->add_subcommand("stop", localized("Stop keyos (doesn't work with yosemite)."), false);
+   auto stopKeosd = wallet->add_subcommand("stop", localized("Stop infra-keystore (doesn't work with yosemite)."), false);
    stopKeosd->set_callback([] {
       const auto& v = call(wallet_url, keosd_stop);
-      if ( !v.is_object() || v.get_object().size() != 0 ) { //on success keosd responds with empty object
+      if ( !v.is_object() || v.get_object().size() != 0 ) { //on success infra-keystore responds with empty object
          std::cerr << fc::json::to_pretty_string(v) << std::endl;
       } else {
          std::cout << "OK" << std::endl;

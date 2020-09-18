@@ -47,7 +47,7 @@ endif()
 
 set( CLI_CLIENT_EXECUTABLE_NAME infra-cli )
 set( NODE_EXECUTABLE_NAME yosemite )
-set( KEY_STORE_EXECUTABLE_NAME keyos )
+set( KEY_STORE_EXECUTABLE_NAME infra-keystore )
 set( LAUNCHER_EXECUTABLE_NAME yoslauncher )
 set( ABI_GENERATOR_EXECUTABLE_NAME yosabigen )
 set( BLOCKLOG_EXECUTABLE_NAME yosblocklog )

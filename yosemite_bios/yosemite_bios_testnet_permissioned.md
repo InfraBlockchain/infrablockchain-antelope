@@ -31,7 +31,7 @@ Environment Var.
 ```bash
 YOSEMITE_NODE_BIN_NAME=yosemite
 YOSEMITE_CLI_BIN_NAME=infra-cli
-YOSEMITE_KEYD_BIN_NAME=keyos
+YOSEMITE_KEYD_BIN_NAME=infra-keystore
 YOSEMITE_HOME=/mnt/yosemite-public-blockchain-git
 YOSEMITE_NODE=$YOSEMITE_HOME/build/programs/$YOSEMITE_NODE_BIN_NAME/$YOSEMITE_NODE_BIN_NAME
 YOSEMITE_NODE_LOG_FILE=/mnt/$YOSEMITE_NODE_BIN_NAME.log
@@ -132,15 +132,15 @@ pkill -SIGINT yosemite
 $YOSEMITE_NODE --config $YOSEMITE_NODE_CONFIG --data-dir $YOSEMITE_NODE_DATA_DIR --replay-blockchain
 ```
 
-Start Wallet (keyos)
+Start Wallet (infra-keystore)
 ---
 
 * run key daemon
 ```bash
-nohup $YOSEMITE_KEYD --unlock-timeout 999999999 --http-server-address 127.0.0.1:8900 --wallet-dir $YOSEMITE_DEV_WALLET_DIR > /mnt/keyos.log 2>&1&
-tail -f /mnt/keyos.log -n 300
-pgrep keyos
-pkill -SIGINT keyos
+nohup $YOSEMITE_KEYD --unlock-timeout 999999999 --http-server-address 127.0.0.1:8900 --wallet-dir $YOSEMITE_DEV_WALLET_DIR > /mnt/infra-keystore.log 2>&1&
+tail -f /mnt/infra-keystore.log -n 300
+pgrep infra-keystore
+pkill -SIGINT infra-keystore
 ```
 
 * create wallet / unlock
