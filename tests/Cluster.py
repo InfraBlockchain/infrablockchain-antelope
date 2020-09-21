@@ -13,7 +13,7 @@ import random
 import json
 
 from core_symbol import CORE_SYMBOL
-from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
+from native_token_symbol import INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL
 from testUtils import Utils
 from testUtils import Account
 from Node import BlockType
@@ -30,15 +30,15 @@ class Cluster(object):
     __BiosHost="localhost"
     __BiosPort=8788
     __LauncherCmdArr=[]
-    __bootlog="yosemite-ignition-wd/bootlog.txt"
-    __configDir="etc/yosemite/"
+    __bootlog="infrablockchain-ignition-wd/bootlog.txt"
+    __configDir="etc/infrablockchain/"
     __dataDir="var/lib/"
     __fileDivider="================================================================="
 
     # pylint: disable=too-many-arguments
     # walletd [True|False] Is infra-keystore running. If not load the wallet plugin
     def __init__(self, walletd=False, localCluster=True, host="localhost", port=8888, walletHost="localhost", walletPort=9899, enableMongo=False
-                 , mongoHost="127.0.0.1", mongoPort=27017, mongoDb="YosemiteTest", defproduceraPrvtKey=None, defproducerbPrvtKey=None, staging=False):
+                 , mongoHost="127.0.0.1", mongoPort=27017, mongoDb="InfrablockchainTest", defproduceraPrvtKey=None, defproducerbPrvtKey=None, staging=False):
         """Cluster container.
         walletd [True|False] Is wallet infra-keystore running. If not load the wallet plugin
         localCluster [True|False] Is cluster local to host.
@@ -76,7 +76,7 @@ class Cluster(object):
         self.defProducerAccounts={}
         self.defproduceraAccount=self.defProducerAccounts["defproducera"]= Account("defproducera")
         self.defproducerbAccount=self.defProducerAccounts["defproducerb"]= Account("defproducerb")
-        self.eosioAccount=self.defProducerAccounts["yosemite"]= Account("yosemite")
+        self.eosioAccount=self.defProducerAccounts["infrasys"]= Account("infrasys")
 
         self.defproduceraAccount.ownerPrivateKey=defproduceraPrvtKey
         self.defproduceraAccount.activePrivateKey=defproduceraPrvtKey
@@ -370,7 +370,7 @@ class Cluster(object):
             initAccountKeys(account, producerKeys[name])
             self.defProducerAccounts[name] = account
 
-        self.eosioAccount=self.defProducerAccounts["yosemite"]
+        self.eosioAccount=self.defProducerAccounts["infrasys"]
         self.defproduceraAccount=self.defProducerAccounts["defproducera"]
         self.defproducerbAccount=self.defProducerAccounts["defproducerb"]
 
@@ -595,7 +595,7 @@ class Cluster(object):
 
         count=len(accounts)
         transferAmount=(count*amount)+amount
-        transferAmountStr=Node.currencyIntToStr(transferAmount, YOSEMITE_NATIVE_TOKEN_SYMBOL)
+        transferAmountStr=Node.currencyIntToStr(transferAmount, INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
         node=self.nodes[0]
         fromm=source
         to=accounts[0]
@@ -632,7 +632,7 @@ class Cluster(object):
                 return False
 
             transferAmount -= amount
-            transferAmountStr=Node.currencyIntToStr(transferAmount, YOSEMITE_NATIVE_TOKEN_SYMBOL)
+            transferAmountStr=Node.currencyIntToStr(transferAmount, INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
             fromm=account
             to=accounts[i+1] if i < (count-1) else source
             Utils.Print("Transfer %s units from account %s to %s on eos server port %d." %
@@ -875,7 +875,7 @@ class Cluster(object):
             Utils.Print("ERROR: Failed to create ignition wallet.")
             return None
 
-        eosioName="yosemite"
+        eosioName="infrasys"
         eosioKeys=producerKeys[eosioName]
         eosioAccount=Account(eosioName)
         eosioAccount.ownerPrivateKey=eosioKeys["private"]
@@ -905,7 +905,7 @@ class Cluster(object):
         biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "d1.org", waitForTransBlock=True)
         biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "d1.org", waitForTransBlock=True)
 
-        biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.00 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
+        biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.00 %s" % INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
 
         Utils.Print("Cluster bootstrap done.")
 
@@ -943,7 +943,7 @@ class Cluster(object):
 
         ignWallet=walletMgr.create("ignition")
 
-        eosioName="yosemite"
+        eosioName="infrasys"
         eosioKeys=producerKeys[eosioName]
         eosioAccount=Account(eosioName)
         eosioAccount.ownerPrivateKey=eosioKeys["private"]
@@ -1000,8 +1000,8 @@ class Cluster(object):
                     setProdsStr=f.read()
 
                     Utils.Print("Setting producers.")
-                    opts="--permission yosemite@active"
-                    myTrans=biosNode.pushMessage("yosemite", "setprods", setProdsStr, opts)
+                    opts="--permission infrasys@active"
+                    myTrans=biosNode.pushMessage("infrasys", "setprods", setProdsStr, opts)
                     if myTrans is None or not myTrans[0]:
                         Utils.Print("ERROR: Failed to set producers.")
                         return None
@@ -1025,9 +1025,9 @@ class Cluster(object):
                 setProdsStr += ' ] }'
                 if Utils.Debug: Utils.Print("setprods: %s" % (setProdsStr))
                 Utils.Print("Setting producers: %s." % (", ".join(prodNames)))
-                opts="--permission yosemite@active"
+                opts="--permission infrasys@active"
                 # pylint: disable=redefined-variable-type
-                trans=biosNode.pushMessage("yosemite", "setprods", setProdsStr, opts)
+                trans=biosNode.pushMessage("infrasys", "setprods", setProdsStr, opts)
                 if trans is None or not trans[0]:
                     Utils.Print("ERROR: Failed to set producer %s." % (keys["name"]))
                     return None
@@ -1039,7 +1039,7 @@ class Cluster(object):
                 return None
 
             # wait for block production handover (essentially a block produced by anyone but eosio).
-            lam = lambda: biosNode.getInfo(exitOnError=True)["head_block_producer"] != "yosemite"
+            lam = lambda: biosNode.getInfo(exitOnError=True)["head_block_producer"] != "infrasys"
             ret=Utils.waitForBool(lam)
             if not ret:
                 Utils.Print("ERROR: Block production handover failed.")
@@ -1157,17 +1157,17 @@ class Cluster(object):
         biosNode.registerAndAuthorizeSystempDepository(sysdepoAccount, "d1.org", waitForTransBlock=True)
         biosNode.registerAndAuthorizeIdentityAuthority(sysdepoAccount, "d1.org", waitForTransBlock=True)
 
-        biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.00 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
+        biosNode.issueNativeToken(eosioAccount.name, sysdepoAccount.name, "1000000000.00 %s" % INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL, waitForTransBlock=True)
 
-        expectedAmount = "1000000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
-        Utils.Print("Verify yosemite issue, Expected: %s" % expectedAmount)
+        expectedAmount = "1000000000.00 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
+        Utils.Print("Verify infrasys issue, Expected: %s" % expectedAmount)
         actualAmount = biosNode.getAccountTotalNativeTokenBalanceStr(eosioAccount.name)
         if expectedAmount != actualAmount:
             Utils.Print("ERROR: Issue verification failed. Excepted %s, actual: %s" %
                         (expectedAmount, actualAmount))
             return None
 
-        initialFunds = "1000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+        initialFunds = "1000000.00 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
         Utils.Print("Transfer initial native fund %s to individual accounts." % initialFunds)
         trans = None
         contract = yxNativeTokenAccount.name

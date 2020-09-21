@@ -9,11 +9,11 @@
 # Management Actions
 
 ## setting fee for operations
-* Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
+* Transaction fee for operations is set by [sys.txfee](../../contracts/sys.txfee/)::settxfee operation.
 ```
-infra-cli push action yx.txfee settxfee '{"operation":"tf.nftsell", "fee":"500.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.nftbuy", "fee":"500.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.nftsellc", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.nftsell", "fee":"500.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.nftbuy", "fee":"500.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.nftsellc", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
 
@@ -49,7 +49,7 @@ infra-cli push action yx.nftex sell '{"seller":"user1","nft":{"ysymbol":{"tsymbo
 #      yx.nftex <= yx.nft::transferid           {"from":"user1","to":"yx.nftex","issuer":"gameprovider","ids":[0],"memo":"my memo"}
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"500.00 DKRW","issuer":"d1"}}
 #         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"500.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"500.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"500.00 DKRW","issuer":"d1"}}
 ```
 
 ## cancelsell
@@ -73,7 +73,7 @@ infra-cli push action yx.nftex cancelsell '{"nft":{"ysymbol":{"tsymbol":"0,GIT",
 #         user1 <= yx.nft::transferid           {"from":"yx.nftex","to":"user1","issuer":"gameprovider","ids":[0],"memo":""}
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
 #         user1 <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"user1","token":{"amount":"10.00 DKRW","issuer":"d1"}}
 ```
 
 ## buy
@@ -104,7 +104,7 @@ infra-cli push action yx.nftex buy '{"buyer":"user2","nft":{"ysymbol":{"tsymbol"
 #         user1 <= yx.token::transfer           {"from":"user2","to":"user1","token":{"amount":"1000.00 GMT","issuer":"gameprovider"},"memo":""}
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"user2","token":{"amount":"500.00 DKRW","issuer":"d1"}}
 #         user2 <= yx.ntoken::payfee            {"payer":"user2","token":{"amount":"500.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"user2","token":{"amount":"500.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"user2","token":{"amount":"500.00 DKRW","issuer":"d1"}}
 ```
 
 # Tables

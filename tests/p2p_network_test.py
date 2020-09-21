@@ -135,7 +135,7 @@ node0=cluster.getNode(0)
 
 # eosio should have the same key as defproducera
 eosio = copy.copy(defproduceraAccount)
-eosio.name = "yosemite"
+eosio.name = "infrasys"
 
 Print("Info of each node:")
 for i in range(len(hosts)):

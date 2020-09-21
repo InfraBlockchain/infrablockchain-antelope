@@ -370,13 +370,13 @@ $YOSEMITE_CLI get table -l 100 yx.txfee yx.txfee txfees
 $YOSEMITE_CLI get table -L tf.transfer -l 1 yx.txfee yx.txfee txfees
 
 
-{ print_section_title "Resign \"yosemite\" delegating authority to \"yx.prods\""; } 2>/dev/null
+{ print_section_title "Resign \"yosemite\" delegating authority to \"sys.prods\""; } 2>/dev/null
 
 $YOSEMITE_CLI get account yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@owner
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@active
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"sys.prods","permission":"active"}}]}}' -p yosemite@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"sys.prods","permission":"active"}}]}}' -p yosemite@active
 $YOSEMITE_CLI get account yosemite
-$YOSEMITE_CLI get account yx.prods
+$YOSEMITE_CLI get account sys.prods
 
 sleep 1
 

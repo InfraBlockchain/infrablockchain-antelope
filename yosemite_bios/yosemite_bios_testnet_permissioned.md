@@ -500,15 +500,15 @@ $YOSEMITE_CLI get table -l 100 yx.txfee yx.txfee txfees
 $YOSEMITE_CLI get table -L tf.transfer -l 1 yx.txfee yx.txfee txfees
 ```
 
-Resign "yosemite" delegating authority to "yx.prods"
+Resign "yosemite" delegating authority to "sys.prods"
 ---
 ```bash
 $YOSEMITE_CLI get account yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@owner
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@active
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"sys.prods","permission":"active"}}]}}' -p yosemite@owner
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"sys.prods","permission":"active"}}]}}' -p yosemite@active
 $YOSEMITE_CLI get account yosemite
 
-$YOSEMITE_CLI get account yx.prods
+$YOSEMITE_CLI get account sys.prods
 permissions: 
      owner     1:    
         active     4:    1 producer.a@active, 1 producer.b@active, 1 producer.c@active, 1 producer.d@active, 1 producer.e@active, 
@@ -575,7 +575,7 @@ Unauthorizing Block Producer
 $YOSEMITE_CLI push action -j -d yosemite rmvproducer '["producer.e"]' -p yosemite@active
 #$YOSEMITE_CLI push action yosemite rmvproducer '["producer.e"]' -p yosemite@active
 #$YOSEMITE_CLI push action yosemite rmvproducer '["producer.d"]' -p yosemite@active
-$YOSEMITE_CLI get account yx.prods
+$YOSEMITE_CLI get account sys.prods
 ```
 
 Create New User Accounts

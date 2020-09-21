@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from core_symbol import CORE_SYMBOL
-from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
+from native_token_symbol import INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL
 from Cluster import Cluster
 from WalletMgr import WalletMgr
 from Node import Node
@@ -52,7 +52,7 @@ class NamedAccounts:
 
 ###############################################################
 # nodeos_voting_test
-# --dump-error-details <Upon error print etc/yosemite/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
+# --dump-error-details <Upon error print etc/infrablockchain/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
 # --keep-logs <Don't delete var/lib/node_* folders upon test completion>
 ###############################################################
 
@@ -122,7 +122,7 @@ try:
         Print("Create new account %s via %s" % (account.name, cluster.eosioAccount.name))
         trans = nodes[0].createAccount(account, cluster.eosioAccount, stakedDeposit=5000, waitForTransBlock=False,
                                        exitOnError=True)
-        transferAmount="70000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+        transferAmount="70000000.00 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
         Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, account.name))
         nodes[0].transferNativeToken(cluster.eosioAccount, account, transferAmount, "test transfer")
 
@@ -131,7 +131,7 @@ try:
     walletMgr.importKey(contractAccount, testWallet)
     Print("Create new account %s via %s" % (contractAccount.name, cluster.eosioAccount.name))
     trans=nodes[0].createAccount(contractAccount, cluster.eosioAccount, stakedDeposit=5000, waitForTransBlock=False, exitOnError=True)
-    transferAmount="90000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="90000000.00 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, contractAccount.name))
     nodes[0].transferNativeToken(cluster.eosioAccount, contractAccount, transferAmount, "test transfer")
 

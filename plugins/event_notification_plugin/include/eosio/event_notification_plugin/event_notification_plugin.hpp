@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in yosemite/LICENSE
+ *  @copyright defined in infrablockchain/LICENSE
  */
 #pragma once
 
@@ -10,7 +10,7 @@
 #include <appbase/application.hpp>
 #include <fc/any.hpp>
 
-namespace yosemite {
+namespace infrablockchain {
     using namespace appbase;
     using namespace eosio;
 
@@ -66,9 +66,9 @@ namespace yosemite {
 
 }
 
-FC_REFLECT(yosemite::event_notification_api::event_base, (req_id)(name))
-FC_REFLECT(yosemite::event_notification_api::error_response, (req_id)(name)(code)(message))
-FC_REFLECT(yosemite::event_notification_api::subscribe_request, (req_id)(name)(subscriber))
-FC_REFLECT(yosemite::event_notification_api::tx_irreversibility_request, (req_id)(name)(tx_id)(block_num_hint))
-FC_REFLECT(yosemite::event_notification_api::tx_irreversibility_response, (req_id)(name)(tx_id)(dropped))
+FC_REFLECT(infrablockchain::event_notification_api::event_base, (req_id)(name))
+FC_REFLECT(infrablockchain::event_notification_api::error_response, (req_id)(name)(code)(message))
+FC_REFLECT(infrablockchain::event_notification_api::subscribe_request, (req_id)(name)(subscriber))
+FC_REFLECT(infrablockchain::event_notification_api::tx_irreversibility_request, (req_id)(name)(tx_id)(block_num_hint))
+FC_REFLECT(infrablockchain::event_notification_api::tx_irreversibility_response, (req_id)(name)(tx_id)(dropped))
 

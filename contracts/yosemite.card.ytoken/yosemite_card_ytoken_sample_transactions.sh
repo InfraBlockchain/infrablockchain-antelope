@@ -30,7 +30,7 @@ $YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.usd.yt","action":"cr
 $YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.usd.yt","action":"creditsettle","value":200,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 $YOSEMITE_CLI push action yosemite settxfee '{"code":"ycard.usd.yt","action":"creditburn","value":50,"feetype":1}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycard.usd.yt\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p idauth.a@active --txfee-payer idauth.a
+$YOSEMITE_CLI push action sys.identity setidinfo "{\"account\":\"ycard.usd.yt\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p idauth.a@active --txfee-payer idauth.a
 $YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ycard.usd.yt","qty":"10000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.a
 
 $YOSEMITE_CLI get token balance ysmt.dusd.a ycard.usd.yt
@@ -42,7 +42,7 @@ $YOSEMITE_CLI create account yosemite ycard.id.us YOS8HxRbGMAMUsukWXbF4MxRVwAqRo
 $YOSEMITE_CLI push action yosemite regidauth '{"identity_authority":"ycard.id.us","url":"https://yosemitecardx.com","location":1}' -p ycard.id.us@active --txfee-payer yosemite
 $YOSEMITE_CLI push action yosemite authidauth '{"identity_authority":"ycard.id.us"}' -p yosemite@active --txfee-payer yosemite
 
-$YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycard.id.us\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer yosemite
+$YOSEMITE_CLI push action sys.identity setidinfo "{\"account\":\"ycard.id.us\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer yosemite
 $YOSEMITE_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ycard.id.us","qty":"10000.0000 DUSD","tag":""}' -p ysmt.dusd.a@active --txfee-payer ysmt.dusd.a -v producer.a
 
 # deposit USD-backed Yosemite Tokens for Yosemite Card service operation
@@ -60,7 +60,7 @@ $YOSEMITE_CLI wallet import --private-key YPV_5KXuaLqsaniTc9qDJi851e1CBNjaEqUqoE
 $YOSEMITE_CLI push action yosemite newaccount '{"creator":"ycard.usd.yt","name":"ycarduseraaa","owner":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
 #$YOSEMITE_CLI push action yosemite updateauth '{"account":"ycarduseraaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycarduseraaa@owner --txfee-payer ycard.usd.yt
 
-$YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycarduseraaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
+$YOSEMITE_CLI push action sys.identity setidinfo "{\"account\":\"ycarduseraaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 
 # ycarduseraaa issues credit tokens and deposits to ycard service
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"ycarduseraaa","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"active"}}]}}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
@@ -94,7 +94,7 @@ $YOSEMITE_CLI wallet import --private-key YPV_5JkupiGwhRCEwPon9EKMgkjscthhkUsrQY
 $YOSEMITE_CLI push action yosemite newaccount '{"creator":"ycard.usd.yt","name":"ycardshopaaa","owner":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
 #$YOSEMITE_CLI push action yosemite updateauth '{"account":"ycardshopaaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopaaa@owner --txfee-payer ycard.usd.yt
 
-$YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycardshopaaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
+$YOSEMITE_CLI push action sys.identity setidinfo "{\"account\":\"ycardshopaaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"ycardshopaaa","permission":"ytokenaction","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"active"}}]}}' -p ycardshopaaa@active --txfee-payer ycard.usd.yt -v producer.c
 $YOSEMITE_CLI push action yosemite linkauth '{"account":"ycardshopaaa","code":"ycard.usd.yt","type":"ytokenissue","requirement":"ytokenaction"}' -p ycardshopaaa@active --txfee-payer ycard.usd.yt -v producer.c
@@ -210,7 +210,7 @@ $YOSEMITE_CLI wallet import --private-key YPV_5HtaMCXLonpjpk7ZsWncTKb2t4LpkveMTR
 $YOSEMITE_CLI push action yosemite newaccount '{"creator":"ycard.usd.yt","name":"ycardshopbbb","owner":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
 #$YOSEMITE_CLI push action yosemite updateauth '{"account":"ycardshopbbb","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopbbb@owner --txfee-payer ycard.usd.yt
 
-$YOSEMITE_CLI push action yx.identity setidinfo "{\"account\":\"ycardshopbbb\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
+$YOSEMITE_CLI push action sys.identity setidinfo "{\"account\":\"ycardshopbbb\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 
 $YOSEMITE_CLI push action yosemite updateauth '{"account":"ycardshopbbb","permission":"ytokenaction","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"active"}}]}}' -p ycardshopbbb@active --txfee-payer ycard.usd.yt -v producer.c
 $YOSEMITE_CLI push action yosemite linkauth '{"account":"ycardshopbbb","code":"ycard.usd.yt","type":"ytokenissue","requirement":"ytokenaction"}' -p ycardshopbbb@active --txfee-payer ycard.usd.yt -v producer.c

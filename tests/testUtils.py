@@ -24,8 +24,8 @@ class Utils:
     EosWalletName="infra-keystore"
     EosWalletPath="programs/infra-keystore/"+ EosWalletName
 
-    EosServerName="yosemite"
-    EosServerPath="programs/yosemite/"+ EosServerName
+    EosServerName="infra-node"
+    EosServerPath="programs/infrablockchain/"+ EosServerName
 
     EosLauncherPath="programs/yoslauncher/yoslauncher"
     MongoPath="mongo"

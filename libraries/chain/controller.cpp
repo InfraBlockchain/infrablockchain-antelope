@@ -25,15 +25,15 @@
 #include <fc/variant_object.hpp>
 
 
-#include <yosemite/chain/yosemite_global_property_database.hpp>
-#include <yosemite/chain/standard_token_manager.hpp>
-#include <yosemite/chain/transaction_fee_manager.hpp>
-#include <yosemite/chain/transaction_vote_stat_manager.hpp>
-#include <yosemite/chain/standard_token_action_handlers.hpp>
+#include <infrablockchain/chain/infrablockchain_global_property_database.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_fee_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/standard_token_action_handlers.hpp>
 
 namespace eosio { namespace chain {
 
-using namespace yosemite::chain;
+using namespace infrablockchain::chain;
 using resource_limits::resource_limits_manager;
 
 using controller_index_set = index_set<
@@ -44,7 +44,7 @@ using controller_index_set = index_set<
    block_summary_multi_index,
    transaction_multi_index,
    generated_transaction_multi_index,
-   yosemite_global_property_multi_index,
+   infrablockchain_global_property_multi_index,
    table_id_multi_index
 >;
 
@@ -150,9 +150,9 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
 
    /**
-    * [YOSEMITE Built-in Actions Feature]
+    * [INFRABLOCKCHAIN Built-in Actions Feature]
     * predefined actions can be executed on every account even though an account doesn't have contract code.
-    * YOSEMITE Standard Token operations (issue,redeem,transfer,...) are built-in actions supported on every account
+    * INFRABLOCKCHAIN Standard Token operations (issue,redeem,transfer,...) are built-in actions supported on every account
     */
    map< action_name, apply_handler >   built_in_action_apply_handlers;
 
@@ -216,23 +216,23 @@ struct controller_impl {
 #define SET_APP_HANDLER( receiver, contract, action) \
    set_apply_handler( #receiver, #contract, #action, &BOOST_PP_CAT(apply_, BOOST_PP_CAT(contract, BOOST_PP_CAT(_,action) ) ) )
 
-   SET_APP_HANDLER( yosemite, yosemite, newaccount );
-   SET_APP_HANDLER( yosemite, yosemite, setcode );
-   SET_APP_HANDLER( yosemite, yosemite, setabi );
-   SET_APP_HANDLER( yosemite, yosemite, updateauth );
-   SET_APP_HANDLER( yosemite, yosemite, deleteauth );
-   SET_APP_HANDLER( yosemite, yosemite, linkauth );
-   SET_APP_HANDLER( yosemite, yosemite, unlinkauth );
+   SET_APP_HANDLER( infrasys, infrasys, newaccount );
+   SET_APP_HANDLER( infrasys, infrasys, setcode );
+   SET_APP_HANDLER( infrasys, infrasys, setabi );
+   SET_APP_HANDLER( infrasys, infrasys, updateauth );
+   SET_APP_HANDLER( infrasys, infrasys, deleteauth );
+   SET_APP_HANDLER( infrasys, infrasys, linkauth );
+   SET_APP_HANDLER( infrasys, infrasys, unlinkauth );
 /*
-   SET_APP_HANDLER( yosemite, yosemite, postrecovery );
-   SET_APP_HANDLER( yosemite, yosemite, passrecovery );
-   SET_APP_HANDLER( yosemite, yosemite, vetorecovery );
+   SET_APP_HANDLER( infrasys, infrasys, postrecovery );
+   SET_APP_HANDLER( infrasys, infrasys, passrecovery );
+   SET_APP_HANDLER( infrasys, infrasys, vetorecovery );
 */
 
-   SET_APP_HANDLER( yosemite, yosemite, canceldelay );
+   SET_APP_HANDLER( infrasys, infrasys, canceldelay );
 
 #define SET_BUILT_IN_ACTION_APPLY_HANDLER( action ) \
-   set_built_in_action_apply_handler( #action, &BOOST_PP_CAT(yosemite::chain::apply_, BOOST_PP_CAT(yosemite_built_in_action, BOOST_PP_CAT(_,action) ) ) )
+   set_built_in_action_apply_handler( #action, &BOOST_PP_CAT(infrablockchain::chain::apply_, BOOST_PP_CAT(infrablockchain_built_in_action, BOOST_PP_CAT(_,action) ) ) )
 
    SET_BUILT_IN_ACTION_APPLY_HANDLER( settokenmeta );
    SET_BUILT_IN_ACTION_APPLY_HANDLER( issue );
@@ -694,7 +694,7 @@ struct controller_impl {
       });
       db.create<dynamic_global_property_object>([](auto&){});
 
-      db.create<yosemite_global_property_object>([](auto&){});
+      db.create<infrablockchain_global_property_object>([](auto&){});
 
       authorization.initialize_database();
       resource_limits.initialize_database();
@@ -940,7 +940,7 @@ struct controller_impl {
                                         trx_context.billed_cpu_time_us,
                                         trace->net_usage );
 
-         // YOSEMITE Proof-of-Transaction
+         // INFRABLOCKCHAIN Proof-of-Transaction
          // accumulate transaction vote of this transaction to current block data,
          // in a block, there can be multiple transaction-vote to multiple vote-to(candidate) accounts
          if (trx_context.has_transaction_vote()) {
@@ -1095,7 +1095,7 @@ struct controller_impl {
 
             if( check_auth ) {
 
-               // YOSEMITE Transaction Fee Payer
+               // INFRABLOCKCHAIN Transaction Fee Payer
                // The submitted transaction message must contain
                // crypto signature of 'transaction fee payer' account.
 
@@ -1136,7 +1136,7 @@ struct controller_impl {
                trace->receipt = r;
             }
 
-            // YOSEMITE Proof-of-Transaction
+            // INFRABLOCKCHAIN Proof-of-Transaction
             // accumulate transaction vote of this transaction to current block data,
             // in a block, there can be multiple transaction-vote to multiple vote-to(candidate) accounts
             if (trx_context.has_transaction_vote()) {
@@ -2023,8 +2023,8 @@ const dynamic_global_property_object& controller::get_dynamic_global_properties(
 const global_property_object& controller::get_global_properties()const {
   return my->db.get<global_property_object>();
 }
-const yosemite_global_property_object& controller::get_yosemite_global_properties()const {
-  return my->db.get<yosemite_global_property_object>();
+const infrablockchain_global_property_object& controller::get_infrablockchain_global_properties()const {
+  return my->db.get<infrablockchain_global_property_object>();
 }
 
 signed_block_ptr controller::fetch_block_by_id( block_id_type id )const {
@@ -2202,7 +2202,7 @@ validation_mode controller::get_validation_mode()const {
    return my->conf.block_validation_mode;
 }
 
-/// YOSEMITE Built-in Actions
+/// INFRABLOCKCHAIN Built-in Actions
 const apply_handler* controller::find_built_in_action_apply_handler( action_name act ) const
 {
    auto handler = my->built_in_action_apply_handlers.find( act );

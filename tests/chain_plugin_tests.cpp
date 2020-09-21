@@ -22,8 +22,8 @@
 #include <array>
 #include <utility>
 
-#include <yosemite/chain/standard_token_action_types.hpp>
-#include <yosemite/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
 
 #ifdef NON_VALIDATING_TEST
 #define TESTER tester
@@ -51,8 +51,8 @@ BOOST_FIXTURE_TEST_CASE( get_block_with_invalid_abi, TESTER ) try {
 
    auto resolver = [&,this]( account_name code, action_name action ) -> optional<abi_serializer> {
       try {
-         if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
-            code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+         if ( infrablockchain::chain::token::utils::is_infrablockchain_standard_token_action(action) ) {
+            code = INFRABLOCKCHAIN_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
          }
          const auto& accnt  = this->control->db().get<account_object,by_name>( code );
          abi_def abi;

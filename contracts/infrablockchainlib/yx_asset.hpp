@@ -4,8 +4,11 @@
 #include <eosiolib/asset.hpp>
 #include <infrablockchainlib/yx_symbol.hpp>
 
+// DEPRECATED
+
 namespace yosemite {
 
+    // DEPRECATED
     struct yx_asset : public eosio::asset {
         account_name issuer;
 
@@ -21,12 +24,12 @@ namespace yosemite {
             if (assert) {
                 assert_valid_native_asset();
             }
-            return symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL;
+            return symbol.value == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL;
         }
 
         void assert_valid_native_asset() const {
-            if (symbol.name() == YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE) {
-                eosio_assert(static_cast<uint32_t>(symbol.precision() == YOSEMITE_NATIVE_TOKEN_PRECISION), "invalid native token");
+            if (symbol.name() == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL_NAME_VALUE) {
+                eosio_assert(static_cast<uint32_t>(symbol.precision() == INFRABLOCKCHAIN_NATIVE_TOKEN_PRECISION), "invalid native token");
             }
         }
 

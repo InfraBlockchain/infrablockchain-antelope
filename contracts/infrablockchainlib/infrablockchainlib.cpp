@@ -1,6 +1,6 @@
 /**
  * @file
- * @copyright defined in yosemite-public-blockchain/LICENSE
+ * @copyright defined in infrablockchain/LICENSE
  */
 
 #include <eosiolib/action.hpp>
@@ -18,19 +18,19 @@ namespace yosemite {
       if (token.is_native()) {
          if (token.issuer == 0) {
             INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
-                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
-                                                   {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                  (INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                                   {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                    {from, to, token, memo});
          } else {
             INLINE_ACTION_SENDER(yosemite::native_token::ntoken, ntransfer)
-                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
-                                                   {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                  (INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                                   {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                    {from, to, token, memo});
          }
       } else {
          INLINE_ACTION_SENDER(yosemite::non_native_token::token, transfer)
-               (YOSEMITE_USER_TOKEN_ACCOUNT, {{from,                    N(active)},
-                                              {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+               (INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                              {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                 {from, to, token, memo});
       }
    }
@@ -38,6 +38,8 @@ namespace yosemite {
 }
 
 namespace yosemite { namespace non_native_token {
+
+   using namespace infrablockchain;
 
    void token::create(const yx_symbol &ysymbol, uint16_t can_set_options) {
       eosio_assert(static_cast<uint32_t>(ysymbol.is_valid()), "invalid ysymbol name");
@@ -58,7 +60,7 @@ namespace yosemite { namespace non_native_token {
          s.kyc_rule_flags.clear();
       });
 
-      charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CREATE);
+      charge_fee(ysymbol.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_CREATE);
    }
 
    void token::add_token_balance(const account_name &owner, const yx_asset &token) {
@@ -136,12 +138,12 @@ namespace yosemite { namespace non_native_token {
          });
       }
 
-      charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
+      charge_fee(ysymbol.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_SETKYCRULE);
    }
 
    bool token::check_identity_auth_for_transfer(account_name account, const token_rule_type &kycrule_type,
                                                 const token_stats &tstats) {
-      eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+      eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED)),
                    "account is blacklisted by identity authority");
 
       auto itr = std::find(tstats.kyc_rules.begin(), tstats.kyc_rules.end(), kycrule_type);
@@ -173,7 +175,7 @@ namespace yosemite { namespace non_native_token {
          }
       });
 
-      charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SETOPTIONS);
+      charge_fee(ysymbol.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_SETOPTIONS);
    }
 
    void token::freezeacc(const yx_symbol &ysymbol, const vector<account_name> &accs, bool freeze) {
@@ -202,7 +204,7 @@ namespace yosemite { namespace non_native_token {
          });
       }
 
-      charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_FREEZEACC);
+      charge_fee(ysymbol.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_FREEZEACC);
    }
 
    void token::check_issue_parameters(const account_name &to, const yx_asset &token, const string &memo) {

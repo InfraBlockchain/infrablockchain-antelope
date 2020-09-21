@@ -14,6 +14,8 @@ namespace yosemite {
     using std::string;
     using boost::container::flat_set;
 
+    using namespace infrablockchain::identity;
+
     /* digital contract id used as abi input parameter */
     struct dcid {
         account_name creator;
@@ -39,7 +41,7 @@ namespace yosemite {
 
         void create(const dcid &dc_id, const string &conhash, const string &adddochash,
                     const vector<account_name> &signers, const time_point_sec &expiration,
-                    identity::identity_type_t signer_type, identity::identity_kyc_t signer_kyc, uint8_t options);
+                    identity_type_t signer_type, identity_kyc_t signer_kyc, uint8_t options);
         void addsigners(const dcid &dc_id, const vector<account_name> &signers);
         void sign(const dcid &dc_id, account_name signer, const string &signerinfo);
         /** Updates the additional document hash */
@@ -56,8 +58,8 @@ namespace yosemite {
         string conhash{};
         string adddochash{};
         time_point_sec expiration{};
-        identity::identity_type_t signer_type;
-        identity::identity_kyc_t signer_kyc;
+        identity_type_t signer_type;
+        identity_kyc_t signer_kyc;
         uint8_t options = 0;
         vector<account_name> signers{};
         vector<uint8_t> done_signers{}; // includes the indices to signers vector

@@ -1,12 +1,12 @@
 /**
  *  @file
- *  @copyright defined in yosemite/LICENSE
+ *  @copyright defined in infrablockchain/LICENSE
  */
 #include <eosio/event_notification_plugin/event_notification_plugin.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/json.hpp>
 
-namespace yosemite {
+namespace infrablockchain {
     using namespace websocketpp::close;
     using std::unordered_multimap;
 

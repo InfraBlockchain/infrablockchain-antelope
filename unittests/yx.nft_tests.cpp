@@ -1,11 +1,11 @@
-#include <yosemite/testing/yx_tester.hpp>
+#include <infrablockchain/testing/yx_tester.hpp>
 
-using namespace yosemite::testing;
+using namespace infrablockchain::testing;
 
 class nft_tester : public yx_tester {
 public:
    nft_tester() {
-      init_yosemite_contracts();
+      init_infrablockchain_contracts();
 
       create_accounts({N(alice), N(bob), N(carol)});
       produce_blocks();

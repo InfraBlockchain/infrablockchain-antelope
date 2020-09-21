@@ -94,8 +94,8 @@ int main(int argc, char** argv)
       app().set_version(eosio::nodeos::config::version);
 
       auto root = fc::app_path();
-      app().set_default_data_dir(root / "yosemite/node/data" );
-      app().set_default_config_dir(root / "yosemite/node/config" );
+      app().set_default_data_dir(root / "infrablockchain/node/data" );
+      app().set_default_config_dir(root / "infrablockchain/node/config" );
       http_plugin::set_defaults({
          .address_config_prefix = "",
          .default_unix_socket_path = "",

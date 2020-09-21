@@ -1,7 +1,7 @@
 /**
  *  @file infrablockchainlib/token_api.h
- *  @author bezalel@yosemitex.com
- *  @copyright defined in yosemite/LICENSE.txt
+ *  @author bezalel@infrablockchain.com
+ *  @copyright defined in infrablockchain/LICENSE.txt
  */
 #pragma once
 
@@ -10,15 +10,15 @@
 extern "C" {
 
 /**
- *  @defgroup YOSEMITE Standard Token API
+ *  @defgroup INFRABLOCKCHAIN Standard Token API
  *  @ingroup contractdev
- *  @brief Defines API for YOSEMITE Standard Token Operations
+ *  @brief Defines API for INFRABLOCKCHAIN Standard Token Operations
  */
 
 /**
- *  @defgroup YOSEMITE Standard Token C API
+ *  @defgroup INFRABLOCKCHAIN Standard Token C API
  *  @ingroup tokenapi
- *  @brief Defines API for YOSEMITE Standard Token Operations
+ *  @brief Defines API for INFRABLOCKCHAIN Standard Token Operations
  *  @{
  */
 

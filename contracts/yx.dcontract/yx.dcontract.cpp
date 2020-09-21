@@ -7,6 +7,8 @@
 namespace yosemite {
     static const int MAX_SIGNERS = 32;
 
+    using namespace infrablockchain;
+
     void digital_contract::check_signers_param(const vector <account_name> &signers, flat_set <account_name> &duplicates) {
         eosio_assert(static_cast<uint32_t>(signers.size() <= MAX_SIGNERS), "too many signers");
 

@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in yosemite/LICENSE.txt
+ *  @copyright defined in infrablockchain/LICENSE.txt
  */
 #pragma once
 
@@ -9,15 +9,15 @@
 extern "C" {
 
    /**
-    *  @defgroup YOSEMITE Transaction Vote API
+    *  @defgroup INFRABLOCKCHAIN Transaction Vote API
     *  @ingroup contractdev
-    *  @brief Defines API for Transaction-as-a-Vote implementing YOSEMITE Proof-of-Transaction
+    *  @brief Defines API for Transaction-as-a-Vote implementing INFRABLOCKCHAIN Proof-of-Transaction
     */
 
    /**
-    *  @defgroup YOSEMITE Transaction Vote C API
+    *  @defgroup INFRABLOCKCHAIN Transaction Vote C API
     *  @ingroup trxvoteapi
-    *  @brief Defines API for Transaction-as-a-Vote implementing YOSEMITE Proof-of-Transaction
+    *  @brief Defines API for Transaction-as-a-Vote implementing INFRABLOCKCHAIN Proof-of-Transaction
     *  @{
     */
 
@@ -55,20 +55,20 @@ extern "C" {
    /**
     * Get Top Transaction Vote Receivers
     * @brief Retrieve top transaction vote receiver list from blockchain core.
-    *        Transaction votes are processed and accrued for each vote target account on blockchain core by YOSEMITE Proof-of-Transaction/Transaction-as-a-Vote protocol
+    *        Transaction votes are processed and accrued for each vote target account on blockchain core by INFRABLOCKCHAIN Proof-of-Transaction/Transaction-as-a-Vote protocol
     *        Smart contract code including system contract can retrieve the top transaction vote receiver list
     *        sorted by the accumulated time-decaying weighted transaction vote amount for each tx vote receiver account.
     *        The whole list of transaction vote receivers can be arbitrarily long,
     *        so the sorted list can be retrieved by multiple function call with different offset_rank and limit parameter values.
     *
     * @param buffer - a buffer to write the top sorted transaction vote receiver list data to,
-    *                 returned buffer memory contains array of 'yosemite_tx_vote_stat_for_account' struct
+    *                 returned buffer memory contains array of 'infrablockchain_tx_vote_stat_for_account' struct
     * @param size - the size of the buffer, 0 to return required size
     * @param offset_rank - offset-rank of first item in the returned list. offset-rank n means the returned list starts from the rank n+1 tx vote receiver.
     *                      e.g. if offset_rank = 0, the first item in the returned list is the top 1 vote receiver.
     * @param limit - max limit of the returned item count
     *
-    * @return the size of the sorted transaction vote receiver list data written to the buffer (array of 'yosemite_tx_vote_stat_for_account' struct),
+    * @return the size of the sorted transaction vote receiver list data written to the buffer (array of 'infrablockchain_tx_vote_stat_for_account' struct),
     *         or number of bytes that can be copied if size==0 passed
     * @pre `buffer` is a valid pointer to a range of memory at least `size` bytes long
     * @post `buffer` is filled with packed transaction vote receiver list data
@@ -87,12 +87,12 @@ extern "C" {
 ///@ } trxvoteapi
 }
 
-struct yosemite_transaction_vote {
+struct infrablockchain_transaction_vote {
     uint64_t to; // account name
     uint32_t amount;
 };
 
-struct yosemite_tx_vote_stat_for_account {
+struct infrablockchain_tx_vote_stat_for_account {
    uint64_t  account;
    double    tx_votes_weighted;
    uint64_t  tx_votes;

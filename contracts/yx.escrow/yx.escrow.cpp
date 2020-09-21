@@ -36,12 +36,12 @@ namespace yosemite {
 
       transfer_token_as_inline(from, thirdparty, token, memo);
 
-      native_token::charge_transaction_fee(thirdparty, YOSEMITE_TX_FEE_OP_NAME_ESCROW_ESCROW);
+      native_token::charge_transaction_fee(thirdparty, INFRABLOCKCHAIN_TX_FEE_OP_NAME_ESCROW_ESCROW);
    }
 
    void token_escrow_contract::escrownt(account_name thirdparty, uint64_t id, account_name from, account_name to,
                                         const eosio::asset &amount, const string &memo) {
-      eosio_assert(static_cast<uint32_t>(amount.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL), "only native token is supported; use escrow operation instead");
+      eosio_assert(static_cast<uint32_t>(amount.symbol.value == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL), "only native token is supported; use escrow operation instead");
       escrow(thirdparty, id, from, to, yx_asset{amount, account_name{}}, memo);
    }
 
@@ -55,7 +55,7 @@ namespace yosemite {
 
       escrow_idx.erase(info);
 
-      native_token::charge_transaction_fee(thirdparty, YOSEMITE_TX_FEE_OP_NAME_ESCROW_PROCEED);
+      native_token::charge_transaction_fee(thirdparty, INFRABLOCKCHAIN_TX_FEE_OP_NAME_ESCROW_PROCEED);
    }
 
    void token_escrow_contract::cancel(account_name thirdparty, uint64_t id) {
@@ -69,26 +69,26 @@ namespace yosemite {
 
       escrow_idx.erase(info);
 
-      native_token::charge_transaction_fee(thirdparty, YOSEMITE_TX_FEE_OP_NAME_ESCROW_CANCEL);
+      native_token::charge_transaction_fee(thirdparty, INFRABLOCKCHAIN_TX_FEE_OP_NAME_ESCROW_CANCEL);
    }
 
    void token_escrow_contract::transfer_token_as_inline(account_name from, account_name to, const yx_asset &token, const string &memo) {
       if (token.is_native()) {
          if (token.issuer == 0) {
             INLINE_ACTION_SENDER(yosemite::native_token::ntoken, transfer)
-                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
-                                                   {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                  (INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                                   {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                    {from, to, token, memo});
          } else {
             INLINE_ACTION_SENDER(yosemite::native_token::ntoken, ntransfer)
-                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
-                                                   {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                  (INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                                   {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                    {from, to, token, memo});
          }
       } else {
          INLINE_ACTION_SENDER(yosemite::non_native_token::token, transfer)
-               (YOSEMITE_USER_TOKEN_ACCOUNT, {{from,                    N(active)},
-                                              {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+               (INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT, {{from,                    N(active)},
+                                              {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                 {from, to, token, memo});
       }
    }

@@ -11,14 +11,14 @@ import re
 
 ###############################################################
 # nodeos_run_test
-# --dump-error-details <Upon error print etc/yosemite/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
+# --dump-error-details <Upon error print etc/infrablockchain/node_*/config.ini and var/lib/node_*/stderr.log to stdout>
 # --keep-logs <Don't delete var/lib/node_* folders upon test completion>
 ###############################################################
 
 Print=Utils.Print
 errorExit=Utils.errorExit
 cmdError=Utils.cmdError
-from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
+from native_token_symbol import INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL
 
 args = TestHelper.parse_args({"--host","--port","--prod-count","--defproducera_prvt_key","--defproducerb_prvt_key","--mongodb"
                               ,"--dump-error-details","--dont-launch","--keep-logs","-v","--leave-running","--only-bios","--clean-run"
@@ -212,7 +212,7 @@ try:
     if not node.verifyAccount(testeraAccount):
         errorExit("FAILURE - account creation failed.", raw=True)
 
-    transferAmount="97.53 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="97.53 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (transferAmount, defproduceraAccount.name, testeraAccount.name))
     node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer")
 
@@ -223,12 +223,12 @@ try:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
-    transferAmount="0.01 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="0.01 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
     Print("Force transfer funds %s from account %s to %s" % (
         transferAmount, defproduceraAccount.name, testeraAccount.name))
     node.transferNativeToken(defproduceraAccount, testeraAccount, transferAmount, "test transfer", force=True)
 
-    expectedAmount="97.54 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    expectedAmount="97.54 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
     Print("Verify transfer, Expected: %s" % expectedAmount)
     actualAmount=node.getAccountTotalNativeTokenBalanceStr(testeraAccount.name)
     if expectedAmount != actualAmount:
@@ -249,20 +249,20 @@ try:
         cmdError("%s wallet unlock" % (ClientName))
         errorExit("Failed to unlock wallet %s" % (testWallet.name))
 
-    transferAmount="97.53 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+    transferAmount="97.53 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
     Print("Transfer funds %s from account %s to %s" % (
         transferAmount, testeraAccount.name, currencyAccount.name))
     trans=node.transferNativeToken(testeraAccount, currencyAccount, transferAmount, "test transfer a->b")
     transId=Node.getTransId(trans)
 
-    expectedAmount="98.03 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL) # 50.00 initial deposit
+    expectedAmount="98.03 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL) # 50.00 initial deposit
     Print("Verify transfer, Expected: %s" % (expectedAmount))
     actualAmount=node.getAccountTotalNativeTokenBalanceStr(currencyAccount.name)
     if expectedAmount != actualAmount:
         cmdError("FAILURE - transfer failed")
         errorExit("Transfer verification failed. Excepted %s, actual: %s" % (expectedAmount, actualAmount))
 
-    node.issueNativeToken(currencyAccount.name, "d1", "100000.00 %s" % YOSEMITE_NATIVE_TOKEN_SYMBOL, "currency1111 issue", waitForTransBlock=True)
+    node.issueNativeToken(currencyAccount.name, "d1", "100000.00 %s" % INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL, "currency1111 issue", waitForTransBlock=True)
 
     Print("Validate last action for account %s" % (testeraAccount.name))
     actions=node.getActions(testeraAccount, -1, -1, exitOnError=True)

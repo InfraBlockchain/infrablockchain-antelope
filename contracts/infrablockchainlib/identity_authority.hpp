@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in yosemite/LICENSE.txt
+ *  @copyright defined in infrablockchain/LICENSE.txt
  */
 #pragma once
 
@@ -8,7 +8,7 @@
 #include <eosiolib/eosio.hpp>
 #include <string>
 
-namespace yosemite {
+namespace infrablockchain {
 
     // The authorized Identity Authorities have the right for managing user info and KYC info on blockchain.
     struct identity_authority_info {
@@ -27,7 +27,7 @@ namespace yosemite {
     typedef eosio::multi_index< N(idauthority), identity_authority_info > identity_authority_table;
 
     bool is_authorized_identity_authority( const account_name identity_authority ) {
-        identity_authority_table idauthorities(YOSEMITE_SYSTEM_ACCOUNT, YOSEMITE_SYSTEM_ACCOUNT);
+        identity_authority_table idauthorities(INFRABLOCKCHAIN_SYSTEM_ACCOUNT, INFRABLOCKCHAIN_SYSTEM_ACCOUNT);
         auto idauth = idauthorities.find( identity_authority );
         return idauth != idauthorities.end() && (*idauth).is_authorized;
     }

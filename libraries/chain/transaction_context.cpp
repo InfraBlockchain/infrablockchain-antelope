@@ -7,9 +7,9 @@
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 
-#include <yosemite/chain/standard_token_manager.hpp>
-#include <yosemite/chain/transaction_as_a_vote.hpp>
-#include <yosemite/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -149,7 +149,7 @@ namespace bacc = boost::accumulators;
    volatile sig_atomic_t deadline_timer::expired = 0;
    bool deadline_timer::initialized = false;
 
-   using namespace yosemite::chain;
+   using namespace infrablockchain::chain;
 
    transaction_context::transaction_context( controller& c,
                                              const signed_transaction& t,
@@ -175,18 +175,18 @@ namespace bacc = boost::accumulators;
       //EOS_ASSERT( trx.transaction_extensions.size() == 0, unsupported_feature, "we don't support any extensions yet" );
 
       auto &tx_ext = trx.transaction_extensions;
-      // YOSEMITE "Transaction-as-a-vote", "Transaction Fee Payer" Transaction-Extension support
+      // INFRABLOCKCHAIN "Transaction-as-a-vote", "Transaction Fee Payer" Transaction-Extension support
       EOS_ASSERT( tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, transaction-fee-payer)" );
 
       for (auto&& tx_ext_item: tx_ext) {
-         if (tx_ext_item.first == YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
+         if (tx_ext_item.first == INFRABLOCKCHAIN_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD) {
 
             try {
                trace->trx_vote = transaction_vote(
                   fc::raw::unpack<transaction_vote_to_name_type>(tx_ext_item.second), 0);
             } EOS_RETHROW_EXCEPTIONS(invalid_trx_vote_target_account, "Invalid transaction vote-to (candidate) account name");
 
-         } else if (tx_ext_item.first == YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
+         } else if (tx_ext_item.first == INFRABLOCKCHAIN_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
 
             try {
                trace->fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
@@ -382,7 +382,7 @@ namespace bacc = boost::accumulators;
       }
    }
 
-   /// YOSEMITE transaction fee payment processing
+   /// INFRABLOCKCHAIN transaction fee payment processing
    void transaction_context::process_transaction_fee_payment() {
 
       if ( implicit_tx ) return;
@@ -400,8 +400,8 @@ namespace bacc = boost::accumulators;
          txfee_to_pay += tx_fee_for_action( txfee_manager, act_trace );
       }
 
-      EOS_ASSERT( txfee_to_pay >= 0, yosemite_transaction_fee_exception, "transaction fee amount must be greater than or equal to 0" );
-      EOS_ASSERT( txfee_to_pay <= YOSEMITE_MAX_TRANSACTION_FEE_AMOUNT_PER_TRANSACTION, yosemite_transaction_fee_exception, "transaction fee amount exceeds max transaction fee amount per transaction" );
+      EOS_ASSERT( txfee_to_pay >= 0, infrablockchain_transaction_fee_exception, "transaction fee amount must be greater than or equal to 0" );
+      EOS_ASSERT( txfee_to_pay <= INFRABLOCKCHAIN_MAX_TRANSACTION_FEE_AMOUNT_PER_TRANSACTION, infrablockchain_transaction_fee_exception, "transaction fee amount exceeds max transaction fee amount per transaction" );
 
 //      if (txfee_to_pay == 0) {
 //         txfee_to_pay = txfee_manager.get_default_tx_fee().value;
@@ -414,7 +414,7 @@ namespace bacc = boost::accumulators;
          // dispatch 'txfee' actions to system token accounts
          control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, tx_fee_amount );
 
-         // Cast Transaction Vote - YOSEMITE Proof-of-Transaction / Transaction-as-a-Vote
+         // Cast Transaction Vote - INFRABLOCKCHAIN Proof-of-Transaction / Transaction-as-a-Vote
          cast_transaction_vote( tx_fee_amount );
       }
    }

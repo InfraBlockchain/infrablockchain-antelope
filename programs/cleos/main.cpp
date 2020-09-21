@@ -1,29 +1,29 @@
 /**
  *  @file
- *  @copyright defined in yosemite/LICENSE
- *  @defgroup yosclienttool YOSEMITE Command Line Client Reference
- *  @brief Tool for sending transactions and querying state from @ref yosemite
- *  @ingroup yosclienttool
+ *  @copyright defined in infrablockchain/LICENSE
+ *  @defgroup infraclienttool INFRABLOCKCHAIN Command Line Client Reference
+ *  @brief Tool for sending transactions and querying state from @ref infra-node
+ *  @ingroup infraclienttool
  */
 
 /**
-  @defgroup yosclienttool
+  @defgroup infraclienttool
 
   @section intro Introduction to infra-cli
 
-  `infra-cli` is a command line tool that interfaces with the REST api exposed by @ref yosemite. In order to use `infra-cli` you will need to
-  have a local copy of `yosemite` running and configured to load the 'eosio::chain_api_plugin'.
+  `infra-cli` is a command line tool that interfaces with the REST api exposed by @ref infra-node. In order to use `infra-cli` you will need to
+  have a local copy of `infra-node` running and configured to load the 'eosio::chain_api_plugin'.
 
    infra-cli contains documentation for all of its commands. For a list of all commands known to infra-cli, simply run it with no arguments:
 ```
 $ ./infra-cli
-Command Line Interface to YOSEMITE Client
+Command Line Interface to INFRABLOCKCHAIN Client
 Usage: programs/infra-cli/infra-cli [OPTIONS] SUBCOMMAND
 
 Options:
   -h,--help                   Print this help message and exit
   -u,--url TEXT=http://localhost:8888/
-                              the http/https URL where yosemite is running
+                              the http/https URL where infra-node is running
   --wallet-url TEXT=http://localhost:8888/
                               the http/https URL where infra-keystore is running
   -r,--header                 pass specific HTTP header, repeat this option to pass multiple headers
@@ -91,11 +91,11 @@ Options:
 #include <eosio/chain/trace.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <eosio/chain/contract_types.hpp>
-#include <yosemite/chain/native_token_symbol.hpp>
-#include <yosemite/chain/transaction_extensions.hpp>
-#include <yosemite/chain/transaction_as_a_vote.hpp>
-#include <yosemite/chain/system_accounts.hpp>
-#include <yosemite/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/native_token_symbol.hpp>
+#include <infrablockchain/chain/transaction_extensions.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_action_types.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -169,7 +169,7 @@ bfs::path determine_home_directory()
 }
 
 string url = "http://127.0.0.1:8888/";
-string default_wallet_url = "unix://" + (determine_home_directory() / "yosemite-wallet" / (string(key_store_executable_name) + ".sock")).string();
+string default_wallet_url = "unix://" + (determine_home_directory() / "infrablockchain-wallet" / (string(key_store_executable_name) + ".sock")).string();
 string wallet_url; //to be set to default_wallet_url in main
 bool no_verify = false;
 vector<string> headers;
@@ -222,13 +222,13 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
       msg += " (defaults to '" + default_permission + "')";
    cmd->add_option("-p,--permission", tx_permission, localized(msg.c_str()));
 
-   // YOSEMITE Transaction-as-a-Vote for Proof-of-Transaction
-   cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for YOSEMITE Proof-of-Transaction(PoT)"));
+   // INFRABLOCKCHAIN Transaction-as-a-Vote for Proof-of-Transaction
+   cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for INFRABLOCKCHAIN Proof-of-Transaction(PoT)"));
 
-   // YOSEMITE Transaction-Fee-Payer
+   // INFRABLOCKCHAIN Transaction-Fee-Payer
    cmd->add_option("--txfee-payer", trx_fee_payer_account, localized("transaction fee payer account"));
 
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+#ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
    cmd->add_option("--max-net-usage", tx_max_net_usage, localized("set an upper limit on the net usage budget, in bytes, for the transaction (defaults to 0 which means no limit)"));
 #endif
@@ -265,7 +265,7 @@ fc::variant call( const std::string& url,
    }
    catch(boost::system::system_error& e) {
       if(url == ::url)
-         std::cerr << localized("Failed to connect to yosemite at ${u}; is yosemite running?", ("u", url)) << std::endl;
+         std::cerr << localized("Failed to connect to infra-node at ${u}; is infra-node running?", ("u", url)) << std::endl;
       else if(url == ::wallet_url)
          std::cerr << localized("Failed to connect to infra-keystore at ${u}; is infra-keystore running?", ("u", url)) << std::endl;
       throw connection_exception(fc::log_messages{FC_LOG_MESSAGE(error, e.what())});
@@ -349,10 +349,10 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
           eosio::chain::name tx_vote_account_name(trx_vote_target_account);
 
           trx.transaction_extensions.push_back(
-                  std::make_pair(YOSEMITE_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD,
+                  std::make_pair(INFRABLOCKCHAIN_TRANSACTION_VOTE_ACCOUNT_TX_EXTENSION_FIELD,
                           fc::raw::pack(tx_vote_account_name)));
       }
-   } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account,
+   } EOS_RETHROW_EXCEPTIONS(infrablockchain::chain::invalid_trx_vote_target_account,
          "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
 
    try {
@@ -360,10 +360,10 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
          eosio::chain::name txfee_payer_account_name(trx_fee_payer_account);
 
          trx.transaction_extensions.push_back(
-               std::make_pair(YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
+               std::make_pair(INFRABLOCKCHAIN_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD,
                               fc::raw::pack(txfee_payer_account_name)));
       }
-   } EOS_RETHROW_EXCEPTIONS(yosemite::chain::invalid_trx_vote_target_account,
+   } EOS_RETHROW_EXCEPTIONS(infrablockchain::chain::invalid_trx_vote_target_account,
                             "Invalid transaction fee payer account: ${trx_fee_payer_account}",
                             ("trx_fee_payer_account", trx_fee_payer_account));
 
@@ -419,8 +419,8 @@ void print_action( const fc::variant& at ) {
 auto abi_serializer_resolver = [](name code, name action) -> optional<abi_serializer> {
    static unordered_map<account_name, optional<abi_serializer> > abi_cache;
 
-   if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
-      code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+   if ( infrablockchain::chain::token::utils::is_infrablockchain_standard_token_action(action) ) {
+      code = INFRABLOCKCHAIN_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
    }
    auto it = abi_cache.find( code );
    if ( it == abi_cache.end() ) {
@@ -927,7 +927,7 @@ void ensure_keosd_running(CLI::App* app) {
       return;
    if (auto* subapp = app->get_subcommand("system")) {
       if (subapp->got_subcommand("listproducers")
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+#ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
        || subapp->got_subcommand("listbw")
 #endif
        ) // system list* do not require wallet
@@ -1051,7 +1051,7 @@ struct create_account_subcommand {
       createAccount->add_option("OwnerKey", owner_key_str, localized("The owner public key for the new account"))->required();
       createAccount->add_option("ActiveKey", active_key_str, localized("The active public key for the new account"));
 
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+#ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
       if (!simple) {
          createAccount->add_option("--stake-net", stake_net,
                                    (localized("The amount of tokens delegated for net bandwidth")))->required();
@@ -1081,7 +1081,7 @@ struct create_account_subcommand {
                active_key = public_key_type(active_key_str);
             } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid active public key: ${public_key}", ("public_key", active_key_str));
             auto create = create_newaccount(creator, account_name, owner_key, active_key);
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+#ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
             if (!simple) {
                EOSC_ASSERT( buy_ram_eos.size() || buy_ram_bytes_in_kbytes || buy_ram_bytes, "ERROR: One of --buy-ram, --buy-ram-kbytes or --buy-ram-bytes should have non-zero value" );
                EOSC_ASSERT( !buy_ram_bytes_in_kbytes || !buy_ram_bytes, "ERROR: --buy-ram-kbytes and --buy-ram-bytes cannot be set at the same time" );
@@ -1615,13 +1615,13 @@ void get_account( const string& accountName, const string& coresym, bool json_fo
       std::cout << "memory: " << std::endl
                 << indent << "quota: " << std::setw(15) << to_pretty_net(res.ram_quota) << "  used: " << std::setw(15) << to_pretty_net(res.ram_usage) << std::endl << std::endl;
 
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+#ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
       std::cout << "net bandwidth: " << std::endl;
       if ( res.total_resources.is_object() ) {
          auto net_total = to_asset(res.total_resources.get_object()["net_weight"].as_string());
 
          if( net_total.get_symbol() != unstaking.get_symbol() ) {
-            // Core symbol of yosemite responding to the request is different than core symbol built into infra-cli
+            // Core symbol of infra-node responding to the request is different than core symbol built into infra-cli
             unstaking = asset( 0, net_total.get_symbol() ); // Correct core symbol for unstaking asset.
             staked = asset( 0, net_total.get_symbol() ); // Correct core symbol for staked asset.
          }
@@ -1741,7 +1741,7 @@ void get_account( const string& accountName, const string& coresym, bool json_fo
 #endif
 
       std::cout << "system token balances:" << std::endl;
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+#ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
       std::cout << indent << std::left << std::setw(11)
                 << "liquid:" << std::right << std::setw(18) << *res.core_liquid_balance << std::endl;
       std::cout << indent << std::left << std::setw(11)
@@ -1798,14 +1798,14 @@ int main( int argc, char** argv ) {
    context = eosio::client::http::create_http_context();
    wallet_url = default_wallet_url;
 
-   CLI::App app{"Command Line Interface to YOSEMITE Client"};
+   CLI::App app{"Command Line Interface to INFRABLOCKCHAIN Client"};
    app.require_subcommand();
-   app.add_option( "-H,--host", obsoleted_option_host_port, localized("the host where yosemite is running") )->group("hidden");
-   app.add_option( "-p,--port", obsoleted_option_host_port, localized("the port where yosemite is running") )->group("hidden");
+   app.add_option( "-H,--host", obsoleted_option_host_port, localized("the host where infra-node is running") )->group("hidden");
+   app.add_option( "-p,--port", obsoleted_option_host_port, localized("the port where infra-node is running") )->group("hidden");
    app.add_option( "--wallet-host", obsoleted_option_host_port, localized("the host where infra-keystore is running") )->group("hidden");
    app.add_option( "--wallet-port", obsoleted_option_host_port, localized("the port where infra-keystore is running") )->group("hidden");
 
-   app.add_option( "-u,--url", url, localized("the http/https URL where yosemite is running"), true );
+   app.add_option( "-u,--url", url, localized("the http/https URL where infra-node is running"), true );
    app.add_option( "--wallet-url", wallet_url, localized("the http/https URL where infra-keystore is running"), true );
 
    app.add_option( "-r,--header", header_opt_callback, localized("pass specific HTTP header; repeat this option to pass multiple headers"));
@@ -1868,7 +1868,7 @@ int main( int argc, char** argv ) {
    bool pack_action_data_flag = false;
    auto pack_transaction = convert->add_subcommand("pack_transaction", localized("From plain signed json to packed form"));
    pack_transaction->add_option("transaction", plain_signed_transaction_json, localized("The plain signed json (string)"))->required();
-   pack_transaction->add_flag("--pack-action-data", pack_action_data_flag, localized("Pack all action data within transaction, needs interaction with yosemite"));
+   pack_transaction->add_flag("--pack-action-data", pack_action_data_flag, localized("Pack all action data within transaction, needs interaction with infra-node"));
    pack_transaction->set_callback([&] {
       fc::variant trx_var;
       try {
@@ -1891,7 +1891,7 @@ int main( int argc, char** argv ) {
    bool unpack_action_data_flag = false;
    auto unpack_transaction = convert->add_subcommand("unpack_transaction", localized("From packed to plain signed json form"));
    unpack_transaction->add_option("transaction", packed_transaction_json, localized("The packed transaction json (string containing packed_trx and optionally compression fields)"))->required();
-   unpack_transaction->add_flag("--unpack-action-data", unpack_action_data_flag, localized("Unpack all action data within transaction, needs interaction with yosemite"));
+   unpack_transaction->add_flag("--unpack-action-data", unpack_action_data_flag, localized("Unpack all action data within transaction, needs interaction with infra-node"));
    unpack_transaction->set_callback([&] {
       fc::variant packed_trx_var;
       packed_transaction packed_trx;
@@ -2006,12 +2006,12 @@ int main( int argc, char** argv ) {
             abi = fc::json::to_pretty_string(abi_d);
       }
       catch(chain::missing_chain_api_plugin_exception&) {
-         //see if this is an old yosemite that doesn't support get_raw_code_and_abi
+         //see if this is an old infra-node that doesn't support get_raw_code_and_abi
          const auto old_result = call(get_code_func, fc::mutable_variant_object("account_name", accountName)("code_as_wasm",code_as_wasm));
          code_hash = old_result["code_hash"].as_string();
          if(code_as_wasm) {
             wasm = old_result["wasm"].as_string();
-            std::cout << localized("Warning: communicating to older yosemite which returns malformed binary wasm") << std::endl;
+            std::cout << localized("Warning: communicating to older infra-node which returns malformed binary wasm") << std::endl;
          }
          else
             wast = old_result["wast"].as_string();
@@ -2129,10 +2129,10 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // YOSEMITE Standard Token
+   // INFRABLOCKCHAIN Standard Token
    // get token balance
    string token_id;
-   auto get_token = get->add_subcommand("token", localized("Retrieve YOSEMITE standard token information"), true);
+   auto get_token = get->add_subcommand("token", localized("Retrieve INFRABLOCKCHAIN standard token information"), true);
    get_token->require_subcommand();
 
    auto get_token_balance = get_token->add_subcommand("balance", localized("Retrieve the balance of an account for a given token"), false);
@@ -2160,7 +2160,7 @@ int main( int argc, char** argv ) {
    });
 
    // get systoken list
-   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve YOSEMITE system token information"), true);
+   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve INFRABLOCKCHAIN system token information"), true);
    get_systoken->require_subcommand();
 
    auto get_systoken_list = get_systoken->add_subcommand("list", localized("Retrieve the system token list used as transaction fee payment token(s)"), false);
@@ -2185,11 +2185,11 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // YOSEMITE Transaction Fee
+   // INFRABLOCKCHAIN Transaction Fee
    // get txfee info
    string codeName;
    string actionName;
-   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve YOSEMITE transaction fee info"), true);
+   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve INFRABLOCKCHAIN transaction fee info"), true);
    get_txfee->require_subcommand();
 
    auto get_txfee_item = get_txfee->add_subcommand("item", localized("Retrieve the transaction fee info for an action"), false);
@@ -2221,10 +2221,10 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // YOSEMITE Proof-of-Transaction Transaction Vote Statistics
+   // INFRABLOCKCHAIN Proof-of-Transaction Transaction Vote Statistics
    // get tx vote stats for an account
    string txVoteAccountName;
-   auto tx_vote_stat = get->add_subcommand("txvote", localized("Retrieve YOSEMITE Proof-of-Transaction transaction vote statistics"), true);
+   auto tx_vote_stat = get->add_subcommand("txvote", localized("Retrieve INFRABLOCKCHAIN Proof-of-Transaction transaction vote statistics"), true);
    tx_vote_stat->require_subcommand();
 
    auto get_tx_vote_stat_for_account = tx_vote_stat->add_subcommand("account", localized("Retrieve the transaction vote statistics info for an action"), false);
@@ -2253,10 +2253,11 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
+   // DEPRECATED
    // yx.token accessors
    // get yxtoken balance
    string ysymbol;
-   auto get_yx_token = get->add_subcommand("yxtoken", localized("Retrieve information related to yosemite non-native tokens"), true);
+   auto get_yx_token = get->add_subcommand("yxtoken", localized("(deprecated) Retrieve information related to yosemite non-native tokens"), true);
    get_yx_token->require_subcommand();
 
    auto get_yx_token_balance = get_yx_token->add_subcommand("balance",
@@ -2286,7 +2287,8 @@ int main( int argc, char** argv ) {
       }
    });
 
-   auto get_yx_token_stats = get_yx_token->add_subcommand("stats", localized("Retrieve the stats of for a given token"), false);
+   // DEPRECATED
+   auto get_yx_token_stats = get_yx_token->add_subcommand("stats", localized("(deprecated) Retrieve the stats of for a given yosemite token"), false);
    get_yx_token_stats->add_option("ysymbol", ysymbol, localized("The yosemite symbol for the token (e.g. 4,BTC@d2)"))->required();
    get_yx_token_stats->set_callback([&] {
       auto result = call(get_yx_token_stats_func, fc::mutable_variant_object("json", false)
@@ -2298,7 +2300,8 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   auto get_ntoken = get->add_subcommand("ntoken", localized("Retrieve information related to yosemite native token"), true);
+   // DEPRECATED
+   auto get_ntoken = get->add_subcommand("ntoken", localized("(deprecated) Retrieve information related to yosemite native token"), true);
    get_ntoken->require_subcommand();
 
    auto get_ntoken_balance = get_ntoken->add_subcommand("balance",
@@ -2320,11 +2323,11 @@ int main( int argc, char** argv ) {
       } catch (const fc::exception &ex) {
          if (ex.code() == 3231001) { // == empty_token_exception
             if (issuer.empty()) {
-               asset empty_asset{0, symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL)};
+               asset empty_asset{0, symbol(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)};
                std::cout << fc::json::to_pretty_string(empty_asset)
                          << std::endl;
             } else {
-               yx_symbol _yx_symbol{symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL), name(issuer)};
+               yx_symbol _yx_symbol{symbol(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL), name(issuer)};
                yx_asset empty_token{asset{0, _yx_symbol.tsymbol}, _yx_symbol.issuer};
                std::cout << fc::json::to_pretty_string(empty_token)
                          << std::endl;
@@ -2886,7 +2889,7 @@ int main( int argc, char** argv ) {
       std::cout << fc::json::to_pretty_string(v) << std::endl;
    });
 
-   auto stopKeosd = wallet->add_subcommand("stop", localized("Stop infra-keystore (doesn't work with yosemite)."), false);
+   auto stopKeosd = wallet->add_subcommand("stop", localized("Stop infra-keystore (doesn't work with infra-node)."), false);
    stopKeosd->set_callback([] {
       const auto& v = call(wallet_url, keosd_stop);
       if ( !v.is_object() || v.get_object().size() != 0 ) { //on success infra-keystore responds with empty object
@@ -2915,7 +2918,7 @@ int main( int argc, char** argv ) {
       fc::optional<chain_id_type> chain_id;
 
       if( str_chain_id.size() == 0 ) {
-         ilog( "grabbing chain_id from yosemite" );
+         ilog( "grabbing chain_id from infra-node" );
          auto info = get_info();
          chain_id = info.chain_id;
       } else {
@@ -3488,7 +3491,7 @@ int main( int argc, char** argv ) {
 
    auto listProducers = list_producers_subcommand(system);
 
-#ifdef YOSEMITE_SMART_CONTRACT_PLATFORM
+#ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
    auto delegateBandWidth = delegate_bandwidth_subcommand(system);
    auto undelegateBandWidth = undelegate_bandwidth_subcommand(system);
    auto listBandWidth = list_bw_subcommand(system);

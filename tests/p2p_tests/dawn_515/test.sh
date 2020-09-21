@@ -54,7 +54,7 @@ send-whole-blocks = true
 readonly = 0
 p2p-max-nodes-per-host = 10
 enable-stale-production = true
-producer-name = yosemite
+producer-name = infrasys
 EOF
 
 read -d '' config00 << EOF
@@ -244,25 +244,25 @@ read -d '' logging01 << EOF
 EOF
 
 rm -rf staging
-rm -rf etc/yosemite/node_*
+rm -rf etc/infrablockchain/node_*
 rm -rf var/lib
 cName=config.ini
 lName=logging.json
 gName=genesis.json
 
-path=staging/etc/yosemite/node_bios
+path=staging/etc/infrablockchain/node_bios
 mkdir -p $path
 echo "$configbios" > $path/$cName
 echo "$loggingbios" > $path/$lName
 echo "$genesis" > $path/$gName
 
-path=staging/etc/yosemite/node_00
+path=staging/etc/infrablockchain/node_00
 mkdir -p $path
 echo "$config00" > $path/$cName
 echo "$logging00" > $path/$lName
 echo "$genesis" > $path/$gName
 
-path=staging/etc/yosemite/node_01
+path=staging/etc/infrablockchain/node_01
 mkdir -p $path
 echo "$config01" > $path/$cName
 echo "$logging01" > $path/$lName
@@ -301,5 +301,5 @@ fi
 programs/yoslauncher/yoslauncher -k 15
 rm -rf staging
 rm -rf var/lib/node_*
-rm -rf etc/yosemite/node_*
+rm -rf etc/infrablockchain/node_*
 exit $ret

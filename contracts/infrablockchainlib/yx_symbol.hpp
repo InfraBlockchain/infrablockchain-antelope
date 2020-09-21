@@ -4,10 +4,13 @@
 #include <eosiolib/symbol.hpp>
 #include <infrablockchainlib/native_token_symbol.hpp>
 
+// DEPRECATED
+
 namespace yosemite {
 
     const static char symbol_issuer_denominator = '@';
 
+    // DEPRECATED
     struct yx_symbol : public eosio::symbol_type {
         account_name issuer;
 
@@ -17,12 +20,12 @@ namespace yosemite {
             if (assert) {
                 assert_valid_native_symbol();
             }
-            return value == YOSEMITE_NATIVE_TOKEN_SYMBOL;
+            return value == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL;
         }
 
         void assert_valid_native_symbol() const {
-            if (name() == YOSEMITE_NATIVE_TOKEN_SYMBOL_NAME_VALUE) {
-                eosio_assert(static_cast<uint32_t>(precision() == YOSEMITE_NATIVE_TOKEN_PRECISION), "invalid native token");
+            if (name() == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL_NAME_VALUE) {
+                eosio_assert(static_cast<uint32_t>(precision() == INFRABLOCKCHAIN_NATIVE_TOKEN_PRECISION), "invalid native token");
             }
         }
 

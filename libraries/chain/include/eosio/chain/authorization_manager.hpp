@@ -89,7 +89,7 @@ namespace eosio { namespace chain {
                             )const;
 
          /**
-          *  YOSEMITE - to support checking additional permissions(account-name, permission-name)
+          *  INFRABLOCKCHAIN - to support checking additional permissions(account-name, permission-name)
           *  which are not in action authorizations (e.g. checking signature of transaction fee payer account)
           *
           *  @brief Check authorizations of a vector of actions with provided keys, permission levels, and delay

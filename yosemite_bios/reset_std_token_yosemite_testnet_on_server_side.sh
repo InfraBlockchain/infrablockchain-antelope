@@ -356,13 +356,13 @@ $YOSEMITE_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","q
 sleep 125
 tail -n 150 $YOSEMITE_NODE_LOG_FILE
 
-{ print_section_title "Resign \"yosemite\" delegating authority to \"yx.prods\""; } 2>/dev/null
+{ print_section_title "Resign \"yosemite\" delegating authority to \"sys.prods\""; } 2>/dev/null
 
 $YOSEMITE_CLI get account yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@owner --txfee-payer yosemite
-$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"yx.prods","permission":"active"}}]}}' -p yosemite@active --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"sys.prods","permission":"active"}}]}}' -p yosemite@owner --txfee-payer yosemite
+$YOSEMITE_CLI push action yosemite updateauth '{"account":"yosemite","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"sys.prods","permission":"active"}}]}}' -p yosemite@active --txfee-payer yosemite
 $YOSEMITE_CLI get account yosemite
-$YOSEMITE_CLI get account yx.prods
+$YOSEMITE_CLI get account sys.prods
 
 sleep 1
 

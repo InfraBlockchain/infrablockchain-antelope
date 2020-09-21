@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in yosemite/LICENSE.txt
+ *  @copyright defined in infrablockchain/LICENSE.txt
  */
 #pragma once
 
@@ -8,23 +8,23 @@
 #include <eosiolib/asset.hpp>
 #include <infrablockchainlib/system_accounts.hpp>
 
-#define YOSEMITE_ID_ACC_TYPE_NORMAL        0b0000000000000000
-#define YOSEMITE_ID_ACC_TYPE_SYSTEM        0b1000000000000000
+#define INFRABLOCKCHAIN_ID_ACC_TYPE_NORMAL        0b0000000000000000
+#define INFRABLOCKCHAIN_ID_ACC_TYPE_SYSTEM        0b1000000000000000
 
-#define YOSEMITE_ID_KYC_NO_AUTH            0b0000000000000000
-#define YOSEMITE_ID_KYC_EMAIL_AUTH         0b0000000000000001
-#define YOSEMITE_ID_KYC_PHONE_AUTH         0b0000000000000010
-#define YOSEMITE_ID_KYC_REAL_NAME_AUTH     0b0000000000000100
-#define YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH  0b0000000000001000
-#define YOSEMITE_ID_KYC_MAX_AUTH           0b0000000000001111
+#define INFRABLOCKCHAIN_ID_KYC_NO_AUTH            0b0000000000000000
+#define INFRABLOCKCHAIN_ID_KYC_EMAIL_AUTH         0b0000000000000001
+#define INFRABLOCKCHAIN_ID_KYC_PHONE_AUTH         0b0000000000000010
+#define INFRABLOCKCHAIN_ID_KYC_REAL_NAME_AUTH     0b0000000000000100
+#define INFRABLOCKCHAIN_ID_KYC_BANK_ACCOUNT_AUTH  0b0000000000001000
+#define INFRABLOCKCHAIN_ID_KYC_MAX_AUTH           0b0000000000001111
 
-#define YOSEMITE_ID_ACC_STATE_CLEAR                       0x00000000
-#define YOSEMITE_ID_ACC_STATE_BLACKLISTED                 0x00000001
-#define YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND     0x00000002
-#define YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE  0x00000004
-#define YOSEMITE_ID_ACC_STATE_MAX                         0x00000007
+#define INFRABLOCKCHAIN_ID_ACC_STATE_CLEAR                       0x00000000
+#define INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED                 0x00000001
+#define INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND     0x00000002
+#define INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE  0x00000004
+#define INFRABLOCKCHAIN_ID_ACC_STATE_MAX                         0x00000007
 
-namespace yosemite { namespace identity {
+namespace infrablockchain { namespace identity {
 
     using identity_type_t = uint16_t;
     using identity_kyc_t = uint16_t;
@@ -50,15 +50,15 @@ namespace yosemite { namespace identity {
         if (is_system_account(account)) {
             return identity_info{
                 account, 0,
-                YOSEMITE_ID_ACC_TYPE_SYSTEM, YOSEMITE_ID_KYC_MAX_AUTH, YOSEMITE_ID_ACC_STATE_CLEAR, {}
+                INFRABLOCKCHAIN_ID_ACC_TYPE_SYSTEM, INFRABLOCKCHAIN_ID_KYC_MAX_AUTH, INFRABLOCKCHAIN_ID_ACC_STATE_CLEAR, {}
             };
         }
-        identity_idx identity_table(YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_IDENTITY_ACCOUNT);
+        identity_idx identity_table(INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT, INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT);
         auto id_it = identity_table.find(account);
         if (id_it == identity_table.end()) {
             return identity_info{
                     account, 0,
-                    YOSEMITE_ID_ACC_TYPE_NORMAL, YOSEMITE_ID_KYC_NO_AUTH, YOSEMITE_ID_ACC_STATE_CLEAR, {}
+                    INFRABLOCKCHAIN_ID_ACC_TYPE_NORMAL, INFRABLOCKCHAIN_ID_KYC_NO_AUTH, INFRABLOCKCHAIN_ID_ACC_STATE_CLEAR, {}
             };
         } else {
             return *id_it;
@@ -67,19 +67,19 @@ namespace yosemite { namespace identity {
 
     identity_type_t get_identity_account_type(const account_name account) {
         if (is_system_account(account)) {
-            return YOSEMITE_ID_ACC_TYPE_SYSTEM;
+            return INFRABLOCKCHAIN_ID_ACC_TYPE_SYSTEM;
         }
-        identity_idx identity_table(YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_IDENTITY_ACCOUNT);
+        identity_idx identity_table(INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT, INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT);
         auto id_it = identity_table.find(account);
         if (id_it == identity_table.end()) {
-            return YOSEMITE_ID_ACC_TYPE_NORMAL;
+            return INFRABLOCKCHAIN_ID_ACC_TYPE_NORMAL;
         } else {
             return id_it->type;
         }
     }
 
     bool is_valid_account_type(uint16_t type) {
-        return type == YOSEMITE_ID_ACC_TYPE_NORMAL || type == YOSEMITE_ID_ACC_TYPE_SYSTEM;
+        return type == INFRABLOCKCHAIN_ID_ACC_TYPE_NORMAL || type == INFRABLOCKCHAIN_ID_ACC_TYPE_SYSTEM;
     }
 
     bool is_account_type(const account_name account, identity_type_t type_code) {
@@ -88,19 +88,19 @@ namespace yosemite { namespace identity {
 
     identity_kyc_t get_identity_kyc_status(const account_name account) {
         if (is_system_account(account)) {
-            return YOSEMITE_ID_KYC_MAX_AUTH;
+            return INFRABLOCKCHAIN_ID_KYC_MAX_AUTH;
         }
-        identity_idx identity_table(YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_IDENTITY_ACCOUNT);
+        identity_idx identity_table(INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT, INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT);
         auto id_it = identity_table.find(account);
         if (id_it == identity_table.end()) {
-            return YOSEMITE_ID_KYC_NO_AUTH;
+            return INFRABLOCKCHAIN_ID_KYC_NO_AUTH;
         } else {
             return id_it->kyc;
         }
     }
 
     bool is_valid_kyc_status(uint16_t kyc_flags) {
-        return kyc_flags <= YOSEMITE_ID_KYC_MAX_AUTH;
+        return kyc_flags <= INFRABLOCKCHAIN_ID_KYC_MAX_AUTH;
     }
 
     bool has_kyc_status(const account_name account, identity_kyc_t kyc_flags) {
@@ -114,19 +114,19 @@ namespace yosemite { namespace identity {
 
     identity_state_t get_identity_account_state(const account_name account) {
         if (is_system_account(account)) {
-            return YOSEMITE_ID_ACC_STATE_CLEAR;
+            return INFRABLOCKCHAIN_ID_ACC_STATE_CLEAR;
         }
-        identity_idx identity_table(YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_IDENTITY_ACCOUNT);
+        identity_idx identity_table(INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT, INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT);
         auto id_it = identity_table.find(account);
         if (id_it == identity_table.end()) {
-            return YOSEMITE_ID_ACC_STATE_CLEAR;
+            return INFRABLOCKCHAIN_ID_ACC_STATE_CLEAR;
         } else {
             return id_it->state;
         }
     }
 
     bool is_valid_account_state(uint32_t state_flags) {
-        return state_flags <= YOSEMITE_ID_ACC_STATE_MAX;
+        return state_flags <= INFRABLOCKCHAIN_ID_ACC_STATE_MAX;
     }
 
     bool has_account_state(const account_name account, identity_state_t state_flag) {
@@ -142,7 +142,7 @@ namespace yosemite { namespace identity {
         if (is_system_account(account)) {
             return std::string();
         }
-        identity_idx identity_table(YOSEMITE_IDENTITY_ACCOUNT, YOSEMITE_IDENTITY_ACCOUNT);
+        identity_idx identity_table(INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT, INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT);
         auto id_it = identity_table.find(account);
         if (id_it == identity_table.end()) {
             return std::string();

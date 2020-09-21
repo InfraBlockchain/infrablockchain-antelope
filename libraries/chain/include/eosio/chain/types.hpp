@@ -188,12 +188,12 @@ namespace eosio { namespace chain {
       action_history_object_type,               ///< Defined by history_plugin
       reversible_block_object_type,
       OBJECT_TYPE_COUNT, ///< Sentry value which contains the number of different object types
-      YOSEMITE_OBJECT_TYPE_DELIMITER = 1000,
-      yosemite_global_property_object_type,
-      yosemite_token_meta_object_type,
-      yosemite_token_balance_object_type,
-      yosemite_transaction_fee_object_type,
-      yosemite_received_transaction_votes_object_type
+      INFRABLOCKCHAIN_OBJECT_TYPE_DELIMITER = 1000,
+      infrablockchain_global_property_object_type,
+      infrablockchain_token_meta_object_type,
+      infrablockchain_token_balance_object_type,
+      infrablockchain_transaction_fee_object_type,
+      infrablockchain_received_transaction_votes_object_type
    };
 
    class account_object;

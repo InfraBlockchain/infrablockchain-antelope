@@ -9,9 +9,9 @@
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/types.hpp>
 
-#include <yosemite/chain/transaction_as_a_vote.hpp>
-#include <yosemite/chain/standard_token_action_types.hpp>
-#include <yosemite/chain/system_accounts.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/utf8.hpp>
@@ -676,8 +676,8 @@ fc::variant mongo_db_plugin_impl::to_variant_with_abi( const T& obj ) {
    fc::variant pretty_output;
    abi_serializer::to_variant( obj, pretty_output,
                                [&]( account_name code, action_name action ) {
-                                  if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
-                                     code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                                  if ( infrablockchain::chain::token::utils::is_infrablockchain_standard_token_action(action) ) {
+                                     code = INFRABLOCKCHAIN_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
                                   }
                                   return get_abi_serializer( code );
                                },
@@ -868,7 +868,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       //action_traces_doc.append( kvp( "createdAt", b_date{now} ) ); ==> replaced by 'b_time' (block time)
 
       if (parent_global_sequence == 0) {
-         // YOSEMITE mongo_db_plugin can support searching for 'sent' actions filtered by sender accounts,
+         // INFRABLOCKCHAIN mongo_db_plugin can support searching for 'sent' actions filtered by sender accounts,
          // by saving 'sender' list (accounts who signed the original transaction)
          // only for non-inline top-level actions (having no parent action) in transactions,
          // and providing mongodb index for ('sender', 'global_sequence')
@@ -972,7 +972,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
       }
    }
 
-//   // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+//   // INFRABLOCKCHAIN Proof-of-Transaction, Transaction-as-a-Vote
 //   // trx_vote is serialized in transaction_trace object automatically
 //   if (!(t->trx_vote) && t->trx_vote->has_vote()) {
 //      auto& trx_vote = *(t->trx_vote);
@@ -1002,7 +1002,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
        handle_mongo_exception( "trans trace update", __LINE__ );
    }
 
-// [YOSEMITE] DOES NOT save 'trans_traces' documents, 'trans_traces' documents are merged to 'trans' documents
+// [INFRABLOCKCHAIN] DOES NOT save 'trans_traces' documents, 'trans_traces' documents are merged to 'trans' documents
 //   try {
 //      if( !_trans_traces.insert_one( trans_traces_doc.view())) {
 //         EOS_ASSERT( false, chain::mongo_db_insert_fail, "Failed to insert trans ${id}", ("id", t->id));
@@ -1096,7 +1096,7 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
          }
       }
 
-      // YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+      // INFRABLOCKCHAIN Proof-of-Transaction, Transaction-as-a-Vote
       if (bs->trx_votes.has_transaction_votes()) {
           auto trx_votes = bs->trx_votes.get_tx_vote_list();
           block_doc.append(kvp( "trx_votes", [&trx_votes](sub_array child) {
@@ -1588,7 +1588,7 @@ void mongo_db_plugin::set_program_options(options_description& cli, options_desc
 {
    cfg.add_options()
          ("mongodb-queue-size,q", bpo::value<uint32_t>()->default_value(1024),
-         "The target queue size between yosemite and MongoDB plugin thread.")
+         "The target queue size between infra-node and MongoDB plugin thread.")
          ("mongodb-abi-cache-size", bpo::value<uint32_t>()->default_value(2048),
           "The maximum size of the abi cache for serializing data.")
          ("mongodb-wipe", bpo::bool_switch()->default_value(false),
@@ -1598,8 +1598,8 @@ void mongo_db_plugin::set_program_options(options_description& cli, options_desc
          "If specified then only abi data pushed to mongodb until specified block is reached.")
          ("mongodb-uri,m", bpo::value<std::string>(),
          "MongoDB URI connection string, see: https://docs.mongodb.com/master/reference/connection-string/."
-               " If not specified then plugin is disabled. Default database 'YOSEMITE' is used if not specified in URI."
-               " Example: mongodb://127.0.0.1:27017/YOSEMITE")
+               " If not specified then plugin is disabled. Default database 'INFRABLOCKCHAIN' is used if not specified in URI."
+               " Example: mongodb://127.0.0.1:27017/INFRABLOCKCHAIN")
          ("mongodb-update-via-block-num", bpo::value<bool>()->default_value(false),
           "Update blocks/block_state with latest via block number so that duplicates are overwritten.")
          ("mongodb-store-blocks", bpo::value<bool>()->default_value(true),
@@ -1632,7 +1632,7 @@ void mongo_db_plugin::plugin_initialize(const variables_map& options)
                my->wipe_database_on_startup = true;
             } else if( options.count( "mongodb-block-start" ) == 0 ) {
                EOS_ASSERT( false, chain::plugin_config_exception, "--mongodb-wipe required with --replay-blockchain, --hard-replay-blockchain, or --delete-all-blocks"
-                                 " --mongodb-wipe will remove all YOSEMITE collections from mongodb." );
+                                 " --mongodb-wipe will remove all INFRABLOCKCHAIN collections from mongodb." );
             }
          }
 
@@ -1710,7 +1710,7 @@ void mongo_db_plugin::plugin_initialize(const variables_map& options)
          mongocxx::uri uri = mongocxx::uri{uri_str};
          my->db_name = uri.database();
          if( my->db_name.empty())
-            my->db_name = "YOSEMITE";
+            my->db_name = "INFRABLOCKCHAIN";
          my->mongo_pool.emplace(uri);
 
          // hook up to signals on controller

@@ -76,7 +76,7 @@ infra-cli push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","
 #         user1 <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[0],"memo":"my memo"}
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 #  gameprovider <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
    * Case 1-2. multiple issue
 ```
@@ -86,7 +86,7 @@ infra-cli push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","
 #         user1 <= yx.nft::transferid           {"from":"gameprovider","to":"user1","issuer":"gameprovider","ids":[1,2],"memo":"my memo"}
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 #  gameprovider <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 * Case 2. If the to account is the NFT depository itself, there is no `transferid` inline action.
@@ -94,7 +94,7 @@ infra-cli push action yx.nft issue '{"to":"user1","ysymbol":{"tsymbol":"0,GIT","
 #        yx.nft <= yx.nft::issue                {"to":"gameprovider","ysymbol":{"tsymbol":"0,GIT","issuer":"gameprovider"},"ids":[3],"uris":["item1"],"name":"...
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 #  gameprovider <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"gameprovider","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 ## redeem

@@ -18,11 +18,11 @@
 
 #include <eosio/chain/eosio_contract.hpp>
 
-#include <yosemite/chain/system_accounts.hpp>
-#include <yosemite/chain/standard_token_manager.hpp>
-#include <yosemite/chain/transaction_fee_manager.hpp>
-#include <yosemite/chain/transaction_vote_stat_manager.hpp>
-#include <yosemite/chain/yosemite_global_property_database.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_fee_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/infrablockchain_global_property_database.hpp>
 
 #include <boost/signals2/connection.hpp>
 #include <boost/algorithm/string.hpp>
@@ -1053,7 +1053,7 @@ read_only::get_info_results read_only::get_info(const read_only::get_info_params
       //std::bitset<64>(db.get_dynamic_global_properties().recent_slots_filled).to_string(),
       //__builtin_popcountll(db.get_dynamic_global_properties().recent_slots_filled) / 64.0,
       app().version_string(),
-      chain::symbol(YOSEMITE_NATIVE_TOKEN_SYMBOL),
+      chain::symbol(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL),
    };
 }
 
@@ -1327,16 +1327,16 @@ asset read_only::get_token_balance(const get_token_balance_params &params) const
    const account_object *account_obj = d.find<account_object, by_name>(params.account);
    EOS_ASSERT(account_obj != nullptr, chain::account_query_exception, "fail to retrieve account for ${account}", ("account", params.account) );
 
-   auto& yosemite_token_manager = db.get_token_manager();
-   const symbol& symbol = yosemite_token_manager.get_token_symbol(params.token);
-   share_type balance = yosemite_token_manager.get_token_balance(params.token, params.account);
+   auto& infrablockchain_token_manager = db.get_token_manager();
+   const symbol& symbol = infrablockchain_token_manager.get_token_symbol(params.token);
+   share_type balance = infrablockchain_token_manager.get_token_balance(params.token, params.account);
    return asset(balance, symbol);
 }
 
 fc::variant read_only::get_token_info(const get_token_info_params &params) const {
-   auto& yosemite_token_manager = db.get_token_manager();
+   auto& infrablockchain_token_manager = db.get_token_manager();
 
-   auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.token);
+   auto* token_meta_ptr = infrablockchain_token_manager.get_token_meta_info(params.token);
    if (!token_meta_ptr) {
       return fc::mutable_variant_object("token_id", "");
    }
@@ -1352,14 +1352,14 @@ fc::variant read_only::get_token_info(const get_token_info_params &params) const
 fc::variant read_only::get_system_token_list(const get_system_token_list_params &params) const {
    fc::mutable_variant_object result;
    vector<fc::mutable_variant_object> sys_token_list_vars;
-   auto& yosemite_token_manager = db.get_token_manager();
-   auto sys_tokens = yosemite_token_manager.get_system_token_list();
+   auto& infrablockchain_token_manager = db.get_token_manager();
+   auto sys_tokens = infrablockchain_token_manager.get_system_token_list();
    for ( const auto& sys_token : sys_tokens ) {
       fc::mutable_variant_object sys_token_var;
       sys_token_var["id"] = sys_token.token_id;
       sys_token_var["weight"] = sys_token.token_weight;
       if (params.token_meta) {
-         auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(sys_token.token_id);
+         auto* token_meta_ptr = infrablockchain_token_manager.get_token_meta_info(sys_token.token_id);
          EOS_ASSERT( token_meta_ptr, token_not_yet_created_exception, "no token meta info for token account ${account}", ("account", sys_token.token_id) );
          auto token_meta_obj = *token_meta_ptr;
          sys_token_var["sym"] = token_meta_obj.sym;
@@ -1374,29 +1374,29 @@ fc::variant read_only::get_system_token_list(const get_system_token_list_params 
    return result;
 }
 
-yosemite::chain::system_token_balance read_only::get_system_token_balance(const get_system_token_balance_params &params) const {
-   auto& yosemite_token_manager = db.get_token_manager();
-   return yosemite_token_manager.get_system_token_balance(params.account);
+infrablockchain::chain::system_token_balance read_only::get_system_token_balance(const get_system_token_balance_params &params) const {
+   auto& infrablockchain_token_manager = db.get_token_manager();
+   return infrablockchain_token_manager.get_system_token_balance(params.account);
 }
 
-yosemite::chain::tx_fee_for_action read_only::get_txfee_item(const get_txfee_item_params &params) const {
-   auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
-   return yosemite_tx_fee_manager.get_tx_fee_for_action(params.code, params.action);
+infrablockchain::chain::tx_fee_for_action read_only::get_txfee_item(const get_txfee_item_params &params) const {
+   auto& infrablockchain_tx_fee_manager = db.get_tx_fee_manager();
+   return infrablockchain_tx_fee_manager.get_tx_fee_for_action(params.code, params.action);
 }
 
-yosemite::chain::tx_fee_list_result read_only::get_txfee_list(const get_txfee_list_params &params) const {
-   auto& yosemite_tx_fee_manager = db.get_tx_fee_manager();
-   return yosemite_tx_fee_manager.get_tx_fee_list(params.code_lower_bound, params.code_upper_bound, params.limit);
+infrablockchain::chain::tx_fee_list_result read_only::get_txfee_list(const get_txfee_list_params &params) const {
+   auto& infrablockchain_tx_fee_manager = db.get_tx_fee_manager();
+   return infrablockchain_tx_fee_manager.get_tx_fee_list(params.code_lower_bound, params.code_upper_bound, params.limit);
 }
 
-yosemite::chain::tx_vote_stat_for_account read_only::get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const {
-   auto& yosemite_tx_vote_stat_manager = db.get_tx_vote_stat_manager();
-   return yosemite_tx_vote_stat_manager.get_transaction_vote_stat_for_account( params.account );
+infrablockchain::chain::tx_vote_stat_for_account read_only::get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const {
+   auto& infrablockchain_tx_vote_stat_manager = db.get_tx_vote_stat_manager();
+   return infrablockchain_tx_vote_stat_manager.get_transaction_vote_stat_for_account( params.account );
 }
 
-yosemite::chain::tx_vote_receiver_list_result read_only::get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const {
-   auto& yosemite_tx_vote_stat_manager = db.get_tx_vote_stat_manager();
-   return yosemite_tx_vote_stat_manager.get_top_sorted_transaction_vote_receivers( params.offset, params.limit, true );
+infrablockchain::chain::tx_vote_receiver_list_result read_only::get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const {
+   auto& infrablockchain_tx_vote_stat_manager = db.get_tx_vote_stat_manager();
+   return infrablockchain_tx_vote_stat_manager.get_top_sorted_transaction_vote_receivers( params.offset, params.limit, true );
 }
 
 yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_params &p) const {
@@ -1433,12 +1433,12 @@ yx_asset read_only::get_yx_token_balance(const read_only::get_yx_token_balance_p
 }
 
 asset read_only::get_native_token_balance(const get_native_token_balance_params &params) const {
-   const abi_def abi = eosio::chain_apis::get_abi(db, YOSEMITE_NATIVE_TOKEN_ACCOUNT);
+   const abi_def abi = eosio::chain_apis::get_abi(db, INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT);
 
    const auto &d = db.db();
    if (params.issuer) {
       const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
-            boost::make_tuple(YOSEMITE_NATIVE_TOKEN_ACCOUNT, params.account, N(ntaccounts)));
+            boost::make_tuple(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, params.account, N(ntaccounts)));
       EOS_ASSERT(table_id, chain::empty_token_exception, "The account doesn't have the native token.");
 
       const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, *params.issuer));
@@ -1453,7 +1453,7 @@ asset read_only::get_native_token_balance(const get_native_token_balance_params 
    } else {
       // In case of total balance
       const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
-            boost::make_tuple(YOSEMITE_NATIVE_TOKEN_ACCOUNT, params.account, N(ntaccountstt)));
+            boost::make_tuple(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, params.account, N(ntaccountstt)));
       EOS_ASSERT(table_id, chain::empty_token_exception, "The account doesn't have the native token.");
 
       const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, N(totalbal)));
@@ -1493,7 +1493,7 @@ read_only::get_yx_token_stats_result read_only::get_yx_token_stats(const read_on
 read_only::get_native_token_stats_result read_only::get_native_token_stats(const read_only::get_native_token_stats_params &params) const {
    const auto &d = db.db();
    const auto *table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
-         boost::make_tuple(YOSEMITE_NATIVE_TOKEN_ACCOUNT, params.issuer, N(ntstats)));
+         boost::make_tuple(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, params.issuer, N(ntstats)));
    EOS_ASSERT(table_id, chain::native_token_not_found_exception, "The issuer is not the system depository or it has never issued.");
 
    const auto *itr = d.find<chain::key_value_object, chain::by_scope_primary>(boost::make_tuple(table_id->id, N(basicstats)));
@@ -1611,7 +1611,7 @@ read_only::get_producers_result read_only::get_producers( const read_only::get_p
    }
 
 //   result.total_producer_vote_weight = get_global_row(d, abi, abis, abi_serializer_max_time, shorten_abi_errors)["total_producer_vote_weight"].as_double();
-   result.total_producer_vote_weight = db.get_yosemite_global_properties().total_tx_votes_weighted;
+   result.total_producer_vote_weight = db.get_infrablockchain_global_properties().total_tx_votes_weighted;
 
    return result;
 }
@@ -1631,8 +1631,8 @@ template<typename Api>
 struct resolver_factory {
    static auto make(const Api* api, const fc::microseconds& max_serialization_time) {
       return [api, max_serialization_time](account_name code, action_name action) -> optional<abi_serializer> {
-         if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
-            code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+         if ( infrablockchain::chain::token::utils::is_infrablockchain_standard_token_action(action) ) {
+            code = INFRABLOCKCHAIN_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
          }
          const auto* accnt = api->db.db().template find<account_object, by_name>(code);
          if (accnt != nullptr) {
@@ -1968,10 +1968,10 @@ read_only::get_account_results read_only::get_account( const get_account_params&
       ++perm;
    }
 
-   auto& yosemite_token_manager = db.get_token_manager();
-   result.system_token_balance = yosemite_token_manager.get_system_token_balance(params.account_name);
+   auto& infrablockchain_token_manager = db.get_token_manager();
+   result.system_token_balance = infrablockchain_token_manager.get_system_token_balance(params.account_name);
 
-   auto* token_meta_ptr = yosemite_token_manager.get_token_meta_info(params.account_name);
+   auto* token_meta_ptr = infrablockchain_token_manager.get_token_meta_info(params.account_name);
    if (token_meta_ptr) {
       auto token_meta_obj = *token_meta_ptr;
       result.token_info.emplace(

@@ -9,7 +9,7 @@ So it's recommended to use only for the transaction history access purpose for D
 
 If you want to use this plugin, you must add to config.ini like below.
 
-> plugin = yosemite::event_notification_plugin
+> plugin = infrablockchain::event_notification_plugin
 
 ## WebSocket URLs
 ws://${http_plugin@http-server-address}/v1/event_notification
@@ -34,8 +34,8 @@ If a client registers the transaction id which want to check its irreversibility
 }
 ```
 
-If the transaction is already irreversible, Yosemite node sends the corresponding response immediately.
-But if not, when the block which includes the tranction above becomes irreversible, Yosemite node sends the response.
+If the transaction is already irreversible, Infrablockchain node sends the corresponding response immediately.
+But if not, when the block which includes the tranction above becomes irreversible, Infrablockchain node sends the response.
 ```json
 {
   "req_id": "1",
@@ -45,7 +45,7 @@ But if not, when the block which includes the tranction above becomes irreversib
 }
 ```
 
-If the transaction is expired, Yosemite node sends the corresponding response with `dropped` flag as true.
+If the transaction is expired, Infrablockchain node sends the corresponding response with `dropped` flag as true.
 ```json
 {
   "req_id": "2",

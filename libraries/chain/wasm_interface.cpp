@@ -13,10 +13,10 @@
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
 
-#include <yosemite/chain/transaction_as_a_vote.hpp>
-#include <yosemite/chain/system_token_list.hpp>
-#include <yosemite/chain/standard_token_manager.hpp>
-#include <yosemite/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+#include <infrablockchain/chain/system_token_list.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
@@ -1336,17 +1336,17 @@ class transaction_api : public context_aware_api {
       }
 
       /// Deprecated
-      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       void cast_transaction_vote(uint32_t vote_amount) {
 //          context.cast_transaction_vote(vote_amount);
       }
 
       /// Deprecated
-      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
          auto trx_votes = context.get_transaction_votes_in_head_block();
 
-         auto s = trx_votes.size() * sizeof(struct yosemite::chain::transaction_vote);
+         auto s = trx_votes.size() * sizeof(struct infrablockchain::chain::transaction_vote);
          if (buffer_size == 0) return s;
 
          auto copy_size = std::min( buffer_size, s );
@@ -1355,11 +1355,11 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
-      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       int get_top_transaction_vote_receivers(array_ptr<char> memory, size_t buffer_size, uint32_t offset_rank, uint32_t limit) {
          auto trx_vote_receivers = context.get_top_transaction_vote_receivers( offset_rank, limit );
 
-         auto s = trx_vote_receivers.size() * sizeof(struct yosemite::chain::tx_vote_stat_for_account);
+         auto s = trx_vote_receivers.size() * sizeof(struct infrablockchain::chain::tx_vote_stat_for_account);
          if (buffer_size == 0) return s;
 
          auto copy_size = std::min( buffer_size, s );
@@ -1368,24 +1368,24 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
-      /// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       double get_total_weighted_transaction_votes() {
          return context.get_total_weighted_transaction_votes();
       }
 
-      /// YOSEMITE Core API - Transaction-Fee-Setup
+      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
       void set_trx_fee_for_action( const account_name code, const action_name action, int32_t value, uint32_t fee_type ) {
          context.set_transaction_fee_for_action( code, action, value, fee_type );
       }
 
-      /// YOSEMITE Core API - Transaction-Fee-Setup
+      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
       void unset_trx_fee_for_action( const account_name code, const action_name action ) {
          context.unset_transaction_fee_for_action( code, action );
       }
 
-      /// YOSEMITE Core API - Transaction-Fee-Setup
+      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
       uint32_t get_trx_fee_for_action( const account_name code, const action_name action, array_ptr<char> packed_trx_fee_for_action, size_t buffer_size ) {
-         yosemite::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
+         infrablockchain::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
 
          auto s = fc::raw::pack_size( tx_fee_for_action );
          if( buffer_size == 0 ) return s;
@@ -1398,7 +1398,7 @@ class transaction_api : public context_aware_api {
          return 0;
       }
 
-      /// YOSEMITE Core API - Transaction-Fee-Payer
+      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Payer
       account_name trx_fee_payer() {
          return context.get_transaction_fee_payer();
       }
@@ -1443,7 +1443,7 @@ class context_free_transaction_api : public context_aware_api {
 };
 
 /**
- * YOSEMITE Standard Token API, custom token contract code can access standard token operations
+ * INFRABLOCKCHAIN Standard Token API, custom token contract code can access standard token operations
  */
 class token_api : public context_aware_api {
    public:
@@ -1475,7 +1475,7 @@ class token_api : public context_aware_api {
 };
 
 /**
- * YOSEMITE System Token APIs - system contract operated by block producers manages system tokens used for tx fee payment
+ * INFRABLOCKCHAIN System Token APIs - system contract operated by block producers manages system tokens used for tx fee payment
  */
 class system_token_api : public context_aware_api {
    public:
@@ -1486,7 +1486,7 @@ class system_token_api : public context_aware_api {
       }
 
       uint32_t get_system_token_list( array_ptr<char> packed_system_token_list, size_t buffer_size ) {
-         vector<yosemite::chain::system_token> system_tokens = context.control.get_token_manager().get_system_token_list();
+         vector<infrablockchain::chain::system_token> system_tokens = context.control.get_token_manager().get_system_token_list();
 
          auto s = fc::raw::pack_size( system_tokens );
          if( buffer_size == 0 ) return s;
@@ -1504,12 +1504,12 @@ class system_token_api : public context_aware_api {
          context.require_authorization(config::system_account_name);
 
          datastream<const char*> ds( packed_system_token_list, datalen );
-         vector<yosemite::chain::system_token> system_tokens;
+         vector<infrablockchain::chain::system_token> system_tokens;
          fc::raw::unpack(ds, system_tokens);
-         EOS_ASSERT(system_tokens.size() <= yosemite::chain::max_system_tokens, wasm_execution_error, "System token list exceeds the maximum system token count for this chain");
+         EOS_ASSERT(system_tokens.size() <= infrablockchain::chain::max_system_tokens, wasm_execution_error, "System token list exceeds the maximum system token count for this chain");
 
          // check that system tokens are unique
-         std::set<yosemite::chain::system_token_id_type> unique_sys_tokens;
+         std::set<infrablockchain::chain::system_token_id_type> unique_sys_tokens;
          for (const auto& sys_token : system_tokens) {
             EOS_ASSERT( context.is_account(sys_token.token_id), wasm_execution_error, "system token list includes a nonexisting account" );
             EOS_ASSERT( sys_token.valid(), wasm_execution_error, "system token list includes an invalid value" );

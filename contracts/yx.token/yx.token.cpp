@@ -3,6 +3,8 @@
 #include <infrablockchainlib/native_token.hpp>
 #include "yx.token.hpp"
 
+using namespace infrablockchain::identity;
+
 namespace yosemite { namespace non_native_token {
 
    void yx_token::inner_check_create_parameters(const yx_symbol &ysymbol, uint16_t /*can_set_options*/) {
@@ -28,11 +30,11 @@ namespace yosemite { namespace non_native_token {
       add_token_balance(token.issuer, token);
 
       if (to != token.issuer) {
-         SEND_INLINE_ACTION(*this, transfer, {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+         SEND_INLINE_ACTION(*this, transfer, {{token.issuer, N(active)}, {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
              {token.issuer, to, token, memo});
       }
 
-      charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
+      charge_fee(token.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_ISSUE);
    }
 
    void yx_token::redeem(const yx_asset &token, const string &memo) {
@@ -53,11 +55,11 @@ namespace yosemite { namespace non_native_token {
 
       sub_token_balance(token.issuer, token);
 
-      charge_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
+      charge_fee(token.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_REDEEM);
    }
 
    void yx_token::transfer(account_name from, account_name to, const yx_asset &token, const string &memo) {
-      bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+      bool is_auth_by_sysaccount = has_auth(INFRABLOCKCHAIN_SYSTEM_ACCOUNT);
       if (!is_auth_by_sysaccount) {
          check_transfer_parameters(from, to, token, memo);
       }
@@ -70,7 +72,7 @@ namespace yosemite { namespace non_native_token {
       add_token_balance(to, token);
 
       if (!is_auth_by_sysaccount) {
-         charge_fee(from, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
+         charge_fee(from, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_TRANSFER);
       }
    }
 
@@ -80,7 +82,7 @@ namespace yosemite { namespace non_native_token {
       eosio_assert(static_cast<uint32_t>(!limit.is_native(false)), "cannot grant issue with the native token");
       eosio_assert(static_cast<uint32_t>(is_account(to)), "to account does not exist");
       eosio_assert(static_cast<uint32_t>(
-            does_token_exist(YOSEMITE_USER_TOKEN_ACCOUNT, limit.get_yx_symbol())), "token does not exist");
+            does_token_exist(INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT, limit.get_yx_symbol())), "token does not exist");
       require_auth(limit.issuer);
 
       delegated_issue_table delissue_tbl{get_self(), limit.symbol.value};
@@ -105,7 +107,7 @@ namespace yosemite { namespace non_native_token {
          }
       }
 
-      charge_fee(limit.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_SET_USER_ISSUE_LIMIT);
+      charge_fee(limit.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_SET_USER_ISSUE_LIMIT);
    }
 
    void yx_token::issuebyuser(const account_name &user, const account_name &to, const yx_asset &token, const string &memo) {
@@ -134,9 +136,9 @@ namespace yosemite { namespace non_native_token {
 
       increase_supply(token);
       add_token_balance(user, token);
-      SEND_INLINE_ACTION(*this, transfer, {{user, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}}, {user, to, token, memo});
+      SEND_INLINE_ACTION(*this, transfer, {{user, N(active)}, {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}}, {user, to, token, memo});
 
-      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
+      charge_fee(user, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_ISSUE_BY_USER);
    }
 
    void yx_token::entrustui(const account_name &user, const account_name &to, const yx_symbol &ysymbol) {
@@ -166,7 +168,7 @@ namespace yosemite { namespace non_native_token {
          }
       });
 
-      charge_fee(user, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ENTRUST_USER_ISSUE_TO);
+      charge_fee(user, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_ENTRUST_USER_ISSUE_TO);
    }
 
    void yx_token::changeissued(const account_name &user, const yx_asset &delta, bool decrease) {
@@ -199,7 +201,7 @@ namespace yosemite { namespace non_native_token {
          second_index.erase(issue_info);
       }
 
-      charge_fee(delta.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_CHANGE_ISSUED);
+      charge_fee(delta.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_CHANGE_ISSUED);
    }
 }}
 

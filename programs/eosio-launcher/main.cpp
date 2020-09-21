@@ -614,7 +614,7 @@ launcher_def::initialize (const variables_map &vmap) {
     }
   }
 
-  config_dir_base = "etc/yosemite";
+  config_dir_base = "etc/infrablockchain";
   data_dir_base = "var/lib";
   next_node = 0;
   ++prod_nodes; // add one for the bios node
@@ -867,7 +867,7 @@ launcher_def::bind_nodes () {
          auto pubkey = kp.get_public_key();
          node.keys.emplace_back (move(kp));
          if (is_bios) {
-            string prodname = "yosemite";
+            string prodname = "infrasys";
             node.producers.push_back(prodname);
             producer_set.schedule.push_back({prodname,pubkey});
          }
@@ -1218,7 +1218,7 @@ launcher_def::write_setprods_file() {
   }
    producer_set_def no_bios;
    for (auto &p : producer_set.schedule) {
-      if (p.producer_name != "yosemite")
+      if (p.producer_name != "infrasys")
          no_bios.schedule.push_back(p);
    }
   auto str = fc::json::to_pretty_string( no_bios, fc::json::stringify_large_ints_and_doubles );
@@ -1259,7 +1259,7 @@ launcher_def::write_bios_boot () {
          }
          else if (key == "cacmd") {
             for (auto &p : producer_set.schedule) {
-               if (p.producer_name == "yosemite") {
+               if (p.producer_name == "infrasys") {
                   continue;
                }
                brb << "cacmd " << p.producer_name
@@ -1499,7 +1499,7 @@ launcher_def::launch (eosd_def &instance, string &gts) {
   bfs::path reerr_sl = dd / "stderr.txt";
   bfs::path reerr_base = bfs::path("stderr." + launch_time + ".txt");
   bfs::path reerr = dd / reerr_base;
-  bfs::path pidf  = dd / "yosemite.pid";
+  bfs::path pidf  = dd / "infra-node.pid";
   host_def* host;
   try {
      host = deploy_config_files (*instance.node);
@@ -1511,7 +1511,7 @@ launcher_def::launch (eosd_def &instance, string &gts) {
   node_rt_info info;
   info.remote = !host->is_local();
 
-  string eosdcmd = "programs/yosemite/yosemite ";
+  string eosdcmd = "programs/infra-node/infra-node ";
   if (skip_transaction_signatures) {
     eosdcmd += "--skip-transaction-signatures ";
   }

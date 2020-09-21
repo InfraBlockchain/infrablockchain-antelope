@@ -9,8 +9,8 @@
 #include <eosio/chain/account_object.hpp>
 #include <eosio/chain/snapshot.hpp>
 
-#include <yosemite/chain/standard_token_action_types.hpp>
-#include <yosemite/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
 
 namespace chainbase {
    class database;
@@ -19,8 +19,8 @@ namespace boost { namespace asio {
    class thread_pool;
 }}
 
-namespace yosemite { namespace chain {
-   class yosemite_global_property_object;
+namespace infrablockchain { namespace chain {
+   class infrablockchain_global_property_object;
    class standard_token_manager;
    class transaction_fee_manager;
    class transaction_vote_stat_manager;
@@ -160,13 +160,13 @@ namespace eosio { namespace chain {
          const authorization_manager&          get_authorization_manager()const;
          authorization_manager&                get_mutable_authorization_manager();
 
-         const yosemite::chain::yosemite_global_property_object&  get_yosemite_global_properties()const;
-         const yosemite::chain::standard_token_manager&    get_token_manager()const;
-         yosemite::chain::standard_token_manager&          get_mutable_token_manager();
-         const yosemite::chain::transaction_fee_manager&   get_tx_fee_manager()const;
-         yosemite::chain::transaction_fee_manager&         get_mutable_tx_fee_manager();
-         const yosemite::chain::transaction_vote_stat_manager&   get_tx_vote_stat_manager()const;
-         yosemite::chain::transaction_vote_stat_manager&         get_mutable_tx_vote_stat_manager();
+         const infrablockchain::chain::infrablockchain_global_property_object&  get_infrablockchain_global_properties()const;
+         const infrablockchain::chain::standard_token_manager&    get_token_manager()const;
+         infrablockchain::chain::standard_token_manager&          get_mutable_token_manager();
+         const infrablockchain::chain::transaction_fee_manager&   get_tx_fee_manager()const;
+         infrablockchain::chain::transaction_fee_manager&         get_mutable_tx_fee_manager();
+         const infrablockchain::chain::transaction_vote_stat_manager&   get_tx_vote_stat_manager()const;
+         infrablockchain::chain::transaction_vote_stat_manager&         get_mutable_tx_vote_stat_manager();
 
 
          const flat_set<account_name>&   get_actor_whitelist() const;
@@ -274,7 +274,7 @@ namespace eosio { namespace chain {
          signal<void(const transaction_trace_ptr&)>  post_apply_action;
          */
 
-         /// YOSEMITE Built-in Actions
+         /// INFRABLOCKCHAIN Built-in Actions
          const apply_handler* find_built_in_action_apply_handler( action_name act ) const;
 
          const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;
@@ -299,8 +299,8 @@ namespace eosio { namespace chain {
             fc::variant pretty_output;
             abi_serializer::to_variant( obj, pretty_output,
                                         [&]( account_name code, action_name action ) {
-                                           if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
-                                              code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                                           if ( infrablockchain::chain::token::utils::is_infrablockchain_standard_token_action(action) ) {
+                                              code = INFRABLOCKCHAIN_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
                                            }
                                            return get_abi_serializer( code, max_serialization_time );
                                         },

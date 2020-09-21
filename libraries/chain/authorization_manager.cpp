@@ -15,7 +15,7 @@
 #include <boost/tuple/tuple_io.hpp>
 #include <eosio/chain/database_utils.hpp>
 
-#include <yosemite/chain/transaction_extensions.hpp>
+#include <infrablockchain/chain/transaction_extensions.hpp>
 
 namespace eosio { namespace chain {
 
@@ -657,7 +657,7 @@ namespace eosio { namespace chain {
 
       auto &tx_ext = trx.transaction_extensions;
       for (auto&& tx_ext_item: tx_ext) {
-         if (tx_ext_item.first == YOSEMITE_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
+         if (tx_ext_item.first == INFRABLOCKCHAIN_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
             auto fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
             EOS_ASSERT( checker.satisfied(permission_level{fee_payer,config::active_name}), unsatisfied_authorization,
                         "transaction declares transaction fee payer '${fee_payer}', but does not have signatures for it.",

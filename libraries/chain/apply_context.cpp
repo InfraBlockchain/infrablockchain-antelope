@@ -11,14 +11,14 @@
 #include <eosio/chain/global_property_object.hpp>
 #include <boost/container/flat_set.hpp>
 
-#include <yosemite/chain/transaction_extensions.hpp>
-#include <yosemite/chain/standard_token_manager.hpp>
-#include <yosemite/chain/transaction_fee_manager.hpp>
-#include <yosemite/chain/transaction_vote_stat_manager.hpp>
-#include <yosemite/chain/exceptions.hpp>
+#include <infrablockchain/chain/transaction_extensions.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_fee_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/exceptions.hpp>
 
 using boost::container::flat_set;
-using namespace yosemite::chain;
+using namespace infrablockchain::chain;
 
 namespace eosio { namespace chain {
 
@@ -59,7 +59,7 @@ void apply_context::exec_one( action_trace& trace )
 
          const apply_handler* native = nullptr;
 
-         /// YOSEMITE Built-in Actions
+         /// INFRABLOCKCHAIN Built-in Actions
          if (receiver == act.account) {
             native = control.find_built_in_action_apply_handler(act.name);
          }
@@ -430,7 +430,7 @@ bool apply_context::cancel_deferred_transaction( const uint128_t& sender_id, acc
 
 
 //////////////////////////////////////
-/// YOSEMITE Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+/// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
 
 /// Deprecated
 vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
@@ -450,7 +450,7 @@ double apply_context::get_total_weighted_transaction_votes() const {
 }
 
 //////////////////////////////////////
-/// YOSEMITE Core API - Transaction-Fee
+/// INFRABLOCKCHAIN Core API - Transaction-Fee
 
 void apply_context::set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
    EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call set_trx_fee_for_action API", ("code", receiver) );
@@ -458,7 +458,7 @@ void apply_context::set_transaction_fee_for_action( const account_name& code, co
 
    if ( !code.empty() ) {
       EOS_ASSERT( is_account(code), account_query_exception, "account ${code} does not exist", ("code", code) );
-      if ( !yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
+      if ( !infrablockchain::chain::token::utils::is_infrablockchain_standard_token_action(action) ) {
          auto abis = control.get_abi_serializer( code, control.abi_serializer_max_time_ms );
          EOS_ASSERT( abis.valid(), abi_not_found_exception, "failed to get abi_serializer for account ${code}", ("code", code) );
          EOS_ASSERT( abis->get_action_type( action ).size() > 0, abi_exception, "abi does not contain action ${action}", ("action", action) );
@@ -484,7 +484,7 @@ account_name apply_context::get_transaction_fee_payer() const {
 }
 
 //////////////////////////////////////
-/// YOSEMITE Core API - Standard-Token
+/// INFRABLOCKCHAIN Core API - Standard-Token
 
 symbol apply_context::get_token_symbol( const account_name token_id ) const {
    return control.get_token_manager().get_token_symbol(token_id);

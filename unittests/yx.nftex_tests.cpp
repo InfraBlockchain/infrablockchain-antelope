@@ -1,8 +1,8 @@
-#include <yosemite/testing/yx_tester.hpp>
+#include <infrablockchain/testing/yx_tester.hpp>
 #include <fc/reflect/reflect.hpp>
 
-using namespace yosemite::chain;
-using namespace yosemite::testing;
+using namespace infrablockchain::chain;
+using namespace infrablockchain::testing;
 
 typedef uint64_t id_type;
 
@@ -18,7 +18,7 @@ class nftex_tester : public yx_tester {
 public:
 
    nftex_tester() {
-      init_yosemite_contracts();
+      init_infrablockchain_contracts();
 
       create_accounts({N(alice), N(bob), N(carol), N(gameprovider)});
       produce_blocks();
@@ -33,7 +33,7 @@ public:
                                ("nft", nft)
                                ("price", _price)
                                ("memo", memo),
-                         buyer, abi_ser_nftex, YOSEMITE_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT
+                         buyer, abi_ser_nftex, INFRABLOCKCHAIN_SYS_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT
       );
    }
 
@@ -47,7 +47,7 @@ public:
                                ("price", _price)
                                ("expiration", expiration)
                                ("memo", memo),
-                         seller, abi_ser_nftex, YOSEMITE_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT
+                         seller, abi_ser_nftex, INFRABLOCKCHAIN_SYS_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT
       );
    }
 
@@ -56,7 +56,7 @@ public:
       yx_nft nft{yx_symbol::from_string(nft_symbol), id};
       return push_action(N(cancelsell), mvo()
                                ("nft", nft),
-                         seller, abi_ser_nftex, YOSEMITE_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT
+                         seller, abi_ser_nftex, INFRABLOCKCHAIN_SYS_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT
       );
    }
 

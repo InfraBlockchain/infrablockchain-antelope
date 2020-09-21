@@ -1,10 +1,10 @@
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/eosio/chain/core_symbol.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/eosio/chain/core_symbol.hpp)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/yosemite/chain/native_token_symbol.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/yosemite/chain/native_token_symbol.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/infrablockchain/chain/native_token_symbol.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/include/infrablockchain/chain/native_token_symbol.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/genesis_state_root_key.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/genesis_state_root_key.cpp)
 
 file(GLOB HEADERS "include/eosio/chain/*.hpp"
                   "include/eosio/chain/webassembly/*.hpp"
-                  "include/yosemite/chain/*.hpp"
+                  "include/infrablockchain/chain/*.hpp"
                   "${CMAKE_CURRENT_BINARY_DIR}/include/eosio/chain/core_symbol.hpp" )
 
 ## SORT .cpp by most likely to change / break compile
@@ -42,11 +42,11 @@ add_library( eosio_chain
              webassembly/wavm.cpp
              webassembly/wabt.cpp
 
-             yosemite/standard_token_manager.cpp
-             yosemite/transaction_fee_manager.cpp
-             yosemite/softfloat64.cpp
-             yosemite/transaction_vote_stat_manager.cpp
-             yosemite/standard_token_action_handlers.cpp
+             infrablockchain/standard_token_manager.cpp
+             infrablockchain/transaction_fee_manager.cpp
+             infrablockchain/softfloat64.cpp
+             infrablockchain/transaction_vote_stat_manager.cpp
+             infrablockchain/standard_token_action_handlers.cpp
 
 #             get_config.cpp
 #             global_property_object.cpp

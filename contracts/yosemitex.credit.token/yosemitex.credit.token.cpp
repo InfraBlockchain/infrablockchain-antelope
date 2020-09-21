@@ -11,12 +11,12 @@
 #include <eosiolib/symbol.hpp>
 #include <eosiolib/action.hpp>
 
-#define YOSEMITE_CREDIT_KYC_AUTH YOSEMITE_ID_KYC_REAL_NAME_AUTH | YOSEMITE_ID_KYC_BANK_ACCOUNT_AUTH
+#define YOSEMITE_CREDIT_KYC_AUTH INFRABLOCKCHAIN_ID_KYC_REAL_NAME_AUTH | INFRABLOCKCHAIN_ID_KYC_BANK_ACCOUNT_AUTH
 
 namespace yosemitex { namespace contract {
 
    using namespace eosio;
-   using namespace yosemite::identity;
+   using namespace infrablockchain::identity;
    using std::string;
 
    void credit_token::issue( const account_name /*t*/, const account_name to, const asset& /*qty*/, const string& /*tag*/ ) {

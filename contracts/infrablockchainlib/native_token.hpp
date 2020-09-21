@@ -9,16 +9,21 @@
 #include <infrablockchainlib/identity.hpp>
 #include <infrablockchainlib/trx_fee_api.h>
 
+// DEPRECATED
+
 /* Some constants must be sync with plugins/chain_plugin/chain_plugin.cpp::get_account(). */
+
 
 namespace yosemite { namespace native_token {
     static const uint64_t NTOKEN_TOTAL_BALANCE_KEY = N(totalbal);
 
     using namespace eosio;
     using std::string;
+    using namespace infrablockchain;
 
     static const uint64_t NTOKEN_BASIC_STATS_KEY = N(basicstats);
 
+    // DEPRECATED
     class ntoken : public contract {
     public:
         explicit ntoken(account_name self) : contract(self) {
@@ -84,13 +89,13 @@ namespace yosemite { namespace native_token {
     typedef eosio::multi_index<N(ntaccountstt), total_balance> accounts_native_total;
 
     int64_t get_total_native_token_balance(const account_name &owner) {
-        accounts_native_total accounts_total_table(YOSEMITE_NATIVE_TOKEN_ACCOUNT, owner);
+        accounts_native_total accounts_total_table(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, owner);
         const auto &balance_holder = accounts_total_table.get(NTOKEN_TOTAL_BALANCE_KEY, "account doesn't have native token balance");
         return balance_holder.amount.amount;
     }
 
     void charge_transaction_fee(account_name payer, uint64_t operation) {
-        auto tx_fee = yosemite::get_transaction_fee(operation);
+        auto tx_fee = get_transaction_fee(operation);
         if (tx_fee.amount > 0) {
             account_name tx_fee_payer = trx_fee_payer();
             if (tx_fee_payer != 0) {
@@ -104,7 +109,7 @@ namespace yosemite { namespace native_token {
             }
 
             INLINE_ACTION_SENDER(ntoken, payfee)
-                  (YOSEMITE_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                  (INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, {{payer, N(active)}, {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                    {payer, tx_fee});
         }
     }

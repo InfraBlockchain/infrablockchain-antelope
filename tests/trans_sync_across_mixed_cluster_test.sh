@@ -71,7 +71,7 @@ killAll()
 
 cleanup()
 {
-    rm -rf etc/yosemite/node_*
+    rm -rf etc/infrablockchain/node_*
     rm -rf var/lib/node_*
 }
 

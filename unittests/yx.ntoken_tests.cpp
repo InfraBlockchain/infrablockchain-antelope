@@ -1,11 +1,11 @@
-#include <yosemite/testing/yx_tester.hpp>
+#include <infrablockchain/testing/yx_tester.hpp>
 
-using namespace yosemite::testing;
+using namespace infrablockchain::testing;
 
 class yx_ntoken_tester : public yx_tester {
 public:
    yx_ntoken_tester() {
-      init_yosemite_contracts();
+      init_infrablockchain_contracts();
 
       // turn off KYC for test convenience
       ntoken_set_kyc_rule(0, 0);
@@ -18,19 +18,19 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
 
    BOOST_FIXTURE_TEST_CASE(required_auth_test, yx_ntoken_tester) try {
       auto _token = yx_asset::from_string(to_yx_asset_string(100, "d1"));
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(nissue), N(user1), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, N(nissue), N(user1), mvo()
             ("to", "user1")
             ("token", _token)
             ("memo", "")),
                           missing_auth_exception);
 
       _token = yx_asset::from_string(to_yx_asset_string(100, "d1"));
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(nredeem), N(user1), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, N(nredeem), N(user1), mvo()
             ("token", _token)
             ("memo", "")),
                           missing_auth_exception);
 
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(transfer), N(user2), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, N(transfer), N(user2), mvo()
             ("from", "user1")
             ("to", "user2")
             ("amount", to_asset_string(100))
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       BOOST_REQUIRE_EQUAL("", result);
       produce_blocks(1);
 
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_NATIVE_TOKEN_ACCOUNT, N(ntransfer), N(user2), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, N(ntransfer), N(user2), mvo()
             ("from", "user1")
             ("to", "user2")
             ("token", _token)
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       );
 
       // check transaction fee
-      accounts_total = ntoken_get_accounts_total(YOSEMITE_TX_FEE_ACCOUNT);
+      accounts_total = ntoken_get_accounts_total(INFRABLOCKCHAIN_SYS_TX_FEE_ACCOUNT);
       REQUIRE_MATCHING_OBJECT(accounts_total, mvo()
             ("amount", to_asset_string(110000))
       );
@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_SUITE(yx_ntoken_tests)
       produce_blocks();
 
       // check total native token balance of related accounts
-      auto accounts_total = ntoken_get_accounts_total(YOSEMITE_TX_FEE_ACCOUNT);
+      auto accounts_total = ntoken_get_accounts_total(INFRABLOCKCHAIN_SYS_TX_FEE_ACCOUNT);
       REQUIRE_MATCHING_OBJECT(accounts_total, mvo()
             ("amount", to_asset_string(10000))
       );

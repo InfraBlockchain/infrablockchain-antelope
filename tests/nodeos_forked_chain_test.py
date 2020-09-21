@@ -23,7 +23,7 @@ import signal
 Print=Utils.Print
 
 from core_symbol import CORE_SYMBOL
-from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
+from native_token_symbol import INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL
 
 def analyzeBPs(bps0, bps1, expectDivergence):
     start=0
@@ -220,7 +220,7 @@ try:
     for account in accounts:
         Print("Create new account %s via %s" % (account.name, cluster.eosioAccount.name))
         trans=node.createAccount(account, cluster.eosioAccount, stakedDeposit=0, waitForTransBlock=False, exitOnError=True)
-        transferAmount="100000000.00 {0}".format(YOSEMITE_NATIVE_TOKEN_SYMBOL)
+        transferAmount="100000000.00 {0}".format(INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL)
         Print("Transfer funds %s from account %s to %s" % (transferAmount, cluster.eosioAccount.name, account.name))
         node.transferNativeToken(cluster.eosioAccount, account, transferAmount, "test transfer")
 

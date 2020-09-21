@@ -67,7 +67,7 @@ void validate_authority_precondition( const apply_context& context, const author
 /**
  *  This method is called assuming precondition_system_newaccount succeeds a
  */
-void apply_yosemite_newaccount(apply_context& context) {
+void apply_infrasys_newaccount(apply_context& context) {
    auto create = context.act.data_as<newaccount>();
    try {
    context.require_authorization(create.creator);
@@ -87,10 +87,10 @@ void apply_yosemite_newaccount(apply_context& context) {
    // Check if the creator is privileged
    const auto &creator = db.get<account_object, by_name>(create.creator);
    if( !creator.privileged ) {
-      EOS_ASSERT( name_str.find( "yx." ) != 0, action_validate_exception,
+      EOS_ASSERT( name_str.find( "sys." ) != 0, action_validate_exception,
                   "only privileged accounts can have names that start with 'yx.'" );
-      EOS_ASSERT( name_str.find( "yosemite" ) != 0, action_validate_exception,
-                  "only privileged accounts can have names that start with 'yosemite'" );
+      EOS_ASSERT( name_str.find( "infrasys" ) != 0, action_validate_exception,
+                  "only privileged accounts can have names that start with 'infrasys'" );
    }
 
    auto existing_account = db.find<account_object, by_name>(create.name);
@@ -127,7 +127,7 @@ void apply_yosemite_newaccount(apply_context& context) {
 
 } FC_CAPTURE_AND_RETHROW( (create) ) }
 
-void apply_yosemite_setcode(apply_context& context) {
+void apply_infrasys_setcode(apply_context& context) {
    const auto& cfg = context.control.get_global_properties().configuration;
 
    auto& db = context.db;
@@ -174,7 +174,7 @@ void apply_yosemite_setcode(apply_context& context) {
    }
 }
 
-void apply_yosemite_setabi(apply_context& context) {
+void apply_infrasys_setabi(apply_context& context) {
    auto& db  = context.db;
    auto  act = context.act.data_as<setabi>();
 
@@ -205,7 +205,7 @@ void apply_yosemite_setabi(apply_context& context) {
    }
 }
 
-void apply_yosemite_updateauth(apply_context& context) {
+void apply_infrasys_updateauth(apply_context& context) {
 
    auto update = context.act.data_as<updateauth>();
    context.require_authorization(update.account); // only here to mark the single authority on this action as used
@@ -269,7 +269,7 @@ void apply_yosemite_updateauth(apply_context& context) {
    }
 }
 
-void apply_yosemite_deleteauth(apply_context& context) {
+void apply_infrasys_deleteauth(apply_context& context) {
 //   context.require_write_lock( config::eosio_auth_scope );
 
    auto remove = context.act.data_as<deleteauth>();
@@ -300,7 +300,7 @@ void apply_yosemite_deleteauth(apply_context& context) {
 
 }
 
-void apply_yosemite_linkauth(apply_context& context) {
+void apply_infrasys_linkauth(apply_context& context) {
 //   context.require_write_lock( config::eosio_auth_scope );
 
    auto requirement = context.act.data_as<linkauth>();
@@ -348,7 +348,7 @@ void apply_yosemite_linkauth(apply_context& context) {
   } FC_CAPTURE_AND_RETHROW((requirement))
 }
 
-void apply_yosemite_unlinkauth(apply_context& context) {
+void apply_infrasys_unlinkauth(apply_context& context) {
 //   context.require_write_lock( config::eosio_auth_scope );
 
    auto& db = context.db;
@@ -367,7 +367,7 @@ void apply_yosemite_unlinkauth(apply_context& context) {
    db.remove(*link);
 }
 
-void apply_yosemite_canceldelay(apply_context& context) {
+void apply_infrasys_canceldelay(apply_context& context) {
    auto cancel = context.act.data_as<canceldelay>();
    context.require_authorization(cancel.canceling_auth.actor); // only here to mark the single authority on this action as used
 

@@ -10,8 +10,8 @@
 
 #include <iosfwd>
 
-#include <yosemite/chain/standard_token_action_types.hpp>
-#include <yosemite/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
 
 #define REQUIRE_EQUAL_OBJECTS(left, right) { auto a = fc::variant( left ); auto b = fc::variant( right ); BOOST_REQUIRE_EQUAL( true, a.is_object() ); \
    BOOST_REQUIRE_EQUAL( true, b.is_object() ); \
@@ -242,8 +242,8 @@ namespace eosio { namespace testing {
          auto get_resolver() {
             return [this]( account_name code, action_name action ) -> optional<abi_serializer> {
                try {
-                  if ( yosemite::chain::token::utils::is_yosemite_standard_token_action(action) ) {
-                     code = YOSEMITE_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
+                  if ( infrablockchain::chain::token::utils::is_infrablockchain_standard_token_action(action) ) {
+                     code = INFRABLOCKCHAIN_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT;
                   }
                   const auto& accnt = control->db().get<account_object, by_name>( code );
                   abi_def abi;

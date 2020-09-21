@@ -4,18 +4,22 @@
 //#include <infrablockchainlib/system_depository.hpp>
 #include <infrablockchainlib/transaction_vote.h>
 
+// DEPRECATED
+
 namespace yosemite { namespace native_token {
 
+    using namespace infrablockchain;
+
     bool ntoken::check_identity_auth_for_transfer(account_name account, const ntoken_kyc_rule_type &kycrule_type) {
-        eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED)),
+        eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED)),
                      "account is blacklisted by identity authority");
         switch (kycrule_type) {
             case NTOKEN_KYC_RULE_TYPE_TRANSFER_SEND:
-                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND)),
+                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED_NTOKEN_SEND)),
                              "account is send-blacklisted by identity authority");
                 break;
             case NTOKEN_KYC_RULE_TYPE_TRANSFER_RECEIVE:
-                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, YOSEMITE_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE)),
+                eosio_assert(static_cast<uint32_t>(!identity::has_account_state(account, INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE)),
                              "account is receive-blacklisted by identity authority");
                 break;
             case NTOKEN_KYC_RULE_TYPE_MAX:
@@ -32,7 +36,7 @@ namespace yosemite { namespace native_token {
     void ntoken::nissue(const account_name &to, const yx_asset &token, const string &memo) {
         eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
         eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
-        eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
+        eosio_assert(static_cast<uint32_t>(token.symbol.value == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL),
                      "cannot issue non-native token with this operation or wrong precision is specified");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
@@ -46,7 +50,7 @@ namespace yosemite { namespace native_token {
         if (tstats == stats.end()) {
             stats.emplace(get_self(), [&](auto &s) {
                 s.key = NTOKEN_BASIC_STATS_KEY;
-                s.supply = asset{token.amount, YOSEMITE_NATIVE_TOKEN_SYMBOL};
+                s.supply = asset{token.amount, INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL};
             });
         } else {
             stats.modify(tstats, 0, [&](auto &s) {
@@ -60,17 +64,17 @@ namespace yosemite { namespace native_token {
 
         if (to != token.issuer) {
             INLINE_ACTION_SENDER(ntoken, ntransfer)
-                    (get_self(), {{token.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                    (get_self(), {{token.issuer, N(active)}, {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                      {token.issuer, to, token, memo});
         }
 
-        charge_transaction_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_ISSUE);
+        charge_transaction_fee(token.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_NTOKEN_ISSUE);
     }
 
     void ntoken::nredeem(const yx_asset &token, const string &memo) {
         eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
         eosio_assert(static_cast<uint32_t>(token.amount > 0), "must be positive token");
-        eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
+        eosio_assert(static_cast<uint32_t>(token.symbol.value == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL),
                      "cannot redeem non-native token with this operation or wrong precision is specified");
         eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
 
@@ -89,15 +93,15 @@ namespace yosemite { namespace native_token {
 
         sub_native_token_balance(token.issuer, token);
 
-        charge_transaction_fee(token.issuer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_REDEEM);
+        charge_transaction_fee(token.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_NTOKEN_REDEEM);
     }
 
     void ntoken::transfer(account_name from, account_name to, eosio::asset amount, const string &memo) {
-        bool called_by_system_contract = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+        bool called_by_system_contract = has_auth(INFRABLOCKCHAIN_SYSTEM_ACCOUNT);
         if (!called_by_system_contract) {
             eosio_assert(static_cast<uint32_t>(yx_asset{amount, 0}.is_valid()), "invalid amount");
             eosio_assert(static_cast<uint32_t>(amount.amount > 0), "must transfer positive amount");
-            eosio_assert(static_cast<uint32_t>(amount.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
+            eosio_assert(static_cast<uint32_t>(amount.symbol.value == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL),
                          "only native token is supported; use yx.token::transfer instead");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
@@ -118,7 +122,7 @@ namespace yosemite { namespace native_token {
 
         accounts_native accounts_table_native(get_self(), from);
         for (auto &balance_holder : accounts_table_native) {
-            yx_symbol native_token_symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL, balance_holder.token.issuer};
+            yx_symbol native_token_symbol{INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL, balance_holder.token.issuer};
 
             int64_t to_balance = 0;
             if (balance_holder.token.amount <= amount.amount) {
@@ -130,7 +134,7 @@ namespace yosemite { namespace native_token {
             }
 
             INLINE_ACTION_SENDER(ntoken, ntransfer)
-                    (get_self(), {{from, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                    (get_self(), {{from, N(active)}, {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                      {from, to, {to_balance, native_token_symbol}, memo});
 
             if (amount.amount == 0) {
@@ -141,16 +145,16 @@ namespace yosemite { namespace native_token {
         eosio_assert(static_cast<uint32_t>(amount.amount == 0), "from account cannot afford native token amount");
 
         if (!called_by_system_contract) {
-            charge_transaction_fee(payer, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_TRANSFER);
+            charge_transaction_fee(payer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_NTOKEN_TRANSFER);
         }
     }
 
     void ntoken::ntransfer(account_name from, account_name to, const yx_asset &token, const string &memo) {
-        bool called_by_system_contract = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+        bool called_by_system_contract = has_auth(INFRABLOCKCHAIN_SYSTEM_ACCOUNT);
         if (!called_by_system_contract) {
             eosio_assert(static_cast<uint32_t>(token.is_valid()), "invalid token");
             eosio_assert(static_cast<uint32_t>(token.amount > 0), "must transfer positive amount");
-            eosio_assert(static_cast<uint32_t>(token.symbol.value == YOSEMITE_NATIVE_TOKEN_SYMBOL),
+            eosio_assert(static_cast<uint32_t>(token.symbol.value == INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL),
                          "only native token is supported; use yx.token::transfer instead");
             eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
             eosio_assert(static_cast<uint32_t>(memo.size() <= 256), "memo has more than 256 bytes");
@@ -171,13 +175,13 @@ namespace yosemite { namespace native_token {
         add_native_token_balance(to, token);
 
         if (!called_by_system_contract) {
-            charge_transaction_fee(from, YOSEMITE_TX_FEE_OP_NAME_NTOKEN_NTRANSFER);
+            charge_transaction_fee(from, INFRABLOCKCHAIN_TX_FEE_OP_NAME_NTOKEN_NTRANSFER);
         }
     }
 
     void ntoken::payfee(account_name payer, const asset &fee) {
         require_auth(payer); // just for sure
-        require_auth(YOSEMITE_SYSTEM_ACCOUNT);
+        require_auth(INFRABLOCKCHAIN_SYSTEM_ACCOUNT);
 
         if (fee.amount <= 0) return;
 
@@ -185,13 +189,13 @@ namespace yosemite { namespace native_token {
                      "KYC authentication for the fee payer account is failed");
 
         require_recipient(payer);
-        require_recipient(YOSEMITE_TX_FEE_ACCOUNT);
+        require_recipient(INFRABLOCKCHAIN_SYS_TX_FEE_ACCOUNT);
 
         auto remained_fee = fee.amount;
-        accounts_native accounts_table_native(YOSEMITE_NATIVE_TOKEN_ACCOUNT, payer);
+        accounts_native accounts_table_native(INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT, payer);
 
         for (auto &balance_holder : accounts_table_native) {
-            yx_asset yxfee{0, yx_symbol{YOSEMITE_NATIVE_TOKEN_SYMBOL, balance_holder.token.issuer}};
+            yx_asset yxfee{0, yx_symbol{INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL, balance_holder.token.issuer}};
 
             if (balance_holder.token.amount >= remained_fee) {
                 yxfee.amount = remained_fee;
@@ -202,7 +206,7 @@ namespace yosemite { namespace native_token {
             }
 
             sub_native_token_balance(payer, yxfee);
-            add_native_token_balance(YOSEMITE_TX_FEE_ACCOUNT, yxfee);
+            add_native_token_balance(INFRABLOCKCHAIN_SYS_TX_FEE_ACCOUNT, yxfee);
 
             if (remained_fee == 0) {
                 break;
@@ -276,7 +280,7 @@ namespace yosemite { namespace native_token {
 
     void ntoken::setkycrule(uint8_t type, identity::identity_kyc_t kyc) {
         eosio_assert(static_cast<uint32_t>(type < NTOKEN_KYC_RULE_TYPE_MAX), "invalid type");
-        require_auth(YOSEMITE_SYSTEM_ACCOUNT);
+        require_auth(INFRABLOCKCHAIN_SYSTEM_ACCOUNT);
 
         kyc_rule_index kyc_rule(get_self(), get_self());
         auto itr = kyc_rule.find(type);

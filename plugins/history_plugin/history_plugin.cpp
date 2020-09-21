@@ -318,7 +318,7 @@ namespace eosio {
             for( auto& s : fo ) {
                if( s == "*" || s == "\"*\"" ) {
                   my->bypass_filter = true;
-                  wlog( "--filter-on * enabled. This can fill shared_mem, causing yosemite to stop." );
+                  wlog( "--filter-on * enabled. This can fill shared_mem, causing infra-node to stop." );
                   break;
                }
                std::vector<std::string> v;

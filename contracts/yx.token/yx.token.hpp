@@ -9,6 +9,8 @@
 #include <infrablockchainlib/number.hpp>
 #include <string>
 
+// DEPRECATED
+
 namespace yosemite { namespace non_native_token {
 
    using namespace eosio;
@@ -29,6 +31,7 @@ namespace yosemite { namespace non_native_token {
       }
    };
 
+   // DEPRECATED
    class yx_token : public token {
    public:
       explicit yx_token(account_name self) : token(self) {

@@ -240,18 +240,18 @@ BOOST_AUTO_TEST_CASE(link_auths) { try {
 
    // Send req auth action with alice's spending key, it should fail
    BOOST_CHECK_THROW(chain.push_reqauth("alice", { permission_level{N(alice), "spending"} }, { spending_priv_key }), irrelevant_auth_exception);
-   // Link authority for yosemite reqauth action with alice's spending key
-   chain.link_authority("alice", "yosemite", "spending",  "reqauth");
+   // Link authority for infrasys reqauth action with alice's spending key
+   chain.link_authority("alice", "infrasys", "spending",  "reqauth");
    // Now, req auth action with alice's spending key should succeed
    chain.push_reqauth("alice", { permission_level{N(alice), "spending"} }, { spending_priv_key });
 
    chain.produce_block();
 
    // Relink the same auth should fail
-   BOOST_CHECK_THROW( chain.link_authority("alice", "yosemite", "spending",  "reqauth"), action_validate_exception);
+   BOOST_CHECK_THROW( chain.link_authority("alice", "infrasys", "spending",  "reqauth"), action_validate_exception);
 
-   // Unlink alice with yosemite reqauth
-   chain.unlink_authority("alice", "yosemite", "reqauth");
+   // Unlink alice with infrasys reqauth
+   chain.unlink_authority("alice", "infrasys", "reqauth");
    // Now, req auth action with alice's spending key should fail
    BOOST_CHECK_THROW(chain.push_reqauth("alice", { permission_level{N(alice), "spending"} }, { spending_priv_key }), irrelevant_auth_exception);
 
@@ -259,8 +259,8 @@ BOOST_AUTO_TEST_CASE(link_auths) { try {
 
    // Send req auth action with scud key, it should fail
    BOOST_CHECK_THROW(chain.push_reqauth("alice", { permission_level{N(alice), "scud"} }, { scud_priv_key }), irrelevant_auth_exception);
-   // Link authority for any yosemite action with alice's scud key
-   chain.link_authority("alice", "yosemite", "scud");
+   // Link authority for any infrasys action with alice's scud key
+   chain.link_authority("alice", "infrasys", "scud");
    // Now, req auth action with alice's scud key should succeed
    chain.push_reqauth("alice", { permission_level{N(alice), "scud"} }, { scud_priv_key });
    // req auth action with alice's spending key should also be fine, since it is the parent of alice's scud key
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(link_then_update_auth) { try {
 
    chain.set_authority("alice", "first", first_pub_key, "active");
 
-   chain.link_authority("alice", "yosemite", "first",  "reqauth");
+   chain.link_authority("alice", "infrasys", "first",  "reqauth");
    chain.push_reqauth("alice", { permission_level{N(alice), "first"} }, { first_priv_key });
 
    chain.produce_blocks(13); // Wait at least 6 seconds for first push_reqauth transaction to expire.
@@ -324,19 +324,19 @@ try {
                          fc_exception_message_is("account names can only be 12 chars long"));
 
 
-   // Creating account with yx. prefix with privileged account
-   chain.create_account("yx.test1");
+   // Creating account with sys. prefix with privileged account
+   chain.create_account("sys.test1");
 
-   // Creating account with yosemite string with privileged account
-   chain.create_account("yosemite1");
+   // Creating account with infrasys string with privileged account
+   chain.create_account("infrasys1");
 
    // Creating account with yx. prefix with non-privileged account, should fail
    BOOST_CHECK_EXCEPTION(chain.create_account("yx.test2", "joe"), action_validate_exception,
                          fc_exception_message_is("only privileged accounts can have names that start with 'yx.'"));
 
-   // Creating account with yosemite string with non-privileged account, should fail
-   BOOST_CHECK_EXCEPTION(chain.create_account("yosemite2", "joe"), action_validate_exception,
-                         fc_exception_message_is("only privileged accounts can have names that start with 'yosemite'"));
+   // Creating account with infrasys string with non-privileged account, should fail
+   BOOST_CHECK_EXCEPTION(chain.create_account("infrasys2", "joe"), action_validate_exception,
+                         fc_exception_message_is("only privileged accounts can have names that start with 'infrasys'"));
 
 } FC_LOG_AND_RETHROW() }
 
@@ -361,10 +361,10 @@ BOOST_AUTO_TEST_CASE( any_auth ) { try {
 
    //test.push_reqauth( N(alice), { permission_level{N(alice),"spending"} }, { spending_priv_key });
 
-   chain.link_authority( "alice", "yosemite", "yx.any", "reqauth" );
-   chain.link_authority( "bob", "yosemite", "yx.any", "reqauth" );
+   chain.link_authority( "alice", "infrasys", "sys.any", "reqauth" );
+   chain.link_authority( "bob", "infrasys", "sys.any", "reqauth" );
 
-   /// this should succeed because yosemite::reqauth is linked to any permission
+   /// this should succeed because infrasys::reqauth is linked to any permission
    chain.push_reqauth("alice", { permission_level{N(alice), "spending"} }, { spending_priv_key });
 
    /// this should fail because bob cannot authorize for alice, the permission given must be one-of alices
@@ -509,7 +509,7 @@ BOOST_AUTO_TEST_CASE( linkauth_special ) { try {
       BOOST_REQUIRE_EXCEPTION(
          chain.push_action(config::system_account_name, linkauth::get_name(), tester_account, fc::mutable_variant_object()
                ("account", "tester")
-               ("code", "yosemite")
+               ("code", "infrasys")
                ("type", type)
                ("requirement", "first")),
          action_validate_exception,

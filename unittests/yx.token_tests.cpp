@@ -1,11 +1,11 @@
-#include <yosemite/testing/yx_tester.hpp>
+#include <infrablockchain/testing/yx_tester.hpp>
 
-using namespace yosemite::testing;
+using namespace infrablockchain::testing;
 
 class yx_token_tester : public yx_tester {
 public:
    yx_token_tester() {
-      init_yosemite_contracts();
+      init_infrablockchain_contracts();
 
       create_accounts({N(tkprovider), N(tkprovider2)});
       produce_blocks();
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
    BOOST_FIXTURE_TEST_CASE(required_auth_test, yx_token_tester) try {
 
       yx_symbol _ysymbol = yx_symbol::from_string("4,ETH@tkprovider");
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_USER_TOKEN_ACCOUNT, N(create), N(user1), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT, N(create), N(user1), mvo()
                           ("ysymbol", _ysymbol)
                           ("can_set_options", 0)),
                           missing_auth_exception);
@@ -27,18 +27,18 @@ BOOST_AUTO_TEST_SUITE(yx_token_tests)
       produce_blocks(1);
 
       auto _token = yx_asset::from_string("1.0000 ETH@tkprovider");
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_USER_TOKEN_ACCOUNT, N(issue), N(user1), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT, N(issue), N(user1), mvo()
                           ("to", "user1")
                           ("token", _token)
                           ("memo", "")),
                           missing_auth_exception);
 
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_USER_TOKEN_ACCOUNT, N(redeem), N(user1), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT, N(redeem), N(user1), mvo()
                           ("token", _token)
                           ("memo", "")),
                           missing_auth_exception);
 
-      BOOST_REQUIRE_THROW(base_tester::push_action(YOSEMITE_USER_TOKEN_ACCOUNT, N(transfer), N(user2), mvo()
+      BOOST_REQUIRE_THROW(base_tester::push_action(INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT, N(transfer), N(user2), mvo()
                           ("from", "user1")
                           ("to", "user2")
                           ("token", _token)

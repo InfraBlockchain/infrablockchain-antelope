@@ -22,19 +22,19 @@ You must consider the decision points carefully because it cannot be changed onc
 # Management Actions
 
 ## setting fee for operations
-* Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
+* Transaction fee for operations is set by [sys.txfee](../../contracts/sys.txfee/)::settxfee operation.
 ```
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tissue", "fee":"100.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tsetuilim", "fee":"10.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tissuebyu", "fee":"10.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.ttrustui", "fee":"10.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.tchangeis", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tcreate", "fee":"10000.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tissue", "fee":"100.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tredeem", "fee":"100.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.ttransfer", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tsetkyc", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tsetopts", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tfreezeac", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tsetuilim", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tissuebyu", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.ttrustui", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.tchangeis", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
 # Actions
@@ -87,7 +87,7 @@ infra-cli push action yx.token issue '{"to":"user2","token":{"amount":"100000.00
 #         user2 <= yx.token::transfer           {"from":"d2","to":"user2","token":{"amount":"100000.0000 BTC","issuer":"d2"},"memo":"my memo"}
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 #            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 * Case 2. If the to account is the token depository itself, there is no `transfer` inline action.
@@ -95,7 +95,7 @@ infra-cli push action yx.token issue '{"to":"user2","token":{"amount":"100000.00
 #      yx.token <= yx.token::issue              {"to":"d2","token":{"amount":"10000.0000 BTC","issuer":"d2"},"memo":"my memo"}
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 #            d2 <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
-#      yx.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
+#      sys.txfee <= yx.ntoken::payfee            {"payer":"d2","token":{"amount":"100.00 DKRW","issuer":"d1"}}
 ```
 
 ## redeem
@@ -147,7 +147,7 @@ infra-cli push action yx.token setkycrule '{"ysymbol":{"tsymbol":"4,BTC","issuer
 1. type
    * 0 : transfer send
    * 1 : transfer receive
-1. kyc : 16-bit flag from [yx.identity](../../contracts/yx.identity/)
+1. kyc : 16-bit flag from [sys.identity](../../contracts/sys.identity/)
 
 ## setoptions
 set or add token options

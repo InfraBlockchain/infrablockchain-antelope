@@ -16,11 +16,11 @@
 #include <eosio/chain/plugin_interface.hpp>
 #include <eosio/chain/types.hpp>
 
-#include <yosemite/chain/standard_token_manager.hpp>
-#include <yosemite/chain/transaction_fee_manager.hpp>
-#include <yosemite/chain/transaction_vote_stat_manager.hpp>
-#include <yosemite/chain/yx_symbol.hpp>
-#include <yosemite/chain/yx_asset.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_fee_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/yx_symbol.hpp>
+#include <infrablockchain/chain/yx_asset.hpp>
 
 #include <boost/container/flat_set.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -48,7 +48,7 @@ namespace eosio {
    using chain::action_name;
    using chain::abi_def;
    using chain::abi_serializer;
-   using namespace yosemite::chain;
+   using namespace infrablockchain::chain;
 
 namespace chain_apis {
 struct empty{};
@@ -130,9 +130,9 @@ public:
       fc::time_point             last_code_update;
       fc::time_point             created;
 
-      yosemite::chain::system_token_balance  system_token_balance;
+      infrablockchain::chain::system_token_balance  system_token_balance;
 
-      optional<yosemite::chain::token_meta_info> token_info;
+      optional<infrablockchain::chain::token_meta_info> token_info;
 
       int64_t                    ram_quota  = 0;
       int64_t                    net_weight = 0;
@@ -359,14 +359,14 @@ public:
       name account;
    };
 
-   yosemite::chain::system_token_balance get_system_token_balance(const get_system_token_balance_params &params) const;
+   infrablockchain::chain::system_token_balance get_system_token_balance(const get_system_token_balance_params &params) const;
 
    struct get_txfee_item_params {
       name code;
       name action;
    };
 
-   yosemite::chain::tx_fee_for_action get_txfee_item(const get_txfee_item_params &params) const;
+   infrablockchain::chain::tx_fee_for_action get_txfee_item(const get_txfee_item_params &params) const;
 
    struct get_txfee_list_params {
       name code_lower_bound; // lower bound of code account name (inclusive)
@@ -374,20 +374,20 @@ public:
       uint32_t limit = 100; // limit of result item count
    };
 
-   yosemite::chain::tx_fee_list_result get_txfee_list(const get_txfee_list_params &params) const;
+   infrablockchain::chain::tx_fee_list_result get_txfee_list(const get_txfee_list_params &params) const;
 
    struct get_tx_vote_stat_for_account_params {
       name account;
    };
 
-   yosemite::chain::tx_vote_stat_for_account get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const;
+   infrablockchain::chain::tx_vote_stat_for_account get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const;
 
    struct get_top_tx_vote_receiver_list_params {
       uint32_t offset = 0;
       uint32_t limit = 30;
    };
 
-   yosemite::chain::tx_vote_receiver_list_result get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const;
+   infrablockchain::chain::tx_vote_receiver_list_result get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const;
 
    struct get_yx_token_balance_params {
       name code;

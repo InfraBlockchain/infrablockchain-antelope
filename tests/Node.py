@@ -8,7 +8,7 @@ import datetime
 import json
 
 from core_symbol import CORE_SYMBOL
-from native_token_symbol import YOSEMITE_NATIVE_TOKEN_SYMBOL
+from native_token_symbol import INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL
 from testUtils import Utils
 from testUtils import Account
 from testUtils import EnumType
@@ -542,7 +542,7 @@ class Node(object):
 
         if stakedDeposit > 0:
             self.waitForTransInBlock(transId) # seems like account creation needs to be finlized before transfer can happen
-            trans = self.transferNativeToken(creatorAccount, account, "%0.02f %s" % (stakedDeposit/100, YOSEMITE_NATIVE_TOKEN_SYMBOL), "init")
+            trans = self.transferNativeToken(creatorAccount, account, "%0.02f %s" % (stakedDeposit/100, INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL), "init")
             self.trackCmdTransaction(trans)
 
         return self.waitForTransBlockIfNeeded(trans, waitForTransBlock, exitOnError=exitOnError)
@@ -1528,19 +1528,19 @@ class Node(object):
 
         return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)
 
-    def setTransactionFee(self, actionName, nativeTokenAmount, yosemiteAccount, waitForTransBlock=False, exitOnError=True):
+    def setTransactionFee(self, actionName, nativeTokenAmount, sysAccount, waitForTransBlock=False, exitOnError=True):
         assert(actionName)
         assert(isinstance(actionName, str))
         assert(nativeTokenAmount)
         assert(isinstance(nativeTokenAmount, str))
-        assert(yosemiteAccount)
-        assert(isinstance(yosemiteAccount, Account))
+        assert(sysAccount)
+        assert(isinstance(sysAccount, Account))
 
         contract = "yx.txfee"
         action = "settxfee"
         Utils.Print("push %s action to %s contract" % (action, contract))
         data = "[ \"%s\", \"%s\" ]" % (actionName, nativeTokenAmount)
-        opts = "--permission %s@active" % yosemiteAccount.name
+        opts = "--permission %s@active" % sysAccount.name
         trans = self.pushMessage(contract, action, data, opts)
 
         if trans is None or not trans[0]:
@@ -1549,17 +1549,17 @@ class Node(object):
 
         return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)
 
-    def setNativeTokenKycRule(self, type, kyc, yosemiteAccount, waitForTransBlock=False, exitOnError=True):
+    def setNativeTokenKycRule(self, type, kyc, sysAccount, waitForTransBlock=False, exitOnError=True):
         assert(isinstance(type, int))
         assert(isinstance(kyc, int))
-        assert yosemiteAccount
-        assert(isinstance(yosemiteAccount, Account))
+        assert sysAccount
+        assert(isinstance(sysAccount, Account))
 
         contract = "yx.ntoken"
         action = "setkycrule"
         Utils.Print("push %s action to %s contract" % (action, contract))
         data = "[ %s, %s ]" % (type, kyc)
-        opts = "--permission %s@active" % yosemiteAccount.name
+        opts = "--permission %s@active" % sysAccount.name
         trans = self.pushMessage(contract, action, data, opts)
 
         if trans is None or not trans[0]:
@@ -1568,20 +1568,20 @@ class Node(object):
 
         return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)
 
-    def setPriviledged(self, account, yosemiteAccount, waitForTransBlock=False, exitOnError=True):
+    def setPriviledged(self, account, sysAccount, waitForTransBlock=False, exitOnError=True):
         assert account
         assert(isinstance(account, str))
-        assert yosemiteAccount
-        assert(isinstance(yosemiteAccount, Account))
+        assert sysAccount
+        assert(isinstance(sysAccount, Account))
 
         action = "setpriv"
-        Utils.Print("push %s action to %s contract" % (action, yosemiteAccount.name))
+        Utils.Print("push %s action to %s contract" % (action, sysAccount.name))
         data = "[ %s, %s ]" % (account, "1")
-        opts = "--permission %s@active" % yosemiteAccount.name
-        trans = self.pushMessage(yosemiteAccount.name, action, data, opts)
+        opts = "--permission %s@active" % sysAccount.name
+        trans = self.pushMessage(sysAccount.name, action, data, opts)
 
         if trans is None or not trans[0]:
-            Utils.Print("ERROR: Failed to push issue action to %s contract." % yosemiteAccount.name)
+            Utils.Print("ERROR: Failed to push issue action to %s contract." % sysAccount.name)
             return None
 
         return self.waitForTransBlockIfNeeded(trans[1], waitForTransBlock, exitOnError=exitOnError)

@@ -1,7 +1,7 @@
 /**
  *  @file infrablockchainlib/trx_fee_api.h
- *  @author bezalel@yosemitex.com
- *  @copyright defined in yosemite/LICENSE.txt
+ *  @author bezalel@infrablockchain.com
+ *  @copyright defined in infrablockchain/LICENSE.txt
  */
 #pragma once
 
@@ -10,15 +10,15 @@
 extern "C" {
 
 /**
- *  @defgroup YOSEMITE Transaction Fee API
+ *  @defgroup INFRABLOCKCHAIN Transaction Fee API
  *  @ingroup contractdev
- *  @brief Defines API for YOSEMITE-Transaction-Fee
+ *  @brief Defines API for INFRABLOCKCHAIN-Transaction-Fee
  */
 
 /**
- *  @defgroup YOSEMITE Transaction Fee C API
+ *  @defgroup INFRABLOCKCHAIN Transaction Fee C API
  *  @ingroup trxfeeapi
- *  @brief Defines API for YOSEMITE-Transaction-Fee
+ *  @brief Defines API for INFRABLOCKCHAIN-Transaction-Fee
  *  @{
  */
 
@@ -26,7 +26,7 @@ extern "C" {
 /**
  *  Set Transaction Fee For Action
  *  @brief set transaction fee for an action. the transaction fee for each code/action is determined by the 2/3+ block producers.
- *  if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. YOSEMITE standard token actions) that every account has.
+ *  if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. INFRABLOCKCHAIN standard token actions) that every account has.
  *  if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup.
  *
  *  @param code - account name of contract code
@@ -53,11 +53,11 @@ void unset_trx_fee_for_action( account_name code, action_name action );
  *
  *  @param code - account name of contract code
  *  @param action - action name
- *  @param data - output buffer of the packed 'yosemite_tx_fee_for_action' object, only retrieved if sufficent size to hold packed data.
+ *  @param data - output buffer of the packed 'infrablockchain_tx_fee_for_action' object, only retrieved if sufficent size to hold packed data.
  *  @param datalen - size of the data buffer, 0 to report required size.
  *  @return size of the packed 'tx_fee_for_action' data
  *  @pre `data` is a valid pointer to a range of memory at least `datalen` bytes long
- *  @post `data` is filled with packed 'yosemite_tx_fee_for_action' object
+ *  @post `data` is filled with packed 'infrablockchain_tx_fee_for_action' object
  */
 uint32_t get_trx_fee_for_action( account_name code, action_name action, char* data, uint32_t datalen );
 
@@ -71,7 +71,7 @@ account_name trx_fee_payer();
 ///@ } trxfeeapi
 }
 
-struct yosemite_tx_fee_for_action {
+struct infrablockchain_tx_fee_for_action {
    int32_t value;
    uint32_t fee_type;
 };

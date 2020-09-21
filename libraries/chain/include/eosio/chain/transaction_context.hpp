@@ -1,8 +1,8 @@
 #pragma once
 
-#include <yosemite/chain/transaction_extensions.hpp>
-#include <yosemite/chain/transaction_as_a_vote.hpp>
-#include <yosemite/chain/transaction_fee_manager.hpp>
+#include <infrablockchain/chain/transaction_extensions.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+#include <infrablockchain/chain/transaction_fee_manager.hpp>
 
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/trace.hpp>
@@ -23,7 +23,7 @@ namespace eosio { namespace chain {
          static bool initialized;
    };
 
-   using namespace yosemite::chain;
+   using namespace infrablockchain::chain;
 
    class transaction_context {
       private:
@@ -65,12 +65,12 @@ namespace eosio { namespace chain {
          void validate_referenced_accounts( const transaction& trx, bool enforce_actor_whitelist_blacklist )const;
 
       public:
-         /// YOSEMITE Proof-of-Transaction, Transaction-as-a-Vote
+         /// INFRABLOCKCHAIN Proof-of-Transaction, Transaction-as-a-Vote
          void cast_transaction_vote(transaction_vote_amount_type vote_amount);
          bool has_transaction_vote() const;
          const transaction_vote& get_transaction_vote() const;
 
-         /// YOSEMITE Transaction-Fee-Payer
+         /// INFRABLOCKCHAIN Transaction-Fee-Payer
          const account_name& get_tx_fee_payer() const;
 
       private:
@@ -147,7 +147,7 @@ namespace eosio { namespace chain {
 
          deadline_timer                _deadline_timer;
 
-      friend class yosemite::chain::standard_token_manager;
+      friend class infrablockchain::chain::standard_token_manager;
    };
 
 } }

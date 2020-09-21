@@ -10,12 +10,12 @@
 # Management Actions
 
 ## setting fee for operations
-* Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
+* Transaction fee for operations is set by [sys.txfee](../../contracts/sys.txfee/)::settxfee operation.
 * It shares with transaction fee of yx.token.
 ```
-infra-cli push action yx.txfee settxfee '{"operation":"tf.esescrow", "fee":"100.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.esproceed", "fee":"10.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.escancel", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.esescrow", "fee":"100.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.esproceed", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.escancel", "fee":"10.00 DKRW"}}' -p yosemite
 ```
 
 # Actions

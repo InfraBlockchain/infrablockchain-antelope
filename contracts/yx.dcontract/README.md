@@ -28,13 +28,13 @@
 # Management Actions
 
 ## setting fee for actions
-* Transaction fee for operations is set by [yx.txfee](../../contracts/yx.txfee/)::settxfee operation.
+* Transaction fee for operations is set by [sys.txfee](../../contracts/sys.txfee/)::settxfee operation.
 ```
-infra-cli push action yx.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.dcsign", "fee":"30.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.dcupadd", "fee":"5.00 DKRW"}}' -p yosemite
-infra-cli push action yx.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.dccreate", "fee":"50.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.dcaddsign", "fee":"10.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.dcsign", "fee":"30.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.dcupadd", "fee":"5.00 DKRW"}}' -p yosemite
+infra-cli push action sys.txfee settxfee '{"operation":"tf.dcremove", "fee":"0.00 DKRW"}}' -p yosemite
 ```
 
 
@@ -62,8 +62,8 @@ infra-cli push action yx.dcontract create '{"dcid":{"creator":"servprovider","se
 1. expiration : expiration time in the ISO8601 format, combined date and time to seconds in UTC e.g. 2018-08-31T02:49:57
    * YosemiteChain assumes that the time-zone of the expiration time is UTC. Other time-zones are not considered.
    * The minimum expiration is 1 minute from now.
-1. signer_type : the required type of the signer account defined by [yx.identity](../../contracts/yx.identity/); 0 for general case
-1. signer_kyc : 16-bit flag from [yx.identity](../../contracts/yx.identity/) which indicates the required KYC status of the signer account ; 0 for general case
+1. signer_type : the required type of the signer account defined by [sys.identity](../../contracts/sys.identity/); 0 for general case
+1. signer_kyc : 16-bit flag from [sys.identity](../../contracts/sys.identity/) which indicates the required KYC status of the signer account ; 0 for general case
 1. options : reserved; must be 0
 
 ## sign

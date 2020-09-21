@@ -58,11 +58,11 @@ namespace yosemite { namespace non_native_token {
 
       if (to != ysymbol.issuer) {
          SEND_INLINE_ACTION(*this, transferid,
-                            {{ysymbol.issuer, N(active)}, {YOSEMITE_SYSTEM_ACCOUNT, N(active)}},
+                            {{ysymbol.issuer, N(active)}, {INFRABLOCKCHAIN_SYSTEM_ACCOUNT, N(active)}},
                             {ysymbol.issuer, to, ysymbol.issuer, ids, memo});
       }
 
-      charge_fee(ysymbol.issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_ISSUE);
+      charge_fee(ysymbol.issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_ISSUE);
    }
 
    // @abi action
@@ -94,12 +94,12 @@ namespace yosemite { namespace non_native_token {
          sub_token_balance(issuer, burn_token->value);
       }
 
-      charge_fee(issuer, YOSEMITE_TX_FEE_OP_NAME_TOKEN_REDEEM);
+      charge_fee(issuer, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_REDEEM);
    }
 
    // @abi action
    void nft::transferid(account_name from, account_name to, account_name issuer, const vector<id_type> &ids, const string &memo) {
-      bool is_auth_by_sysaccount = has_auth(YOSEMITE_SYSTEM_ACCOUNT);
+      bool is_auth_by_sysaccount = has_auth(INFRABLOCKCHAIN_SYSTEM_ACCOUNT);
       if (!is_auth_by_sysaccount) {
          eosio_assert(static_cast<uint32_t>(!ids.empty()), "ids cannot be empty");
          eosio_assert(static_cast<uint32_t>(from != to), "from and to account cannot be the same");
@@ -130,7 +130,7 @@ namespace yosemite { namespace non_native_token {
       require_recipient(to);
 
       if (!is_auth_by_sysaccount) {
-         charge_fee(from, YOSEMITE_TX_FEE_OP_NAME_TOKEN_TRANSFER);
+         charge_fee(from, INFRABLOCKCHAIN_TX_FEE_OP_NAME_TOKEN_TRANSFER);
       }
    }
 

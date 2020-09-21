@@ -10,10 +10,13 @@
 #include <eosiolib/eosio.hpp>
 #include <string>
 
+// DEPRECATED
+
 namespace yosemite { namespace non_native_token {
 
     using namespace eosio;
     using std::string;
+    using namespace infrablockchain::identity;
 
     /* Option flags for can_set_options */
     #define TOKEN_CAN_SET_OPTIONS_NONE                      0b0000000000000000
@@ -47,7 +50,7 @@ namespace yosemite { namespace non_native_token {
         uint16_t can_set_options = TOKEN_CAN_SET_OPTIONS_NONE; // can set only at token creation time
         uint16_t options = TOKEN_OPTIONS_NONE;
         std::vector<token_rule_t> kyc_rules;
-        std::vector<identity::identity_kyc_t> kyc_rule_flags; // from infrablockchainlib/identity.hpp
+        std::vector<identity_kyc_t> kyc_rule_flags; // from infrablockchainlib/identity.hpp
 
         uint64_t primary_key() const { return supply.issuer; }
     };
@@ -77,7 +80,7 @@ namespace yosemite { namespace non_native_token {
 
         void create(const yx_symbol &ysymbol, uint16_t can_set_options);
         virtual void transfer(account_name from, account_name to, const yx_asset &token, const string &memo) = 0;
-        void setkycrule(const yx_symbol &ysymbol, token_rule_t type, identity::identity_kyc_t kyc);
+        void setkycrule(const yx_symbol &ysymbol, token_rule_t type, identity_kyc_t kyc);
         void setoptions(const yx_symbol &ysymbol, uint16_t options, bool reset);
         void freezeacc(const yx_symbol &ysymbol, const vector<account_name> &accs, bool freeze);
 
