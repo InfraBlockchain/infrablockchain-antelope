@@ -65,7 +65,7 @@ $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycarduseraaa\", \"
 # ycarduseraaa issues credit tokens and deposits to ycard service
 $INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"active"}}]}}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
 $INFRA_CLI push action infrasys linkauth '{"account":"ycarduseraaa","code":"ycard.usd.yt","type":"creditissue","requirement":"creditissue"}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
-$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"codecrdtxfer","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"yx.code"}}]}}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
+$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"codecrdtxfer","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"sys.code"}}]}}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
 $INFRA_CLI push action infrasys linkauth '{"account":"ycarduseraaa","code":"ycard.usd.yt","type":"credittxfer","requirement":"codecrdtxfer"}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
 
 # offering credit limit to user account ycarduseraaa (issuing credit card)

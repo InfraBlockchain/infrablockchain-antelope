@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # chmod +x ./reset_std_token_infrablockchain_testnet_on_server_side.sh
 
+setopt shwordsplit
+
 INFRA_NODE_BIN_NAME=infra-node
 INFRA_CLI_BIN_NAME=infra-cli
 INFRA_KEYSTORE_BIN_NAME=infra-keystore
@@ -112,7 +114,7 @@ tail -n 300 $INFRA_KEYSTORE_LOG_FILE
 #Creating wallet: default
 #Save password to use in the future to unlock this wallet.
 #Without password imported keys will not be retrievable.
-#"PW5Jrpn9S5ygoA9r2bv47rv9gH2jVjntdyHWKL4QdoKVFRz6U17EM"
+#"PW5KdHLJYdrhiARnhK8b6JrSuxuZnDYQYBTEh9RMyBpBQo9QPfEdE"
 $INFRA_CLI wallet open
 $INFRA_CLI wallet unlock --password $INFRA_KEYSTORE_WALLET_PASSWORD
 
@@ -166,7 +168,7 @@ $INFRA_CLI create account infrasys systoken.b YOS61njg9Zs9oQmAmwLnrcVBrniWKshKAh
 { print_section_title "Install InfraBlockchain System Contract"; } 2>/dev/null
 
 sleep 2
-$INFRA_CLI set contract infrasys $INFRABLOCKCHAIN_CONTRACTS_DIR/yx.system/ -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI set contract infrasys $INFRABLOCKCHAIN_CONTRACTS_DIR/infrasys/ -p infrasys@active --txfee-payer infrasys
 sleep 2
 
 
@@ -376,6 +378,11 @@ $INFRA_CLI get account sys.msig
 sleep 1
 
 { print_section_title "Resign System Contract Accounts delegating authority to \"infrasys\""; } 2>/dev/null
+
+$INFRA_CLI get account sys.tokenabi
+$INFRA_CLI push action infrasys updateauth '{"account":"sys.tokenabi","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"infrasys","permission":"active"}}]}}' -p sys.tokenabi@owner --txfee-payer infrasys
+$INFRA_CLI push action infrasys updateauth '{"account":"sys.tokenabi","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"infrasys","permission":"active"}}]}}' -p sys.tokenabi@active --txfee-payer infrasys
+$INFRA_CLI get account sys.tokenabi
 
 $INFRA_CLI get account sys.identity
 $INFRA_CLI push action infrasys updateauth '{"account":"sys.identity","permission":"owner","parent":"","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"infrasys","permission":"active"}}]}}' -p sys.identity@owner --txfee-payer infrasys
@@ -620,7 +627,7 @@ sleep 2
 ## useraccounta issues credit tokens and deposits to ycard service
 $INFRA_CLI push action infrasys updateauth '{"account":"useraccounta","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.cusd.a","permission":"active"}}]}}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 $INFRA_CLI push action infrasys linkauth '{"account":"useraccounta","code":"ycard.cusd.a","type":"creditissue","requirement":"creditissue"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
-$INFRA_CLI push action infrasys updateauth '{"account":"useraccounta","permission":"codetransfer","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.cusd.a","permission":"yx.code"}}]}}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
+$INFRA_CLI push action infrasys updateauth '{"account":"useraccounta","permission":"codetransfer","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.cusd.a","permission":"sys.code"}}]}}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 $INFRA_CLI push action infrasys linkauth '{"account":"useraccounta","code":"ycard.cusd.a","type":"transfer","requirement":"codetransfer"}' -p useraccounta@active --txfee-payer ycard.cusd.a -v producer.c
 
 $INFRA_CLI push action ycard.cusd.a creditissue '{"issuer":"useraccounta","to":"ycard.cusd.a","qty":"500.0000 CUSD","tag":"issue credit token by user, and deposit to credit service"}' -p useraccounta@creditissue --txfee-payer ycard.cusd.a -v producer.c
@@ -736,7 +743,7 @@ $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycarduseraaa\", \"
 # ycarduseraaa issues credit tokens and deposits to ycard service
 $INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"creditissue","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"active"}}]}}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
 $INFRA_CLI push action infrasys linkauth '{"account":"ycarduseraaa","code":"ycard.usd.yt","type":"creditissue","requirement":"creditissue"}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
-$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"codecrdtxfer","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"yx.code"}}]}}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
+$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"codecrdtxfer","parent":"active","auth":{"threshold":1,"keys":[],"waits":[],"accounts":[{"weight":1,"permission":{"actor":"ycard.usd.yt","permission":"sys.code"}}]}}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
 $INFRA_CLI push action infrasys linkauth '{"account":"ycarduseraaa","code":"ycard.usd.yt","type":"credittxfer","requirement":"codecrdtxfer"}' -p ycarduseraaa@active --txfee-payer ycard.usd.yt -v producer.c
 
 # offering credit limit to user account ycarduseraaa (issuing credit card)

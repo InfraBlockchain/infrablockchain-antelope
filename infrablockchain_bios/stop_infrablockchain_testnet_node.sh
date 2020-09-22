@@ -5,6 +5,8 @@
 #YSMT_TESTNET_NODE_USER_HOST=ubuntu@ec2-13-124-23-23.ap-northeast-2.compute.amazonaws.com
 #scp -i ${YSMT_TESTNET_SSH_KEY_FILE} ./stop_infrablockchain_testnet_node.sh ${YSMT_TESTNET_NODE_USER_HOST}:/mnt/infrablockchain_testnet_mgmt/stop_infrablockchain_testnet_node.sh
 
+setopt shwordsplit
+
 INFRA_NODE_BIN_NAME=infra-node
 INFRA_CLI_BIN_NAME=infra-cli
 INFRA_KEYSTORE_BIN_NAME=infra-keystore
