@@ -114,8 +114,8 @@
  *     ]
  *   ],
  *   "signatures": [
- *     "YSG_K1_K24Pe1TVtdCzY2s4NvfvPd28NL1jHoFUEsugxPCXqonoSJDZ4XD9S7CMBP8WyTbhkBFweWT9GLBDDJgQCv9qSaL8SLbR2s"
- *     "YSG_K1_De23QFuw98F32f98havdoaug2fp7gu23fiuadsvo97g2eoiASDFWEoihWEFscygoa8yg2eDF32d7gsadfuyg23fDw3fgsW"
+ *     "SIG_K1_K24Pe1TVtdCzY2s4NvfvPd28NL1jHoFUEsugxPCXqonoSJDZ4XD9S7CMBP8WyTbhkBFweWT9GLBDDJgQCv9qSaL8SLbR2s"
+ *     "SIG_K1_De23QFuw98F32f98havdoaug2fp7gu23fiuadsvo97g2eoiASDFWEoihWEFscygoa8yg2eDF32d7gsadfuyg23fDw3fgsW"
  *   ],
  *   "context_free_data": []
  * }

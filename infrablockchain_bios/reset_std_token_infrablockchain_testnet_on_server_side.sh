@@ -120,7 +120,7 @@ $INFRA_CLI wallet unlock --password $INFRA_KEYSTORE_WALLET_PASSWORD
 
 # infrablockchain initial key
 #$INFRA_CLI create key --to-console
-$INFRA_CLI wallet import --private-key YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
+$INFRA_CLI wallet import --private-key PVT_K1_VwEM9o5KsqdLs5jgHucBcE3PFbu1kk3fH2wbjRGve4QPzvScR
 
 
 { print_section_title "Start infra-node from genesis"; } 2>/dev/null
@@ -140,29 +140,29 @@ tail -n 300 $INFRA_NODE_LOG_FILE
 
 { print_section_title "Create System Accounts"; } 2>/dev/null
 
-$INFRA_CLI create account infrasys sys.tokenabi YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys sys.txfee YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys sys.msig YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys sys.identity YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3 -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys sys.tokenabi PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys sys.txfee PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys sys.msig PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys sys.identity PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys yx.dcontract PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR -p infrasys@active --txfee-payer infrasys
 
 { print_section_title "Create initial Identity Authority Account"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5K5Qe2ndgcfhWqdUjHnfhvCKVqCE82Rih6JrNQuuVJBcathAx9m
-$INFRA_CLI create account infrasys idauth.a YOS6EfGUaA5MNLH1GiHd64DcDr3HMgY1AM3WR1vdHKaah9Z4cWPZq -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_2So2Tt7dAoMR6tk9npz1WrnbAgHadbEhbmkLChRvggduxnwxAn
+$INFRA_CLI create account infrasys idauth.a PUB_K1_8QZSZGRFMiXk9GGEc7jPsyqZVF1CkJh16vHmnVt4PopkRZeyZJ -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI wallet import --private-key YPV_5JRzPhyg9jY4thDJ1rLsSr4zdLLoA7UEMQRw3vJFGmGKTZF5Kbx
-$INFRA_CLI create account infrasys idauth.b YOS5VvWLCqXL3AQyuXZfUTnEiWuhJNV6Nq3YbbS7Z98cN7GiRo9LR -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_2mrT8fELciM7qUvg7TSBG7SUVgvRL3gzATRMkY2JsJn1GMk2A5
+$INFRA_CLI create account infrasys idauth.b PUB_K1_8acHA5kYZd9ktLC7zHWJcH8h63Zrt19kQbe11ASCobb7NNvZaq -p infrasys@active --txfee-payer infrasys
 
 
 
 { print_section_title "Create initial System Token Account"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5J8WZRwfYVzsH8i3LaRQLGorVD788RFYqALEsLmeK8a6Kq6re2W
-$INFRA_CLI create account infrasys systoken.a YOS6o8hwGio5V2LgBxFMZi4bdVG5AvcHeFiMpaREKuZ29BwXpNTpH -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_4pDTqEyBnCCacqUfE6RgRWmssghAHU497eDqLg9ZobcnBYWQx
+$INFRA_CLI create account infrasys systoken.a PUB_K1_7DoMEdoWG4C9sf5B84HpG4k8MrnF1dcdsFTmk1Q348cn4XukEP -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI wallet import --private-key YPV_5K5MBizJ6HuG1kdvQTeMnpKjpFSZHm64Nj3X6MvJR6AnTF8mHkx
-$INFRA_CLI create account infrasys systoken.b YOS61njg9Zs9oQmAmwLnrcVBrniWKshKAhoQJJqNVVnYXCPSRKLTE -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_2MPBZmG3HxvzYdFJB1h3sR1HWcXe6rJUxuG9Uf52smrqLUaoYX
+$INFRA_CLI create account infrasys systoken.b PUB_K1_6XAnMYrHi4fiVDkj4F6iV3ujgvNpYqQBViQr8pgFxi4Zv9muWg -p infrasys@active --txfee-payer infrasys
 
 
 { print_section_title "Install InfraBlockchain System Contract"; } 2>/dev/null
@@ -287,49 +287,49 @@ $INFRA_CLI get txfee list
 
 { print_section_title "Initial Block Producer Setup"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
-$INFRA_CLI wallet import --private-key YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
-$INFRA_CLI wallet import --private-key YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
-$INFRA_CLI wallet import --private-key YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
-$INFRA_CLI wallet import --private-key YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
-$INFRA_CLI wallet import --private-key YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
-$INFRA_CLI wallet import --private-key YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
-$INFRA_CLI wallet import --private-key YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
-$INFRA_CLI wallet import --private-key YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
-$INFRA_CLI wallet import --private-key YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
+$INFRA_CLI wallet import --private-key PVT_K1_2ocZxRUNmcX94XZa3BkDQVadHhBpgveVu9uisn5rwnjA3HtcCJ
+$INFRA_CLI wallet import --private-key PVT_K1_U9Ee4ZGBPVMfyRAhnWqvkGPJY24MK48j7GSA9eRckSroJ7f1i
+$INFRA_CLI wallet import --private-key PVT_K1_2RCY8az3ghcCjz9zCy3nSWCWhuskPm3hbCjUAoT8P1R2mCpp3L
+$INFRA_CLI wallet import --private-key PVT_K1_2sVfxUt4mEYXcmpeCHofTMh4eKZj39Si55M3E5qd1mf3VVk5fp
+$INFRA_CLI wallet import --private-key PVT_K1_27iTXKeEN5J8eddX5dVFTGLR6CZt6sXHtFGhxhsTLJgsGYW5Zw
+$INFRA_CLI wallet import --private-key PVT_K1_1BTEQ7FuXNpAwEwiVeBAM8ub9m2SHZii8HeH4U17pMirbCP4z
+$INFRA_CLI wallet import --private-key PVT_K1_2QCCaMVBmQw7zwv6QmeKVvQBdKovqsgCfG6qr9VRWRkCpNSQzi
+$INFRA_CLI wallet import --private-key PVT_K1_2atqfuPKaW8jvCVgNd2bjXQ2gsuJUrdjXFAe6KZCpTyeHc3Hqr
+$INFRA_CLI wallet import --private-key PVT_K1_fkYpEQam1UKXJuPuYBKnbWk7nRzoGFC21x8WSuZFtRjgUKTvT
+$INFRA_CLI wallet import --private-key PVT_K1_ci477gtWsaiitBZt5m9t2MwKdFzCR47gvThYjSFqqKh3u9WHu
 sleep 1
 
-$INFRA_CLI create account infrasys producer.a YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.b YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.c YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.d YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.e YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1 -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.f YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641 -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.g YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.h YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6 -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.i YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is -p infrasys@active --txfee-payer infrasys
-$INFRA_CLI create account infrasys producer.j YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.a PUB_K1_4uE86f8v56gAGT92VjJqcVf2hdwMuwhQbVMk5Twta83StDyis1 -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.b PUB_K1_7vx3brmnCQ6GvGyhHssNWbamN9VycZNHPuwq58NxQmixaXqoyB -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.c PUB_K1_5pWYTTfJnogzVJmJ4E3x48S6wjY1VQ6VfwpnNq8f3iscRyMiGa -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.d PUB_K1_5jHaKqt4jBXrnwCGGMbf1HmAQk4t1TUCUJHVNVkSrjB2Hr1Pux -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.e PUB_K1_5oCuNPNUj2TiVbybefYzDq5kfpEaS6Y8iK2BL5jnwcKimp92zJ -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.f PUB_K1_6f4NxFQoFTfQTvbg28g3uPAB2qF3g8ijbpXiVvp8AiSsQLGiXw -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.g PUB_K1_5z17LRtLxDJRTDEVQRvUqZoq9ikzhyZzsAM6VZXN5atZsd4nqD -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.h PUB_K1_8DppnPXPrajP93RuV1TUFQWKmjvebnWrwGqhAhucp8iifxkJvc -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.i PUB_K1_7fMtu1cHqADH9NEvMXZWZaBg1rkM5k7s2dtP7NvPTTjFean4K3 -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.j PUB_K1_8Xd6fUhpb7hLogbyo7z9sF6epfaeFx8vuAANPbcZtTDj6Yuzwk -p infrasys@active --txfee-payer infrasys
 sleep 1
 
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.a","producer_key":"YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn","url":"http://producera.io","location":1}' -p producer.a@active --txfee-payer infrasys
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.b","producer_key":"YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm","url":"http://producerb.io","location":1}' -p producer.b@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.a","producer_key":"PUB_K1_4uE86f8v56gAGT92VjJqcVf2hdwMuwhQbVMk5Twta83StDyis1","url":"http://producera.io","location":1}' -p producer.a@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.b","producer_key":"PUB_K1_7vx3brmnCQ6GvGyhHssNWbamN9VycZNHPuwq58NxQmixaXqoyB","url":"http://producerb.io","location":1}' -p producer.b@active --txfee-payer infrasys
 
 $INFRA_CLI push action infrasys authproducer '{"producer":"producer.a"}' -p infrasys@active --txfee-payer infrasys
 $INFRA_CLI push action infrasys authproducer '{"producer":"producer.b"}' -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.c","producer_key":"YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo","url":"http://producerc.io","location":1}' -p producer.c@active --txfee-payer infrasys
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.d","producer_key":"YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy","url":"http://producerd.io","location":1}' -p producer.d@active --txfee-payer infrasys
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.e","producer_key":"YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1","url":"http://producere.io","location":1}' -p producer.e@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.c","producer_key":"PUB_K1_5pWYTTfJnogzVJmJ4E3x48S6wjY1VQ6VfwpnNq8f3iscRyMiGa","url":"http://producerc.io","location":1}' -p producer.c@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.d","producer_key":"PUB_K1_5jHaKqt4jBXrnwCGGMbf1HmAQk4t1TUCUJHVNVkSrjB2Hr1Pux","url":"http://producerd.io","location":1}' -p producer.d@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.e","producer_key":"PUB_K1_5oCuNPNUj2TiVbybefYzDq5kfpEaS6Y8iK2BL5jnwcKimp92zJ","url":"http://producere.io","location":1}' -p producer.e@active --txfee-payer infrasys
 
 $INFRA_CLI push action infrasys authproducer '{"producer":"producer.c"}' -p infrasys@active --txfee-payer infrasys
 $INFRA_CLI push action infrasys authproducer '{"producer":"producer.d"}' -p infrasys@active --txfee-payer infrasys
 $INFRA_CLI push action infrasys authproducer '{"producer":"producer.e"}' -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.f","producer_key":"YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641","url":"http://producerf.io","location":1}' -p producer.f@active --txfee-payer infrasys
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.g","producer_key":"YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq","url":"http://producerg.io","location":1}' -p producer.g@active --txfee-payer infrasys
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.h","producer_key":"YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6","url":"http://producerh.io","location":1}' -p producer.h@active --txfee-payer infrasys
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.i","producer_key":"YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is","url":"http://produceri.io","location":1}' -p producer.i@active --txfee-payer infrasys
-$INFRA_CLI push action infrasys regproducer '{"producer":"producer.j","producer_key":"YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC","url":"http://producerj.io","location":1}' -p producer.j@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.f","producer_key":"PUB_K1_6f4NxFQoFTfQTvbg28g3uPAB2qF3g8ijbpXiVvp8AiSsQLGiXw","url":"http://producerf.io","location":1}' -p producer.f@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.g","producer_key":"PUB_K1_5z17LRtLxDJRTDEVQRvUqZoq9ikzhyZzsAM6VZXN5atZsd4nqD","url":"http://producerg.io","location":1}' -p producer.g@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.h","producer_key":"PUB_K1_8DppnPXPrajP93RuV1TUFQWKmjvebnWrwGqhAhucp8iifxkJvc","url":"http://producerh.io","location":1}' -p producer.h@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.i","producer_key":"PUB_K1_7fMtu1cHqADH9NEvMXZWZaBg1rkM5k7s2dtP7NvPTTjFean4K3","url":"http://produceri.io","location":1}' -p producer.i@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.j","producer_key":"PUB_K1_8Xd6fUhpb7hLogbyo7z9sF6epfaeFx8vuAANPbcZtTDj6Yuzwk","url":"http://producerj.io","location":1}' -p producer.j@active --txfee-payer infrasys
 
 $INFRA_CLI push action infrasys authproducer '{"producer":"producer.f"}' -p infrasys@active --txfee-payer infrasys
 $INFRA_CLI push action infrasys authproducer '{"producer":"producer.g"}' -p infrasys@active --txfee-payer infrasys
@@ -413,21 +413,21 @@ sleep 1
 
 { print_section_title "Create New User Accounts"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5KTdP4VyuhZ1ba3sX8JvHjKXgcTFUA75QHf92nrGYQX4coVJRAW
-$INFRA_CLI wallet import --private-key YPV_5KDKMejP2AZFGCMxLh67t7417coEgUu7PfQZk7ufuYA4wTBiNC4
-$INFRA_CLI wallet import --private-key YPV_5Jj4ryu8TY1cVhiLvPkBHKiwMAXV18WqJM97h8hfsBUt5sMJE3r
-$INFRA_CLI wallet import --private-key YPV_5KWoErpjc9yQ2HF6rLuijLFgmAqVEoDLGWmDQAT6NM5DCgcSgo1
-$INFRA_CLI wallet import --private-key YPV_5JP9oWWsMaTEBcw1Y7Jn8JzxQBq51FDcGVGqCi5gpMDyKqio26j
+$INFRA_CLI wallet import --private-key PVT_K1_2gSaRyXwhPaRhpvZwF8ZCLvskJw8BpDnJzYa2b8siJC6sumY8A
+$INFRA_CLI wallet import --private-key PVT_K1_2YKh5fwAKdwG1vFvdSyUT636qesed171fL3nh4i5xLiHTp2NMz
+$INFRA_CLI wallet import --private-key PVT_K1_2VXd5W4vPMUZ998zButT7f2U2NbS93TqkzJ6tgQYHE6yHUApQb
+$INFRA_CLI wallet import --private-key PVT_K1_W5DUCEM6xqmJqXvz3ZfH7VZ9gTPqCXVabDd2YzUowVBG7VKo
+$INFRA_CLI wallet import --private-key PVT_K1_fGvQ9cRyumC3xzFG3cvPfNaNibkzRLFXBHF9P7FJixhvqkxHV
 
-$INFRA_CLI create account idauth.a useraccount1 YOS7y8FkTHo58ZvrMa6yrTpo3D2Y2AA4dMAZzQ8aZY6R6geZSDZ75 -p idauth.a@active --txfee-payer idauth.a
-$INFRA_CLI create account idauth.a useraccount2 YOS8ZFsmfpevP8pKPMXuQMNB7P9KJoKzZwwzu2uww9VrRx7E7NUQj -p idauth.a@active --txfee-payer idauth.a
-$INFRA_CLI create account idauth.a useraccount3 YOS5ubmvsnjHviACtfc9SwGbY7SprqTu1P5GQeDfwfZmhCq6aR7GH -p idauth.a@active --txfee-payer idauth.a
+$INFRA_CLI create account idauth.a useraccount1 PUB_K1_6rGczYQ1yjJVZcm3TbKbkLwFX98LoigRHREvU1yWS4MPxRPCSx -p idauth.a@active --txfee-payer idauth.a
+$INFRA_CLI create account idauth.a useraccount2 PUB_K1_8ZzFcSW18yA1JgwrEzxSN75GoE263dMWW8X4tHrvvC8nuN5z2j -p idauth.a@active --txfee-payer idauth.a
+$INFRA_CLI create account idauth.a useraccount3 PUB_K1_7auEiXsYXmQe5WdyjGJmQ4e4eRpi3PFWvNzRQDajhCZ65jTY7R -p idauth.a@active --txfee-payer idauth.a
 
-$INFRA_CLI create account infrasys com YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ3rNfKp96hzFxyit -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys com PUB_K1_6gr3cnC46CuMW4dEgp42ct64aWqFdcYQzRFdwCKU4X11Qa5ZKA -p infrasys@active --txfee-payer infrasys
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"com\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"1f32i7t23\"}" -p idauth.a@active --txfee-payer idauth.a
 $INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"com","qty":"3000.0000 DUSD","tag":"issue systoken.a to com"}' -p systoken.a@active --txfee-payer systoken.a
-$INFRA_CLI create account com acquire.com YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh -p com@active --txfee-payer com
+$INFRA_CLI create account com acquire.com PUB_K1_5RyCzTHK13aRPA6nYmPzKgjVhdXUXtbEuj3JfQGhoKUaT56dnH -p com@active --txfee-payer com
 
 $INFRA_CLI get systoken balance com
 $INFRA_CLI get systoken balance acquire.com
@@ -487,39 +487,39 @@ sleep 1
 
 { print_section_title "Account Recovery"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5KHCnUyZWqrB73iJp8UUiWfr4Q1K8UjBqgvSJzGgA9Z621u8E8q
-$INFRA_CLI wallet import --private-key YPV_5KVs1TdVEHE6FR2VXojhA71h667X2ZYfLNbi8u9hKYuVvDm3j49
-$INFRA_CLI wallet import --private-key YPV_5JbyqQwnxjByH8Aw8vrhiBf6Ze4NPj7ctw91KiqD1x53Fwz2uSF
-$INFRA_CLI wallet import --private-key YPV_5HvGPGhVFi9S1FmKF2wiYP3ZfQEiDvj6Q3i8X45Jhyh4xBSjXXj
-$INFRA_CLI wallet import --private-key YPV_5JKgY86UPP7i6cqxoHSpXHBGnAgyUhoawRY7t69G1eJs9WBLXEo
+$INFRA_CLI wallet import --private-key PVT_K1_25dYUkNiDbDTS6QCbpVkVdD2hahWYPeKdcsaU7keoUmMn5Q8Sr
+$INFRA_CLI wallet import --private-key PVT_K1_2nCiLfxueijtLm6VSM84hVeekAYjvcXiZFUq837kZ8Q7MAaLBU
+$INFRA_CLI wallet import --private-key PVT_K1_MHGoN1Dyp2Z1ESE77ngzenZn2jtzvtfPCEMgbQ3EaPPYxdrPc
+$INFRA_CLI wallet import --private-key PVT_K1_MtWqXKuwY4hb8qr5c3fAMFLxgD7H6yVqepkN8ZWS5nSeudNXY
+$INFRA_CLI wallet import --private-key PVT_K1_pN929oHCx3nef3kX2c4J9kJjjRQ4H2YJo4aMWEhH7zoTy2FPw
 
-$INFRA_CLI push action infrasys newaccount '{"creator":"idauth.a","name":"useraccountz","owner":{"threshold":1,"keys":[{"key":"YOS8M8gXkDHyffjeHTgmCqMapMN7LHzz8PnapVAY6GTcCChH4RGbr","weight":1}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS5LA5GcJ8xYDXD2u9wQ7A79fwBzfvU59gVw21utaWgKgcB4yWeb","weight":1}],"accounts":[],"waits":[]}}' -p idauth.a@active --txfee-payer idauth.a -v producer.c
+$INFRA_CLI push action infrasys newaccount '{"creator":"idauth.a","name":"useraccountz","owner":{"threshold":1,"keys":[{"key":"PUB_K1_7iQ8oVcnWs5ARztz8pDN2MSyFPFX3EXAKtK7zHuLYrbdCzToNm","weight":1}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_7CLNHjPKHsRpgZmBctdkVKuZeqX5jgrro9uNTRfDRQMPwYEYPZ","weight":1}],"accounts":[],"waits":[]}}' -p idauth.a@active --txfee-payer idauth.a -v producer.c
 $INFRA_CLI get account useraccountz
 sleep 1
-$INFRA_CLI push action infrasys updateauth '{"account":"useraccountz","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"YOS6MWWFnregfdEB7txoK8enXh5jCd7967jJVSEhuhqA5xJWDhe7p","weight":1}],"waits":[],"accounts":[]}}' -p useraccountz@owner --txfee-payer idauth.a
+$INFRA_CLI push action infrasys updateauth '{"account":"useraccountz","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"PUB_K1_6d1UeaP2MSHPqp1Eyku7cSmmBpkbdobbi17cNEpYPCgstmfExe","weight":1}],"waits":[],"accounts":[]}}' -p useraccountz@owner --txfee-payer idauth.a
 $INFRA_CLI get account useraccountz
 sleep 1
-$INFRA_CLI push action infrasys updateauth '{"account":"useraccountz","permission":"owner","parent":"","auth":{"threshold":2,"keys":[{"key":"YOS7g4MjVQEpDPjNxNEBtNz11GJG7tzJowwNMFLsjqS4TddaC6zeU","weight":2}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[]}}' -p useraccountz@owner --txfee-payer idauth.a
+$INFRA_CLI push action infrasys updateauth '{"account":"useraccountz","permission":"owner","parent":"","auth":{"threshold":2,"keys":[{"key":"PUB_K1_65naa2mTDkHZQFXBn6AcbddHuqytPdKwQnRJv2H7BDaxdi1obA","weight":2}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[]}}' -p useraccountz@owner --txfee-payer idauth.a
 $INFRA_CLI get account useraccountz
 sleep 1
-$INFRA_CLI push action infrasys updateauth '{"account":"useraccountz","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"YOS7j467RUtMnQ6JWkzn9L6t2TKq9uJJbDNv7oPePbn7owRGJMVZw","weight":1}],"waits":[],"accounts":[]}}' -p useraccountz@owner --txfee-payer idauth.a
+$INFRA_CLI push action infrasys updateauth '{"account":"useraccountz","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"PUB_K1_5yK2PNDHhwjrfmx5y4SyQocH1mEantPKsVNWQ69qC3Meh39RRH","weight":1}],"waits":[],"accounts":[]}}' -p useraccountz@owner --txfee-payer idauth.a
 $INFRA_CLI get account useraccountz
 sleep 1
-$INFRA_CLI push action infrasys newaccount '{"creator":"idauth.a","name":"useraccountx","owner":{"threshold":2,"keys":[{"key":"YOS7g4MjVQEpDPjNxNEBtNz11GJG7tzJowwNMFLsjqS4TddaC6zeU","weight":2}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS7j467RUtMnQ6JWkzn9L6t2TKq9uJJbDNv7oPePbn7owRGJMVZw","weight":1}],"accounts":[],"waits":[]}}' -p idauth.a@active --txfee-payer idauth.a -v producer.c
+$INFRA_CLI push action infrasys newaccount '{"creator":"idauth.a","name":"useraccountx","owner":{"threshold":2,"keys":[{"key":"PUB_K1_65naa2mTDkHZQFXBn6AcbddHuqytPdKwQnRJv2H7BDaxdi1obA","weight":2}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_5yK2PNDHhwjrfmx5y4SyQocH1mEantPKsVNWQ69qC3Meh39RRH","weight":1}],"accounts":[],"waits":[]}}' -p idauth.a@active --txfee-payer idauth.a -v producer.c
 $INFRA_CLI get account useraccountx
 sleep 1
-$INFRA_CLI push action infrasys updateauth '{"account":"useraccountx","permission":"owner","parent":"","auth":{"threshold":2,"keys":[{"key":"YOS6MWWFnregfdEB7txoK8enXh5jCd7967jJVSEhuhqA5xJWDhe7p","weight":1}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[]}}' -p useraccountx@owner --txfee-payer idauth.a
-$INFRA_CLI push action infrasys updateauth '{"account":"useraccountx","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"YOS6MWWFnregfdEB7txoK8enXh5jCd7967jJVSEhuhqA5xJWDhe7p","weight":1}],"accounts":[],"waits":[]}}' -p useraccountx@owner --txfee-payer idauth.a
+$INFRA_CLI push action infrasys updateauth '{"account":"useraccountx","permission":"owner","parent":"","auth":{"threshold":2,"keys":[{"key":"PUB_K1_6d1UeaP2MSHPqp1Eyku7cSmmBpkbdobbi17cNEpYPCgstmfExe","weight":1}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":1},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[]}}' -p useraccountx@owner --txfee-payer idauth.a
+$INFRA_CLI push action infrasys updateauth '{"account":"useraccountx","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"PUB_K1_6d1UeaP2MSHPqp1Eyku7cSmmBpkbdobbi17cNEpYPCgstmfExe","weight":1}],"accounts":[],"waits":[]}}' -p useraccountx@owner --txfee-payer idauth.a
 $INFRA_CLI get account useraccountx
 sleep 1
-$INFRA_CLI push action infrasys newaccount '{"creator":"idauth.a","name":"useraccounty","owner":{"threshold":3,"keys":[{"key":"YOS7g4MjVQEpDPjNxNEBtNz11GJG7tzJowwNMFLsjqS4TddaC6zeU","weight":2}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":2},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[{"wait_sec":604800,"weight":1}]},"active":{"threshold":1,"keys":[{"key":"YOS7j467RUtMnQ6JWkzn9L6t2TKq9uJJbDNv7oPePbn7owRGJMVZw","weight":1}],"accounts":[],"waits":[]}}' -p idauth.a@active --txfee-payer idauth.a -v producer.c
+$INFRA_CLI push action infrasys newaccount '{"creator":"idauth.a","name":"useraccounty","owner":{"threshold":3,"keys":[{"key":"PUB_K1_65naa2mTDkHZQFXBn6AcbddHuqytPdKwQnRJv2H7BDaxdi1obA","weight":2}],"accounts":[{"permission":{"actor":"idauth.a","permission":"active"},"weight":2},{"permission":{"actor":"systoken.a","permission":"active"},"weight":1}],"waits":[{"wait_sec":604800,"weight":1}]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_5yK2PNDHhwjrfmx5y4SyQocH1mEantPKsVNWQ69qC3Meh39RRH","weight":1}],"accounts":[],"waits":[]}}' -p idauth.a@active --txfee-payer idauth.a -v producer.c
 $INFRA_CLI get account useraccounty
 sleep 1
 
 { print_section_title "Deploy Yosemite X Fiat Stable Coin as a System Token"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5K9aJSJyMhNLWvAtYm6x3ZYL13eaToVeT6JjQ1ABkQd383gXHFa
-$INFRA_CLI create account infrasys ysmt.dusd.a YOS568YZYS8i2Gr6gbJE9CEEsyaZFfRXzVS9BNw9FfCLr9Yccpg7o -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_2vMkSMrCTRnuFTWH8LVoqmXNxadPhnqMY9qSHFgSxnKAz67UU4
+$INFRA_CLI create account infrasys ysmt.dusd.a PUB_K1_5aexj1rg482quS3pkqCeiejNJWpNfhJDc875qDZP1q9kNRYZGN -p infrasys@active --txfee-payer infrasys
 
 sleep 2
 $INFRA_CLI set contract ysmt.dusd.a $INFRABLOCKCHAIN_CONTRACTS_DIR/yosemitex.fiat.stable.token/ -p ysmt.dusd.a@active --txfee-payer infrasys
@@ -551,13 +551,13 @@ $INFRA_CLI get token balance systoken.a idauth.b
 $INFRA_CLI get token balance systoken.a systoken.a
 $INFRA_CLI push action systoken.a redeem '{"qty":"500.0000 DUSD","tag":"redeem tag"}' -p systoken.a@active --txfee-payer systoken.a
 
-$INFRA_CLI wallet import --private-key YPV_5JcSa5y1YQEEbxjZ7XjW2zApxDUqcuNLxA1nKji8E7Kif8b5wA4
-$INFRA_CLI wallet import --private-key YPV_5J7kM4HyzZuuJ5HcoywncQScmWfMErE4sz8gMustSmoEPKBYywk
-$INFRA_CLI wallet import --private-key YPV_5J6c9EwsTkmrcLrE5y6No2TgdcBB2X9dbx6Rs6ESF9TAtacDk1f
+$INFRA_CLI wallet import --private-key PVT_K1_2K75BtRGgahpZqT4QfeVNyrNN7gBaSHTpVg5XMWLXkKjNETCWt
+$INFRA_CLI wallet import --private-key PVT_K1_CKtaYYgdJsHnN5kmJ5WuxcqFQVkuG5U1Wspp79BXMYE7m3Zen
+$INFRA_CLI wallet import --private-key PVT_K1_2GbCUqeWSrbSfdL3H3ngermFP7m1paiPDKCn8kT3p4HNkQDqnk
 
-$INFRA_CLI create account idauth.a useraccounta YOS5Thieg3kFy7rPu6hNpVtV8ijAUe89xaGFVA7X2KwqMXYEwJgDJ -p idauth.a@active --txfee-payer idauth.a
-$INFRA_CLI create account idauth.a useraccountb YOS4tdykSjH8R87BeHf76CHKP2ZLSwctz7CLshLYzfheR6xRVzgLy -p idauth.a@active --txfee-payer idauth.a
-$INFRA_CLI create account idauth.a useraccountc YOS6T82Va2G3oYhLAxoe5c9q2PDScLD2YZP9Yg8f9KGJcNdtcUJh6 -p idauth.a@active --txfee-payer idauth.a
+$INFRA_CLI create account idauth.a useraccounta PUB_K1_59GwcpZm6FqQDDfuRsCTsVWQ6MgWWUE4wCFVACDqx5dwMBwBwR -p idauth.a@active --txfee-payer idauth.a
+$INFRA_CLI create account idauth.a useraccountb PUB_K1_8iVnvTrvG4vQMcJ7R45BKhzNeijn5LDE8d4sq32EGknDc3Zro1 -p idauth.a@active --txfee-payer idauth.a
+$INFRA_CLI create account idauth.a useraccountc PUB_K1_62eHR1NUJCULSTfcSKKGxi1Cb3ctPxgnK8MyzXhtZUL2jhkmpq -p idauth.a@active --txfee-payer idauth.a
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"useraccounta\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"qwefewff2f\"}" -p idauth.a@active --txfee-payer idauth.a
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"useraccountb\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"wef2ouih23\"}" -p idauth.a@active --txfee-payer idauth.a
@@ -596,8 +596,8 @@ sleep 2
 
 { print_section_title "Yosemite Card Credit Token Test"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5KKMcPu86p6vbsuAozTT9vLxUT4GeZFqSWrbgok1LjpthJEB5Qe
-$INFRA_CLI create account infrasys ycard.cusd.a YOS7mK7vvTTCDzEr8gtMjrMsbWA25UsS3WmV8WRoqC5gSMh9JLcQM -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_PgZ6SXpnuxTMcHeK2y4HDPv3R6nSLdwQV6u6rbU4Ka5hBtHb4
+$INFRA_CLI create account infrasys ycard.cusd.a PUB_K1_6jY1dkUUf315a5gdsjd1CHu6FANoMpVYCqb6dZ52eGtYvSGCNT -p infrasys@active --txfee-payer infrasys
 
 sleep 2
 $INFRA_CLI set contract ycard.cusd.a $INFRABLOCKCHAIN_CONTRACTS_DIR/yosemitex.credit.token/ -p ycard.cusd.a@active --txfee-payer infrasys
@@ -681,11 +681,11 @@ sleep 2
 
 { print_section_title "Yosemite Card X Token Test"; } 2>/dev/null
 
-$INFRA_CLI wallet import --private-key YPV_5Jz2zynNXzVrGtzu3BZE8AocZV9xfGuK1YtmyJhN8ydYaDhofVK
-$INFRA_CLI create account infrasys ycard.usd.yt YOS7v5xx9FHYEtaqUVHetLLyS6buGMpj4L9NDBpUjYUWACnvggcyt -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_r2nv6dJvB3pQyxSh5JkXyLaKrVkh9NDYAA1H9HAQmj6eCWGM6
+$INFRA_CLI create account infrasys ycard.usd.yt PUB_K1_7nn2nbvyuCspiCt5nQp5Kx5GJKKoSLmsAPTdY9Yua34PcYVCYT -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI wallet import --private-key YPV_5KJwxh2LyXU4yDmQHoyhsZX8hXgcs4quCYW6feasGx3ew8qbgxL
-$INFRA_CLI create account infrasys ycard.users YOS65muvcG3YCXA1NDKiSocpBhLtqZpfYVGjQKveT8fnhCnqppX6s -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_d1mjQrD3BtnMbmgeUQX5oc5XwJRVUgJNY65MpZJTS6D6D1ucp
+$INFRA_CLI create account infrasys ycard.users PUB_K1_5zWk8fvNugYJ9noncZkKcAnmfeojbBqc9F8X1j9FYdMPstcqLk -p infrasys@active --txfee-payer infrasys
 
 sleep 2
 $INFRA_CLI set contract ycard.usd.yt $INFRABLOCKCHAIN_CONTRACTS_DIR/yosemite.card.ytoken/ -p ycard.usd.yt@active --txfee-payer infrasys
@@ -714,8 +714,8 @@ $INFRA_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ycard.usd.yt"
 $INFRA_CLI get token balance ysmt.dusd.a ycard.usd.yt
 
 
-$INFRA_CLI wallet import --private-key YPV_5JGCdjc2Mn439e6f1YEcEzniPtSBeSZPdnuz6vsUaZB7KV1SnpT
-$INFRA_CLI create account infrasys ycard.id.us YOS8HxRbGMAMUsukWXbF4MxRVwAqRoSoYQnnYaV34PBiJTwFbfXGd -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_2DgoXF9WARUKb6caFLLTALYvbdHjHTKnS4FFfxnLv49sDsQrFy
+$INFRA_CLI create account infrasys ycard.id.us PUB_K1_88E4kRrKvEaz9tfkAqeEmiyZLJPf5rb7psdTASHCNpWGHd9d9g -p infrasys@active --txfee-payer infrasys
 
 $INFRA_CLI push action infrasys regidauth '{"identity_authority":"ycard.id.us","url":"https://yosemitecardx.com","location":1}' -p ycard.id.us@active --txfee-payer infrasys
 $INFRA_CLI push action infrasys authidauth '{"identity_authority":"ycard.id.us"}' -p infrasys@active --txfee-payer infrasys
@@ -733,10 +733,10 @@ sleep 2
 
 #################################################
 ### Yosemite Card User Account Setup
-$INFRA_CLI wallet import --private-key YPV_5KXuaLqsaniTc9qDJi851e1CBNjaEqUqoERyazRKUVBhwuCS8xr
-#$INFRA_CLI create account ycard.usd.yt ycarduseraaa YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
-$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycarduseraaa","owner":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
-#$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycarduseraaa@owner --txfee-payer ycard.usd.yt
+$INFRA_CLI wallet import --private-key PVT_K1_TiDZHzPzZwimu36VGt3YjmWqcSkRa9BjkVtBa7Zr6mjKKgMsE
+#$INFRA_CLI create account ycard.usd.yt ycarduseraaa PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
+$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycarduseraaa","owner":{"threshold":1,"keys":[{"key":"PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
+#$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycarduseraaa@owner --txfee-payer ycard.usd.yt
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycarduseraaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 
@@ -767,10 +767,10 @@ sleep 2
 
 #################################################
 ##### Yosemite Card Merchant Account Setup
-$INFRA_CLI wallet import --private-key YPV_5JkupiGwhRCEwPon9EKMgkjscthhkUsrQYkUHTAF1Xp2hBYYKEW
-#$INFRA_CLI create account ycard.usd.yt ycardshopaaa YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
-$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopaaa","owner":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
-#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopaaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopaaa@owner --txfee-payer ycard.usd.yt
+$INFRA_CLI wallet import --private-key PVT_K1_SMmDwJed8ZR4hVsMD7bJLYirKpesXtr9tDwnmF5hW15R8myWA
+#$INFRA_CLI create account ycard.usd.yt ycardshopaaa PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
+$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopaaa","owner":{"threshold":1,"keys":[{"key":"PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
+#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopaaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopaaa@owner --txfee-payer ycard.usd.yt
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycardshopaaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 
@@ -883,10 +883,10 @@ $INFRA_CLI push action ycard.usd.yt usdredeemto '{"to":"ycardshopaaa","qty":"500
 #####################################################
 ##### Yosemite Card Payment to a merchant who does not issue merchant-backed Yosemite Token
 
-$INFRA_CLI wallet import --private-key YPV_5HtaMCXLonpjpk7ZsWncTKb2t4LpkveMTRKGaXW3Jd6D5g1b8ax
-#$INFRA_CLI create account ycard.usd.yt ycarduserbbb YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
-$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopbbb","owner":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
-#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopbbb","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopbbb@owner --txfee-payer ycard.usd.yt
+$INFRA_CLI wallet import --private-key PVT_K1_KDQQ5JmS9sCZRZFqJwttJQqjpGrv5KqiSZdAMump34sQJ66MB
+#$INFRA_CLI create account ycard.usd.yt ycarduserbbb PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
+$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopbbb","owner":{"threshold":1,"keys":[{"key":"PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
+#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopbbb","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopbbb@owner --txfee-payer ycard.usd.yt
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycardshopbbb\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 

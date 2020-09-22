@@ -3,14 +3,14 @@
 
 #### Yosemite Card Yosemite Token contract sample transactions
 
-$INFRA_CLI wallet import --private-key YPV_5Jz2zynNXzVrGtzu3BZE8AocZV9xfGuK1YtmyJhN8ydYaDhofVK
-$INFRA_CLI create account infrasys ycard.usd.yt YOS7v5xx9FHYEtaqUVHetLLyS6buGMpj4L9NDBpUjYUWACnvggcyt -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_r2nv6dJvB3pQyxSh5JkXyLaKrVkh9NDYAA1H9HAQmj6eCWGM6
+$INFRA_CLI create account infrasys ycard.usd.yt PUB_K1_7nn2nbvyuCspiCt5nQp5Kx5GJKKoSLmsAPTdY9Yua34PcYVCYT -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI wallet import --private-key YPV_5KJwxh2LyXU4yDmQHoyhsZX8hXgcs4quCYW6feasGx3ew8qbgxL
-$INFRA_CLI create account infrasys ycard.users YOS65muvcG3YCXA1NDKiSocpBhLtqZpfYVGjQKveT8fnhCnqppX6s -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_d1mjQrD3BtnMbmgeUQX5oc5XwJRVUgJNY65MpZJTS6D6D1ucp
+$INFRA_CLI create account infrasys ycard.users PUB_K1_5zWk8fvNugYJ9noncZkKcAnmfeojbBqc9F8X1j9FYdMPstcqLk -p infrasys@active --txfee-payer infrasys
 
 sleep 2
-$INFRA_CLI set contract ycard.usd.yt $YOSEMITE_CONTRACTS_DIR/yosemite.card.ytoken/ -p ycard.usd.yt@active --txfee-payer infrasys
+$INFRA_CLI set contract ycard.usd.yt $INFRABLOCKCHAIN_CONTRACTS_DIR/yosemite.card.ytoken/ -p ycard.usd.yt@active --txfee-payer infrasys
 sleep 2
 
 $INFRA_CLI push action ycard.usd.yt settokenmeta '{"sym":"4,YTOKEN","url":"https://yosemitecardx.com","desc":"Yosemite Card Yosemite Token USD"}' -p ycard.usd.yt@active --txfee-payer infrasys
@@ -36,8 +36,8 @@ $INFRA_CLI push action ysmt.dusd.a issue '{"t":"ysmt.dusd.a","to":"ycard.usd.yt"
 $INFRA_CLI get token balance ysmt.dusd.a ycard.usd.yt
 
 
-$INFRA_CLI wallet import --private-key YPV_5JGCdjc2Mn439e6f1YEcEzniPtSBeSZPdnuz6vsUaZB7KV1SnpT
-$INFRA_CLI create account infrasys ycard.id.us YOS8HxRbGMAMUsukWXbF4MxRVwAqRoSoYQnnYaV34PBiJTwFbfXGd -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI wallet import --private-key PVT_K1_2DgoXF9WARUKb6caFLLTALYvbdHjHTKnS4FFfxnLv49sDsQrFy
+$INFRA_CLI create account infrasys ycard.id.us PUB_K1_88E4kRrKvEaz9tfkAqeEmiyZLJPf5rb7psdTASHCNpWGHd9d9g -p infrasys@active --txfee-payer infrasys
 
 $INFRA_CLI push action infrasys regidauth '{"identity_authority":"ycard.id.us","url":"https://yosemitecardx.com","location":1}' -p ycard.id.us@active --txfee-payer infrasys
 $INFRA_CLI push action infrasys authidauth '{"identity_authority":"ycard.id.us"}' -p infrasys@active --txfee-payer infrasys
@@ -55,10 +55,10 @@ sleep 2
 
 #################################################
 ### Yosemite Card User Account Setup
-$INFRA_CLI wallet import --private-key YPV_5KXuaLqsaniTc9qDJi851e1CBNjaEqUqoERyazRKUVBhwuCS8xr
-#$INFRA_CLI create account ycard.usd.yt ycarduseraaa YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
-$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycarduseraaa","owner":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
-#$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS5HTxnZ6NZHKGjgZc6vK7bi6abtH7QEfEyu2rX1Lqm89mTyv2fk","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycarduseraaa@owner --txfee-payer ycard.usd.yt
+$INFRA_CLI wallet import --private-key PVT_K1_TiDZHzPzZwimu36VGt3YjmWqcSkRa9BjkVtBa7Zr6mjKKgMsE
+#$INFRA_CLI create account ycard.usd.yt ycarduseraaa PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
+$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycarduseraaa","owner":{"threshold":1,"keys":[{"key":"PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
+#$INFRA_CLI push action infrasys updateauth '{"account":"ycarduseraaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"PUB_K1_7UPqYWRodQ1dhgCsgF4VnEi1mgcV4a6K7u95BrtTDoNCVXtFYT","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycarduseraaa@owner --txfee-payer ycard.usd.yt
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycarduseraaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 
@@ -89,10 +89,10 @@ sleep 2
 
 #################################################
 ##### Yosemite Card Merchant Account Setup
-$INFRA_CLI wallet import --private-key YPV_5JkupiGwhRCEwPon9EKMgkjscthhkUsrQYkUHTAF1Xp2hBYYKEW
-#$INFRA_CLI create account ycard.usd.yt ycardshopaaa YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
-$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopaaa","owner":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
-#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopaaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS7XVhCkoiyPUaGGXhCLP1TM2HQtptZxY83aNuSWiJNVd2Gwoxvg","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopaaa@owner --txfee-payer ycard.usd.yt
+$INFRA_CLI wallet import --private-key PVT_K1_SMmDwJed8ZR4hVsMD7bJLYirKpesXtr9tDwnmF5hW15R8myWA
+#$INFRA_CLI create account ycard.usd.yt ycardshopaaa PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
+$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopaaa","owner":{"threshold":1,"keys":[{"key":"PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
+#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopaaa","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"PUB_K1_7c2UjL57nCkxR8PWXzt3srpWEM1Cvv6JcAgwzJ6JtqMvQd52wZ","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopaaa@owner --txfee-payer ycard.usd.yt
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycardshopaaa\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 
@@ -205,10 +205,10 @@ $INFRA_CLI push action ycard.usd.yt usdredeemto '{"to":"ycardshopaaa","qty":"500
 #####################################################
 ##### Yosemite Card Payment to a merchant who does not issue merchant-backed Yosemite Token
 
-$INFRA_CLI wallet import --private-key YPV_5HtaMCXLonpjpk7ZsWncTKb2t4LpkveMTRKGaXW3Jd6D5g1b8ax
-#$INFRA_CLI create account ycard.usd.yt ycarduserbbb YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
-$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopbbb","owner":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
-#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopbbb","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"YOS8MTDtmS9zkYSzK6J5rNkuPrXBSfkvQTm9XF5vJjRsXxBcorbXw","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopbbb@owner --txfee-payer ycard.usd.yt
+$INFRA_CLI wallet import --private-key PVT_K1_KDQQ5JmS9sCZRZFqJwttJQqjpGrv5KqiSZdAMump34sQJ66MB
+#$INFRA_CLI create account ycard.usd.yt ycarduserbbb PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX -p ycard.usd.yt@active --txfee-payer ycard.usd.yt
+$INFRA_CLI push action infrasys newaccount '{"creator":"ycard.usd.yt","name":"ycardshopbbb","owner":{"threshold":1,"keys":[{"key":"PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]},"active":{"threshold":1,"keys":[{"key":"PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX","weight":1}],"accounts":[],"waits":[]}}' -p ycard.usd.yt@active --txfee-payer ycard.usd.yt -v producer.c
+#$INFRA_CLI push action infrasys updateauth '{"account":"ycardshopbbb","permission":"owner","parent":"","auth":{"threshold":1,"keys":[{"key":"PUB_K1_5FZrQjaDtifFxa45sKoPCJSsmp4kLuQKZU721HnjA17pchKVmX","weight":1}],"accounts":[{"permission":{"actor":"ycard.id.us","permission":"active"},"weight":1}],"waits":[]}}' -p ycardshopbbb@owner --txfee-payer ycard.usd.yt
 
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"ycardshopbbb\", \"identity_authority\":\"ycard.id.us\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1101' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"\"}" -p ycard.id.us@active --txfee-payer ycard.id.us -v producer.a
 

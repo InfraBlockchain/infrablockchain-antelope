@@ -54,8 +54,8 @@ Initial key
 ---
 ```bash
 $INFRA_CLI create key --to-console
-Private key: YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
-Public key: YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+Private key: PVT_K1_VwEM9o5KsqdLs5jgHucBcE3PFbu1kk3fH2wbjRGve4QPzvScR
+Public key: PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
 ```
 
 Genesis Json
@@ -63,7 +63,7 @@ Genesis Json
 ```json
 {
   "initial_timestamp": "2018-08-15T12:00:00.000",
-  "initial_key": "YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3",
+  "initial_key": "PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR",
   "initial_configuration": {
     "max_block_net_usage": 1048576,
     "target_block_net_usage_pct": 1000,
@@ -103,7 +103,7 @@ agent-name = "InfraBlockchain Testnet Dev Agent"
 max-clients = 25
 enable-stale-production = true
 producer-name = infrasys
-signature-provider = YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3=KEY:YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
+signature-provider = PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR=KEY:PVT_K1_VwEM9o5KsqdLs5jgHucBcE3PFbu1kk3fH2wbjRGve4QPzvScR
 plugin = eosio::http_plugin
 plugin = eosio::chain_plugin
 plugin = eosio::chain_api_plugin
@@ -155,22 +155,22 @@ $INFRA_CLI wallet unlock
 
 * infrablockchain initial key
 ```bash
-$INFRA_CLI wallet import --private-key YPV_5J7MF5bWVzjLczmVFMwiRjD5TVBG1o8UELy4jkaikXETbaMHZSb
+$INFRA_CLI wallet import --private-key PVT_K1_VwEM9o5KsqdLs5jgHucBcE3PFbu1kk3fH2wbjRGve4QPzvScR
 ```
 
 Create System Accounts
 ---
 
 ```bash
-$INFRA_CLI create account infrasys sys.msig YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys sys.txfee YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys sys.identity YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys yx.ntoken YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys yx.token YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys yx.dcontract YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys yx.nft YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys yx.nftex YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
-$INFRA_CLI create account infrasys yx.escrow YOS7qFXz5bvLYphF8S8XXTYgExnN2hXRBSMHTXs8oartApBx5upR3
+$INFRA_CLI create account infrasys sys.msig PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys sys.txfee PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys sys.identity PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys yx.ntoken PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys yx.token PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys yx.dcontract PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys yx.nft PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys yx.nftex PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
+$INFRA_CLI create account infrasys yx.escrow PUB_K1_73E1bUPyVMTb7gjvvhk3bhR1YnKi6TtzgJUL3Ykea8QGU1ZLfR
 
 ```
 
@@ -180,22 +180,22 @@ Create initial Identity Authority Account
 * idauth1
 ```bash
 $INFRA_CLI create key --to-console
-Private key: YPV_5K5Qe2ndgcfhWqdUjHnfhvCKVqCE82Rih6JrNQuuVJBcathAx9m
-Public key: YOS6EfGUaA5MNLH1GiHd64DcDr3HMgY1AM3WR1vdHKaah9Z4cWPZq
-$INFRA_CLI wallet import --private-key YPV_5K5Qe2ndgcfhWqdUjHnfhvCKVqCE82Rih6JrNQuuVJBcathAx9m
+Private key: PVT_K1_2So2Tt7dAoMR6tk9npz1WrnbAgHadbEhbmkLChRvggduxnwxAn
+Public key: PUB_K1_8QZSZGRFMiXk9GGEc7jPsyqZVF1CkJh16vHmnVt4PopkRZeyZJ
+$INFRA_CLI wallet import --private-key PVT_K1_2So2Tt7dAoMR6tk9npz1WrnbAgHadbEhbmkLChRvggduxnwxAn
 
-$INFRA_CLI create account infrasys idauth1 YOS6EfGUaA5MNLH1GiHd64DcDr3HMgY1AM3WR1vdHKaah9Z4cWPZq
+$INFRA_CLI create account infrasys idauth1 PUB_K1_8QZSZGRFMiXk9GGEc7jPsyqZVF1CkJh16vHmnVt4PopkRZeyZJ
 
 ```
 
 * idauth2
 ```bash
 $INFRA_CLI create key --to-console
-Private key: YPV_5JRzPhyg9jY4thDJ1rLsSr4zdLLoA7UEMQRw3vJFGmGKTZF5Kbx
-Public key: YOS5VvWLCqXL3AQyuXZfUTnEiWuhJNV6Nq3YbbS7Z98cN7GiRo9LR
-$INFRA_CLI wallet import --private-key YPV_5JRzPhyg9jY4thDJ1rLsSr4zdLLoA7UEMQRw3vJFGmGKTZF5Kbx
+Private key: PVT_K1_2mrT8fELciM7qUvg7TSBG7SUVgvRL3gzATRMkY2JsJn1GMk2A5
+Public key: PUB_K1_8acHA5kYZd9ktLC7zHWJcH8h63Zrt19kQbe11ASCobb7NNvZaq
+$INFRA_CLI wallet import --private-key PVT_K1_2mrT8fELciM7qUvg7TSBG7SUVgvRL3gzATRMkY2JsJn1GMk2A5
 
-$INFRA_CLI create account infrasys idauth2 YOS5VvWLCqXL3AQyuXZfUTnEiWuhJNV6Nq3YbbS7Z98cN7GiRo9LR
+$INFRA_CLI create account infrasys idauth2 PUB_K1_8acHA5kYZd9ktLC7zHWJcH8h63Zrt19kQbe11ASCobb7NNvZaq
 ```
 
 
@@ -205,22 +205,22 @@ Create initial System Depository Account
 * sysdepo1
 ```bash
 $INFRA_CLI create key --to-console
-Private key: YPV_5J8WZRwfYVzsH8i3LaRQLGorVD788RFYqALEsLmeK8a6Kq6re2W
-Public key: YOS6o8hwGio5V2LgBxFMZi4bdVG5AvcHeFiMpaREKuZ29BwXpNTpH
-$INFRA_CLI wallet import --private-key YPV_5J8WZRwfYVzsH8i3LaRQLGorVD788RFYqALEsLmeK8a6Kq6re2W
+Private key: PVT_K1_4pDTqEyBnCCacqUfE6RgRWmssghAHU497eDqLg9ZobcnBYWQx
+Public key: PUB_K1_7DoMEdoWG4C9sf5B84HpG4k8MrnF1dcdsFTmk1Q348cn4XukEP
+$INFRA_CLI wallet import --private-key PVT_K1_4pDTqEyBnCCacqUfE6RgRWmssghAHU497eDqLg9ZobcnBYWQx
 
-$INFRA_CLI create account infrasys sysdepo1 YOS6o8hwGio5V2LgBxFMZi4bdVG5AvcHeFiMpaREKuZ29BwXpNTpH
+$INFRA_CLI create account infrasys sysdepo1 PUB_K1_7DoMEdoWG4C9sf5B84HpG4k8MrnF1dcdsFTmk1Q348cn4XukEP
 
 ```
 
 * sysdepo2
 ```bash
 $INFRA_CLI create key --to-console
-Private key: YPV_5K5MBizJ6HuG1kdvQTeMnpKjpFSZHm64Nj3X6MvJR6AnTF8mHkx
-Public key: YOS61njg9Zs9oQmAmwLnrcVBrniWKshKAhoQJJqNVVnYXCPSRKLTE
-$INFRA_CLI wallet import --private-key YPV_5K5MBizJ6HuG1kdvQTeMnpKjpFSZHm64Nj3X6MvJR6AnTF8mHkx
+Private key: PVT_K1_2MPBZmG3HxvzYdFJB1h3sR1HWcXe6rJUxuG9Uf52smrqLUaoYX
+Public key: PUB_K1_6XAnMYrHi4fiVDkj4F6iV3ujgvNpYqQBViQr8pgFxi4Zv9muWg
+$INFRA_CLI wallet import --private-key PVT_K1_2MPBZmG3HxvzYdFJB1h3sR1HWcXe6rJUxuG9Uf52smrqLUaoYX
 
-$INFRA_CLI create account infrasys sysdepo2 YOS61njg9Zs9oQmAmwLnrcVBrniWKshKAhoQJJqNVVnYXCPSRKLTE
+$INFRA_CLI create account infrasys sysdepo2 PUB_K1_6XAnMYrHi4fiVDkj4F6iV3ujgvNpYqQBViQr8pgFxi4Zv9muWg
 ```
 
 Install InfraBlockchain System Contract
@@ -352,120 +352,70 @@ producer-name = producer.i
 producer-name = producer.j
 
 # producer.a
-signature-provider = YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn=KEY:YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
+signature-provider = PUB_K1_4uE86f8v56gAGT92VjJqcVf2hdwMuwhQbVMk5Twta83StDyis1=KEY:PVT_K1_2ocZxRUNmcX94XZa3BkDQVadHhBpgveVu9uisn5rwnjA3HtcCJ
 # producer.b
-signature-provider = YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm=KEY:YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
+signature-provider = PUB_K1_7vx3brmnCQ6GvGyhHssNWbamN9VycZNHPuwq58NxQmixaXqoyB=KEY:PVT_K1_U9Ee4ZGBPVMfyRAhnWqvkGPJY24MK48j7GSA9eRckSroJ7f1i
 # producer.c
-signature-provider = YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo=KEY:YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
+signature-provider = PUB_K1_5pWYTTfJnogzVJmJ4E3x48S6wjY1VQ6VfwpnNq8f3iscRyMiGa=KEY:PVT_K1_2RCY8az3ghcCjz9zCy3nSWCWhuskPm3hbCjUAoT8P1R2mCpp3L
 # producer.d
-signature-provider = YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy=KEY:YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
+signature-provider = PUB_K1_5jHaKqt4jBXrnwCGGMbf1HmAQk4t1TUCUJHVNVkSrjB2Hr1Pux=KEY:PVT_K1_2sVfxUt4mEYXcmpeCHofTMh4eKZj39Si55M3E5qd1mf3VVk5fp
 # producer.e
-signature-provider = YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1=KEY:YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
+signature-provider = PUB_K1_5oCuNPNUj2TiVbybefYzDq5kfpEaS6Y8iK2BL5jnwcKimp92zJ=KEY:PVT_K1_27iTXKeEN5J8eddX5dVFTGLR6CZt6sXHtFGhxhsTLJgsGYW5Zw
 # producer.f
-signature-provider = YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641=KEY:YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
+signature-provider = PUB_K1_6f4NxFQoFTfQTvbg28g3uPAB2qF3g8ijbpXiVvp8AiSsQLGiXw=KEY:PVT_K1_1BTEQ7FuXNpAwEwiVeBAM8ub9m2SHZii8HeH4U17pMirbCP4z
 # producer.g
-signature-provider = YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq=KEY:YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
+signature-provider = PUB_K1_5z17LRtLxDJRTDEVQRvUqZoq9ikzhyZzsAM6VZXN5atZsd4nqD=KEY:PVT_K1_2QCCaMVBmQw7zwv6QmeKVvQBdKovqsgCfG6qr9VRWRkCpNSQzi
 # producer.h
-signature-provider = YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6=KEY:YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
+signature-provider = PUB_K1_8DppnPXPrajP93RuV1TUFQWKmjvebnWrwGqhAhucp8iifxkJvc=KEY:PVT_K1_2atqfuPKaW8jvCVgNd2bjXQ2gsuJUrdjXFAe6KZCpTyeHc3Hqr
 # producer.i
-signature-provider = YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is=KEY:YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
+signature-provider = PUB_K1_7fMtu1cHqADH9NEvMXZWZaBg1rkM5k7s2dtP7NvPTTjFean4K3=KEY:PVT_K1_fkYpEQam1UKXJuPuYBKnbWk7nRzoGFC21x8WSuZFtRjgUKTvT
 # producer.j
-signature-provider = YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC=KEY:YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
+signature-provider = PUB_K1_8Xd6fUhpb7hLogbyo7z9sF6epfaeFx8vuAANPbcZtTDj6Yuzwk=KEY:PVT_K1_ci477gtWsaiitBZt5m9t2MwKdFzCR47gvThYjSFqqKh3u9WHu
+
 ```
 
 * create block producer accounts
 ```bash
-$INFRA_CLI create key --to-console
-Private key: YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
-Public key: YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn
-$INFRA_CLI wallet import --private-key YPV_5HsXETBYTpZbgu99EDVmdihxCkVm3i1DU6PL6BQRXAxJnacsooh
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
-Public key: YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm
-$INFRA_CLI wallet import --private-key YPV_5JpFP6dYxrNDGnGKuj6kGNovk5a2QK8V7c1pyp5b93DSjE2WDA3
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
-Public key: YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo
-$INFRA_CLI wallet import --private-key YPV_5KcHTPMwDxJ9yr14f8PZXgsoVbNnez1e85d3UfvWjvNFR817M7d
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
-Public key: YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy
-$INFRA_CLI wallet import --private-key YPV_5J93otpSC4UZXakAT1FFXndc2tUyPPYth7hkuFZ9UQpvtS9vXtZ
- 
-$INFRA_CLI create key --to-console
-Private key: YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
-Public key: YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1
-$INFRA_CLI wallet import --private-key YPV_5KD33jEkkZ5K7GK4Sbp26YfDWT1vxyY4K931QFdoyBb2JXV4qSd
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
-Public key: YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641
-$INFRA_CLI wallet import --private-key YPV_5JpAqiPZ5RrcKrTxXuGzEtSvyV4sC2E1tsxJGtCyXAREfoXLtVt
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
-Public key: YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq
-$INFRA_CLI wallet import --private-key YPV_5JW4NzsCak4hJCkoq85WJi9gdf1upGnY4XNAaYtxTnw4za7f5Kg
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
-Public key: YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6
-$INFRA_CLI wallet import --private-key YPV_5JZ3EDx6PmSYXRs8gLvxhr6ZHvMJnJdnW6jD4AB5KnKguWmomjh
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
-Public key: YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is
-$INFRA_CLI wallet import --private-key YPV_5KQvzWLVeKxgYY6oNGcYDg2QRViTA255nBuqHvoC2yPwaxqxhWh
-
-$INFRA_CLI create key --to-console
-Private key: YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
-Public key: YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC
-$INFRA_CLI wallet import --private-key YPV_5Kgq6gkf2ybW86J7pk3HhFZvtGo9nU1AxukPptxYHLohpBGpiDm
-
-$INFRA_CLI create account infrasys producer.a YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn -p infrasys@active
-$INFRA_CLI create account infrasys producer.b YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm -p infrasys@active
-$INFRA_CLI create account infrasys producer.c YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo -p infrasys@active
-$INFRA_CLI create account infrasys producer.d YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy -p infrasys@active
-$INFRA_CLI create account infrasys producer.e YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1 -p infrasys@active
-$INFRA_CLI create account infrasys producer.f YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641 -p infrasys@active
-$INFRA_CLI create account infrasys producer.g YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq -p infrasys@active
-$INFRA_CLI create account infrasys producer.h YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6 -p infrasys@active
-$INFRA_CLI create account infrasys producer.i YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is -p infrasys@active
-$INFRA_CLI create account infrasys producer.j YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC -p infrasys@active
-
+$INFRA_CLI create account infrasys producer.a PUB_K1_4uE86f8v56gAGT92VjJqcVf2hdwMuwhQbVMk5Twta83StDyis1 -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.b PUB_K1_7vx3brmnCQ6GvGyhHssNWbamN9VycZNHPuwq58NxQmixaXqoyB -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.c PUB_K1_5pWYTTfJnogzVJmJ4E3x48S6wjY1VQ6VfwpnNq8f3iscRyMiGa -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.d PUB_K1_5jHaKqt4jBXrnwCGGMbf1HmAQk4t1TUCUJHVNVkSrjB2Hr1Pux -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.e PUB_K1_5oCuNPNUj2TiVbybefYzDq5kfpEaS6Y8iK2BL5jnwcKimp92zJ -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.f PUB_K1_6f4NxFQoFTfQTvbg28g3uPAB2qF3g8ijbpXiVvp8AiSsQLGiXw -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.g PUB_K1_5z17LRtLxDJRTDEVQRvUqZoq9ikzhyZzsAM6VZXN5atZsd4nqD -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.h PUB_K1_8DppnPXPrajP93RuV1TUFQWKmjvebnWrwGqhAhucp8iifxkJvc -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.i PUB_K1_7fMtu1cHqADH9NEvMXZWZaBg1rkM5k7s2dtP7NvPTTjFean4K3 -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI create account infrasys producer.j PUB_K1_8Xd6fUhpb7hLogbyo7z9sF6epfaeFx8vuAANPbcZtTDj6Yuzwk -p infrasys@active --txfee-payer infrasys
 ```
 
 * register and authorize block producers (permissioned)
 
 ```bash
-$INFRA_CLI push action infrasys regproducer '["producer.a","YOS5Audoa4mpZaYhp7vwYVCUnsQCUVifftdPipvkfZ9qVggoYoHUn","http://producera.io",1]' -p producer.a@active -p infrasys@active
-$INFRA_CLI push action infrasys regproducer '["producer.b","YOS5aw9PzjxJCTi23FWtcB6Q8feMhfLg7Toh7PwGoWge4K4xNWQdm","http://producerb.io",1]' -p producer.b@active -p infrasys@active
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.a","producer_key":"PUB_K1_4uE86f8v56gAGT92VjJqcVf2hdwMuwhQbVMk5Twta83StDyis1","url":"http://producera.io","location":1}' -p producer.a@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.b","producer_key":"PUB_K1_7vx3brmnCQ6GvGyhHssNWbamN9VycZNHPuwq58NxQmixaXqoyB","url":"http://producerb.io","location":1}' -p producer.b@active --txfee-payer infrasys
 
-$INFRA_CLI push action infrasys authproducer '["producer.a"]' -p infrasys@active
-$INFRA_CLI push action infrasys authproducer '["producer.b"]' -p infrasys@active
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.a"}' -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.b"}' -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI push action infrasys regproducer '["producer.c","YOS8cvC5FJozTTVfUVXZ4E4kz1eNsKoBsnG7J76Fw1gX1wstGoUWo","http://producerc.io",1]' -p producer.c@active -p infrasys@active
-$INFRA_CLI push action infrasys regproducer '["producer.d","YOS6ig1G6hpk1Tzj1Ko8zfysATY4eqpb9znyEnx25zbkHscV6qHvy","http://producerd.io",1]' -p producer.d@active -p infrasys@active
-$INFRA_CLI push action infrasys regproducer '["producer.e","YOS72LDKqDc2KvyN1XeEYhv7AbkMUYB8B3fJ55yMn4ZqLzeqxz3w1","http://producere.io",1]' -p producer.e@active -p infrasys@active
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.c","producer_key":"PUB_K1_5pWYTTfJnogzVJmJ4E3x48S6wjY1VQ6VfwpnNq8f3iscRyMiGa","url":"http://producerc.io","location":1}' -p producer.c@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.d","producer_key":"PUB_K1_5jHaKqt4jBXrnwCGGMbf1HmAQk4t1TUCUJHVNVkSrjB2Hr1Pux","url":"http://producerd.io","location":1}' -p producer.d@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.e","producer_key":"PUB_K1_5oCuNPNUj2TiVbybefYzDq5kfpEaS6Y8iK2BL5jnwcKimp92zJ","url":"http://producere.io","location":1}' -p producer.e@active --txfee-payer infrasys
 
-$INFRA_CLI push action infrasys authproducer '["producer.c"]' -p infrasys@active
-$INFRA_CLI push action infrasys authproducer '["producer.d"]' -p infrasys@active
-$INFRA_CLI push action infrasys authproducer '["producer.e"]' -p infrasys@active
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.c"}' -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.d"}' -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.e"}' -p infrasys@active --txfee-payer infrasys
 
-$INFRA_CLI push action infrasys regproducer '["producer.f","YOS5SzGAGCMznawLLY9xkpa4ta62CfTKu6di9AjZ9bWCBJ1pFu641","http://producerf.io",1]' -p producer.f@active -p infrasys@active
-$INFRA_CLI push action infrasys regproducer '["producer.g","YOS5t1fHFunR2rWq5z8NHPrxj1H4xG5Vq4bGKcH33yg1eZMCVPQRq","http://producerg.io",1]' -p producer.g@active -p infrasys@active
-$INFRA_CLI push action infrasys regproducer '["producer.h","YOS5unphoov9UCG8AidDYv14fMJVRnHuihScASHbdFXHuDeDAS2s6","http://producerh.io",1]' -p producer.h@active -p infrasys@active
-$INFRA_CLI push action infrasys regproducer '["producer.i","YOS5KM5t7td26VGDSEHXPHoUHB1Md1NnGRbT9EkXDaBf5nyhw18is","http://produceri.io",1]' -p producer.i@active -p infrasys@active
-$INFRA_CLI push action infrasys regproducer '["producer.j","YOS5oduMFs5Lrbb8ZEc11KtyoVqfUjvaRxbUsQGgTqsEq18p1KqoC","http://producerj.io",1]' -p producer.j@active -p infrasys@active
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.f","producer_key":"PUB_K1_6f4NxFQoFTfQTvbg28g3uPAB2qF3g8ijbpXiVvp8AiSsQLGiXw","url":"http://producerf.io","location":1}' -p producer.f@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.g","producer_key":"PUB_K1_5z17LRtLxDJRTDEVQRvUqZoq9ikzhyZzsAM6VZXN5atZsd4nqD","url":"http://producerg.io","location":1}' -p producer.g@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.h","producer_key":"PUB_K1_8DppnPXPrajP93RuV1TUFQWKmjvebnWrwGqhAhucp8iifxkJvc","url":"http://producerh.io","location":1}' -p producer.h@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.i","producer_key":"PUB_K1_7fMtu1cHqADH9NEvMXZWZaBg1rkM5k7s2dtP7NvPTTjFean4K3","url":"http://produceri.io","location":1}' -p producer.i@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys regproducer '{"producer":"producer.j","producer_key":"PUB_K1_8Xd6fUhpb7hLogbyo7z9sF6epfaeFx8vuAANPbcZtTDj6Yuzwk","url":"http://producerj.io","location":1}' -p producer.j@active --txfee-payer infrasys
 
-$INFRA_CLI push action infrasys authproducer '["producer.f"]' -p infrasys@active
-$INFRA_CLI push action infrasys authproducer '["producer.g"]' -p infrasys@active
-$INFRA_CLI push action infrasys authproducer '["producer.h"]' -p infrasys@active
-$INFRA_CLI push action infrasys authproducer '["producer.i"]' -p infrasys@active
-$INFRA_CLI push action infrasys authproducer '["producer.j"]' -p infrasys@active
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.f"}' -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.g"}' -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.h"}' -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.i"}' -p infrasys@active --txfee-payer infrasys
+$INFRA_CLI push action infrasys authproducer '{"producer":"producer.j"}' -p infrasys@active --txfee-payer infrasys
 ```
 
 Setup Initial Transaction Fees
@@ -583,37 +533,24 @@ Create New User Accounts
 
 ```bash
 $INFRA_CLI create key --to-console
-Private key: YPV_5KTdP4VyuhZ1ba3sX8JvHjKXgcTFUA75QHf92nrGYQX4coVJRAW
-Public key: YOS7y8FkTHo58ZvrMa6yrTpo3D2Y2AA4dMAZzQ8aZY6R6geZSDZ75
-$INFRA_CLI wallet import --private-key YPV_5KTdP4VyuhZ1ba3sX8JvHjKXgcTFUA75QHf92nrGYQX4coVJRAW
-
 $INFRA_CLI create key --to-console
-Private key: YPV_5KDKMejP2AZFGCMxLh67t7417coEgUu7PfQZk7ufuYA4wTBiNC4
-Public key: YOS8ZFsmfpevP8pKPMXuQMNB7P9KJoKzZwwzu2uww9VrRx7E7NUQj
-$INFRA_CLI wallet import --private-key YPV_5KDKMejP2AZFGCMxLh67t7417coEgUu7PfQZk7ufuYA4wTBiNC4
-
 $INFRA_CLI create key --to-console
-Private key: YPV_5Jj4ryu8TY1cVhiLvPkBHKiwMAXV18WqJM97h8hfsBUt5sMJE3r
-Public key: YOS5ubmvsnjHviACtfc9SwGbY7SprqTu1P5GQeDfwfZmhCq6aR7GH
-$INFRA_CLI wallet import --private-key YPV_5Jj4ryu8TY1cVhiLvPkBHKiwMAXV18WqJM97h8hfsBUt5sMJE3r
-
 $INFRA_CLI create key --to-console
-Private key: YPV_5KWoErpjc9yQ2HF6rLuijLFgmAqVEoDLGWmDQAT6NM5DCgcSgo1
-Public key: YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ3rNfKp96hzFxyit
-$INFRA_CLI wallet import --private-key YPV_5KWoErpjc9yQ2HF6rLuijLFgmAqVEoDLGWmDQAT6NM5DCgcSgo1
-
 $INFRA_CLI create key --to-console
-Private key: YPV_5JP9oWWsMaTEBcw1Y7Jn8JzxQBq51FDcGVGqCi5gpMDyKqio26j
-Public key: YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh
-$INFRA_CLI wallet import --private-key YPV_5JP9oWWsMaTEBcw1Y7Jn8JzxQBq51FDcGVGqCi5gpMDyKqio26j
+
+$INFRA_CLI wallet import --private-key PVT_K1_2gSaRyXwhPaRhpvZwF8ZCLvskJw8BpDnJzYa2b8siJC6sumY8A
+$INFRA_CLI wallet import --private-key PVT_K1_2YKh5fwAKdwG1vFvdSyUT636qesed171fL3nh4i5xLiHTp2NMz
+$INFRA_CLI wallet import --private-key PVT_K1_2VXd5W4vPMUZ998zButT7f2U2NbS93TqkzJ6tgQYHE6yHUApQb
+$INFRA_CLI wallet import --private-key PVT_K1_W5DUCEM6xqmJqXvz3ZfH7VZ9gTPqCXVabDd2YzUowVBG7VKo
+$INFRA_CLI wallet import --private-key PVT_K1_fGvQ9cRyumC3xzFG3cvPfNaNibkzRLFXBHF9P7FJixhvqkxHV
 
 // Identity Authority can create accounts having 12 chracters without paying 'tf.newacc' transaction fee
-$INFRA_CLI create account idauth1 useraccount1 YOS7y8FkTHo58ZvrMa6yrTpo3D2Y2AA4dMAZzQ8aZY6R6geZSDZ75 -p idauth1@active
-$INFRA_CLI create account idauth1 useraccount2 YOS8ZFsmfpevP8pKPMXuQMNB7P9KJoKzZwwzu2uww9VrRx7E7NUQj -p idauth1@active
-$INFRA_CLI create account idauth1 useraccount3 YOS5ubmvsnjHviACtfc9SwGbY7SprqTu1P5GQeDfwfZmhCq6aR7GH -p idauth1@active
+$INFRA_CLI create account idauth1 useraccount1 PUB_K1_6rGczYQ1yjJVZcm3TbKbkLwFX98LoigRHREvU1yWS4MPxRPCSx -p idauth1@active
+$INFRA_CLI create account idauth1 useraccount2 PUB_K1_8ZzFcSW18yA1JgwrEzxSN75GoE263dMWW8X4tHrvvC8nuN5z2j -p idauth1@active
+$INFRA_CLI create account idauth1 useraccount3 PUB_K1_7auEiXsYXmQe5WdyjGJmQ4e4eRpi3PFWvNzRQDajhCZ65jTY7R -p idauth1@active
 
 // Only system account can create accounts having less than 12 characters
-$INFRA_CLI create account infrasys com YOS6vdcL347XXzpxSdnLUKpNwmA3KhYagcFqnZ3rNfKp96hzFxyit -p infrasys@active
+$INFRA_CLI create account infrasys com PUB_K1_6gr3cnC46CuMW4dEgp42ct64aWqFdcYQzRFdwCKU4X11Qa5ZKA -p infrasys@active
 
 // Only suffix account can create accounts having arbitrary prefix with the same suffix name
 $INFRA_CLI push action sys.identity setidinfo "{\"account\":\"com\", \"identity_authority\":\"idauth1\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"1f32i7t23\"}" -p idauth1@active
@@ -623,9 +560,9 @@ executed transaction: c9fb1c0cf6c6c9d73e377bcfd405802e129f85cf86a68a57bc15f91d25
 #     yx.ntoken <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"memo":"nis...
 #      sysdepo1 <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"memo":"nis...
 #           com <= yx.ntoken::ntransfer         {"from":"sysdepo1","to":"com","token":{"amount":"5000000.00 DKRW","issuer":"sysdepo1"},"memo":"nis...
-$INFRA_CLI create account com acquire.com YOS6ibAshrW7QmXeM5gurexmw6ijwM9d1BYS1J6Y1kevAFf7PcLNh -p com@active
+$INFRA_CLI create account com acquire.com PUB_K1_5RyCzTHK13aRPA6nYmPzKgjVhdXUXtbEuj3JfQGhoKUaT56dnH -p com@active
 executed transaction: 9268f4e3b7e44caaf1a7c3528ff44ce6e9cfdb8d6dfcf33aa2cc44d7a6c5604a  200 bytes  4900 us
-#      infrasys <= infrasys::newaccount         {"creator":"com","name":"acquire.com","owner":{"threshold":1,"keys":[{"key":"YOS5UbAi7wTM1wpFNp81bgh...
+#      infrasys <= infrasys::newaccount         {"creator":"com","name":"acquire.com","owner":{"threshold":1,"keys":[{"key":"PUB_K1_5RyCzTHK13aRPA...
 #     yx.ntoken <= yx.ntoken::payfee            {"payer":"com","token":"1000.00 DKRW"}
 #     yx.ntoken <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.00 DKRW","issuer":"sysdepo1"}}
 #           com <= yx.ntoken::feetransfer       {"payer":"com","token":{"amount":"1000.00 DKRW","issuer":"sysdepo1"}}
@@ -813,7 +750,7 @@ $INFRA_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b790
       "trx": [
         1,{
           "signatures": [
-            "YSG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
+            "SIG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
           ],
           "compression": "none",
           "packed_context_free_data": "",
@@ -850,7 +787,7 @@ $INFRA_CLI_TESTNET get transaction e91aaf079a73304060d98ca69f3e3010c26127212b790
       ],
       "transaction_extensions": [],
       "signatures": [
-        "YSG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
+        "SIG_K1_K8PtT9kUxbtkMLsj7NJDMRHA5vDTqjYLt3n6JztttQUAtFppvU3QCWTWiHLMHmecL8pS4WSAizcL1N2zkPwbwVyPv4Nru6"
       ],
       "context_free_data": []
     }

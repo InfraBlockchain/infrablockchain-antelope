@@ -32,7 +32,7 @@ class Utils:
     ShuttingDown=False
     CheckOutputDeque=deque(maxlen=10)
 
-    EosBlockLogPath="programs/yosblocklog/yosblocklog"
+    EosBlockLogPath="programs/infra-blocklog/infra-blocklog"
 
     @staticmethod
     def Print(*args, **kwargs):
