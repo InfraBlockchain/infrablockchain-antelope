@@ -1,30 +1,30 @@
-YOSEMITE Public Key, Private Key, Signature Format
+InfraBlockchain Public Key, Private Key, Signature Format
 ---
 
-* YOSEMITE blockchain supports secp256k1 elliptic curve cryptography as default. (same as Bitcoin and EOS)
-* Public/Private keys generated from the EOS blockchain software are supported on YOSEMITE chain.
-* YOSEMITE blockchain supports R1 elliptic curve (secp256r1) cryptography also. secp256r1 is widely used in popular devices such as iPhone.
+* InfraBlockchain supports secp256k1 elliptic curve cryptography as default. (same as Bitcoin and EOS)
+* Public/Private keys generated from the EOS blockchain software are supported on InfraBlockchain.
+* InfraBlockchain supports R1 elliptic curve (secp256r1) cryptography also. secp256r1 is widely used in popular devices such as iPhone.
 
 
-## YOSEMITE Keys
+## Creating K1 Elliptic Curve Keys (secp256k1)
 
 ```bash
 $INFRA_CLI create key --to-console
-Private key: YPV_5Jx4aC6fGkv5eaoYfKobibRGruV8xpgWWNXpojSNghJDehwrkhJ
-Public key: YOS7Te8Jd4fF6HbTJH2BUYADBucb2yYYSRh3mVv4hgjkAJL15rzjF
+Private key: PVT_K1_5Jx4aC6fGkv5eaoYfKobibRGruV8xpgWWNXpojSNghJDehwrkhJ
+Public key: PUB_K1_7Te8Jd4fF6HbTJH2BUYADBucb2yYYSRh3mVv4hgjkAJL15rzjF
 ```
 
-#### YOSEMITE Public Key (secp256k1)
-* key prefix of base58 public key string : "YOS"
-* public key string format : "YOS" + base58 representation of 33 bytes secp256k1 public key data
+#### InfraBlockchain Public Key (secp256k1)
+* key prefix of base58 public key string : "PUB_K1_"
+* public key string format : "PUB_K1_" + base58 representation of 33 bytes secp256k1 public key data
 
-#### YOSEMITE Private Key (secp256k1)
-* key prefix of base58 private key string : "YPV_"
-* private key string format : "YPV_" + base58 representation of secp256k1 private key secret (256 bit) in WIP format (37 bytes) (https://en.bitcoin.it/wiki/Wallet_import_format)
+#### InfraBlockchain Private Key (secp256k1)
+* key prefix of base58 private key string : "PVT_K1_"
+* private key string format : "PVT_K1_" + base58 representation of secp256k1 private key secret (256 bit) in WIP format (37 bytes) (https://en.bitcoin.it/wiki/Wallet_import_format)
 
-#### YOSEMITE Signature (secp256k1)
-* prefix of base58 signature string : "YSG_K1_"
-* signature string format : "YSG_K1_" + base58 representation of 72 bytes secp256k1 signature data
+#### InfraBlockchain Signature (secp256k1)
+* prefix of base58 signature string : "SIG_K1_"
+* signature string format : "SIG_K1_" + base58 representation of 72 bytes secp256k1 signature data
 
 
 ## R1 Elliptic Curve Keys (secp256r1(=prime256v1))

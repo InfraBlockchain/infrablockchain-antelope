@@ -1,6 +1,6 @@
 /**
  *  @file transaction_as_a_vote.hpp
- *  @brief INFRABLOCKCHAIN Transaction-as-a-vote Data Structure
+ *  @brief InfraBlockchain Transaction-as-a-vote Data Structure
  *  @author bezalel@infrablockchain.com
  *  @copyright defined in LICENSE.txt
  */
@@ -19,7 +19,7 @@ namespace infrablockchain { namespace chain {
 
     /**
      *
-     * INFRABLOCKCHAIN Proof-of-Transaction(PoT) and Transaction-as-a-Vote (TaaV)
+     * InfraBlockchain Proof-of-Transaction(PoT) and Transaction-as-a-Vote (TaaV)
      *
      * Proof-of-Transaction (PoT) incentivizes the application
      * service providers directly contributing to the blockchain ecosystem by generating actual
@@ -55,11 +55,11 @@ namespace infrablockchain { namespace chain {
      *    extensions_type        transaction_extensions;
      * }
      *
-     * INFRABLOCKCHAIN Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOS transaction binary data format.
-     * The transaction-extension field code for INFRABLOCKCHAIN TaaV is 1001,
+     * InfraBlockchain Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOS transaction binary data format.
+     * The transaction-extension field code for InfraBlockchain TaaV is 1001,
      * and the field value should be encoded as the binary representation of 64bit base-32 encoding for blockchain account name of transaction-vote target
      *
-     * Example of json representation blockchain transaction with INFRABLOCKCHAIN TaaV
+     * Example of json representation blockchain transaction with InfraBlockchain TaaV
      * {
      *   "expiration": "2018-08-16T06:17:11",
      *   "ref_block_num": 30369,

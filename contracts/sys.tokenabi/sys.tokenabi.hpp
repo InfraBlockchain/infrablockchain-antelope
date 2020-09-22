@@ -17,10 +17,10 @@ namespace infrablockchain { namespace contract {
    using std::string;
 
    /**
-    * Every account on INFRABLOCKCHAIN can process built-in standard token actions (settokenmeta, issue, transfer, redeem)
+    * Every account on InfraBlockchain can process built-in standard token actions (settokenmeta, issue, transfer, redeem)
     * without custom smart contract code deployed to an account.
     * This system contract (sys.tokenabi) provide standard application binary interface(abi) for standard token actions.
-    * Client tools such as infra-cli encoding INFRABLOCKCHAIN transactions could refer 'sys.tokenabi' contract account
+    * Client tools such as infra-cli encoding InfraBlockchain transactions could refer 'sys.tokenabi' contract account
     * to retrieve abi information for standard token actions.
     */
    class tokenabi : public eosio::contract {
@@ -57,7 +57,7 @@ namespace infrablockchain { namespace contract {
       /**
        * Transaction fee payment
        * if current token account is selected as a system token,
-       * 'txfee' actions are generated from INFRABLOCKCHAIN core after processing actions on a submitted transaction
+       * 'txfee' actions are generated from InfraBlockchain core after processing actions on a submitted transaction
        * @param t - token id (token account name)
        * @param payer - account name paying transaction fee
        * @param fee - token quantity (amount, symbol) being charged as transaction fee

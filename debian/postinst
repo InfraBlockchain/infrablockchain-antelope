@@ -8,8 +8,8 @@
 
 set -e
 
-PACKAGE="yosemite"
-USER="yosemite"
+PACKAGE="infrablockchain"
+USER="infrablockchain"
 GROUP=${USER}
 
 # summary of how this script can be called:
@@ -40,8 +40,8 @@ case "$1" in
     chown ${USER}:${GROUP} /var/lib/${PACKAGE}
     chown ${USER}:${GROUP} /etc/${PACKAGE}
     chown ${USER}:${GROUP} /etc/${PACKAGE}/node_00
-    chown ${USER} /usr/bin/yosemite
-    chmod u+s /usr/bin/yosemite
+    chown ${USER} /usr/bin/infrablockchain
+    chmod u+s /usr/bin/infrablockchain
   ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)

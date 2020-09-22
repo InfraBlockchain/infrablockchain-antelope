@@ -488,7 +488,7 @@ class apply_context {
       bool cancel_deferred_transaction( const uint128_t& sender_id, account_name sender );
       bool cancel_deferred_transaction( const uint128_t& sender_id ) { return cancel_deferred_transaction(sender_id, receiver); }
 
-   /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+   /// InfraBlockchain Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
    public:
       /// Deprecated
       /// get transaction vote data accumulated in the head block (previous block)
@@ -500,30 +500,30 @@ class apply_context {
       /// get total weighted transaction vote amount summed up
       double get_total_weighted_transaction_votes() const;
 
-   /// INFRABLOCKCHAIN Core API - Transaction-Fee
+   /// InfraBlockchain Core API - Transaction-Fee
    public:
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
       /// set transaction fee for an action, transaction fees are determined by the 2/3+ block producers.
-      /// if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. INFRABLOCKCHAIN standard token actions) that every account has
+      /// if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. InfraBlockchain standard token actions) that every account has
       /// if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup
       void set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type );
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
       /// unset transaction fee entry for an action, deleting transaction fee database row
       void unset_transaction_fee_for_action( const account_name& code, const action_name& action );
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
       /// get transaction fee for an action
       /// if code == account_name(0), transaction fee info for an built-in common action is retrieved
       /// if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup
       tx_fee_for_action get_transaction_fee_for_action( const account_name& code, const action_name& action ) const;
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Payer
+      /// InfraBlockchain Core API - Transaction-Fee-Payer
       /// get transaction fee payer account name from transaction message
       account_name get_transaction_fee_payer() const;
 
-   /// INFRABLOCKCHAIN Core API - Standard-Token
+   /// InfraBlockchain Core API - Standard-Token
    public:
 
       /// get token symbol of a token

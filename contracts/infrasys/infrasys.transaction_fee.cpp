@@ -15,7 +15,7 @@ namespace infrablockchainsys {
    /**
     *  Set Transaction Fee For Action
     *  @brief set transaction fee for an action. the transaction fee for each code/action is determined by the 2/3+ block producers.
-    *  if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. INFRABLOCKCHAIN standard token actions) that every account has.
+    *  if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. InfraBlockchain standard token actions) that every account has.
     *  if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup.
     *
     *  @param code - account name of contract code

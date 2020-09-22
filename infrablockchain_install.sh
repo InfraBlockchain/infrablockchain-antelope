@@ -1,7 +1,7 @@
 #!/bin/bash
 ############################################################################################
-# This is the YOSEMITE automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/YosemiteLabs/yosemite-public-blockchain
+# This is the InfraBlockchain automated install script for Linux and Mac OS.
+# This file was downloaded from https://github.com/YosemiteLabs/infrablockchain
 #
 # This software is available under the following terms:
 #
@@ -25,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/master/LICENSE
+# https://github.com/YosemiteLabs/infrablockchain/blob/master/LICENSE
 ############################################################################################
    
 if [ "$(id -u)" -ne 0 ]; then
@@ -42,7 +42,7 @@ fi
 BUILD_DIR="${PWD}/build"
 CMAKE_BUILD_TYPE=Release
 TIME_BEGIN=$( date -u +%s )
-INSTALL_PREFIX="/usr/local/yosemite"
+INSTALL_PREFIX="/usr/local/infrablockchain"
 
 txtbld=$(tput bold)
 bldred=${txtbld}$(tput setaf 1)
@@ -50,19 +50,19 @@ txtrst=$(tput sgr0)
 
 create_symlink() {
   pushd /usr/local/bin &> /dev/null
-  ln -sf ../yosemite/bin/$1 $1
+  ln -sf ../infrablockchain/bin/$1 $1
   popd &> /dev/null
 }
 
 install_symlinks() {
-  printf "\\n\\tInstalling YOSEMITE Binary Symlinks\\n\\n"
+  printf "\\n\\tInstalling InfraBlockchain Binary Symlinks\\n\\n"
   create_symlink "infra-cli"
   create_symlink "infra-keystore"
-  create_symlink "yosemite"
+  create_symlink "infra-node"
 }
 
 if [ ! -d "${BUILD_DIR}" ]; then
-  printf "\\n\\tError, yosemite_build.sh has not ran.  Please run ./yosemite_build.sh first!\\n\\n"
+  printf "\\n\\tError, infrablockchain_build.sh has not ran.  Please run ./infrablockchain_build.sh first!\\n\\n"
   exit -1
 fi
 
@@ -80,19 +80,21 @@ fi
 
 if ! make install
 then
-  printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing YOSEMITE has exited with the above error.\\n\\n"
+  printf "\\n\\t>>>>>>>>>>>>>>>>>>>> MAKE installing InfraBlockchain has exited with the above error.\\n\\n"
   exit -1
 fi
 popd &> /dev/null
 
 install_symlinks
 
-printf "\n\n${bldred}\t__   _____  ____  _____ __  __ ___ _____ _____\n"
-printf "\t\ \ / / _ \/ ___|| ____|  \/  |_ _|_   _| ____|\n"
-printf "\t \ V / | | \___ \|  _| | |\/| || |  | | |  _|\n"
-printf "\t  | || |_| |___) | |___| |  | || |  | | | |___\n"
-printf "\t  |_| \___/|____/|_____|_|  |_|___| |_| |_____|${txtrst}\n"
+printf "\n\n${bldred}"
+printf "\t _____        __           ____  _            _        _           _\n"
+printf "\t|_   _|      / _|         |  _ \\| |          | |      | |         (_)\n"
+printf "\t  | |  _ __ | |_ _ __ __ _| |_) | | ___   ___| | _____| |__   __ _ _ _ __\n"
+printf "\t  | | | '_ \\|  _| '__/ _\` |  _ <| |/ _ \\ / __| |/ / __| '_ \\ / _\` | | '_ \\ \n"
+printf "\t _| |_| | | | | | | | (_| | |_) | | (_) | (__|   < (__| | | | (_| | | | | |\n"
+printf "\t|_____|_| |_|_| |_|  \\__,_|____/|_|\\___/ \\___|_|\\_\\___|_| |_|\\__,_|_|_| |_|${txtrst}\n"
 
 printf "\\tFor more information:\\n"
-printf "\\tYOSEMITE website: https://yosemitex.com\\n"
-printf "\\tYOSEMITE github: https://github.com/YosemiteLabs/yosemite-public-blockchain\\n\\n\\n"
+printf "\\tInfraBlockchain website: https://infrablockchain.com\\n"
+printf "\\tInfraBlockchain github: https://github.com/YosemiteLabs/infrablockchain\\n\\n\\n"

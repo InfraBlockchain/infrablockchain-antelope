@@ -10,15 +10,15 @@
 extern "C" {
 
 /**
- *  @defgroup INFRABLOCKCHAIN System Token API
+ *  @defgroup InfraBlockchain System Token API
  *  @ingroup contractdev
- *  @brief Defines API for INFRABLOCKCHAIN System Token Operations
+ *  @brief Defines API for InfraBlockchain System Token Operations
  */
 
 /**
- *  @defgroup INFRABLOCKCHAIN System Token C API
+ *  @defgroup InfraBlockchain System Token C API
  *  @ingroup systokenapi
- *  @brief Defines API for INFRABLOCKCHAIN System Token Operations
+ *  @brief Defines API for InfraBlockchain System Token Operations
  *  @{
  */
 

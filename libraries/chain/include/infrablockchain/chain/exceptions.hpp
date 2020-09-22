@@ -19,7 +19,7 @@ namespace infrablockchain { namespace chain {
                                   3041002, "Invalid Transaction Fee Payer Account Data In Tx-Ext" )
 
     FC_DECLARE_DERIVED_EXCEPTION( infrablockchain_standard_token_exception, chain_exception,
-                                3711000, "INFRABLOCKCHAIN standard token exception" )
+                                3711000, "InfraBlockchain standard token exception" )
 
     FC_DECLARE_DERIVED_EXCEPTION( token_meta_validate_exception, infrablockchain_standard_token_exception,
                                   3711001, "Invalid token meta info" )
@@ -49,7 +49,7 @@ namespace infrablockchain { namespace chain {
                                   3711009, "Insufficient token balance" )
 
   FC_DECLARE_DERIVED_EXCEPTION( infrablockchain_transaction_fee_exception, chain_exception,
-                                3712000, "INFRABLOCKCHAIN transaction fee exception" )
+                                3712000, "InfraBlockchain transaction fee exception" )
 
 //    FC_DECLARE_DERIVED_EXCEPTION( invalid_tx_fee_setup_exception, infrablockchain_transaction_fee_exception,
 //                                  3712001, "Invalid transaction fee setup" )

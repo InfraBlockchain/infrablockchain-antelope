@@ -10,15 +10,15 @@
 extern "C" {
 
 /**
- *  @defgroup INFRABLOCKCHAIN Standard Token API
+ *  @defgroup InfraBlockchain Standard Token API
  *  @ingroup contractdev
- *  @brief Defines API for INFRABLOCKCHAIN Standard Token Operations
+ *  @brief Defines API for InfraBlockchain Standard Token Operations
  */
 
 /**
- *  @defgroup INFRABLOCKCHAIN Standard Token C API
+ *  @defgroup InfraBlockchain Standard Token C API
  *  @ingroup tokenapi
- *  @brief Defines API for INFRABLOCKCHAIN Standard Token Operations
+ *  @brief Defines API for InfraBlockchain Standard Token Operations
  *  @{
  */
 

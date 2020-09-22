@@ -1,7 +1,7 @@
 steps:
   - command: |
       echo "+++ :hammer: Building" && \
-      echo 1 | ./yosemite_build.sh && \
+      echo 1 | ./infrablockchain_build.sh && \
       echo "--- :compression: Compressing build directory" && \
       tar -pczf build.tar.gz build/
     label: ":ubuntu: 18.04 Build"
@@ -16,7 +16,7 @@ steps:
     timeout: 60
   - command: |
       echo "+++ :hammer: Building" && \
-      echo 1 | ./yosemite_build.sh && \
+      echo 1 | ./infrablockchain_build.sh && \
       echo "--- :compression: Compressing build directory" && \
       tar -pczf build.tar.gz build/
     label: ":centos: Build"

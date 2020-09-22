@@ -13,23 +13,23 @@ namespace infrablockchain { namespace contract {
    using std::string;
 
    void tokenabi::settokenmeta( const symbol_type /*sym*/, const string& /*url*/, const string& /*desc*/ ) {
-      eosio_assert( false, "INFRABLOCKCHAIN core provides built-in standard token operation, settokenmeta" );
+      eosio_assert( false, "InfraBlockchain core provides built-in standard token operation, settokenmeta" );
    }
 
    void tokenabi::issue( const account_name /*t*/, const account_name /*to*/, const asset& /*qty*/, const string& /*tag*/ ) {
-      eosio_assert( false, "INFRABLOCKCHAIN core provides built-in standard token operation, issue" );
+      eosio_assert( false, "InfraBlockchain core provides built-in standard token operation, issue" );
    }
 
    void tokenabi::transfer( const account_name /*t*/, const account_name /*from*/, const account_name /*to*/, const asset& /*qty*/, const string& /*tag*/ ) {
-      eosio_assert( false, "INFRABLOCKCHAIN core provides built-in standard token operation, transfer" );
+      eosio_assert( false, "InfraBlockchain core provides built-in standard token operation, transfer" );
    }
 
    void tokenabi::txfee( const account_name /*t*/, const account_name /*payer*/, const asset& /*fee*/ ) {
-      eosio_assert( false, "INFRABLOCKCHAIN core provides built-in standard token operation, txfee" );
+      eosio_assert( false, "InfraBlockchain core provides built-in standard token operation, txfee" );
    }
 
    void tokenabi::redeem( const asset& /*qty*/, const string& /*tag*/ ) {
-      eosio_assert( false, "INFRABLOCKCHAIN core provides built-in standard token operation, redeem" );
+      eosio_assert( false, "InfraBlockchain core provides built-in standard token operation, redeem" );
    }
 
 } } /// namespace infrablockchain::contract

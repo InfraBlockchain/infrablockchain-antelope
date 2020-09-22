@@ -1,7 +1,7 @@
 #!/bin/bash
 ############################################################################################
-# This is the YOSEMITE automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/YosemiteLabs/yosemite-public-blockchain
+# This is the InfraBlockchain automated install script for Linux and Mac OS.
+# This file was downloaded from https://github.com/YosemiteLabs/infrablockchain
 #
 # This software is available under the following terms:
 #
@@ -25,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/master/LICENSE
+# https://github.com/YosemiteLabs/infrablockchain/blob/master/LICENSE
 ############################################################################################
 
 txtbld=$(tput bold)
@@ -42,14 +42,17 @@ fi
 
 TIME_END=$(( $(date -u +%s) - ${TIME_BEGIN} ))
 
-printf "\n\n${bldred}\t__   _____  ____  _____ __  __ ___ _____ _____\n"
-printf "\t\ \ / / _ \/ ___|| ____|  \/  |_ _|_   _| ____|\n"
-printf "\t \ V / | | \___ \|  _| | |\/| || |  | | |  _|\n"
-printf "\t  | || |_| |___) | |___| |  | || |  | | | |___\n"
-printf "\t  |_| \___/|____/|_____|_|  |_|___| |_| |_____|${txtrst}\n"
+printf "\n\n${bldred}"
+printf "\t _____        __           ____  _            _        _           _\n"
+printf "\t|_   _|      / _|         |  _ \\| |          | |      | |         (_)\n"
+printf "\t  | |  _ __ | |_ _ __ __ _| |_) | | ___   ___| | _____| |__   __ _ _ _ __\n"
+printf "\t  | | | '_ \\|  _| '__/ _\` |  _ <| |/ _ \\ / __| |/ / __| '_ \\ / _\` | | '_ \\ \n"
+printf "\t _| |_| | | | | | | | (_| | |_) | | (_) | (__|   < (__| | | | (_| | | | | |\n"
+printf "\t|_____|_| |_|_| |_|  \\__,_|____/|_|\\___/ \\___|_|\\_\\___|_| |_|\\__,_|_|_| |_|${txtrst}\n"
 
-printf "\\n\\tYOSEMITE has been successfully built. %02d:%02d:%02d\\n\\n" $(($TIME_END/3600)) $(($TIME_END%3600/60)) $(($TIME_END%60))
+
+printf "\\n\\tInfraBlockchain has been successfully built. %02d:%02d:%02d\\n\\n" $(($TIME_END/3600)) $(($TIME_END%3600/60)) $(($TIME_END%60))
 
 printf "\\tFor more information:\\n"
-printf "\\tYOSEMITE website: https://yosemitex.com\\n"
-printf "\\tYOSEMITE github: https://github.com/YosemiteLabs/yosemite-public-blockchain\\n\\n\\n"
+printf "\\tInfraBlockchain website: https://infrablockchain.com\\n"
+printf "\\tInfraBlockchain github: https://github.com/YosemiteLabs/infrablockchain\\n\\n\\n"

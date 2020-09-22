@@ -12,7 +12,7 @@ if [ -z "$biosport" ]; then
     biosport=9776
 fi
 
-wddir=yosemite-ignition-wd
+wddir=infrablockchain-ignition-wd
 wdaddr=localhost:8899
 wdurl=http://$wdaddr
 # Manual deployers, add a line below this block that looks like:
@@ -56,9 +56,9 @@ wcmd () {
 }
 
 cacmd () {
-    programs/infra-cli/infra-cli  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount yosemite "$@" >> $logfile 2>&1
+    programs/infra-cli/infra-cli  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount infrasys "$@" >> $logfile 2>&1
     ecmd system regproducer $1 $2
-    ecmd push action yosemite authproducer "[\"$1\"]" -p yosemite
+    ecmd push action infrasys authproducer "[\"$1\"]" -p infrasys
     ecmd push action yx.ntoken nissue "{\"to\":\"$1\", \"token\":{\"amount\":\"1000000.00 DKRW\",\"issuer\":\"sysdepo1\"}, \"memo\":\"my memo\"}" -p sysdepo1
 }
 
@@ -76,77 +76,78 @@ wcmd create --to-console -n ignition
 # ------ DO NOT ALTER THE NEXT LINE -------
 ###INSERT prodkeys
 
-ecmd set contract yosemite contracts/eosio.bios eosio.bios.wasm eosio.bios.abi
+ecmd set contract infrasys contracts/eosio.bios eosio.bios.wasm eosio.bios.abi
 
 # Create required system accounts
 ecmd create key --to-console
 pubsyskey=`grep "^Public key:" $logfile | tail -1 | sed "s/^Public key://"`
 prisyskey=`grep "^Private key:" $logfile | tail -1 | sed "s/^Private key://"`
-echo yx.* keys: $prisyskey $pubsyskey >> $logfile
+echo sys.* keys: $prisyskey $pubsyskey >> $logfile
 wcmd import -n ignition --private-key $prisyskey
-ecmd create account yosemite yx.identity $pubsyskey $pubsyskey
-ecmd create account yosemite yx.msig $pubsyskey $pubsyskey
-ecmd create account yosemite yx.ntoken $pubsyskey $pubsyskey
-ecmd create account yosemite yx.token $pubsyskey $pubsyskey
-ecmd create account yosemite yx.dcontract $pubsyskey $pubsyskey
-ecmd create account yosemite yx.txfee $pubsyskey $pubsyskey
-ecmd create account yosemite yx.sudo $pubsyskey $pubsyskey
-ecmd create account yosemite sysdepo1 $pubsyskey $pubsyskey
-ecmd create account yosemite sysdepo2 $pubsyskey $pubsyskey
-ecmd create account yosemite idauth1 $pubsyskey $pubsyskey
-ecmd create account yosemite idauth2 $pubsyskey $pubsyskey
+ecmd create account infrasys sys.identity $pubsyskey $pubsyskey
+ecmd create account infrasys sys.msig $pubsyskey $pubsyskey
+ecmd create account infrasys sys.txfee $pubsyskey $pubsyskey
+ecmd create account infrasys sys.sudo $pubsyskey $pubsyskey
+ecmd create account infrasys sysdepo1 $pubsyskey $pubsyskey
+ecmd create account infrasys sysdepo2 $pubsyskey $pubsyskey
+ecmd create account infrasys idauth1 $pubsyskey $pubsyskey
+ecmd create account infrasys idauth2 $pubsyskey $pubsyskey
+ecmd create account infrasys yx.ntoken $pubsyskey $pubsyskey
+ecmd create account infrasys yx.token $pubsyskey $pubsyskey
+ecmd create account infrasys yx.dcontract $pubsyskey $pubsyskey
 
-ecmd set contract yx.txfee contracts/yx.txfee yx.txfee.wasm yx.txfee.abi
-ecmd set contract yx.identity contracts/yx.identity yx.identity.wasm yx.identity.abi
+
+ecmd set contract sys.txfee contracts/sys.txfee sys.txfee.wasm sys.txfee.abi
+ecmd set contract sys.identity contracts/sys.identity sys.identity.wasm sys.identity.abi
+ecmd set contract sys.msig contracts/eosio.msig eosio.msig.wasm eosio.msig.abi
+ecmd set contract sys.sudo contracts/eosio.sudo eosio.sudo.wasm eosio.sudo.abi
 ecmd set contract yx.ntoken contracts/yx.ntoken yx.ntoken.wasm yx.ntoken.abi
 ecmd set contract yx.token contracts/yx.token yx.token.wasm yx.token.abi
 ecmd set contract yx.dcontract contracts/yx.dcontract yx.dcontract.wasm yx.dcontract.abi
-ecmd set contract yx.msig contracts/eosio.msig eosio.msig.wasm eosio.msig.abi
-ecmd set contract yx.sudo contracts/eosio.sudo eosio.sudo.wasm eosio.sudo.abi
 
-ecmd push action yosemite setpriv '["yx.ntoken",1]' -p yosemite
-ecmd push action yx.ntoken setkycrule '{"type":0,"kyc":0}' -p yosemite
-ecmd push action yx.ntoken setkycrule '{"type":1,"kyc":0}' -p yosemite
-ecmd push action yosemite setpriv '["yx.token",1]' -p yosemite
-ecmd push action yosemite setpriv '["yx.dcontract",1]' -p yosemite
+ecmd push action infrasys setpriv '["yx.ntoken",1]' -p infrasys
+ecmd push action yx.ntoken setkycrule '{"type":0,"kyc":0}' -p infrasys
+ecmd push action yx.ntoken setkycrule '{"type":1,"kyc":0}' -p infrasys
+ecmd push action infrasys setpriv '["yx.token",1]' -p infrasys
+ecmd push action infrasys setpriv '["yx.dcontract",1]' -p infrasys
 
-ecmd set contract yosemite contracts/yx.system yx.system.wasm yx.system.abi
+ecmd set contract infrasys contracts/infrasys infrasys.wasm infrasys.abi
 
-ecmd push action yosemite regidauth '["idauth1","http://idauth1.org",1]' -p idauth1 -p yosemite 
-ecmd push action yosemite authidauth '["idauth1"]' -p yosemite 
-ecmd push action yosemite regidauth '["idauth2","http://idauth2.org",1]' -p idauth2 -p yosemite 
-ecmd push action yosemite authidauth '["idauth2"]' -p yosemite 
-ecmd push action yosemite regsysdepo '["sysdepo1","http://sysdepo1.org",1]' -p sysdepo1 -p yosemite 
-ecmd push action yosemite authsysdepo '["sysdepo1"]' -p yosemite 
-ecmd push action yosemite regsysdepo '["sysdepo2","http://sysdepo2.org",1]' -p sysdepo2 -p yosemite 
-ecmd push action yosemite authsysdepo '["sysdepo2"]' -p yosemite 
+ecmd push action infrasys regidauth '["idauth1","http://idauth1.org",1]' -p idauth1 -p infrasys
+ecmd push action infrasys authidauth '["idauth1"]' -p infrasys
+ecmd push action infrasys regidauth '["idauth2","http://idauth2.org",1]' -p idauth2 -p infrasys
+ecmd push action infrasys authidauth '["idauth2"]' -p infrasys
+ecmd push action infrasys regsysdepo '["sysdepo1","http://sysdepo1.org",1]' -p sysdepo1 -p infrasys
+ecmd push action infrasys authsysdepo '["sysdepo1"]' -p infrasys
+ecmd push action infrasys regsysdepo '["sysdepo2","http://sysdepo2.org",1]' -p sysdepo2 -p infrasys
+ecmd push action infrasys authsysdepo '["sysdepo2"]' -p infrasys
 
-# yx.system (turn off tx fee for test convenience)
-ecmd push action yx.txfee settxfee '["tf.newacc","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.regprod","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.regsysdep","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.regidauth","0.00 DKRW"]' -p yosemite
+# sys.system (turn off tx fee for test convenience)
+ecmd push action sys.txfee settxfee '["tf.newacc","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.regprod","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.regsysdep","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.regidauth","0.00 DKRW"]' -p infrasys
 
 # yx.ntoken
-ecmd push action yx.txfee settxfee '["tf.nissue","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.nredeem","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.transfer","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.ntransfer","0.00 DKRW"]' -p yosemite
+ecmd push action sys.txfee settxfee '["tf.nissue","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.nredeem","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.transfer","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.ntransfer","0.00 DKRW"]' -p infrasys
 
 # yx.token
-ecmd push action yx.txfee settxfee '["tf.tcreate","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.tissue","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.tredeem","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.ttransfer","0.00 DKRW"]' -p yosemite
+ecmd push action sys.txfee settxfee '["tf.tcreate","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.tissue","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.tredeem","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.ttransfer","0.00 DKRW"]' -p infrasys
 
 # yx.dcontract
-ecmd push action yx.txfee settxfee '["tf.dccreate","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcaddsign","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcsign","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcupadd","0.00 DKRW"]' -p yosemite
-ecmd push action yx.txfee settxfee '["tf.dcremove","0.00 DKRW"]' -p yosemite
+ecmd push action sys.txfee settxfee '["tf.dccreate","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.dcaddsign","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.dcsign","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.dcupadd","0.00 DKRW"]' -p infrasys
+ecmd push action sys.txfee settxfee '["tf.dcremove","0.00 DKRW"]' -p infrasys
 
-ecmd push action yx.ntoken nissue '{"to":"yosemite", "token":{"amount":"1000000000.00 DKRW","issuer":"sysdepo1"}, "memo":"my memo"}' -p sysdepo1
+ecmd push action yx.ntoken nissue '{"to":"infrasys", "token":{"amount":"1000000000.00 DKRW","issuer":"sysdepo1"}, "memo":"my memo"}' -p sysdepo1
 
 # Manual deployers, add a series of lines below this block that looks like:
 #    cacmd $PRODNAME[0] $OWNERKEY[0] $ACTIVEKEY[0]

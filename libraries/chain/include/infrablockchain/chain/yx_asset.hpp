@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in yosemite-public-blockchain/LICENSE
+ *  @copyright defined in infrablockchain/LICENSE
  */
 #pragma once
 

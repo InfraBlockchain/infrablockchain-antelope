@@ -19,7 +19,7 @@ namespace infrablockchain { namespace chain {
    /**
     * system token is a authorized token used as transaction fee payment.
     * to be selected as a system token, a token should meet below criteria.
-    *  - token account should be ranked within top n tokens by acquiring enough transaction votes (INFRABLOCKCHAIN Proof-of-Transaction / Transaction-as-a-Vote)
+    *  - token account should be ranked within top n tokens by acquiring enough transaction votes (InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote)
     *  - the token should be granted as system token used as a transaction fee token signed by (2/3)+ block producers
     */
    struct system_token {

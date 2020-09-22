@@ -4,7 +4,7 @@
 # Go into cmd loop: sudo ./infra-cli.sh
 # Run single cmd:  sudo ./infra-cli.sh <infra-cli paramers>
 
-PREFIX="docker-compose exec yosemited infra-cli"
+PREFIX="docker-compose exec infra-node infra-cli"
 if [ -z $1 ] ; then
   while :
   do

@@ -1,7 +1,7 @@
 /**
  *  @file
  *  @copyright defined in infrablockchain/LICENSE
- *  @defgroup infraclienttool INFRABLOCKCHAIN Command Line Client Reference
+ *  @defgroup infraclienttool InfraBlockchain Command Line Client Reference
  *  @brief Tool for sending transactions and querying state from @ref infra-node
  *  @ingroup infraclienttool
  */
@@ -17,7 +17,7 @@
    infra-cli contains documentation for all of its commands. For a list of all commands known to infra-cli, simply run it with no arguments:
 ```
 $ ./infra-cli
-Command Line Interface to INFRABLOCKCHAIN Client
+Command Line Interface to InfraBlockchain Client
 Usage: programs/infra-cli/infra-cli [OPTIONS] SUBCOMMAND
 
 Options:
@@ -222,10 +222,10 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
       msg += " (defaults to '" + default_permission + "')";
    cmd->add_option("-p,--permission", tx_permission, localized(msg.c_str()));
 
-   // INFRABLOCKCHAIN Transaction-as-a-Vote for Proof-of-Transaction
-   cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for INFRABLOCKCHAIN Proof-of-Transaction(PoT)"));
+   // InfraBlockchain Transaction-as-a-Vote for Proof-of-Transaction
+   cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for InfraBlockchain Proof-of-Transaction(PoT)"));
 
-   // INFRABLOCKCHAIN Transaction-Fee-Payer
+   // InfraBlockchain Transaction-Fee-Payer
    cmd->add_option("--txfee-payer", trx_fee_payer_account, localized("transaction fee payer account"));
 
 #ifdef INFRABLOCKCHAIN_SMART_CONTRACT_PLATFORM
@@ -1798,7 +1798,7 @@ int main( int argc, char** argv ) {
    context = eosio::client::http::create_http_context();
    wallet_url = default_wallet_url;
 
-   CLI::App app{"Command Line Interface to INFRABLOCKCHAIN Client"};
+   CLI::App app{"Command Line Interface to InfraBlockchain Client"};
    app.require_subcommand();
    app.add_option( "-H,--host", obsoleted_option_host_port, localized("the host where infra-node is running") )->group("hidden");
    app.add_option( "-p,--port", obsoleted_option_host_port, localized("the port where infra-node is running") )->group("hidden");
@@ -2129,10 +2129,10 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // INFRABLOCKCHAIN Standard Token
+   // InfraBlockchain Standard Token
    // get token balance
    string token_id;
-   auto get_token = get->add_subcommand("token", localized("Retrieve INFRABLOCKCHAIN standard token information"), true);
+   auto get_token = get->add_subcommand("token", localized("Retrieve InfraBlockchain standard token information"), true);
    get_token->require_subcommand();
 
    auto get_token_balance = get_token->add_subcommand("balance", localized("Retrieve the balance of an account for a given token"), false);
@@ -2160,7 +2160,7 @@ int main( int argc, char** argv ) {
    });
 
    // get systoken list
-   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve INFRABLOCKCHAIN system token information"), true);
+   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve InfraBlockchain system token information"), true);
    get_systoken->require_subcommand();
 
    auto get_systoken_list = get_systoken->add_subcommand("list", localized("Retrieve the system token list used as transaction fee payment token(s)"), false);
@@ -2185,11 +2185,11 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // INFRABLOCKCHAIN Transaction Fee
+   // InfraBlockchain Transaction Fee
    // get txfee info
    string codeName;
    string actionName;
-   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve INFRABLOCKCHAIN transaction fee info"), true);
+   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve InfraBlockchain transaction fee info"), true);
    get_txfee->require_subcommand();
 
    auto get_txfee_item = get_txfee->add_subcommand("item", localized("Retrieve the transaction fee info for an action"), false);
@@ -2221,10 +2221,10 @@ int main( int argc, char** argv ) {
                 << std::endl;
    });
 
-   // INFRABLOCKCHAIN Proof-of-Transaction Transaction Vote Statistics
+   // InfraBlockchain Proof-of-Transaction Transaction Vote Statistics
    // get tx vote stats for an account
    string txVoteAccountName;
-   auto tx_vote_stat = get->add_subcommand("txvote", localized("Retrieve INFRABLOCKCHAIN Proof-of-Transaction transaction vote statistics"), true);
+   auto tx_vote_stat = get->add_subcommand("txvote", localized("Retrieve InfraBlockchain Proof-of-Transaction transaction vote statistics"), true);
    tx_vote_stat->require_subcommand();
 
    auto get_tx_vote_stat_for_account = tx_vote_stat->add_subcommand("account", localized("Retrieve the transaction vote statistics info for an action"), false);
@@ -3098,7 +3098,7 @@ int main( int argc, char** argv ) {
          ("requested", requested_perm_var)
          ("trx", trx_var);
 
-      send_actions({chain::action{accountPermissions, "yx.msig", "propose", variant_to_bin( N(yx.msig), N(propose), args ) }});
+      send_actions({chain::action{accountPermissions, "sys.msig", "propose", variant_to_bin( N(sys.msig), N(propose), args ) }});
    });
 
    //multisig propose transaction
@@ -3138,7 +3138,7 @@ int main( int argc, char** argv ) {
          ("requested", requested_perm_var)
          ("trx", trx_var);
 
-      send_actions({chain::action{accountPermissions, "yx.msig", "propose", variant_to_bin( N(yx.msig), N(propose), args ) }});
+      send_actions({chain::action{accountPermissions, "sys.msig", "propose", variant_to_bin( N(sys.msig), N(propose), args ) }});
    });
 
 
@@ -3151,7 +3151,7 @@ int main( int argc, char** argv ) {
 
    review->set_callback([&] {
       const auto result1 = call(get_table_func, fc::mutable_variant_object("json", true)
-                                 ("code", "yx.msig")
+                                 ("code", "sys.msig")
                                  ("scope", proposer)
                                  ("table", "proposal")
                                  ("table_key", "")
@@ -3187,7 +3187,7 @@ int main( int argc, char** argv ) {
 
          try {
             const auto& result2 = call(get_table_func, fc::mutable_variant_object("json", true)
-                                       ("code", "yx.msig")
+                                       ("code", "sys.msig")
                                        ("scope", proposer)
                                        ("table", "approvals2")
                                        ("table_key", "")
@@ -3219,7 +3219,7 @@ int main( int argc, char** argv ) {
             }
          } else {
             const auto result3 = call(get_table_func, fc::mutable_variant_object("json", true)
-                                       ("code", "yx.msig")
+                                       ("code", "sys.msig")
                                        ("scope", proposer)
                                        ("table", "approvals")
                                        ("table_key", "")
@@ -3252,8 +3252,8 @@ int main( int argc, char** argv ) {
          if( new_multisig ) {
             for( auto& a : provided_approvers ) {
                const auto result4 = call(get_table_func, fc::mutable_variant_object("json", true)
-                                          ("code", "yx.msig")
-                                          ("scope", "yx.msig")
+                                          ("code", "sys.msig")
+                                          ("scope", "sys.msig")
                                           ("table", "invals")
                                           ("table_key", "")
                                           ("lower_bound", a.first.value)
@@ -3358,7 +3358,7 @@ int main( int argc, char** argv ) {
       }
 
       auto accountPermissions = get_account_permissions(tx_permission, {proposer,config::active_name});
-      send_actions({chain::action{accountPermissions, "yx.msig", action, variant_to_bin( N(yx.msig), action, args ) }});
+      send_actions({chain::action{accountPermissions, "sys.msig", action, variant_to_bin( N(sys.msig), action, args ) }});
    };
 
    // multisig approve
@@ -3388,7 +3388,7 @@ int main( int argc, char** argv ) {
          ("account", invalidator);
 
       auto accountPermissions = get_account_permissions(tx_permission, {invalidator,config::active_name});
-      send_actions({chain::action{accountPermissions, "yx.msig", "invalidate", variant_to_bin( N(yx.msig), "invalidate", args ) }});
+      send_actions({chain::action{accountPermissions, "sys.msig", "invalidate", variant_to_bin( N(sys.msig), "invalidate", args ) }});
    });
 
    // multisig cancel
@@ -3415,7 +3415,7 @@ int main( int argc, char** argv ) {
          ("proposal_name", proposal_name)
          ("canceler", canceler);
 
-      send_actions({chain::action{accountPermissions, "yx.msig", "cancel", variant_to_bin( N(yx.msig), N(cancel), args ) }});
+      send_actions({chain::action{accountPermissions, "sys.msig", "cancel", variant_to_bin( N(sys.msig), N(cancel), args ) }});
       }
    );
 
@@ -3444,7 +3444,7 @@ int main( int argc, char** argv ) {
          ("proposal_name", proposal_name)
          ("executer", executer);
 
-      send_actions({chain::action{accountPermissions, "yx.msig", "exec", variant_to_bin( N(yx.msig), N(exec), args ) }});
+      send_actions({chain::action{accountPermissions, "sys.msig", "exec", variant_to_bin( N(sys.msig), N(exec), args ) }});
       }
    );
 

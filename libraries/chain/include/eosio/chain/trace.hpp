@@ -60,14 +60,14 @@ namespace eosio { namespace chain {
       bool                                       scheduled = false;
       vector<action_trace>                       action_traces; ///< disposable
 
-      /// INFRABLOCKCHAIN Proof-of-Transaction
+      /// InfraBlockchain Proof-of-Transaction
       /// tracking transaction vote amount generated from current transaction.
       /// transaction votes collected from each transaction are accumulated in the (pending) 'block state' of each block.
       /// this field is also used for transaction-vote logging in secondary log store
       fc::optional<infrablockchain::chain::transaction_vote>  trx_vote;
 
-      /// INFRABLOCKCHAIN Transaction Fee Payer
-      /// INFRABLOCKCHAIN provides 'transaction fee payer' field for every blockchain transaction.
+      /// InfraBlockchain Transaction Fee Payer
+      /// InfraBlockchain provides 'transaction fee payer' field for every blockchain transaction.
       /// If 'transaction fee payer' field is specified in a submitted transaction, transaction fee is charged to
       /// the specified transaction fee payer who signed the transaction message.
       account_name                               fee_payer = 0;

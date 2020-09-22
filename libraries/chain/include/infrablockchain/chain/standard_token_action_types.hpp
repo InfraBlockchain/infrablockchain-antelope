@@ -15,7 +15,7 @@ namespace infrablockchain { namespace chain { namespace token {
    using namespace eosio::chain;
 
    /**
-    * Every account on INFRABLOCKCHAIN can process built-in standard token actions (settokenmeta, issue, transfer, redeem)
+    * Every account on InfraBlockchain can process built-in standard token actions (settokenmeta, issue, transfer, redeem)
     * without custom smart contract code deployed to an account.
     * An account can have optional token contract code inheriting built-in token actions.
     */

@@ -65,12 +65,12 @@ namespace eosio { namespace chain {
          void validate_referenced_accounts( const transaction& trx, bool enforce_actor_whitelist_blacklist )const;
 
       public:
-         /// INFRABLOCKCHAIN Proof-of-Transaction, Transaction-as-a-Vote
+         /// InfraBlockchain Proof-of-Transaction, Transaction-as-a-Vote
          void cast_transaction_vote(transaction_vote_amount_type vote_amount);
          bool has_transaction_vote() const;
          const transaction_vote& get_transaction_vote() const;
 
-         /// INFRABLOCKCHAIN Transaction-Fee-Payer
+         /// InfraBlockchain Transaction-Fee-Payer
          const account_name& get_tx_fee_payer() const;
 
       private:

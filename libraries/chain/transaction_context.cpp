@@ -175,7 +175,7 @@ namespace bacc = boost::accumulators;
       //EOS_ASSERT( trx.transaction_extensions.size() == 0, unsupported_feature, "we don't support any extensions yet" );
 
       auto &tx_ext = trx.transaction_extensions;
-      // INFRABLOCKCHAIN "Transaction-as-a-vote", "Transaction Fee Payer" Transaction-Extension support
+      // InfraBlockchain "Transaction-as-a-vote", "Transaction Fee Payer" Transaction-Extension support
       EOS_ASSERT( tx_ext.size() <= 2, unsupported_feature, "support only up to 2 transaction extension (transaction-as-a-vote, transaction-fee-payer)" );
 
       for (auto&& tx_ext_item: tx_ext) {
@@ -382,7 +382,7 @@ namespace bacc = boost::accumulators;
       }
    }
 
-   /// INFRABLOCKCHAIN transaction fee payment processing
+   /// InfraBlockchain transaction fee payment processing
    void transaction_context::process_transaction_fee_payment() {
 
       if ( implicit_tx ) return;
@@ -414,7 +414,7 @@ namespace bacc = boost::accumulators;
          // dispatch 'txfee' actions to system token accounts
          control.get_mutable_token_manager().pay_transaction_fee( *this, fee_payer, tx_fee_amount );
 
-         // Cast Transaction Vote - INFRABLOCKCHAIN Proof-of-Transaction / Transaction-as-a-Vote
+         // Cast Transaction Vote - InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote
          cast_transaction_vote( tx_fee_amount );
       }
    }

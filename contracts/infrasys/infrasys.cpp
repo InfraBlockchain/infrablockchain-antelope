@@ -89,7 +89,7 @@ namespace infrablockchainsys {
             }
         }
 
-        // no resource limit, INFRABLOCKCHAIN is transaction-fee based blockchain.
+        // no resource limit, InfraBlockchain is transaction-fee based blockchain.
         set_resource_limits( newact, -1, -1, -1 );
     }
 

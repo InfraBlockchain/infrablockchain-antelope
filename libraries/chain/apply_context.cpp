@@ -59,7 +59,7 @@ void apply_context::exec_one( action_trace& trace )
 
          const apply_handler* native = nullptr;
 
-         /// INFRABLOCKCHAIN Built-in Actions
+         /// InfraBlockchain Built-in Actions
          if (receiver == act.account) {
             native = control.find_built_in_action_apply_handler(act.name);
          }
@@ -430,7 +430,7 @@ bool apply_context::cancel_deferred_transaction( const uint128_t& sender_id, acc
 
 
 //////////////////////////////////////
-/// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+/// InfraBlockchain Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
 
 /// Deprecated
 vector<transaction_vote> apply_context::get_transaction_votes_in_head_block() const {
@@ -450,7 +450,7 @@ double apply_context::get_total_weighted_transaction_votes() const {
 }
 
 //////////////////////////////////////
-/// INFRABLOCKCHAIN Core API - Transaction-Fee
+/// InfraBlockchain Core API - Transaction-Fee
 
 void apply_context::set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
    EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call set_trx_fee_for_action API", ("code", receiver) );
@@ -484,7 +484,7 @@ account_name apply_context::get_transaction_fee_payer() const {
 }
 
 //////////////////////////////////////
-/// INFRABLOCKCHAIN Core API - Standard-Token
+/// InfraBlockchain Core API - Standard-Token
 
 symbol apply_context::get_token_symbol( const account_name token_id ) const {
    return control.get_token_manager().get_token_symbol(token_id);

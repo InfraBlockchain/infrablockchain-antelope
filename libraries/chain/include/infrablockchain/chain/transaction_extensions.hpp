@@ -1,6 +1,6 @@
 /**
  *  @file transaction_extensions.hpp
- *  @brief INFRABLOCKCHAIN Transaction Extensions
+ *  @brief InfraBlockchain Transaction Extensions
  *  @author bezalel@infrablockchain.com
  *  @copyright defined in LICENSE.txt
  */
@@ -29,11 +29,11 @@
  */
 
 /**
- * INFRABLOCKCHAIN Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOS transaction binary data format.
- * The transaction-extension field code for INFRABLOCKCHAIN TaaV is 1001,
+ * InfraBlockchain Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOS transaction binary data format.
+ * The transaction-extension field code for InfraBlockchain TaaV is 1001,
  * and the field value should be encoded as the binary representation of 64bit base-32 encoding for blockchain account name of transaction-vote target
  *
- * Example of json representation blockchain transaction with INFRABLOCKCHAIN TaaV
+ * Example of json representation blockchain transaction with InfraBlockchain TaaV
  * {
  *   "expiration": "2018-08-16T06:17:11",
  *   "ref_block_num": 30369,
@@ -68,22 +68,22 @@
 
 
 /**
- * INFRABLOCKCHAIN Transaction Fee Payer
+ * InfraBlockchain Transaction Fee Payer
  *
- * Every transaction message for INFRABLOCKCHAIN has to contain 'transaction fee payer' account field.
+ * Every transaction message for InfraBlockchain has to contain 'transaction fee payer' account field.
  * The transaction fee payer need to sign the transaction message
  * for which the transaction fee is charged to the payer account.
  * In real service situation, blockchain service provider can pay the transaction fees
  * on behalf of service users. By paying user's blockchain transaction fee, service provider
  * can enhance user experience and attract more customers.
  *
- * To support 'Transaction Fee Payer', INFRABLOCKCHAIN provides
+ * To support 'Transaction Fee Payer', InfraBlockchain provides
  * 'transaction fee payer' field for every blockchain transaction.
  * If 'transaction fee payer' field is specified in a submitted transaction,
  * the transaction fee generated from the transaction is charged to the 'transaction fee payer'.
  * The submitted transaction message must contain crypto signature of 'transaction fee payer' account.
  *
- * Example of json representation blockchain transaction with INFRABLOCKCHAIN Transaction Fee Payer
+ * Example of json representation blockchain transaction with InfraBlockchain Transaction Fee Payer
  * {
  *   "expiration": "2018-08-16T06:17:11",
  *   "ref_block_num": 30369,

@@ -1,10 +1,10 @@
 cmake_minimum_required( VERSION 3.5 )
 
-project( YOSEMITE )
+project( InfraBlockchain )
 
 enable_testing()
 
-set( REPRESENTATIVE_INSTALL_NAME yosemite )
+set( REPRESENTATIVE_INSTALL_NAME infrablockchain )
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
    message(WARNING "CMAKE_INSTALL_PREFIX is set to default path of ${CMAKE_INSTALL_PREFIX}, resetting to ${CMAKE_INSTALL_PREFIX}/${REPRESENTATIVE_INSTALL_NAME}")
@@ -30,7 +30,7 @@ include( SetupTargetMacros )
 include( InstallDirectoryPermissions )
 include( MASSigning )
 
-set( BLOCKCHAIN_NAME "YOSEMITE" )
+set( BLOCKCHAIN_NAME "InfraBlockchain" )
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_EXTENSIONS ON )
 set( CXX_STANDARD_REQUIRED ON)
@@ -242,14 +242,14 @@ if ("${INFRABLOCKCHAIN_NATIVE_TOKEN_PRECISION}" STREQUAL "")
     set(INFRABLOCKCHAIN_NATIVE_TOKEN_PRECISION "4")
 endif()
 
-message( STATUS "Using S(${INFRABLOCKCHAIN_NATIVE_TOKEN_PRECISION},${INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL_NAME}) as YOSEMITE Native Token Symbol" )
+message( STATUS "Using S(${INFRABLOCKCHAIN_NATIVE_TOKEN_PRECISION},${INFRABLOCKCHAIN_NATIVE_TOKEN_SYMBOL_NAME}) as InfraBlockchain Native Token Symbol" )
 
 
 if ("${EOSIO_ROOT_KEY}" STREQUAL "")
    set(EOSIO_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
 endif()
 
-message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'yosemite' account" )
+message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'infrasys' account" )
 
 include(wasm)
 add_subdirectory( libraries )

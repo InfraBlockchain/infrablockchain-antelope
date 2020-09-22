@@ -9,15 +9,15 @@
 extern "C" {
 
    /**
-    *  @defgroup INFRABLOCKCHAIN Transaction Vote API
+    *  @defgroup InfraBlockchain Transaction Vote API
     *  @ingroup contractdev
-    *  @brief Defines API for Transaction-as-a-Vote implementing INFRABLOCKCHAIN Proof-of-Transaction
+    *  @brief Defines API for Transaction-as-a-Vote implementing InfraBlockchain Proof-of-Transaction
     */
 
    /**
-    *  @defgroup INFRABLOCKCHAIN Transaction Vote C API
+    *  @defgroup InfraBlockchain Transaction Vote C API
     *  @ingroup trxvoteapi
-    *  @brief Defines API for Transaction-as-a-Vote implementing INFRABLOCKCHAIN Proof-of-Transaction
+    *  @brief Defines API for Transaction-as-a-Vote implementing InfraBlockchain Proof-of-Transaction
     *  @{
     */
 
@@ -55,7 +55,7 @@ extern "C" {
    /**
     * Get Top Transaction Vote Receivers
     * @brief Retrieve top transaction vote receiver list from blockchain core.
-    *        Transaction votes are processed and accrued for each vote target account on blockchain core by INFRABLOCKCHAIN Proof-of-Transaction/Transaction-as-a-Vote protocol
+    *        Transaction votes are processed and accrued for each vote target account on blockchain core by InfraBlockchain Proof-of-Transaction/Transaction-as-a-Vote protocol
     *        Smart contract code including system contract can retrieve the top transaction vote receiver list
     *        sorted by the accumulated time-decaying weighted transaction vote amount for each tx vote receiver account.
     *        The whole list of transaction vote receivers can be arbitrarily long,

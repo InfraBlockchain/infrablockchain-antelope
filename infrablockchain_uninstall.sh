@@ -1,7 +1,7 @@
 #! /bin/bash
 ############################################################################################
-# This is the YOSEMITE automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/YosemiteLabs/yosemite-public-blockchain
+# This is the InfraBlockchain automated install script for Linux and Mac OS.
+# This file was downloaded from https://github.com/YosemiteLabs/infrablockchain
 #
 # This software is available under the following terms:
 #
@@ -25,33 +25,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/YosemiteLabs/yosemite-public-blockchain/blob/master/LICENSE
+# https://github.com/YosemiteLabs/infrablockchain/blob/master/LICENSE
 ############################################################################################
 
 binaries=(infra-cli
           infra-keystore
-          yosemite)
+          infra-node)
 
-if [ -d "/usr/local/yosemite" ]; then
+if [ -d "/usr/local/infrablockchain" ]; then
    printf "\tDo you wish to remove this install? (requires sudo)\n"
    select yn in "Yes" "No"; do
       case $yn in
          [Yy]* )
             if [ "$(id -u)" -ne 0 ]; then
-               printf "\n\tThis requires sudo, please run ./yosemite_uninstall.sh with sudo\n\n"
+               printf "\n\tThis requires sudo, please run ./infrablockchain_uninstall.sh with sudo\n\n"
                exit -1
             fi
 
             pushd /usr/local &> /dev/null
-            rm -rf yosemite
+            rm -rf infrablockchain
             pushd bin &> /dev/null
             for binary in ${binaries[@]}; do
                rm ${binary}
             done
             # Handle cleanup of directories created from installation
             if [ "$1" == "--full" ]; then
-               if [ -d ~/Library/Application\ Support/yosemite ]; then rm -rf ~/Library/Application\ Support/yosemite; fi # Mac OS
-               if [ -d ~/.local/share/yosemite ]; then rm -rf ~/.local/share/yosemite; fi # Linux
+               if [ -d ~/Library/Application\ Support/infrablockchain ]; then rm -rf ~/Library/Application\ Support/infrablockchain; fi # Mac OS
+               if [ -d ~/.local/share/infrablockchain ]; then rm -rf ~/.local/share/infrablockchain; fi # Linux
             fi
             popd &> /dev/null
             break;;

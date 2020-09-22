@@ -1336,13 +1336,13 @@ class transaction_api : public context_aware_api {
       }
 
       /// Deprecated
-      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// InfraBlockchain Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       void cast_transaction_vote(uint32_t vote_amount) {
 //          context.cast_transaction_vote(vote_amount);
       }
 
       /// Deprecated
-      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// InfraBlockchain Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       int read_head_block_trx_votes_data(array_ptr<char> memory, size_t buffer_size) {
          auto trx_votes = context.get_transaction_votes_in_head_block();
 
@@ -1355,7 +1355,7 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
-      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// InfraBlockchain Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       int get_top_transaction_vote_receivers(array_ptr<char> memory, size_t buffer_size, uint32_t offset_rank, uint32_t limit) {
          auto trx_vote_receivers = context.get_top_transaction_vote_receivers( offset_rank, limit );
 
@@ -1368,22 +1368,22 @@ class transaction_api : public context_aware_api {
          return copy_size;
       }
 
-      /// INFRABLOCKCHAIN Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
+      /// InfraBlockchain Core API - Proof-of-Transaction(PoT), Transaction-as-a-Vote(TaaV)
       double get_total_weighted_transaction_votes() {
          return context.get_total_weighted_transaction_votes();
       }
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
       void set_trx_fee_for_action( const account_name code, const action_name action, int32_t value, uint32_t fee_type ) {
          context.set_transaction_fee_for_action( code, action, value, fee_type );
       }
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
       void unset_trx_fee_for_action( const account_name code, const action_name action ) {
          context.unset_transaction_fee_for_action( code, action );
       }
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Setup
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
       uint32_t get_trx_fee_for_action( const account_name code, const action_name action, array_ptr<char> packed_trx_fee_for_action, size_t buffer_size ) {
          infrablockchain::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
 
@@ -1398,7 +1398,7 @@ class transaction_api : public context_aware_api {
          return 0;
       }
 
-      /// INFRABLOCKCHAIN Core API - Transaction-Fee-Payer
+      /// InfraBlockchain Core API - Transaction-Fee-Payer
       account_name trx_fee_payer() {
          return context.get_transaction_fee_payer();
       }
@@ -1443,7 +1443,7 @@ class context_free_transaction_api : public context_aware_api {
 };
 
 /**
- * INFRABLOCKCHAIN Standard Token API, custom token contract code can access standard token operations
+ * InfraBlockchain Standard Token API, custom token contract code can access standard token operations
  */
 class token_api : public context_aware_api {
    public:
@@ -1475,7 +1475,7 @@ class token_api : public context_aware_api {
 };
 
 /**
- * INFRABLOCKCHAIN System Token APIs - system contract operated by block producers manages system tokens used for tx fee payment
+ * InfraBlockchain System Token APIs - system contract operated by block producers manages system tokens used for tx fee payment
  */
 class system_token_api : public context_aware_api {
    public:

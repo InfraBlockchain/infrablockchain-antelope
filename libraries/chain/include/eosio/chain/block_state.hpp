@@ -27,7 +27,7 @@ namespace eosio { namespace chain {
       /// recapturing transactions when we pop a block
       vector<transaction_metadata_ptr>                    trxs;
 
-      /// INFRABLOCKCHAIN Transaction-as-a-Vote for Proof-of-Transaction
+      /// InfraBlockchain Transaction-as-a-Vote for Proof-of-Transaction
       /// the accumulated transaction votes data of this block.
       /// the reason why transaction votes data structure is located in struct 'block_state'
       /// is because 'block_state' data structure resides only in 'fork_db' state

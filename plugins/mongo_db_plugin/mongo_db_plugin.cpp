@@ -868,7 +868,7 @@ mongo_db_plugin_impl::add_action_trace( mongocxx::bulk_write& bulk_action_traces
       //action_traces_doc.append( kvp( "createdAt", b_date{now} ) ); ==> replaced by 'b_time' (block time)
 
       if (parent_global_sequence == 0) {
-         // INFRABLOCKCHAIN mongo_db_plugin can support searching for 'sent' actions filtered by sender accounts,
+         // InfraBlockchain mongo_db_plugin can support searching for 'sent' actions filtered by sender accounts,
          // by saving 'sender' list (accounts who signed the original transaction)
          // only for non-inline top-level actions (having no parent action) in transactions,
          // and providing mongodb index for ('sender', 'global_sequence')
@@ -972,7 +972,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
       }
    }
 
-//   // INFRABLOCKCHAIN Proof-of-Transaction, Transaction-as-a-Vote
+//   // InfraBlockchain Proof-of-Transaction, Transaction-as-a-Vote
 //   // trx_vote is serialized in transaction_trace object automatically
 //   if (!(t->trx_vote) && t->trx_vote->has_vote()) {
 //      auto& trx_vote = *(t->trx_vote);
@@ -1002,7 +1002,7 @@ void mongo_db_plugin_impl::_process_applied_transaction( const chain::transactio
        handle_mongo_exception( "trans trace update", __LINE__ );
    }
 
-// [INFRABLOCKCHAIN] DOES NOT save 'trans_traces' documents, 'trans_traces' documents are merged to 'trans' documents
+// [InfraBlockchain] DOES NOT save 'trans_traces' documents, 'trans_traces' documents are merged to 'trans' documents
 //   try {
 //      if( !_trans_traces.insert_one( trans_traces_doc.view())) {
 //         EOS_ASSERT( false, chain::mongo_db_insert_fail, "Failed to insert trans ${id}", ("id", t->id));
@@ -1096,7 +1096,7 @@ void mongo_db_plugin_impl::_process_accepted_block( const chain::block_state_ptr
          }
       }
 
-      // INFRABLOCKCHAIN Proof-of-Transaction, Transaction-as-a-Vote
+      // InfraBlockchain Proof-of-Transaction, Transaction-as-a-Vote
       if (bs->trx_votes.has_transaction_votes()) {
           auto trx_votes = bs->trx_votes.get_tx_vote_list();
           block_doc.append(kvp( "trx_votes", [&trx_votes](sub_array child) {
