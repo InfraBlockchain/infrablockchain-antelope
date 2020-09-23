@@ -1,7 +1,7 @@
 #! /bin/bash
 ############################################################################################
 # This is the InfraBlockchain automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/YosemiteLabs/infrablockchain
+# This file was downloaded from https://github.com/InfraBlockchain/infrablockchain
 #
 # This software is available under the following terms:
 #
@@ -25,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/YosemiteLabs/infrablockchain/blob/master/LICENSE
+# https://github.com/InfraBlockchain/infrablockchain/blob/master/LICENSE
 ############################################################################################
 
 binaries=(infra-cli

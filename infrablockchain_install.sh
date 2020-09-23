@@ -25,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/YosemiteLabs/infrablockchain/blob/master/LICENSE
+# https://github.com/InfraBlockchain/infrablockchain/blob/master/LICENSE
 ############################################################################################
    
 if [ "$(id -u)" -ne 0 ]; then
@@ -97,4 +97,4 @@ printf "\t|_____|_| |_|_| |_|  \\__,_|____/|_|\\___/ \\___|_|\\_\\___|_| |_|\\__
 
 printf "\\tFor more information:\\n"
 printf "\\tInfraBlockchain website: https://infrablockchain.com\\n"
-printf "\\tInfraBlockchain github: https://github.com/YosemiteLabs/infrablockchain\\n\\n\\n"
+printf "\\tInfraBlockchain github: https://github.com/InfraBlockchain/infrablockchain\\n\\n\\n"

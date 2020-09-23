@@ -48,7 +48,7 @@ INFRABLOCKCHAIN Identity Codes
 #define INFRABLOCKCHAIN_ID_ACC_STATE_BLACKLISTED_NTOKEN_RECEIVE  0x00000004
 #define INFRABLOCKCHAIN_ID_ACC_STATE_MAX                         0x00000007
 ```
-@see https://github.com/YosemiteLabs/infrablockchain/blob/master/contracts/infrablockchainlib/identity.hpp
+@see https://github.com/InfraBlockchain/infrablockchain/blob/master/contracts/infrablockchainlib/identity.hpp
 
 Managing Account Identity Info (including KYC)
 ---

@@ -26,7 +26,7 @@
 	url = https://github.com/EOSIO/magic_get
 [submodule "libraries/fc"]
 	path = libraries/fc
-	url = https://github.com/YosemiteLabs/fc
+	url = https://github.com/InfraBlockchain/fc
 [submodule "libraries/wabt"]
 	path = libraries/wabt
 	url = https://github.com/EOSIO/wabt

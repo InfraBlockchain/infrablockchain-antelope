@@ -3,7 +3,7 @@ ARG branch=master
 ARG native_token_symbol=DUSD
 ARG native_token_precision=4
 
-RUN git clone -b $branch https://github.com/YosemiteLabs/infrablockchain.git --recursive \
+RUN git clone -b $branch https://github.com/InfraBlockchain/infrablockchain.git --recursive \
     && cd infrablockchain && echo "$branch:$(git rev-parse HEAD)" > /etc/infrablockchain-version \
     && cmake -H. -B"/tmp/build" -GNinja -DCMAKE_BUILD_TYPE=Release -DWASM_ROOT=/opt/wasm -DCMAKE_CXX_COMPILER=clang++ \
        -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX=/tmp/build -DBUILD_MONGO_DB_PLUGIN=true \

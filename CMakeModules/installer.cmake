@@ -41,7 +41,7 @@ else()
   set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY TRUE)
   set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION TRUE)
-  set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/YosemiteLabs/infrablockchain")
+  set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/I/infrablockchain")
 endif()
 
 include(CPack)

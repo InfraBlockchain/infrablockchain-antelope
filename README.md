@@ -76,12 +76,12 @@ even if it had been advised of the possibility of damage.
 
 
 ## InfraBlockchain Explorer
-1. [InfraBlockchain Explorer Backend](https://github.com/YosemiteLabs/yosemite-explorer-backend)
-1. [InfraBlockchain Explorer Web Frontend](https://github.com/YosemiteLabs/yosemite-explorer-web)
+1. [InfraBlockchain Explorer Backend](https://github.com/InfraBlockchain/yosemite-explorer-backend)
+1. [InfraBlockchain Explorer Web Frontend](https://github.com/InfraBlockchain/yosemite-explorer-web)
 
 
 ## Client Library
-1. [Java Client Library](https://github.com/YosemiteLabs/yosemite-j)
+1. [Java Client Library](https://github.com/InfraBlockchain/yosemite-j)
 
 
 ## Supported Operating Systems

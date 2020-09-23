@@ -15,7 +15,7 @@ Simple and fast setup of InfraBlockchain on Docker is also available.
 ## Build infrablockchain image
 
 ```bash
-git clone https://github.com/YosemiteLabs/infrablockchain --recursive  --depth 1
+git clone https://github.com/InfraBlockchain/infrablockchain --recursive  --depth 1
 cd infrablockchain/Docker
 docker build . -t yosemitex/yosemite
 ```
