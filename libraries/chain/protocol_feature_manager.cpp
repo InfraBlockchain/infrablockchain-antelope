@@ -186,6 +186,17 @@ may use a new `set_proposed_producers_ex` intrinsic to access extended features.
 */
             {}
          } )
+         (  builtin_protocol_feature_t::post_transaction_hook, builtin_protocol_feature_spec{
+            "POST_TRANSACTION_HOOK",
+            fc::variant("e292037a71af08d491a512469f39999df064ce7499c9b146eb86ceea0fb205ce").as<digest_type>(),
+            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
+/*
+Builtin protocol feature: POST_TRANSACTION_HOOK
+
+Appends `ontx` action to every transaction for on-chain finalization.
+*/
+            {}
+         } )
    ;
 
 

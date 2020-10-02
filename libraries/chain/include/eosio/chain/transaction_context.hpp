@@ -101,6 +101,8 @@ namespace eosio { namespace chain {
 
          void disallow_transaction_extensions( const char* error_msg )const;
 
+         void apply_ontx();
+
       /// Fields:
       public:
 
@@ -156,3 +158,15 @@ namespace eosio { namespace chain {
    };
 
 } }
+
+namespace eosio { namespace chain {
+
+   struct ontx_data {
+      flat_set<account_name> bill_to_accounts;
+      uint64_t cpu_usage;
+      uint64_t net_usage;
+   };
+
+} }
+
+FC_REFLECT( eosio::chain::ontx_data, (bill_to_accounts)(cpu_usage)(net_usage) )

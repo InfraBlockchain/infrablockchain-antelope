@@ -23,6 +23,8 @@ enum class builtin_protocol_feature_t : uint32_t {
    ram_restrictions,
    webauthn_key,
    wtmsig_block_signatures,
+
+   post_transaction_hook = 0x10000000,
 };
 
 struct protocol_feature_subjective_restrictions {

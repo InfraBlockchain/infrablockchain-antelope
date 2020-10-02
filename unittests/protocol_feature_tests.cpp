@@ -1739,4 +1739,53 @@ BOOST_AUTO_TEST_CASE( wtmsig_block_signing_inflight_extension_test ) { try {
 
 } FC_LOG_AND_RETHROW() }
 
+BOOST_AUTO_TEST_CASE( post_transaction_hook_test ) { try {
+   tester c( setup_policy::preactivate_feature_and_new_bios );
+
+   c.create_account( N(noop) );
+   c.produce_block();
+
+   c.set_code(N(noop), contracts::noop_wasm());
+   c.set_abi(N(noop), contracts::noop_abi().data());
+   c.produce_block();
+
+   transaction_trace_ptr trace;
+   auto h = c.control->applied_transaction.connect( [&](std::tuple<const transaction_trace_ptr&, const signed_transaction&> x) {
+      auto& t = std::get<0>(x);
+      if( t && t->receipt && t->receipt->status == transaction_receipt::executed ) {
+         trace = t;
+      }
+   } );
+
+   c.push_action( N(noop), N(anyaction), N(noop), fc::mutable_variant_object()
+      ("from", "noop")
+      ("type", "some type")
+      ("data", "some data goes here")
+   );
+   c.produce_block();
+
+   BOOST_REQUIRE_EQUAL(trace->action_traces.size(), 1);
+
+   const auto& pfm = c.control->get_protocol_feature_manager();
+   const auto& d = pfm.get_builtin_digest(builtin_protocol_feature_t::post_transaction_hook);
+   BOOST_REQUIRE(d);
+
+   c.produce_blocks(2);
+
+   // activate the feature
+   c.preactivate_protocol_features( {*d} );
+   c.produce_block();
+
+   c.push_action( N(noop), N(anyaction), N(noop), fc::mutable_variant_object()
+      ("from", "noop")
+      ("type", "some type")
+      ("data", "some data goes here")
+   );
+   c.produce_block();
+
+   BOOST_REQUIRE_EQUAL(trace->action_traces.size(), 2);
+   BOOST_REQUIRE_EQUAL(trace->action_traces[1].act.name, N(ontx));
+
+} FC_LOG_AND_RETHROW() }
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -299,8 +299,10 @@ namespace eosio { namespace chain {
       }
 
       auto& rl = control.get_mutable_resource_limits_manager();
-      for( auto a : validate_ram_usage ) {
-         rl.verify_account_ram_usage( a );
+      if( !control.is_builtin_activated(builtin_protocol_feature_t::post_transaction_hook) ) {
+         for( auto a : validate_ram_usage ) {
+            rl.verify_account_ram_usage( a );
+         }
       }
 
       // Calculate the new highest network usage and CPU time that all of the billed accounts can afford to be billed
@@ -339,6 +341,14 @@ namespace eosio { namespace chain {
 
       rl.add_transaction_usage( bill_to_accounts, static_cast<uint64_t>(billed_cpu_time_us), net_usage,
                                 block_timestamp_type(control.pending_block_time()).slot ); // Should never fail
+
+      if( control.is_builtin_activated(builtin_protocol_feature_t::post_transaction_hook) ) {
+         apply_ontx();
+
+         for( auto a : validate_ram_usage ) {
+            rl.verify_account_ram_usage( a );
+         }
+      }
    }
 
    void transaction_context::squash() {
@@ -674,5 +684,20 @@ namespace eosio { namespace chain {
       }
    }
 
+   void transaction_context::apply_ontx() {
+      auto data = ontx_data {
+         .bill_to_accounts = bill_to_accounts,
+         .cpu_usage = static_cast<uint64_t>(billed_cpu_time_us),
+         .net_usage = net_usage,
+      };
+      auto act = action(
+         vector<permission_level>{{config::system_account_name, config::active_name}},
+         config::system_account_name,
+         N(ontx),
+         fc::raw::pack(data)
+      );
+      auto ordinal = schedule_action( act, act.account, false, 0, 0 );
+      execute_action( ordinal, 0 );
+   }
 
 } } /// eosio::chain
