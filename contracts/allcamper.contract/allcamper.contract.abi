@@ -1,0 +1,234 @@
+{
+  "version": "eosio::abi/1.0",
+  "types": [{
+      "new_type_name": "account_name",
+      "type": "name"
+    }
+  ],
+  "structs": [{
+      "name": "reguser",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"user_info_multihash", "type":"string"}
+      ]
+    },{
+      "name": "updateuser",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"user_info_multihash", "type":"string"}
+      ]
+    },{
+      "name": "regcampcar",
+      "base": "",
+      "fields": [
+        {"name":"car_id", "type":"uint64"},
+        {"name":"owner", "type":"account_name"},
+        {"name":"car_info_multihash", "type":"string"}
+      ]
+    },{
+      "name": "updatecar",
+      "base": "",
+      "fields": [
+        {"name":"car_id", "type":"uint64"},
+        {"name":"owner", "type":"account_name"},
+        {"name":"car_info_multihash", "type":"string"}
+      ]
+    },{
+      "name": "rsvcartrade",
+      "base": "",
+      "fields": [
+        {"name":"deal_id", "type":"uint64"},
+        {"name":"car_id", "type":"uint64"},
+        {"name":"buyer", "type":"account_name"},
+        {"name":"price", "type":"asset"}
+      ]
+    },{
+      "name": "cnfmcartrade",
+      "base": "",
+      "fields": [
+        {"name":"deal_id", "type":"uint64"},
+        {"name":"seller", "type":"account_name"},
+        {"name":"buyer", "type":"account_name"}
+      ]
+    },{
+      "name": "cnclcartrade",
+      "base": "",
+      "fields": [
+        {"name":"deal_id", "type":"uint64"},
+        {"name":"canceler", "type":"account_name"}
+      ]
+    },{
+      "name": "rsvrentcar",
+      "base": "",
+      "fields": [
+        {"name":"rent_id", "type":"uint64"},
+        {"name":"car_id", "type":"uint64"},
+        {"name":"renter", "type":"account_name"},
+        {"name":"price", "type":"asset"}
+      ]
+    },{
+      "name": "cnfmrentcar",
+      "base": "",
+      "fields": [
+        {"name":"rent_id", "type":"uint64"},
+        {"name":"owner", "type":"account_name"},
+        {"name":"renter", "type":"account_name"}
+      ]
+    },{
+      "name": "cnclrentcar",
+      "base": "",
+      "fields": [
+        {"name":"rent_id", "type":"uint64"},
+        {"name":"canceler", "type":"account_name"}
+      ]
+    },{
+      "name": "reviewrental",
+      "base": "",
+      "fields": [
+        {"name":"rent_id", "type":"uint64"},
+        {"name":"renter", "type":"account_name"},
+        {"name":"score", "type":"float64"},
+        {"name":"review_data_multihash", "type":"string"}
+      ]
+    },{
+      "name": "allcamper_account",
+      "base": "",
+      "fields": [
+        {"name":"account", "type":"account_name"},
+        {"name":"deposited_akrw_bal", "type":"asset"},
+        {"name":"user_info_multihash", "type":"string"}
+      ]
+    },{
+      "name": "camping_car",
+      "base": "",
+      "fields": [
+        {"name":"car_id", "type":"uint64"},
+        {"name":"owner", "type":"account_name"},
+        {"name":"status", "type":"uint8"},
+        {"name":"review_score", "type":"float64"},
+        {"name":"review_count", "type":"uint32"},
+        {"name":"last_review_at", "type":"uint64"},
+        {"name":"car_info_multihash", "type":"string"}
+      ]
+    },{
+      "name": "camping_car_trade",
+      "base": "",
+      "fields": [
+        {"name":"deal_id", "type":"uint64"},
+        {"name":"car_id", "type":"uint64"},
+        {"name":"seller_account", "type":"account_name"},
+        {"name":"buyer_account", "type":"account_name"},
+        {"name":"price", "type":"asset"},
+        {"name":"status", "type":"uint8"},
+        {"name":"reserved_at", "type":"uint64"},
+        {"name":"confirmed_at", "type":"uint64"}
+      ]
+    },{
+      "name": "camping_car_rental",
+      "base": "",
+      "fields": [
+        {"name":"rent_id", "type":"uint64"},
+        {"name":"car_id", "type":"uint64"},
+        {"name":"owner_account", "type":"account_name"},
+        {"name":"renter_account", "type":"account_name"},
+        {"name":"price", "type":"asset"},
+        {"name":"status", "type":"uint8"},
+        {"name":"reserved_at", "type":"uint64"},
+        {"name":"confirmed_at", "type":"uint64"}
+      ]
+    },{
+      "name": "rental_review",
+      "base": "",
+      "fields": [
+        {"name":"rent_id", "type":"uint64"},
+        {"name":"car_id", "type":"uint64"},
+        {"name":"renter", "type":"account_name"},
+        {"name":"created_at", "type":"uint64"},
+        {"name":"score", "type":"float64"},
+        {"name":"review_data_multihash", "type":"string"}
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "reguser",
+      "type": "reguser",
+      "ricardian_contract": ""
+    },{
+      "name": "updateuser",
+      "type": "updateuser",
+      "ricardian_contract": ""
+    },{
+      "name": "regcampcar",
+      "type": "regcampcar",
+      "ricardian_contract": ""
+    },{
+      "name": "updatecar",
+      "type": "updatecar",
+      "ricardian_contract": ""
+    },{
+      "name": "rsvcartrade",
+      "type": "rsvcartrade",
+      "ricardian_contract": ""
+    },{
+      "name": "cnfmcartrade",
+      "type": "cnfmcartrade",
+      "ricardian_contract": ""
+    },{
+      "name": "cnclcartrade",
+      "type": "cnclcartrade",
+      "ricardian_contract": ""
+    },{
+      "name": "rsvrentcar",
+      "type": "rsvrentcar",
+      "ricardian_contract": ""
+    },{
+      "name": "cnfmrentcar",
+      "type": "cnfmrentcar",
+      "ricardian_contract": ""
+    },{
+      "name": "cnclrentcar",
+      "type": "cnclrentcar",
+      "ricardian_contract": ""
+    },{
+      "name": "reviewrental",
+      "type": "reviewrental",
+      "ricardian_contract": ""
+    }
+  ],
+  "tables": [{
+      "name": "accounts",
+      "type": "allcamper_account",
+      "index_type": "i64",
+      "key_names" : ["primary_key"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "campingcars",
+      "type": "camping_car",
+      "index_type": "i64",
+      "key_names" : ["primary_key","by_owner"],
+      "key_types" : ["uint64","uint64"]
+    },{
+      "name": "trades",
+      "type": "camping_car_trade",
+      "index_type": "i64",
+      "key_names" : ["primary_key","by_car","by_seller","by_buyer","by_status"],
+      "key_types" : ["uint64","uint64","uint64","uint64","uint64"]
+    },{
+      "name": "rentals",
+      "type": "camping_car_rental",
+      "index_type": "i64",
+      "key_names" : ["primary_key","by_car","by_owner","by_renter","by_status"],
+      "key_types" : ["uint64","uint64","uint64","uint64","uint64"]
+    },{
+      "name": "reviews",
+      "type": "rental_review",
+      "index_type": "i64",
+      "key_names" : ["primary_key","by_car","by_renter"],
+      "key_types" : ["uint64","uint64","uint64"]
+    }
+  ],
+  "ricardian_clauses": [],
+  "abi_extensions": []
+}
