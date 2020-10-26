@@ -46,3 +46,6 @@ add_subdirectory(yx.dcontract)
 add_subdirectory(yx.nft)
 add_subdirectory(yx.escrow)
 add_subdirectory(yx.nftex)
+
+add_subdirectory(allcamper.akrw.token)
+add_subdirectory(allcamper.contract)
