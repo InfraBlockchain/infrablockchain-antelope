@@ -29,6 +29,8 @@
 #include <b1/session/session.hpp>
 #include <b1/session/undo_stack.hpp>
 
+#include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
+
 // It's a fatal condition if chainbase and chain_kv get out of sync with each
 // other due to exceptions.
 #define CATCH_AND_EXIT_DB_FAILURE()                                                                                    \
@@ -38,13 +40,17 @@
    }
 
 namespace eosio { namespace chain {
+
+   using namespace infrablockchain::chain;
+
    using rocks_db_type = eosio::session::session<eosio::session::rocksdb_t>;
    using session_type = eosio::session::session<rocks_db_type>;
    using kv_undo_stack_ptr = std::unique_ptr<eosio::session::undo_stack<rocks_db_type>>;
 
    using controller_index_set =
          index_set<account_index, account_metadata_index, account_ram_correction_index, global_property_multi_index,
-                   protocol_state_multi_index, dynamic_global_property_multi_index, block_summary_multi_index,
+                   protocol_state_multi_index, dynamic_global_property_multi_index,
+                   infrablockchain_global_property_multi_index, block_summary_multi_index,
                    transaction_multi_index, generated_transaction_multi_index, table_id_multi_index, code_index,
                    database_header_multi_index, kv_db_config_index>;
 

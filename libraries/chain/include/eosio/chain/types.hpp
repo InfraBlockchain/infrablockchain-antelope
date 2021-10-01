@@ -260,7 +260,7 @@ namespace eosio { namespace chain {
       kv_db_config_object_type,
       OBJECT_TYPE_COUNT, ///< Sentry value which contains the number of different object types
 
-      INFRABLOCKCHAIN_OBJECT_TYPE_DELIMITER = 1000,
+      INFRABLOCKCHAIN_OBJECT_TYPE_DELIMITER = 256,
       infrablockchain_global_property_object_type,
       infrablockchain_token_meta_object_type,
       infrablockchain_token_balance_object_type,

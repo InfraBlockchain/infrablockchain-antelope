@@ -758,6 +758,10 @@ struct controller_impl {
 
       authorization.add_indices();
       resource_limits.add_indices();
+
+      // TODO add standard-token index
+      // TODO add transaction-fee-table index
+      // TODO add transaction-vote-table index
    }
 
    sha256 calculate_integrity_hash() const {
