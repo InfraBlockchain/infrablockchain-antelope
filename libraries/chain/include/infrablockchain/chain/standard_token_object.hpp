@@ -7,6 +7,7 @@
 
 #include <eosio/chain/database_utils.hpp>
 #include <eosio/chain/multi_index_includes.hpp>
+#include <eosio/chain/snapshot.hpp>
 #include <eosio/chain/symbol.hpp>
 #include <eosio/chain/config.hpp>
 
@@ -23,11 +24,11 @@ namespace infrablockchain { namespace chain {
       OBJECT_CTOR(token_meta_object, (url)(desc))
 
       id_type        id;
-      token_id_type  token_id; // token id = token account name
-      symbol         sym; // symbol name and precision
-      share_type     total_supply = 0; // total token supply amount issued(+) and redeemed(-) by token account
-      shared_string  url; // website url for token information managed by token issuer (owner of token account)
-      shared_string  desc; // token description
+      token_id_type  token_id;          // token id = token account name
+      symbol         sym;               // symbol name and precision
+      share_type     total_supply = 0;  // total token supply amount issued(+) and redeemed(-) by token account
+      shared_string  url;               // website url for token information managed by token issuer (owner of token account)
+      shared_string  desc;              // token description
    };
 
    struct by_token_id;
@@ -40,6 +41,13 @@ namespace infrablockchain { namespace chain {
       >
    >;
 
+   struct snapshot_token_meta_object {
+      token_id_type  token_id;
+      symbol         sym;
+      share_type     total_supply;
+      std::string    url;
+      std::string    desc;
+   };
 
    /**
     * @brief token balance object for each account holding a specific token
@@ -86,9 +94,33 @@ namespace eosio { namespace chain { namespace config {
 
 } } } /// eosio::chain::config
 
+namespace eosio { namespace chain {
+
+   namespace detail {
+
+      using namespace infrablockchain::chain;
+
+      template<>
+      struct snapshot_row_traits<token_meta_object> {
+         using value_type = token_meta_object;
+         using snapshot_type = snapshot_token_meta_object;
+
+         static snapshot_token_meta_object to_snapshot_row( const token_meta_object& value,
+                                                            const chainbase::database& db );
+
+         static void from_snapshot_row( snapshot_token_meta_object&& row,
+                                        token_meta_object& value,
+                                        chainbase::database& db );
+      };
+   }
+
+} } /// eosio::chain
+
 
 CHAINBASE_SET_INDEX_TYPE(infrablockchain::chain::token_meta_object, infrablockchain::chain::token_meta_multi_index)
 CHAINBASE_SET_INDEX_TYPE(infrablockchain::chain::token_balance_object, infrablockchain::chain::token_balance_multi_index)
 
 FC_REFLECT(infrablockchain::chain::token_meta_object, (token_id)(sym)(total_supply)(url)(desc) )
 FC_REFLECT(infrablockchain::chain::token_balance_object, (token_id)(account)(balance) )
+
+FC_REFLECT(infrablockchain::chain::snapshot_token_meta_object, (token_id)(sym)(total_supply)(url)(desc) )
