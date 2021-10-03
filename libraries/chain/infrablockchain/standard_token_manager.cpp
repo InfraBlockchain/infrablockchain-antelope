@@ -19,8 +19,47 @@ namespace infrablockchain { namespace chain {
 
    using namespace eosio::chain;
 
+   using standard_token_db_index_set = index_set<
+      token_meta_multi_index,
+      token_balance_multi_index
+   >;
+
    standard_token_manager::standard_token_manager( chainbase::database& db )
       : _db(db) {
+   }
+
+   void standard_token_manager::add_indices() {
+      standard_token_db_index_set::add_indices(_db);
+   }
+
+   void standard_token_manager::initialize_database() {
+
+   }
+
+   void standard_token_manager::add_to_snapshot( const snapshot_writer_ptr& snapshot ) const {
+      standard_token_db_index_set::walk_indices([this, &snapshot]( auto utils ){
+         using section_t = typename decltype(utils)::index_t::value_type;
+         snapshot->write_section<section_t>([this]( auto& section ){
+            decltype(utils)::walk(_db, [this, &section]( const auto &row ) {
+               section.add_row(row, _db);
+            });
+         });
+      });
+   }
+
+   void standard_token_manager::read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
+      standard_token_db_index_set::walk_indices([this, &snapshot]( auto utils ){
+         using section_t = typename decltype(utils)::index_t::value_type;
+
+         snapshot->read_section<section_t>([this]( auto& section ) {
+            bool more = !section.empty();
+            while(more) {
+               decltype(utils)::create(_db, [this, &section, &more]( auto &row ) {
+                  more = section.read_row(row, _db);
+               });
+            }
+         });
+      });
    }
 
    void standard_token_manager::set_token_meta_info( apply_context& context, const token_id_type &token_id, const standard_token::settokenmeta &token_meta ) {

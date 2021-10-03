@@ -74,6 +74,13 @@ set(CHAIN_WEBASSEMBLY_SOURCES
    webassembly/transaction.cpp
 )
 
+set(INFRABLOCKCHAIN_CORE_SOURCES
+   infrablockchain/infrablockchain_global_property_object.cpp
+   infrablockchain/standard_token_manager.cpp
+#   infrablockchain/standard_token_action_handlers.cpp
+   infrablockchain/standard_token_object.cpp
+)
+
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
              merkle.cpp
@@ -129,6 +136,9 @@ add_library( eosio_chain
              backing_store/db_context_rocksdb.cpp
              backing_store/db_key_value_format.cpp
              backing_store/db_key_value_any_lookup.cpp
+
+             ${INFRABLOCKCHAIN_CORE_SOURCES}
+
              ${PLATFORM_TIMER_IMPL}
              ${HEADERS}
              )

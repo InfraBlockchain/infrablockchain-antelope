@@ -39,6 +39,10 @@
       std::abort();                                                                                                    \
    }
 
+namespace infrablockchain { namespace chain {
+   class standard_token_manager;
+} }
+
 namespace eosio { namespace chain {
 
    using namespace infrablockchain::chain;
@@ -128,11 +132,13 @@ namespace eosio { namespace chain {
 
       void add_to_snapshot(const eosio::chain::snapshot_writer_ptr& snapshot, const eosio::chain::block_state& head,
                            const eosio::chain::authorization_manager&                    authorization,
-                           const eosio::chain::resource_limits::resource_limits_manager& resource_limits) const;
+                           const eosio::chain::resource_limits::resource_limits_manager& resource_limits,
+                           const infrablockchain::chain::standard_token_manager&         standard_token) const;
 
       void read_from_snapshot(const snapshot_reader_ptr& snapshot, uint32_t blog_start, uint32_t blog_end,
                               eosio::chain::authorization_manager& authorization,
                               eosio::chain::resource_limits::resource_limits_manager& resource_limits,
+                              infrablockchain::chain::standard_token_manager& standard_token,
                               eosio::chain::fork_database& fork_db, eosio::chain::block_state_ptr& head,
                               uint32_t& snapshot_head_block, const eosio::chain::chain_id_type& chain_id);
 

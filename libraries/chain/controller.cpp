@@ -26,8 +26,12 @@
 #include <eosio/vm/allocator.hpp>
 #endif
 
+#include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+
 namespace eosio { namespace chain {
 
+using namespace infrablockchain::chain;
 using resource_limits::resource_limits_manager;
 
 struct building_block {
@@ -161,6 +165,7 @@ struct controller_impl {
    resource_limits_manager             resource_limits;
    authorization_manager               authorization;
    protocol_feature_manager            protocol_features;
+   standard_token_manager              standard_token;
    controller::config                  conf;
    const chain_id_type                 chain_id; // read by thread_pool threads, value will not be changed
    std::optional<fc::time_point>       replay_head_time;
@@ -241,6 +246,7 @@ struct controller_impl {
     resource_limits( db, [&s]() { return s.get_deep_mind_logger(); }),
     authorization( s, db ),
     protocol_features( std::move(pfs), [&s]() { return s.get_deep_mind_logger(); } ),
+    standard_token( db ),
     conf( cfg ),
     chain_id( chain_id ),
     read_mode( cfg.read_mode ),
@@ -495,11 +501,11 @@ struct controller_impl {
          snapshot->validate();
          if( blog.head() ) {
             kv_db.read_from_snapshot( snapshot, blog.first_block_num(), blog.head()->block_num(),
-                                      authorization, resource_limits,
+                                      authorization, resource_limits, standard_token,
                                       fork_db, head, snapshot_head_block, chain_id );
          } else {
             kv_db.read_from_snapshot( snapshot, 0, std::numeric_limits<uint32_t>::max(),
-                                      authorization, resource_limits,
+                                      authorization, resource_limits, standard_token,
                                       fork_db, head, snapshot_head_block, chain_id );
             const uint32_t lib_num = head->block_num;
             EOS_ASSERT( lib_num > 0, snapshot_exception,
@@ -759,7 +765,7 @@ struct controller_impl {
       authorization.add_indices();
       resource_limits.add_indices();
 
-      // TODO add standard-token index
+      standard_token.add_indices();
       // TODO add transaction-fee-table index
       // TODO add transaction-vote-table index
    }
@@ -767,7 +773,7 @@ struct controller_impl {
    sha256 calculate_integrity_hash() const {
       sha256::encoder enc;
       auto hash_writer = std::make_shared<integrity_hash_snapshot_writer>(enc);
-      kv_db.add_to_snapshot(hash_writer, *fork_db.head(), authorization, resource_limits);
+      kv_db.add_to_snapshot(hash_writer, *fork_db.head(), authorization, resource_limits, standard_token);
       hash_writer->finalize();
 
       return enc.result();
@@ -846,6 +852,10 @@ struct controller_impl {
 
       authorization.initialize_database();
       resource_limits.initialize_database();
+
+      standard_token.initialize_database();
+      // TODO: transaction fee manager
+      // TODO: tx vote manager
 
       authority system_auth(genesis.initial_key);
       create_native_account( genesis.initial_timestamp, config::system_account_name, system_auth, system_auth, true );
@@ -2337,6 +2347,16 @@ const protocol_feature_manager& controller::get_protocol_feature_manager()const
    return my->protocol_features;
 }
 
+const standard_token_manager&  controller::get_standard_token_manager()const
+{
+   return my->standard_token;
+}
+
+standard_token_manager&        controller::get_mutable_standard_token_manager()
+{
+   return my->standard_token;
+}
+
 uint32_t controller::get_max_nonprivileged_inline_action_size()const
 {
    return my->conf.max_nonprivileged_inline_action_size;
@@ -2785,6 +2805,10 @@ const global_property_object& controller::get_global_properties()const {
   return my->db.get<global_property_object>();
 }
 
+const infrablockchain_global_property_object& controller::get_infrablockchain_global_properties()const {
+   return my->db.get<infrablockchain_global_property_object>();
+}
+
 signed_block_ptr controller::fetch_block_by_id( block_id_type id )const {
    auto state = my->fork_db.get_block(id);
    if( state && state->block ) return state->block;
@@ -2860,7 +2884,7 @@ sha256 controller::calculate_integrity_hash()const { try {
 
 void controller::write_snapshot( const snapshot_writer_ptr& snapshot ) const {
    EOS_ASSERT( !my->pending, block_validate_exception, "cannot take a consistent snapshot with a pending block" );
-   return my->kv_db.add_to_snapshot(snapshot, *my->fork_db.head(), my->authorization, my->resource_limits);
+   return my->kv_db.add_to_snapshot(snapshot, *my->fork_db.head(), my->authorization, my->resource_limits, my->standard_token);
 }
 
 int64_t controller::set_proposed_producers( vector<producer_authority> producers ) {
