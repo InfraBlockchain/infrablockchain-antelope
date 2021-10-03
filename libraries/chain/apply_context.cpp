@@ -13,7 +13,10 @@
 #include <boost/container/flat_set.hpp>
 #include <eosio/chain/kv_chainbase_objects.hpp>
 
+#include <infrablockchain/chain/standard_token_manager.hpp>
+
 using boost::container::flat_set;
+using namespace infrablockchain::chain;
 
 namespace eosio { namespace chain {
 
@@ -109,7 +112,18 @@ void apply_context::exec_one()
          receiver_account = &db.get<account_metadata_object,by_name>( receiver );
          if( !(context_free && control.skip_trx_checks()) ) {
             privileged = receiver_account->is_privileged();
-            auto native = control.find_apply_handler( receiver, act->account, act->name );
+
+            const apply_handler* native = nullptr;
+
+            /// InfraBlockchain Built-in Actions
+            if (receiver == act->account) { // call native built-in action handler in 'not notify' context only
+               native = control.find_built_in_action_apply_handler(act->name);
+            }
+
+            if (native == nullptr) {
+               native = control.find_apply_handler( receiver, act->account, act->name );
+            }
+
             if( native ) {
                if( trx_context.enforce_whiteblacklist && control.is_producing_block() ) {
                   control.check_contract_list( receiver );

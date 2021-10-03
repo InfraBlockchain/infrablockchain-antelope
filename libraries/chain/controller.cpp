@@ -28,6 +28,7 @@
 
 #include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
 #include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/standard_token_action_handlers.hpp>
 
 namespace eosio { namespace chain {
 
@@ -185,6 +186,13 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
    unordered_map< builtin_protocol_feature_t, std::function<void(controller_impl&)>, enum_hash<builtin_protocol_feature_t> > protocol_feature_activation_handlers;
 
+   /**
+    * [InfraBlockchain Built-in Actions Feature]
+    * predefined actions can be executed on every account even though an account doesn't have contract code.
+    * InfraBlockchain Standard Token operations (issue,redeem,transfer,txfee,...) are built-in actions supported on every account
+    */
+   map< action_name, apply_handler >   built_in_action_apply_handlers;
+
    void pop_block() {
       auto prev = fork_db.get_block( head->header.previous );
 
@@ -226,6 +234,10 @@ struct controller_impl {
 
    void set_apply_handler( account_name receiver, account_name contract, action_name action, apply_handler v ) {
       apply_handlers[receiver][make_pair(contract,action)] = v;
+   }
+
+   void set_built_in_action_apply_handler( action_name action, apply_handler v ) {
+      built_in_action_apply_handlers[action] = v;
    }
 
    controller_impl( const controller::config& cfg, controller& s, protocol_feature_set&& pfs, const chain_id_type& chain_id )
@@ -290,6 +302,17 @@ struct controller_impl {
 */
 
    SET_APP_HANDLER( eosio, eosio, canceldelay );
+
+#define SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( action ) \
+   set_built_in_action_apply_handler( action_name(#action), \
+                                      &BOOST_PP_CAT(infrablockchain::chain::apply_, BOOST_PP_CAT(infrablockchain_built_in_action, BOOST_PP_CAT(_,action) ) ) )
+
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( settokenmeta );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( issue );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( transfer );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( txfee );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( redeem );
+
    }
 
    /**
@@ -3046,6 +3069,16 @@ const flat_set<account_name>& controller::get_trusted_producers()const {
 
 uint32_t controller::get_terminate_at_block()const {
    return my->conf.terminate_at_block;
+}
+
+/// InfraBlockchain Built-in Actions
+const apply_handler* controller::find_built_in_action_apply_handler( action_name act ) const
+{
+   auto handler = my->built_in_action_apply_handlers.find( act );
+   if ( handler != my->built_in_action_apply_handlers.end() ) {
+      return &handler->second;
+   }
+   return nullptr;
 }
 
 const apply_handler* controller::find_apply_handler( account_name receiver, account_name scope, action_name act ) const

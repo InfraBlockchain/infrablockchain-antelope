@@ -77,7 +77,7 @@ set(CHAIN_WEBASSEMBLY_SOURCES
 set(INFRABLOCKCHAIN_CORE_SOURCES
    infrablockchain/infrablockchain_global_property_object.cpp
    infrablockchain/standard_token_manager.cpp
-#   infrablockchain/standard_token_action_handlers.cpp
+   infrablockchain/standard_token_action_handlers.cpp
    infrablockchain/standard_token_object.cpp
 )
 
