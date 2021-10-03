@@ -184,4 +184,65 @@ namespace infrablockchain { namespace chain {
       }
    }
 
+   int64_t standard_token_manager::set_system_token_list( vector<system_token> system_tokens ) {
+
+      auto& ibgpo = _db.get<infrablockchain_global_property_object>();
+      auto& current_sys_tokens = ibgpo.system_token_list.system_tokens;
+
+      if( std::equal( system_tokens.begin(), system_tokens.end(),
+                      current_sys_tokens.begin(), current_sys_tokens.end() ) ) {
+         return -1; // the system token list does not change
+      }
+
+      system_token_list new_sys_token_list;
+      new_sys_token_list.version = ibgpo.system_token_list.version + 1;
+      new_sys_token_list.system_tokens = std::move(system_tokens);
+
+      int64_t version = new_sys_token_list.version;
+
+      _db.modify( ibgpo, [&]( auto& ibgp ) {
+         ibgp.system_token_list = new_sys_token_list;
+      });
+      return version;
+   }
+
+   int standard_token_manager::get_system_token_count() const {
+      return static_cast<int>(_db.get<infrablockchain_global_property_object>().system_token_list.system_tokens.size());
+   }
+
+   system_token_list standard_token_manager::get_system_token_list() const {
+      return _db.get<infrablockchain_global_property_object>().system_token_list.to_system_token_list();
+   }
+
+   system_token_balance standard_token_manager::get_system_token_balance( const account_name& account ) const {
+      system_token_balance result;
+
+      share_type total_balance = 0;
+
+      auto& active_sys_tokens = _db.get<infrablockchain_global_property_object>().system_token_list.system_tokens;
+      for(const auto& sys_token : active_sys_tokens ) {
+         system_token_id_type sys_token_id = sys_token.token_id;
+         share_type token_balance = get_token_balance( sys_token_id, account );
+         if (token_balance > 0) {
+            const symbol& token_symbol = get_token_symbol( sys_token_id );
+            result.sys_tokens.emplace_back(sys_token_id, asset(token_balance, token_symbol));
+
+            share_type weighted_token_balance = token_balance;
+            if ( sys_token.token_weight != system_token::token_weight_1x ) {
+               uint128_t weighted_token_balance_128 = ((uint128_t)token_balance * sys_token.token_weight) / (uint128_t)system_token::token_weight_1x;
+
+               EOS_ASSERT(weighted_token_balance_128 <= std::numeric_limits<share_type>::max(), weighted_system_token_balance_overflow_exception,
+                          "weighted system token balance overflow (account: ${account}, system-token-id: ${sys_token_id})", ("account", account)("sys_token_id", sys_token_id) );
+               weighted_token_balance = (share_type)weighted_token_balance_128;
+            }
+
+            EOS_ASSERT(total_balance <= std::numeric_limits<share_type>::max() - weighted_token_balance, weighted_total_system_token_balance_per_account_overflow_exception,
+                       "weighted total system token balance overflow (account: ${account})", ("account", account) );
+            total_balance += weighted_token_balance;
+         }
+      }
+      result.total = asset(total_balance, symbol(CORE_SYMBOL));
+      return result;
+   }
+
 } } // namespace infrablockchain::chain

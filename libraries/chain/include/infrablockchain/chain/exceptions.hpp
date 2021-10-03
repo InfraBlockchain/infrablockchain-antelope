@@ -43,6 +43,11 @@ namespace infrablockchain { namespace chain {
       FC_DECLARE_DERIVED_EXCEPTION( insufficient_token_balance_exception, infrablockchain_standard_token_exception,
                                     3711009, "Insufficient token balance" )
 
+      FC_DECLARE_DERIVED_EXCEPTION( weighted_system_token_balance_overflow_exception, infrablockchain_standard_token_exception,
+                                    3711010, "Weighted system token balance overflow" )
+
+      FC_DECLARE_DERIVED_EXCEPTION( weighted_total_system_token_balance_per_account_overflow_exception, infrablockchain_standard_token_exception,
+                                    3711011, "Weighted total system token balance per account overflow" )
 
 // FC_DECLARE_DERIVED_EXCEPTION( infrablockchain_transaction_fee_exception, chain_exception,
 //                               3712000, "InfraBlockchain transaction fee exception" )
