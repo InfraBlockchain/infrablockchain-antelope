@@ -462,6 +462,13 @@ class apply_context {
       uint32_t get_action_id() const;
       void increment_action_id();
 
+
+   /// InfraBlockchain Core API - Standard-Token
+   public:
+
+      /// issue new token to an account
+      void issue_token( const account_name to, const share_type amount );
+
    /// Fields:
    public:
 

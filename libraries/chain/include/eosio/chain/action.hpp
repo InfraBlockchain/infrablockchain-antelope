@@ -93,6 +93,12 @@ namespace eosio { namespace chain {
          EOS_ASSERT( name == T::get_name(), action_type_exception, "action name is not consistent with action struct"  );
          return fc::raw::unpack<T>(data);
       }
+
+      template<typename T>
+      T data_as_built_in_common_action()const {
+         EOS_ASSERT( name == T::get_name(), action_type_exception, "action name is not consistent with action struct"  );
+         return fc::raw::unpack<T>(data);
+      }
    };
 
    template <typename Hasher>
