@@ -29,6 +29,7 @@
 #include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/standard_token_action_handlers.hpp>
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
 
 namespace eosio { namespace chain {
 
@@ -167,6 +168,7 @@ struct controller_impl {
    authorization_manager               authorization;
    protocol_feature_manager            protocol_features;
    standard_token_manager              standard_token;
+   transaction_fee_table_manager       transaction_fee_table;
    controller::config                  conf;
    const chain_id_type                 chain_id; // read by thread_pool threads, value will not be changed
    std::optional<fc::time_point>       replay_head_time;
@@ -259,6 +261,7 @@ struct controller_impl {
     authorization( s, db ),
     protocol_features( std::move(pfs), [&s]() { return s.get_deep_mind_logger(); } ),
     standard_token( db ),
+    transaction_fee_table( db ),
     conf( cfg ),
     chain_id( chain_id ),
     read_mode( cfg.read_mode ),
@@ -524,11 +527,11 @@ struct controller_impl {
          snapshot->validate();
          if( blog.head() ) {
             kv_db.read_from_snapshot( snapshot, blog.first_block_num(), blog.head()->block_num(),
-                                      authorization, resource_limits, standard_token,
+                                      authorization, resource_limits, standard_token, transaction_fee_table,
                                       fork_db, head, snapshot_head_block, chain_id );
          } else {
             kv_db.read_from_snapshot( snapshot, 0, std::numeric_limits<uint32_t>::max(),
-                                      authorization, resource_limits, standard_token,
+                                      authorization, resource_limits, standard_token, transaction_fee_table,
                                       fork_db, head, snapshot_head_block, chain_id );
             const uint32_t lib_num = head->block_num;
             EOS_ASSERT( lib_num > 0, snapshot_exception,
@@ -789,14 +792,14 @@ struct controller_impl {
       resource_limits.add_indices();
 
       standard_token.add_indices();
-      // TODO add transaction-fee-table index
+      transaction_fee_table.add_indices();
       // TODO add transaction-vote-table index
    }
 
    sha256 calculate_integrity_hash() const {
       sha256::encoder enc;
       auto hash_writer = std::make_shared<integrity_hash_snapshot_writer>(enc);
-      kv_db.add_to_snapshot(hash_writer, *fork_db.head(), authorization, resource_limits, standard_token);
+      kv_db.add_to_snapshot(hash_writer, *fork_db.head(), authorization, resource_limits, standard_token, transaction_fee_table);
       hash_writer->finalize();
 
       return enc.result();
@@ -877,7 +880,7 @@ struct controller_impl {
       resource_limits.initialize_database();
 
       standard_token.initialize_database();
-      // TODO: transaction fee manager
+      transaction_fee_table.initialize_database();
       // TODO: tx vote manager
 
       authority system_auth(genesis.initial_key);
@@ -2380,6 +2383,16 @@ standard_token_manager&        controller::get_mutable_standard_token_manager()
    return my->standard_token;
 }
 
+const transaction_fee_table_manager&  controller::get_transaction_fee_table_manager()const
+{
+   return my->transaction_fee_table;
+}
+
+transaction_fee_table_manager&        controller::get_mutable_transaction_fee_table_manager()
+{
+   return my->transaction_fee_table;
+}
+
 uint32_t controller::get_max_nonprivileged_inline_action_size()const
 {
    return my->conf.max_nonprivileged_inline_action_size;
@@ -2907,7 +2920,7 @@ sha256 controller::calculate_integrity_hash()const { try {
 
 void controller::write_snapshot( const snapshot_writer_ptr& snapshot ) const {
    EOS_ASSERT( !my->pending, block_validate_exception, "cannot take a consistent snapshot with a pending block" );
-   return my->kv_db.add_to_snapshot(snapshot, *my->fork_db.head(), my->authorization, my->resource_limits, my->standard_token);
+   return my->kv_db.add_to_snapshot(snapshot, *my->fork_db.head(), my->authorization, my->resource_limits, my->standard_token, my->transaction_fee_table);
 }
 
 int64_t controller::set_proposed_producers( vector<producer_authority> producers ) {

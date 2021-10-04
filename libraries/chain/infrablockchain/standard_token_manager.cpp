@@ -50,7 +50,6 @@ namespace infrablockchain { namespace chain {
    void standard_token_manager::read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
       standard_token_db_index_set::walk_indices([this, &snapshot]( auto utils ){
          using section_t = typename decltype(utils)::index_t::value_type;
-
          snapshot->read_section<section_t>([this]( auto& section ) {
             bool more = !section.empty();
             while(more) {
