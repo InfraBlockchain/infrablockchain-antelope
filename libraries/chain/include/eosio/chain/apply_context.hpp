@@ -469,6 +469,9 @@ class apply_context {
       /// issue new token to an account
       void issue_token( const account_name to, const share_type amount );
 
+      /// transfer token
+      void transfer_token( const account_name from, const account_name to, const share_type amount );
+
    /// Fields:
    public:
 

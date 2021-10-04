@@ -1254,4 +1254,30 @@ void apply_context::issue_token( const account_name to, const share_type amount 
    standard_token_manager.add_token_balance( *this, token_id, to, amount );
 }
 
+void apply_context::transfer_token( const account_name from, const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can process transferring its own (action receiver's) tokens
+   /// Authorization check(require_authorization) and action notification(require_recipient) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( from.good(), token_action_validate_exception, "invalid from account name" );
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token transfer must be greater than 0" );
+
+   token_id_type token_id = receiver;
+
+   auto& standard_token_manager = control.get_mutable_standard_token_manager();
+
+   EOS_ASSERT( is_account( from ), no_token_target_account_exception,
+               "transfer from account ${account} does not exist", ("account", from) );
+
+   EOS_ASSERT( is_account( to ), no_token_target_account_exception,
+               "transfer to account ${account} does not exist", ("account", to) );
+
+   standard_token_manager.subtract_token_balance( *this, token_id, from, amount );
+   standard_token_manager.add_token_balance( *this, token_id, to, amount );
+}
+
+//////////////////////////////////////////////
+
 } } /// eosio::chain
