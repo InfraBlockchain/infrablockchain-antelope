@@ -26,7 +26,12 @@ enum class builtin_protocol_feature_t : uint32_t {
    action_return_value,
    kv_database,
    configurable_wasm_limits,
-   blockchain_parameters
+   blockchain_parameters,
+
+   INFRABLOCKCHAIN_BUILTIN_PROTOCOL_FEATURE_TYPE_DELIMITER = 65536,
+   infrablockchain_builtin_standard_token,
+//   infrablockchain_transaction_fee_payer,
+//   infrablockchain_proof_of_transaction
 };
 
 struct protocol_feature_subjective_restrictions {

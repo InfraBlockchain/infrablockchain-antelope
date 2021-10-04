@@ -117,8 +117,10 @@ void apply_context::exec_one()
             const apply_handler* native = nullptr;
 
             /// InfraBlockchain Built-in Actions
-            if (receiver == act->account) { // call native built-in action handler in 'not notify' context only
-               native = control.find_built_in_action_apply_handler(act->name);
+            if (control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_builtin_standard_token)) {
+               if (receiver == act->account) { // call native built-in action handler in 'not notify' context only
+                  native = control.find_built_in_action_apply_handler(act->name);
+               }
             }
 
             if (native == nullptr) {
