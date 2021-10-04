@@ -241,6 +241,17 @@ Builtin protocol feature: BUILTIN_STANDARD_TOKEN
 
 Every account created can mint a Standard Token and run standard token operations natively supported at the blockchain core level.
 */
+         (  builtin_protocol_feature_t::infrablockchain_selected_system_tokens_for_transaction_fee_payment, builtin_protocol_feature_spec{
+            "SELECTED_SYSTEM_TOKENS_FOR_TX_FEE_PAYMENT",
+            fc::variant("861527ae7e98cedf7738a9642e920a7a5b37cf41c94563aea4ab0d1ec229d2a9").as<digest_type>(),
+            {builtin_protocol_feature_t::infrablockchain_builtin_standard_token}
+         } )
+            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
+/*
+Builtin protocol feature: SELECTED_SYSTEM_TOKENS_FOR_TX_FEE_PAYMENT
+
+Among the user-issued built-in Standard Tokens, the elected block producers can select some tokens to be used for blockchain transaction fee payment.
+*/
    ;
 
 
