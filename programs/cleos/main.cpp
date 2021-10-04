@@ -87,6 +87,9 @@ Options:
 
 #include <eosio/version/version.hpp>
 
+#include <infrablockchain/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+
 #pragma push_macro("N")
 #undef N
 
@@ -521,11 +524,13 @@ void print_action( const fc::variant& at ) {
 }
 
 bytes variant_to_bin( const account_name& account, const action_name& action, const fc::variant& action_args_var ) {
-   auto abis = abi_serializer_resolver( account );
-   FC_ASSERT( abis, "No ABI found for ${contract}", ("contract", account));
+   account_name contract = infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action)?
+      infrablockchain::chain::config::infrablockchain_standard_token_interface_abi_account_name : account;
+   auto abis = abi_serializer_resolver( contract );
+   FC_ASSERT( abis, "No ABI found for ${contract}", ("contract", contract));
 
    auto action_type = abis->get_action_type( action );
-   FC_ASSERT( !action_type.empty(), "Unknown action ${action} in contract ${contract}", ("action", action)( "contract", account ));
+   FC_ASSERT( !action_type.empty(), "Unknown action ${action} in contract ${contract}", ("action", action)( "contract", contract ));
    return abis->variant_to_binary( action_type, action_args_var, abi_serializer::create_yield_function( abi_serializer_max_time ) );
 }
 
