@@ -284,8 +284,8 @@ struct controller_impl {
       set_activation_handler<builtin_protocol_feature_t::blockchain_parameters>();
 
       set_activation_handler<builtin_protocol_feature_t::infrablockchain_builtin_standard_token>();
-      set_activation_handler<builtin_protocol_feature_t::infrablockchain_selected_system_tokens_for_transaction_fee_payment>();
-      set_activation_handler<builtin_protocol_feature_t::infrablockchain_transaction_fee_payer>();
+      set_activation_handler<builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol>();
+      set_activation_handler<builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol>();
 
       self.irreversible_block.connect([this](const block_state_ptr& bsp) {
          wasmif.current_lib(bsp->block_num);
@@ -3507,13 +3507,13 @@ void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_
 }
 
 template<>
-void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_selected_system_tokens_for_transaction_fee_payment>() {
-   // TODO activate InfraBlockchain System Token intrinsics
+void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol>() {
+   // TODO activate InfraBlockchain System Token / Transaction Fee Payment intrinsics
 }
 
 template<>
-void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_transaction_fee_payer>() {
-   // TODO activate InfraBlockchain Transaction Fee Payer intrinsics
+void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol>() {
+   // TODO activate InfraBlockchain Proof-of-Transaction intrinsics
 }
 
 /// End of protocol feature activation handlers
