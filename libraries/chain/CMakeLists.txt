@@ -80,6 +80,7 @@ set(INFRABLOCKCHAIN_CORE_SOURCES
    infrablockchain/standard_token_action_handlers.cpp
    infrablockchain/standard_token_object.cpp
    infrablockchain/transaction_fee_table_manager.cpp
+   infrablockchain/transaction_extensions.cpp
 )
 
 ## SORT .cpp by most likely to change / break compile
