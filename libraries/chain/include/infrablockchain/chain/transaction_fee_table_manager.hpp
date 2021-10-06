@@ -41,6 +41,8 @@ namespace infrablockchain { namespace chain {
       tx_fee_for_action get_tx_fee_for_common_action(const action_name& action) const;
       tx_fee_for_action get_default_tx_fee() const;
 
+      tx_fee_for_action get_tx_fee_for_action_trace(const action_trace& action_trace) const;
+
    private:
       chainbase::database& _db;
    };

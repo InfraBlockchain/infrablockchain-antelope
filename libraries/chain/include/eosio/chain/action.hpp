@@ -83,6 +83,12 @@ namespace eosio { namespace chain {
          data = fc::raw::pack(value);
       }
 
+      template<typename T, std::enable_if_t<!std::is_base_of<bytes, T>::value, int> = 1>
+      action( vector<permission_level> auth, account_name account, const T& value )
+         : action_base( account, T::get_name(), move(auth) ) {
+         data = fc::raw::pack(value);
+      }
+
       action( vector<permission_level> auth, account_name account, action_name name, const bytes& data )
             : action_base(account, name, std::move(auth)), data(data)  {
       }

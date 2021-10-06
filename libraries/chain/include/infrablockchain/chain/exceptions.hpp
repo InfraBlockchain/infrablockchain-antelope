@@ -53,6 +53,12 @@ namespace infrablockchain { namespace chain {
    FC_DECLARE_DERIVED_EXCEPTION( infrablockchain_transaction_fee_exception, chain_exception,
                                  3712000, "InfraBlockchain transaction fee exception" )
 
+      FC_DECLARE_DERIVED_EXCEPTION( ill_formed_transaction_fee_payer_tx_ext, infrablockchain_transaction_fee_exception,
+                                    3712001, "Transaction includes an ill-formed transaction fee payer extension" )
+
+      FC_DECLARE_DERIVED_EXCEPTION( invalid_transaction_fee_payer_account, transaction_exception,
+                                    3712002, "Invalid transaction fee payer Account name" )
+
 //    FC_DECLARE_DERIVED_EXCEPTION( invalid_tx_fee_setup_exception, infrablockchain_transaction_fee_exception,
 //                                  3712001, "Invalid transaction fee setup" )
 

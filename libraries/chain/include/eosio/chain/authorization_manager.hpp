@@ -67,10 +67,11 @@ namespace eosio { namespace chain {
                                                                  )const;
 
          /**
-          *  @brief Check authorizations of a vector of actions with provided keys, permission levels, and delay
+          *  @brief Check authorizations of a vector of actions and optional transaction fee payer with provided keys, permission levels, and delay
           *
           *  @param actions - the actions to check authorization across
           *  @param provided_keys - the set of public keys which have authorized the transaction
+          *  @param tx_fee_payer - [InfraBlockchain] transaction fee payer account whose active permission should be checked
           *  @param provided_permissions - the set of permissions which have authorized the transaction (empty permission name acts as wildcard)
           *  @param provided_delay - the delay satisfied by the transaction
           *  @param checktime - the function that can be called to track CPU usage and time during the process of checking authorization
@@ -79,6 +80,7 @@ namespace eosio { namespace chain {
          void
          check_authorization( const vector<action>&                actions,
                               const flat_set<public_key_type>&     provided_keys,
+                              std::optional<account_name>          tx_fee_payer,
                               const flat_set<permission_level>&    provided_permissions = flat_set<permission_level>(),
                               fc::microseconds                     provided_delay = fc::microseconds(0),
                               const std::function<void()>&         checktime = std::function<void()>(),

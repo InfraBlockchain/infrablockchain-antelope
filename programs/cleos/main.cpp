@@ -525,7 +525,7 @@ void print_action( const fc::variant& at ) {
 
 bytes variant_to_bin( const account_name& account, const action_name& action, const fc::variant& action_args_var ) {
    account_name contract = infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action)?
-      infrablockchain::chain::config::infrablockchain_standard_token_interface_abi_account_name : account;
+      infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name : account;
    auto abis = abi_serializer_resolver( contract );
    FC_ASSERT( abis, "No ABI found for ${contract}", ("contract", contract));
 

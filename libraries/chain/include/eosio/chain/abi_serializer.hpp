@@ -6,6 +6,8 @@
 #include <fc/variant_object.hpp>
 #include <fc/scoped_exit.hpp>
 
+#include <infrablockchain/chain/transaction_extensions.hpp>
+
 namespace eosio { namespace chain {
 
 using std::map;
@@ -560,6 +562,8 @@ namespace impl {
       template<typename Resolver>
       static void add_transaction( mutable_variant_object& mvo, const transaction& trx, Resolver resolver, abi_traverse_context& ctx  )
       {
+         using namespace infrablockchain::chain;
+
          mvo("expiration", trx.expiration);
          mvo("ref_block_num", trx.ref_block_num);
          mvo("ref_block_prefix", trx.ref_block_prefix);
@@ -574,6 +578,12 @@ namespace impl {
          if (exts.count(deferred_transaction_generation_context::extension_id()) > 0) {
             const auto& deferred_transaction_generation = std::get<deferred_transaction_generation_context>(exts.lower_bound(deferred_transaction_generation_context::extension_id())->second);
             mvo("deferred_transaction_generation", deferred_transaction_generation);
+         }
+
+         // InfraBlockchain Transaction Fee Payer tx extension
+         if (exts.count(transaction_fee_payer_tx_ext::extension_id()) > 0) {
+            const auto& transaction_fee_payer_context = std::get<transaction_fee_payer_tx_ext>(exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second);
+            mvo("transaction_fee_payer", transaction_fee_payer_context);
          }
       }
 
@@ -845,6 +855,10 @@ namespace impl {
       template<typename Resolver>
       static void extract_transaction( const variant_object& vo, transaction& trx, Resolver resolver, abi_traverse_context& ctx )
       {
+         using namespace infrablockchain::chain;
+
+         bool has_txn_level_extension = false;
+
          if (vo.contains("expiration")) {
             from_variant(vo["expiration"], trx.expiration);
          }
@@ -871,23 +885,40 @@ namespace impl {
          }
 
          // can have "deferred_transaction_generation" (if there is a deferred transaction and the extension was "extracted" to show data),
-         // or "transaction_extensions" (either as empty or containing the packed deferred transaction),
-         // or both (when there is a deferred transaction and extension was "extracted" to show data and a redundant "transaction_extensions" was provided),
-         // or neither (only if extension was "extracted" and there was no deferred transaction to extract)
          if (vo.contains("deferred_transaction_generation")) {
             deferred_transaction_generation_context deferred_transaction_generation;
             from_variant(vo["deferred_transaction_generation"], deferred_transaction_generation);
             emplace_extension(
                trx.transaction_extensions,
                deferred_transaction_generation_context::extension_id(),
-               fc::raw::pack( deferred_transaction_generation )
+               fc::raw::pack(deferred_transaction_generation)
             );
+            has_txn_level_extension = true;
+         }
+
+         // InfraBlockchain Transaction Fee Payer tx extension
+         if (vo.contains("transaction_fee_payer")) {
+            transaction_fee_payer_tx_ext tx_fee_payer_tx_ext;
+            from_variant(vo["transaction_fee_payer"], tx_fee_payer_tx_ext);
+            emplace_extension(
+               trx.transaction_extensions,
+               transaction_fee_payer_tx_ext::extension_id(),
+               fc::raw::pack( tx_fee_payer_tx_ext )
+            );
+
+            has_txn_level_extension = true;
+         }
+
+         // or "transaction_extensions" (either as empty or containing the packed deferred transaction),
+         // or both (when there is a deferred transaction and extension was "extracted" to show data and a redundant "transaction_extensions" was provided),
+         // or neither (only if extension was "extracted" and there was no deferred transaction to extract)
+         if (has_txn_level_extension) {
             // if both are present, they need to match
             if (vo.contains("transaction_extensions")) {
                extensions_type trx_extensions;
                from_variant(vo["transaction_extensions"], trx_extensions);
                EOS_ASSERT(trx.transaction_extensions == trx_extensions, packed_transaction_type_exception,
-                        "Transaction contained deferred_transaction_generation and transaction_extensions that did not match");
+                          "The transaction_extensions do not match specified data specified transaction level data [deferred_transaction_generation, resource_payer].");
             }
          }
          else if (vo.contains("transaction_extensions")) {

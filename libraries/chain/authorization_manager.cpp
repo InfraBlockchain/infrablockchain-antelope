@@ -483,6 +483,7 @@ namespace eosio { namespace chain {
    void
    authorization_manager::check_authorization( const vector<action>&                actions,
                                                const flat_set<public_key_type>&     provided_keys,
+                                               std::optional<account_name>          tx_fee_payer,
                                                const flat_set<permission_level>&    provided_permissions,
                                                fc::microseconds                     provided_delay,
                                                const std::function<void()>&         _checktime,
@@ -551,6 +552,11 @@ namespace eosio { namespace chain {
                }
             }
          }
+      }
+
+      // InfraBlockchain Transaction Fee Payer
+      if (tx_fee_payer) {
+         permissions_to_satisfy.emplace(permission_level{*tx_fee_payer, config::active_name},effective_provided_delay);
       }
 
       // Now verify that all the declared authorizations are satisfied:

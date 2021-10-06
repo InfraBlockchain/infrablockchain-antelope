@@ -1348,6 +1348,7 @@ struct controller_impl {
                authorization.check_authorization(
                        trn.actions,
                        trx->recovered_keys(),
+                       trx_context.tx_fee_payer,
                        {},
                        trx_context.delay,
                        [&trx_context](){ trx_context.checktime(); },
