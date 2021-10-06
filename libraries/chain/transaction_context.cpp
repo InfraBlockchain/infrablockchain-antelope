@@ -112,7 +112,15 @@ namespace eosio { namespace chain {
 //         txfee_amount_to_pay = txfee_manager.get_default_tx_fee().value;
 //      }
 
+      if ( txfee_amount_to_pay > 0 ) {
 
+         uint32_t tx_fee_amount = static_cast<uint32_t>(txfee_amount_to_pay);
+         // dispatch 'txfee' actions to system token accounts that transaction fee payer has token balance for
+         control.get_mutable_standard_token_manager().pay_transaction_fee( *this, fee_payer, tx_fee_amount );
+
+//         // Cast Transaction Vote - InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote
+//         cast_transaction_vote( tx_fee_amount );
+      }
    }
 
    void transaction_context::init( uint64_t initial_net_usage )

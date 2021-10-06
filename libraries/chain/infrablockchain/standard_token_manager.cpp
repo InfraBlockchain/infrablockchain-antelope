@@ -9,6 +9,7 @@
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/database_utils.hpp>
 #include <eosio/chain/trace.hpp>
+#include <eosio/chain/action.hpp>
 
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
@@ -244,4 +245,54 @@ namespace infrablockchain { namespace chain {
       return result;
    }
 
+   void standard_token_manager::pay_transaction_fee( transaction_context& trx_context, account_name fee_payer, uint32_t fee_amount ) {
+
+      share_type fee_remaining = fee_amount;
+
+      auto& sys_tokens = _db.get<infrablockchain_global_property_object>().system_token_list;
+
+      for( const auto& sys_token : sys_tokens.system_tokens ) {
+
+         auto sys_token_id = sys_token.token_id;
+
+         auto* balance_obj_ptr = _db.find<token_balance_object, by_token_account>(boost::make_tuple(sys_token_id, fee_payer));
+         if ( balance_obj_ptr ) {
+
+            share_type fee_for_this_token = fee_remaining;
+            share_type cur_balance = balance_obj_ptr->balance;
+
+            if (sys_token.token_weight != system_token::token_weight_1x) {
+               fee_for_this_token = fee_for_this_token * system_token::token_weight_1x / sys_token.token_weight;
+               if ( cur_balance >= fee_for_this_token ) {
+                  fee_remaining = 0;
+               } else {
+                  fee_for_this_token = cur_balance;
+                  fee_remaining -= (cur_balance * sys_token.token_weight / system_token::token_weight_1x);
+               }
+            } else {
+               if ( cur_balance >= fee_for_this_token ) {
+                  fee_remaining = 0;
+               } else {
+                  fee_for_this_token = cur_balance;
+                  fee_remaining -= cur_balance;
+               }
+            }
+
+            auto token_meta_obj_ptr = _db.find<token_meta_object, by_token_id>(sys_token_id);
+            EOS_ASSERT( token_meta_obj_ptr != nullptr, infrablockchain_transaction_fee_exception, "no token meta info for system token ${token_id}", ("token_id", sys_token_id) );
+
+            // execute 'txfee' action for this system token
+            uint32_t action_ordinal = trx_context.schedule_action(
+               action { vector<permission_level>{ {fee_payer, config::active_name} },
+                        sys_token_id,
+                        standard_token::txfee{ fee_payer, asset(fee_for_this_token, token_meta_obj_ptr->sym) } }
+               , sys_token_id, false, 0, 0 );
+            trx_context.execute_action( action_ordinal, 0 );
+
+            if (fee_remaining <= 0) break;
+         }
+      }
+
+      EOS_ASSERT( fee_remaining <= 0, infrablockchain_transaction_fee_exception, "fee payer ${payer} does not have enough system token", ("payer", fee_payer) );
+   }
 } } // namespace infrablockchain::chain

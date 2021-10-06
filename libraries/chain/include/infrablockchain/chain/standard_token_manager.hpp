@@ -58,6 +58,8 @@ namespace infrablockchain { namespace chain {
 
       system_token_balance get_system_token_balance( const account_name& account ) const;
 
+      void pay_transaction_fee( transaction_context& trx_context, account_name fee_payer, uint32_t fee_amount );
+
    private:
       chainbase::database &_db;
    };
