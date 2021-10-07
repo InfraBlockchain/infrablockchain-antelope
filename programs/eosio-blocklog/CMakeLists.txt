@@ -1,18 +1,18 @@
-add_executable( eosio-blocklog main.cpp )
+add_executable( ${BLOCK_LOG_EXECUTABLE_NAME} main.cpp )
 
 if( UNIX AND NOT APPLE )
   set(rt_library rt )
 endif()
 
-target_include_directories(eosio-blocklog PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(${BLOCK_LOG_EXECUTABLE_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries( eosio-blocklog
+target_link_libraries( ${BLOCK_LOG_EXECUTABLE_NAME}
         PRIVATE appbase
         PRIVATE eosio_chain fc state_history ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
 
-copy_bin( eosio-blocklog )
+copy_bin( ${BLOCK_LOG_EXECUTABLE_NAME} )
 install( TARGETS
-   eosio-blocklog
+   ${BLOCK_LOG_EXECUTABLE_NAME}
 
    COMPONENT base
 
