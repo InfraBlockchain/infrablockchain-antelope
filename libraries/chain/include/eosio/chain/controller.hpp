@@ -31,6 +31,7 @@ namespace infrablockchain { namespace chain {
    class infrablockchain_global_property_object;
    class standard_token_manager;
    class transaction_fee_table_manager;
+   class transaction_vote_stat_manager;
 } }
 
 namespace eosio { namespace chain {
@@ -222,6 +223,8 @@ namespace eosio { namespace chain {
          standard_token_manager&               get_mutable_standard_token_manager();
          const transaction_fee_table_manager&  get_transaction_fee_table_manager()const;
          transaction_fee_table_manager&        get_mutable_transaction_fee_table_manager();
+         const transaction_vote_stat_manager&  get_transaction_vote_stat_manager()const;
+         transaction_vote_stat_manager&        get_mutable_transaction_vote_stat_manager();
 
          uint32_t                              get_max_nonprivileged_inline_action_size()const;
          const config&                         get_config()const;

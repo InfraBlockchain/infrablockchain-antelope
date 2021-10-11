@@ -5,6 +5,8 @@
 #include <eosio/chain/platform_timer.hpp>
 #include <signal.h>
 
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+
 namespace infrablockchain { namespace chain {
    class transaction_fee_table_manager;
 } }
@@ -158,6 +160,12 @@ namespace eosio { namespace chain {
 
          void process_transaction_fee_payment();
 
+      public:
+         /// InfraBlockchain Proof-of-Transaction, Transaction-as-a-Vote
+         void cast_transaction_vote(transaction_vote_amount_type vote_amount);
+         bool has_transaction_vote() const;
+         const transaction_vote& get_transaction_vote() const;
+
       /// Fields:
       public:
 
@@ -203,6 +211,12 @@ namespace eosio { namespace chain {
          /// If 'transaction fee payer' field is specified in a submitted transaction, transaction fee is charged to
          /// the specified transaction fee payer who signed the transaction message.
          std::optional<account_name>   tx_fee_payer;
+
+         /// InfraBlockchain Proof-of-Transaction
+         /// tracking transaction vote amount generated from current transaction.
+         /// transaction votes collected from each transaction are accumulated in the (pending) 'block state' of each block.
+         /// this field is also used for transaction-vote logging in secondary log store
+         std::optional<infrablockchain::chain::transaction_vote>  trx_vote;
 
       private:
          bool                          is_initialized = false;

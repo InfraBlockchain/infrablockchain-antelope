@@ -5,6 +5,8 @@
 #include <eosio/chain/transaction_metadata.hpp>
 #include <eosio/chain/action_receipt.hpp>
 
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+
 namespace eosio { namespace chain {
 
    struct block_state : public block_header_state {
@@ -62,6 +64,19 @@ namespace eosio { namespace chain {
       /// this data is redundant with the data stored in block, but facilitates
       /// recapturing transactions when we pop a block
       deque<transaction_metadata_ptr>                     _cached_trxs;
+
+   public:
+      void set_transaction_votes_in_block( infrablockchain::chain::transaction_votes_in_block&& trx_votes_in_block ) {
+         trx_votes = std::move( trx_votes_in_block );
+      }
+      const infrablockchain::chain::transaction_votes_in_block& get_transaction_votes_in_block()const {
+         return trx_votes;
+      }
+   private:
+      /// InfraBlockchain Transaction-as-a-Vote for Proof-of-Transaction
+      /// the accumulated transaction votes data of this block
+      /// which will be propagated to the other components(e.g. state_history_plugin) on the same blockchain node process.
+      infrablockchain::chain::transaction_votes_in_block  trx_votes;
    };
 
    using block_state_ptr = std::shared_ptr<block_state>;
