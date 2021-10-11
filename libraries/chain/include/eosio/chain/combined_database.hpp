@@ -42,6 +42,7 @@
 namespace infrablockchain { namespace chain {
    class standard_token_manager;
    class transaction_fee_table_manager;
+   class transaction_vote_stat_manager;
 } }
 
 namespace eosio { namespace chain {
@@ -135,13 +136,15 @@ namespace eosio { namespace chain {
                            const eosio::chain::authorization_manager&                    authorization,
                            const eosio::chain::resource_limits::resource_limits_manager& resource_limits,
                            const infrablockchain::chain::standard_token_manager&         standard_token,
-                           const infrablockchain::chain::transaction_fee_table_manager&  transaction_fee_table) const;
+                           const infrablockchain::chain::transaction_fee_table_manager&  transaction_fee_table,
+                           const infrablockchain::chain::transaction_vote_stat_manager&  transaction_vote_stat) const;
 
       void read_from_snapshot(const snapshot_reader_ptr& snapshot, uint32_t blog_start, uint32_t blog_end,
                               eosio::chain::authorization_manager& authorization,
                               eosio::chain::resource_limits::resource_limits_manager& resource_limits,
                               infrablockchain::chain::standard_token_manager& standard_token,
                               infrablockchain::chain::transaction_fee_table_manager& transaction_fee_table,
+                              infrablockchain::chain::transaction_vote_stat_manager& transaction_vote_stat,
                               eosio::chain::fork_database& fork_db, eosio::chain::block_state_ptr& head,
                               uint32_t& snapshot_head_block, const eosio::chain::chain_id_type& chain_id);
 

@@ -8,6 +8,7 @@
 
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 namespace eosio { namespace chain {
    combined_session::combined_session(chainbase::database& cb_database, eosio::session::undo_stack<rocks_db_type>* undo_stack)
@@ -359,7 +360,9 @@ namespace eosio { namespace chain {
          const eosio::chain::authorization_manager&                    authorization,
          const eosio::chain::resource_limits::resource_limits_manager& resource_limits,
          const infrablockchain::chain::standard_token_manager&         standard_token,
-         const infrablockchain::chain::transaction_fee_table_manager&  transaction_fee_table) const {
+         const infrablockchain::chain::transaction_fee_table_manager&  transaction_fee_table,
+         const infrablockchain::chain::transaction_vote_stat_manager&  transaction_vote_stat) const {
+
       snapshot->write_section<chain_snapshot_header>(
             [this](auto& section) { section.add_row(chain_snapshot_header(), db); });
 
@@ -382,7 +385,7 @@ namespace eosio { namespace chain {
 
       standard_token.add_to_snapshot(snapshot);
       transaction_fee_table.add_to_snapshot(snapshot);
-      // TODO transaction-vote-table
+      transaction_vote_stat.add_to_snapshot(snapshot);
    }
 
    void combined_database::read_from_snapshot(const snapshot_reader_ptr& snapshot,
@@ -392,6 +395,7 @@ namespace eosio { namespace chain {
                                               eosio::chain::resource_limits::resource_limits_manager& resource_limits,
                                               infrablockchain::chain::standard_token_manager& standard_token,
                                               infrablockchain::chain::transaction_fee_table_manager& transaction_fee_table,
+                                              infrablockchain::chain::transaction_vote_stat_manager& transaction_vote_stat,
                                               eosio::chain::fork_database& fork_db, eosio::chain::block_state_ptr& head,
                                               uint32_t&                          snapshot_head_block,
                                               const eosio::chain::chain_id_type& chain_id) {
@@ -516,7 +520,7 @@ namespace eosio { namespace chain {
 
       standard_token.read_from_snapshot(snapshot);
       transaction_fee_table.read_from_snapshot(snapshot);
-      // TODO transaction-vote-table
+      transaction_vote_stat.read_from_snapshot(snapshot);
 
       set_revision(head->block_num);
       db.create<database_header_object>([](const auto& header) {

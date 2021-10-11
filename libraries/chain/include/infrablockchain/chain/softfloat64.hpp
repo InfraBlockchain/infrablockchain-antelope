@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <memory>
 #include <softfloat.hpp>
 
 namespace infrablockchain { namespace chain {

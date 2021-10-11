@@ -81,6 +81,8 @@ set(INFRABLOCKCHAIN_CORE_SOURCES
    infrablockchain/standard_token_object.cpp
    infrablockchain/transaction_fee_table_manager.cpp
    infrablockchain/transaction_extensions.cpp
+   infrablockchain/softfloat64.cpp
+   infrablockchain/transaction_vote_stat_manager.cpp
 )
 
 ## SORT .cpp by most likely to change / break compile
