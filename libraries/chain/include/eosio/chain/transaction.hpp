@@ -44,7 +44,8 @@ namespace eosio { namespace chain {
 
    using transaction_extension_types = detail::transaction_extension_types<
       deferred_transaction_generation_context,
-      infrablockchain::chain::transaction_fee_payer_tx_ext
+      infrablockchain::chain::transaction_fee_payer_tx_ext,
+      infrablockchain::chain::transaction_vote_tx_ext
    >;
 
    using transaction_extension = transaction_extension_types::transaction_extension_t;

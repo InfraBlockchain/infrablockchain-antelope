@@ -582,8 +582,14 @@ namespace impl {
 
          // InfraBlockchain Transaction Fee Payer tx extension
          if (exts.count(transaction_fee_payer_tx_ext::extension_id()) > 0) {
-            const auto& transaction_fee_payer_context = std::get<transaction_fee_payer_tx_ext>(exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second);
-            mvo("transaction_fee_payer", transaction_fee_payer_context);
+            const auto& transaction_fee_payer = std::get<transaction_fee_payer_tx_ext>(exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second);
+            mvo("transaction_fee_payer", transaction_fee_payer);
+         }
+
+         // InfraBlockchain Transaction Vote tx extension
+         if (exts.count(transaction_vote_tx_ext::extension_id()) > 0) {
+            const auto& transaction_vote = std::get<transaction_vote_tx_ext>(exts.lower_bound(transaction_vote_tx_ext::extension_id())->second);
+            mvo("transaction_vote", transaction_vote);
          }
       }
 
@@ -904,6 +910,19 @@ namespace impl {
                trx.transaction_extensions,
                transaction_fee_payer_tx_ext::extension_id(),
                fc::raw::pack( tx_fee_payer_tx_ext )
+            );
+
+            has_txn_level_extension = true;
+         }
+
+         // InfraBlockchain Transaction Vote tx extension
+         if (vo.contains("transaction_vote")) {
+            transaction_vote_tx_ext tx_vote_tx_ext;
+            from_variant(vo["transaction_vote"], tx_vote_tx_ext);
+            emplace_extension(
+               trx.transaction_extensions,
+               transaction_vote_tx_ext::extension_id(),
+               fc::raw::pack( tx_vote_tx_ext )
             );
 
             has_txn_level_extension = true;
