@@ -505,6 +505,14 @@ REGISTER_CF_HOST_FUNCTION(tapos_block_num);
 REGISTER_CF_HOST_FUNCTION(tapos_block_prefix);
 REGISTER_LEGACY_CF_HOST_FUNCTION(get_action);
 
+// InfraBlockchain standard token api
+REGISTER_HOST_FUNCTION(get_token_symbol);
+REGISTER_HOST_FUNCTION(get_token_total_supply);
+REGISTER_HOST_FUNCTION(get_token_balance);
+REGISTER_HOST_FUNCTION(issue_token);
+REGISTER_HOST_FUNCTION(transfer_token);
+REGISTER_HOST_FUNCTION(redeem_token);
+
 // compiler builtins api
 REGISTER_LEGACY_CF_HOST_FUNCTION(__ashlti3);
 REGISTER_LEGACY_CF_HOST_FUNCTION(__ashrti3);

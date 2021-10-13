@@ -3560,7 +3560,14 @@ void controller_impl::on_activation<builtin_protocol_feature_t::blockchain_param
 
 template<>
 void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_builtin_standard_token>() {
-   // TODO activate InfraBlockchain Standard Token intrinsics
+   db.modify( db.get<protocol_state_object>(), [&]( auto& ps ) {
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_token_symbol" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_token_total_supply" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_token_balance" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "issue_token" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "transfer_token" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "redeem_token" );
+   } );
 }
 
 template<>
