@@ -1983,6 +1983,39 @@ namespace webassembly {
           */
          void redeem_token( int64_t amount );
 
+
+         ///////////////////////////////////////////////////////////////
+         /// InfraBlockchain System Token Core API (Intrinsics)
+
+         /**
+          *  Get System Token Count
+          *  @brief get the number of active system tokens authorized by block producers and used as transaction fee payment token
+          *
+          *  @return the number of system tokens
+          */
+         uint32_t get_system_token_count() const;
+
+         /**
+          * Get System Token List
+          * @brief Retrieve the system token list
+          *
+          * @param[out] packed_system_token_list - output buffer of the system token list (vector<infrablockchain_system_token>), only retrieved if sufficent size to hold packed data.
+          *
+          * return the number of bytes copied to the buffer, or number of bytes required if the buffer is empty.
+          */
+         uint32_t get_system_token_list_packed( legacy_span<char> packed_system_token_list );
+
+         /**
+          * Set System Token List
+          * @brief set the list of system tokens (vector<infrablockchain_system_token>) used as transaction fee payment token.
+          *        2/3+ block producers have to sign any modification of system token list.
+          *
+          * @param packed_system_token_list - packed data of system_token vector in the appropriate system token order
+          *
+          * @return -1 if setting new system token list was unsuccessful, otherwise returns the version of the new system token list
+          */
+         int64_t set_system_token_list_packed( legacy_span<const char> packed_system_token_list );
+
          ///////////////////////////////////////////////////////////////
 
 

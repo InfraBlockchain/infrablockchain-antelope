@@ -5,14 +5,7 @@
  */
 
 #include <eosio/chain/webassembly/interface.hpp>
-#include <eosio/chain/global_property_object.hpp>
-#include <eosio/chain/protocol_state_object.hpp>
-#include <eosio/chain/transaction_context.hpp>
-#include <eosio/chain/resource_limits.hpp>
 #include <eosio/chain/apply_context.hpp>
-
-#include <vector>
-#include <set>
 
 namespace eosio { namespace chain { namespace webassembly {
 

@@ -73,6 +73,7 @@ set(CHAIN_WEBASSEMBLY_SOURCES
    webassembly/system.cpp
    webassembly/transaction.cpp
    webassembly/infrablockchain/standard_token_intrinsics.cpp
+   webassembly/infrablockchain/system_token_intrinsics.cpp
 )
 
 set(INFRABLOCKCHAIN_CORE_SOURCES

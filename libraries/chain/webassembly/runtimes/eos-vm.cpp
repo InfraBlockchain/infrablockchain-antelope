@@ -513,6 +513,11 @@ REGISTER_HOST_FUNCTION(issue_token);
 REGISTER_HOST_FUNCTION(transfer_token);
 REGISTER_HOST_FUNCTION(redeem_token);
 
+// InfraBlockchain system token api
+REGISTER_HOST_FUNCTION(get_system_token_count)
+REGISTER_LEGACY_HOST_FUNCTION(get_system_token_list_packed)
+REGISTER_LEGACY_HOST_FUNCTION(set_system_token_list_packed, privileged_check)
+
 // compiler builtins api
 REGISTER_LEGACY_CF_HOST_FUNCTION(__ashlti3);
 REGISTER_LEGACY_CF_HOST_FUNCTION(__ashrti3);
