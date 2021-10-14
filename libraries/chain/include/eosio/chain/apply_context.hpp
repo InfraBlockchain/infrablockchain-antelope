@@ -11,9 +11,13 @@
 #include <algorithm>
 #include <set>
 
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+
 namespace chainbase { class database; }
 
 namespace eosio { namespace chain {
+
+using namespace infrablockchain::chain;
 
 class controller;
 class transaction_context;
@@ -483,6 +487,30 @@ class apply_context {
 
       /// redeem(burn) token
       void redeem_token( const share_type amount );
+
+
+   /// InfraBlockchain Core API - Transaction-Fee Management
+   public:
+
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
+      /// set transaction fee for an action, transaction fees are determined by the 2/3+ block producers.
+      /// if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. InfraBlockchain standard token actions) that every account has
+      /// if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup
+      void set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type );
+
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
+      /// unset transaction fee entry for an action, deleting transaction fee database row
+      void unset_transaction_fee_for_action( const account_name& code, const action_name& action );
+
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
+      /// get transaction fee for an action
+      /// if code == account_name(0), transaction fee info for an built-in common action is retrieved
+      /// if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup
+      tx_fee_for_action get_transaction_fee_for_action( const account_name& code, const action_name& action ) const;
+
+      /// InfraBlockchain Core API - Transaction-Fee-Payer
+      /// get transaction fee payer account name from transaction message
+      account_name get_transaction_fee_payer() const;
 
    /// Fields:
    public:

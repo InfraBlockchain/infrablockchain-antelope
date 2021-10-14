@@ -141,6 +141,14 @@ namespace eosio { namespace chain {
       return (*trx_vote);
    }
 
+   account_name transaction_context::get_tx_fee_payer() const {
+      if (tx_fee_payer) {
+         return *tx_fee_payer;
+      } else {
+         return account_name{};
+      }
+   }
+
    void transaction_context::init( uint64_t initial_net_usage )
    {
       EOS_ASSERT( !is_initialized, transaction_exception, "cannot initialize twice" );

@@ -514,9 +514,16 @@ REGISTER_HOST_FUNCTION(transfer_token);
 REGISTER_HOST_FUNCTION(redeem_token);
 
 // InfraBlockchain system token api
-REGISTER_HOST_FUNCTION(get_system_token_count)
-REGISTER_LEGACY_HOST_FUNCTION(get_system_token_list_packed)
-REGISTER_LEGACY_HOST_FUNCTION(set_system_token_list_packed, privileged_check)
+REGISTER_HOST_FUNCTION(get_system_token_count);
+REGISTER_LEGACY_HOST_FUNCTION(get_system_token_list_packed);
+REGISTER_LEGACY_HOST_FUNCTION(set_system_token_list_packed, privileged_check);
+
+// InfraBlockchain transaction fee management api
+REGISTER_HOST_FUNCTION(set_trx_fee_for_action, privileged_check);
+REGISTER_HOST_FUNCTION(unset_trx_fee_for_action, privileged_check);
+REGISTER_LEGACY_HOST_FUNCTION(get_trx_fee_for_action);
+REGISTER_HOST_FUNCTION(trx_fee_payer);
+
 
 // compiler builtins api
 REGISTER_LEGACY_CF_HOST_FUNCTION(__ashlti3);

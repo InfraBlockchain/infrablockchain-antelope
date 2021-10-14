@@ -5,6 +5,7 @@
  */
 
 #include <eosio/chain/webassembly/interface.hpp>
+#include <eosio/chain/apply_context.hpp>
 
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/system_token_list.hpp>
@@ -35,7 +36,7 @@ namespace eosio { namespace chain { namespace webassembly {
     *
     * return the number of bytes copied to the buffer, or number of bytes required if the buffer is empty.
     */
-   uint32_t interface::get_system_token_list_packed( legacy_span<char> packed_system_token_list ) {
+   uint32_t interface::get_system_token_list_packed( legacy_span<char> packed_system_token_list ) const {
        std::vector<infrablockchain::chain::system_token> system_tokens = std::move(context.control.get_standard_token_manager().get_system_token_list().system_tokens);
 
        auto s = fc::raw::pack_size( system_tokens );

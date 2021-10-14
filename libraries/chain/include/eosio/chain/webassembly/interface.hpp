@@ -1999,15 +1999,15 @@ namespace webassembly {
           * Get System Token List
           * @brief Retrieve the system token list
           *
-          * @param[out] packed_system_token_list - output buffer of the system token list (vector<infrablockchain_system_token>), only retrieved if sufficent size to hold packed data.
+          * @param[out] packed_system_token_list - output buffer of the system token list (vector<infrablockchain::chain::system_token>), only retrieved if sufficent size to hold packed data.
           *
           * return the number of bytes copied to the buffer, or number of bytes required if the buffer is empty.
           */
-         uint32_t get_system_token_list_packed( legacy_span<char> packed_system_token_list );
+         uint32_t get_system_token_list_packed( legacy_span<char> packed_system_token_list ) const;
 
          /**
           * Set System Token List
-          * @brief set the list of system tokens (vector<infrablockchain_system_token>) used as transaction fee payment token.
+          * @brief set the list of system tokens (vector<infrablockchain::chain::system_token>) used as transaction fee payment token.
           *        2/3+ block producers have to sign any modification of system token list.
           *
           * @param packed_system_token_list - packed data of system_token vector in the appropriate system token order
@@ -2015,6 +2015,52 @@ namespace webassembly {
           * @return -1 if setting new system token list was unsuccessful, otherwise returns the version of the new system token list
           */
          int64_t set_system_token_list_packed( legacy_span<const char> packed_system_token_list );
+
+
+         ///////////////////////////////////////////////////////////////
+         /// InfraBlockchain Transaction Fee Management Core API (Intrinsics)
+
+         /**
+          *  Set Transaction Fee For Action
+          *  @brief set transaction fee for an action. the transaction fee for each code/action is determined by the 2/3+ block producers.
+          *  if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. InfraBlockchain standard token actions) that every account has.
+          *  if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup.
+          *
+          *  @param code - account name of contract code
+          *  @param action - action name
+          *  @param value - transaction fee value
+          *  @param fee_type - transaction fee type (1: fixed_tx_fee_per_action_type)
+          */
+         void set_trx_fee_for_action( account_name code, action_name action, int32_t value, uint32_t fee_type );
+
+         /**
+          *  Unset Transaction Fee For Action
+          *  @brief delete transaction fee entry for an action (to the unsset status)
+          *
+          *  @param code - account name of contract code
+          *  @param action - action name
+          */
+         void unset_trx_fee_for_action( account_name code, action_name action );
+
+         /**
+          *  Get Transaction Fee For Action
+          *  @brief get transaction fee for an action,
+          *  if code == account_name(0), transaction fee info for an built-in common action is retrieved.
+          *  if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup.
+          *
+          *  @param code - account name of contract code
+          *  @param action - action name
+          *  @param[out] packed_trx_fee_for_action - output buffer of the packed 'infrablockchain::chain::tx_fee_for_action' object, only retrieved if sufficent size to hold packed data.
+          *  @return size of the packed 'infrablockchain::chain::tx_fee_for_action' data
+          */
+         uint32_t get_trx_fee_for_action( account_name code, action_name action, legacy_span<char> packed_trx_fee_for_action ) const;
+
+         /**
+          *  Get the transaction fee payer account name
+          *  @brief Get the transaction fee payer account to which transaction fee is charged
+          *  @return the transaction fee payer account name
+          */
+         account_name trx_fee_payer() const;
 
          ///////////////////////////////////////////////////////////////
 

@@ -166,6 +166,9 @@ namespace eosio { namespace chain {
          bool has_transaction_vote() const;
          const transaction_vote& get_transaction_vote() const;
 
+         /// InfraBlockchain Transaction-Fee-Payer
+         account_name get_tx_fee_payer() const;
+
       /// Fields:
       public:
 
