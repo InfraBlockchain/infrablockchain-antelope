@@ -524,6 +524,9 @@ REGISTER_HOST_FUNCTION(unset_trx_fee_for_action, privileged_check);
 REGISTER_LEGACY_HOST_FUNCTION(get_trx_fee_for_action);
 REGISTER_HOST_FUNCTION(trx_fee_payer);
 
+// InfraBlockchain proof-of-transaction api
+REGISTER_LEGACY_HOST_FUNCTION(get_top_transaction_vote_receivers_packed);
+REGISTER_HOST_FUNCTION(get_total_weighted_transaction_votes);
 
 // compiler builtins api
 REGISTER_LEGACY_CF_HOST_FUNCTION(__ashlti3);

@@ -12,6 +12,7 @@
 #include <set>
 
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 namespace chainbase { class database; }
 
@@ -446,7 +447,7 @@ class apply_context {
 
       int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size )const;
       int get_context_free_data( uint32_t index, char* buffer, size_t buffer_size )const;
-      vector<account_name> get_active_producers() const;
+      std::vector<account_name> get_active_producers() const;
 
       uint64_t next_global_sequence();
       uint64_t next_recv_sequence( const account_metadata_object& receiver_account );
@@ -511,6 +512,17 @@ class apply_context {
       /// InfraBlockchain Core API - Transaction-Fee-Payer
       /// get transaction fee payer account name from transaction message
       account_name get_transaction_fee_payer() const;
+
+
+   /// InfraBlockchain Core API - Proof-of-Transaction(PoT)
+   public:
+
+      /// get top sorted transaction vote receiver list
+      std::vector<tx_vote_stat_for_account> get_top_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit ) const;
+
+      /// get total weighted transaction vote amount summed up
+      double get_total_weighted_transaction_votes() const;
+
 
    /// Fields:
    public:

@@ -32,7 +32,8 @@ namespace eosio { namespace chain { namespace webassembly {
     * Get System Token List
     * @brief Retrieve the system token list
     *
-    * @param[out] packed_system_token_list - output buffer of the system token list (vector<infrablockchain_system_token>), only retrieved if sufficent size to hold packed data.
+    * @param[out] packed_system_token_list - output buffer of the system token list (vector<infrablockchain_system_token>),
+    *                                        output data retrieved only if the output buffer has sufficient size to hold the packed data.
     *
     * return the number of bytes copied to the buffer, or number of bytes required if the buffer is empty.
     */

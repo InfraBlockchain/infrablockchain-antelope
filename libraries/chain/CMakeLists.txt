@@ -75,6 +75,7 @@ set(CHAIN_WEBASSEMBLY_SOURCES
    webassembly/infrablockchain/standard_token_intrinsics.cpp
    webassembly/infrablockchain/system_token_intrinsics.cpp
    webassembly/infrablockchain/transaction_fee_management_intrinsics.cpp
+   webassembly/infrablockchain/proof_of_transaction_intrinsics.cpp
 )
 
 set(INFRABLOCKCHAIN_CORE_SOURCES

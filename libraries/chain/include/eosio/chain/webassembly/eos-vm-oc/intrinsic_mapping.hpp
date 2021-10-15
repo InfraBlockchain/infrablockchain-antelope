@@ -290,7 +290,9 @@ inline constexpr auto get_intrinsic_table() {
       "env.set_trx_fee_for_action",
       "env.unset_trx_fee_for_action",
       "env.get_trx_fee_for_action",
-      "env.trx_fee_payer"
+      "env.trx_fee_payer",
+      "env.get_top_transaction_vote_receivers_packed",
+      "env.get_total_weighted_transaction_votes"
    );
 }
 inline constexpr std::size_t find_intrinsic_index(std::string_view hf) {
