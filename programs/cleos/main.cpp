@@ -89,6 +89,7 @@ Options:
 
 #include <infrablockchain/chain/system_accounts.hpp>
 #include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/transaction_extensions.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -195,6 +196,8 @@ uint32_t delaysec = 0;
 
 vector<string> tx_permission;
 
+string trx_fee_payer_account;
+
 eosio::client::http::http_context context;
 
 enum class tx_compression_type {
@@ -227,7 +230,7 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    };
 
    cmd->add_option("-x,--expiration", parse_expiration, localized("Set the time in seconds before a transaction expires, defaults to 30s"));
-   cmd->add_flag("-f,--force-unique", tx_force_unique, localized("Force the transaction to be unique. this will consume extra bandwidth and remove any protections against accidently issuing the same transaction multiple times"));
+   cmd->add_flag("-q,--force-unique", tx_force_unique, localized("Force the transaction to be unique. this will consume extra bandwidth and remove any protections against accidentally issuing the same transaction multiple times"));
    cmd->add_flag("-s,--skip-sign", tx_skip_sign, localized("Specify if unlocked wallet keys should be used to sign transaction"));
    cmd->add_flag("-j,--json", tx_print_json, localized("Print result as JSON"));
    cmd->add_option("--json-file", tx_json_save_file, localized("Save result in JSON format into a file"));
@@ -242,6 +245,9 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    if(!default_permission.empty())
       msg += " (defaults to '" + default_permission + "')";
    cmd->add_option("-p,--permission", tx_permission, localized(msg.c_str()));
+
+   // InfraBlockchain Transaction-Fee-Payer
+   cmd->add_option("-f,--txfee-payer", trx_fee_payer_account, localized("transaction fee payer account. transaction must be signed by the fee payer account."));
 
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("Set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
    cmd->add_option("--max-net-usage", tx_max_net_usage, localized("Set an upper limit on the net usage budget, in bytes, for the transaction (defaults to 0 which means no limit)"));
@@ -427,6 +433,20 @@ fc::variant push_transaction( signed_transaction& trx, const std::vector<public_
       trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
       trx.delay_sec = delaysec;
    }
+
+   try {
+      if (!trx_fee_payer_account.empty()) {
+         eosio::chain::name txfee_payer_account_name(trx_fee_payer_account);
+
+         infrablockchain::chain::transaction_fee_payer_tx_ext tx_fee_payer_tx_ext{ txfee_payer_account_name };
+
+         trx.transaction_extensions.push_back(
+            std::make_pair(infrablockchain::chain::transaction_fee_payer_tx_ext::extension_id(),
+                           fc::raw::pack(tx_fee_payer_tx_ext)));
+      }
+   } EOS_RETHROW_EXCEPTIONS(infrablockchain::chain::ill_formed_transaction_fee_payer_tx_ext,
+                            "Invalid transaction fee payer account: ${trx_fee_payer_account}",
+                            ("trx_fee_payer_account", trx_fee_payer_account));
 
    if (!tx_skip_sign) {
       fc::variant required_keys;
