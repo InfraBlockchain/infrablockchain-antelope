@@ -90,6 +90,7 @@ Options:
 #include <infrablockchain/chain/system_accounts.hpp>
 #include <infrablockchain/chain/standard_token_action_types.hpp>
 #include <infrablockchain/chain/transaction_extensions.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -196,7 +197,11 @@ uint32_t delaysec = 0;
 
 vector<string> tx_permission;
 
+// InfraBlockchain Transaction Fee Payer account
 string trx_fee_payer_account;
+
+// InfraBlockchain Proof-of-Transaction transction vote target account
+string trx_vote_target_account;
 
 eosio::client::http::http_context context;
 
@@ -248,6 +253,9 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
 
    // InfraBlockchain Transaction-Fee-Payer
    cmd->add_option("-f,--txfee-payer", trx_fee_payer_account, localized("transaction fee payer account. transaction must be signed by the fee payer account."));
+
+   // InfraBlockchain Transaction-as-a-Vote for Proof-of-Transaction
+   cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for InfraBlockchain Proof-of-Transaction(PoT)"));
 
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("Set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
    cmd->add_option("--max-net-usage", tx_max_net_usage, localized("Set an upper limit on the net usage budget, in bytes, for the transaction (defaults to 0 which means no limit)"));
@@ -447,6 +455,19 @@ fc::variant push_transaction( signed_transaction& trx, const std::vector<public_
    } EOS_RETHROW_EXCEPTIONS(infrablockchain::chain::ill_formed_transaction_fee_payer_tx_ext,
                             "Invalid transaction fee payer account: ${trx_fee_payer_account}",
                             ("trx_fee_payer_account", trx_fee_payer_account));
+
+   try {
+      if (!trx_vote_target_account.empty()) {
+         eosio::chain::name tx_vote_account_name(trx_vote_target_account);
+
+         infrablockchain::chain::transaction_vote_tx_ext tx_vote_tx_ext{ tx_vote_account_name };
+
+         trx.transaction_extensions.push_back(
+            std::make_pair(infrablockchain::chain::transaction_vote_tx_ext::extension_id(),
+                           fc::raw::pack(tx_vote_tx_ext)));
+      }
+   } EOS_RETHROW_EXCEPTIONS(infrablockchain::chain::ill_formed_transaction_vote_tx_ext,
+                            "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
 
    if (!tx_skip_sign) {
       fc::variant required_keys;
