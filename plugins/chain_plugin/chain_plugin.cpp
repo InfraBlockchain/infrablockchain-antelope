@@ -36,6 +36,7 @@
 
 #include <infrablockchain/chain/standard_token_action_types.hpp>
 #include <infrablockchain/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
 
 // reflect chainbase::environment for --print-build-info option
 FC_REFLECT_ENUM( chainbase::environment::os_t,
@@ -2585,6 +2586,34 @@ read_only::get_table_by_scope_result read_only::get_table_by_scope( const read_o
    }
 
    return result;
+}
+
+asset read_only::get_token_balance(const get_token_balance_params &params) const {
+
+   const auto &d = db.db();
+   const account_object *account_obj = d.find<account_object, by_name>(params.account);
+   EOS_ASSERT(account_obj != nullptr, chain::account_query_exception, "fail to retrieve account for ${account}", ("account", params.account) );
+
+   auto& token_manager = db.get_standard_token_manager();
+   const symbol& symbol = token_manager.get_token_symbol(params.token);
+   share_type balance = token_manager.get_token_balance(params.token, params.account);
+   return asset(balance, symbol);
+}
+
+fc::variant read_only::get_token_info(const get_token_info_params &params) const {
+   auto& token_manager = db.get_standard_token_manager();
+
+   auto* token_meta_obj_ptr = token_manager.get_token_meta_object(params.token);
+   if (!token_meta_obj_ptr) {
+      return fc::mutable_variant_object("token_id", "");
+   }
+
+   auto token_meta_obj = *token_meta_obj_ptr;
+   return fc::mutable_variant_object("token_id", token_meta_obj.token_id)
+      ("sym", token_meta_obj.sym)
+      ("total_supply", asset{token_meta_obj.total_supply, token_meta_obj.sym})
+      ("url", token_meta_obj.url)
+      ("desc", token_meta_obj.desc);
 }
 
 vector<asset> read_only::get_currency_balance( const read_only::get_currency_balance_params& p )const {

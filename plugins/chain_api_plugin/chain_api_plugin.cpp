@@ -120,6 +120,8 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_table_rows, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_kv_table_rows, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_table_by_scope, 200, http_params_types::params_required),
+      CHAIN_RO_CALL(get_token_balance, 200, http_params_types::params_required),
+      CHAIN_RO_CALL(get_token_info, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_currency_balance, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_currency_stats, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_producers, 200, http_params_types::params_required),
