@@ -426,7 +426,7 @@ namespace impl {
          mvo("authorization", act.authorization);
 
          try {
-            auto abi = resolver(act.account);
+            auto abi = resolver(act.account, act.name);
             if (abi) {
                auto type = abi->get_action_type(act.name);
                if (!type.empty()) {
@@ -488,7 +488,7 @@ namespace impl {
          mvo("return_value_hex_data", act_trace.return_value);
          auto act = act_trace.act;
          try {
-            auto abi = resolver(act.account);
+            auto abi = resolver(act.account, act.name);
             if (abi) {
                auto type = abi->get_action_result_type(act.name);
                if (!type.empty()) {
@@ -832,7 +832,7 @@ namespace impl {
                from_variant(data, act.data);
                valid_empty_data = act.data.empty();
             } else if ( data.is_object() ) {
-               auto abi = resolver(act.account);
+               auto abi = resolver(act.account, act.name);
                if (abi) {
                   auto type = abi->get_action_type(act.name);
                   if (!type.empty()) {

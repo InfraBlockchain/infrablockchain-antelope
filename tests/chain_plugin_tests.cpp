@@ -21,6 +21,9 @@
 #include <array>
 #include <utility>
 
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
+
 #ifdef NON_VALIDATING_TEST
 #define TESTER tester
 #else
@@ -59,9 +62,12 @@ BOOST_FIXTURE_TEST_CASE( get_block_with_invalid_abi, TESTER ) try {
    set_abi( "asserter"_n, contracts::asserter_abi().data() );
    produce_blocks(1);
 
-   auto resolver = [&,this]( const account_name& name ) -> std::optional<abi_serializer> {
+   auto resolver = [&,this]( account_name code, action_name action ) -> std::optional<abi_serializer> {
       try {
-         const auto& accnt  = this->control->db().get<account_object,by_name>( name );
+         if ( infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+            code = infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name;
+         }
+         const auto& accnt  = this->control->db().get<account_object,by_name>( code );
          abi_def abi;
          if (abi_serializer::to_abi(accnt.abi, abi)) {
             return abi_serializer(abi, abi_serializer::create_yield_function( abi_serializer_max_time ));
@@ -71,7 +77,7 @@ BOOST_FIXTURE_TEST_CASE( get_block_with_invalid_abi, TESTER ) try {
    };
 
    // abi should be resolved
-   BOOST_REQUIRE_EQUAL(true, resolver("asserter"_n).has_value());
+   BOOST_REQUIRE_EQUAL(true, resolver("asserter"_n,"actionname"_n).has_value());
 
    // make an action using the valid contract & abi
    fc::variant pretty_trx = mutable_variant_object()
@@ -122,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE( get_block_with_invalid_abi, TESTER ) try {
    produce_blocks(1);
 
    // resolving the invalid abi result in exception
-   BOOST_CHECK_THROW(resolver("asserter"_n), invalid_type_inside_abi);
+   BOOST_CHECK_THROW(resolver("asserter"_n,"actionname"_n), invalid_type_inside_abi);
 
    // get the same block as string, results in decode failed(invalid abi) but not exception
    std::string block_str2 = json::to_pretty_string(plugin.get_block(param));

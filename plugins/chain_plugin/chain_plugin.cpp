@@ -34,6 +34,9 @@
 #include <signal.h>
 #include <cstdlib>
 
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
+
 // reflect chainbase::environment for --print-build-info option
 FC_REFLECT_ENUM( chainbase::environment::os_t,
                  (OS_LINUX)(OS_MACOS)(OS_WINDOWS)(OS_OTHER) )
@@ -2808,8 +2811,11 @@ read_only::get_producer_schedule_result read_only::get_producer_schedule( const 
 template<typename Api>
 struct resolver_factory {
    static auto make(const Api* api, abi_serializer::yield_function_t yield) {
-      return [api, yield{std::move(yield)}](const account_name &name) -> std::optional<abi_serializer> {
-         const auto* accnt = api->db.db().template find<account_object, by_name>(name);
+      return [api, yield{std::move(yield)}](account_name code, action_name action) -> std::optional<abi_serializer> {
+         if ( infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+            code = infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name;
+         }
+         const auto* accnt = api->db.db().template find<account_object, by_name>(code);
          if (accnt != nullptr) {
             abi_def abi;
             if (abi_serializer::to_abi(accnt->abi, abi)) {

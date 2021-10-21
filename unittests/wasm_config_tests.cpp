@@ -30,7 +30,7 @@ struct wasm_config_tester : TESTER {
    wasm_config_tester() {
       set_abi(config::system_account_name, contracts::wasm_config_bios_abi().data());
       set_code(config::system_account_name, contracts::wasm_config_bios_wasm());
-      bios_abi_ser = *get_resolver()(config::system_account_name);
+      bios_abi_ser = *get_resolver()(config::system_account_name, action_name{});
    }
    void set_wasm_params(const wasm_config& params) {
       signed_transaction trx;

@@ -13,6 +13,7 @@
 #include <eosio/chain/backing_store.hpp>
 
 #include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
 
 namespace chainbase {
    class database;
@@ -396,7 +397,12 @@ namespace eosio { namespace chain {
          fc::variant to_variant_with_abi( const T& obj, const abi_serializer::yield_function_t& yield ) {
             fc::variant pretty_output;
             abi_serializer::to_variant( obj, pretty_output,
-                                        [&]( account_name n ){ return get_abi_serializer( n, yield ); }, yield );
+                                        [&]( account_name code, action_name action ){
+                                           if ( infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+                                              code = infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name;
+                                           }
+                                           return get_abi_serializer( code, yield );
+                                        }, yield );
             return pretty_output;
          }
 
