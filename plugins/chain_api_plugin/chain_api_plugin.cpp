@@ -124,6 +124,8 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_token_info, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_system_token_list, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_system_token_balance, 200, http_params_types::params_required),
+      CHAIN_RO_CALL(get_txfee_item, 200, http_params_types::params_required),
+      CHAIN_RO_CALL(get_txfee_list, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_currency_balance, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_currency_stats, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_producers, 200, http_params_types::params_required),
