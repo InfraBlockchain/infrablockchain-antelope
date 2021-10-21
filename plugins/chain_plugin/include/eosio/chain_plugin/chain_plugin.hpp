@@ -27,6 +27,8 @@
 #include <fc/static_variant.hpp>
 #include <eosio/blockvault_client_plugin/blockvault_client_plugin.hpp>
 
+#include <infrablockchain/chain/standard_token_manager.hpp>
+
 namespace fc { class variant; }
 
 namespace eosio {
@@ -406,6 +408,18 @@ public:
    };
 
    fc::variant get_token_info(const get_token_info_params &params) const;
+
+   struct get_system_token_list_params {
+       bool token_meta;
+   };
+
+   fc::variant get_system_token_list(const get_system_token_list_params &params) const;
+
+   struct get_system_token_balance_params {
+       name account;
+   };
+
+   infrablockchain::chain::system_token_balance get_system_token_balance(const get_system_token_balance_params &params) const;
 
    struct get_currency_balance_params {
       name                  code;
@@ -1114,8 +1128,10 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(tabl
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 
-FC_REFLECT( eosio::chain_apis::read_only::get_token_balance_params, (token)(account));
-FC_REFLECT( eosio::chain_apis::read_only::get_token_info_params, (token));
+FC_REFLECT( eosio::chain_apis::read_only::get_token_balance_params, (token)(account) );
+FC_REFLECT( eosio::chain_apis::read_only::get_token_info_params, (token) );
+FC_REFLECT( eosio::chain_apis::read_only::get_system_token_list_params, (token_meta) );
+FC_REFLECT( eosio::chain_apis::read_only::get_system_token_balance_params, (account) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));

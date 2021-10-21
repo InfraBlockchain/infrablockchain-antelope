@@ -2616,6 +2616,36 @@ fc::variant read_only::get_token_info(const get_token_info_params &params) const
       ("desc", token_meta_obj.desc);
 }
 
+fc::variant read_only::get_system_token_list(const get_system_token_list_params &params) const {
+    fc::mutable_variant_object result;
+    vector<fc::mutable_variant_object> sys_token_list_vars;
+    auto& token_manager = db.get_standard_token_manager();
+    auto sys_tokens = token_manager.get_system_token_list().system_tokens;
+    for ( const auto& sys_token : sys_tokens ) {
+        fc::mutable_variant_object sys_token_var;
+        sys_token_var["id"] = sys_token.token_id;
+        sys_token_var["weight"] = sys_token.token_weight;
+        if (params.token_meta) {
+            auto* token_meta_obj_ptr = token_manager.get_token_meta_object(sys_token.token_id);
+            EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "no token meta info for token account ${account}", ("account", sys_token.token_id) );
+            auto token_meta_obj = *token_meta_obj_ptr;
+            sys_token_var["sym"] = token_meta_obj.sym;
+            sys_token_var["total_supply"] = asset{token_meta_obj.total_supply, token_meta_obj.sym};
+            sys_token_var["url"] = token_meta_obj.url;
+            sys_token_var["desc"] = token_meta_obj.desc;
+        }
+        sys_token_list_vars.push_back(sys_token_var);
+    }
+    result["count"] = sys_tokens.size();
+    result["tokens"] = sys_token_list_vars;
+    return result;
+}
+
+infrablockchain::chain::system_token_balance read_only::get_system_token_balance(const get_system_token_balance_params &params) const {
+    auto& token_manager = db.get_standard_token_manager();
+    return token_manager.get_system_token_balance( params.account );
+}
+
 vector<asset> read_only::get_currency_balance( const read_only::get_currency_balance_params& p )const {
 
    const abi_def abi = eosio::chain_apis::get_abi( db, p.code );
