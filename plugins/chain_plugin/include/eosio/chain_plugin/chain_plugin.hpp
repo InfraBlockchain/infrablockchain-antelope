@@ -1164,6 +1164,8 @@ FC_REFLECT( eosio::chain_apis::read_only::get_system_token_list_params, (token_m
 FC_REFLECT( eosio::chain_apis::read_only::get_system_token_balance_params, (account) );
 FC_REFLECT( eosio::chain_apis::read_only::get_txfee_item_params, (code)(action) );
 FC_REFLECT( eosio::chain_apis::read_only::get_txfee_list_params, (code_lower_bound)(code_upper_bound)(limit) );
+FC_REFLECT( eosio::chain_apis::read_only::get_tx_vote_stat_for_account_params, (account) );
+FC_REFLECT( eosio::chain_apis::read_only::get_top_tx_vote_receiver_list_params, (offset)(limit) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));

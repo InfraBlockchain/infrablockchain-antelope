@@ -3081,6 +3081,40 @@ int main( int argc, char** argv ) {
                  << std::endl;
    });
 
+   /////////////////////////////////////////////////////////////////////////
+   /// InfraBlockchain Proof-of-Transaction Transaction Vote Statistics
+
+   /// get tx vote stats for an account
+   string txVoteAccountName;
+   auto tx_vote_stat = get->add_subcommand("txvote", localized("Retrieve InfraBlockchain Proof-of-Transaction transaction vote statistics"));
+   tx_vote_stat->require_subcommand();
+
+   auto get_tx_vote_stat_for_account = tx_vote_stat->add_subcommand("account", localized("Retrieve the transaction vote statistics info for an action"));
+   get_tx_vote_stat_for_account->add_option("code", txVoteAccountName, localized("account name to retrieve transaction vote stats."))->required();
+   get_tx_vote_stat_for_account->callback([&] {
+      auto result = call(get_tx_vote_stat_for_account_func,
+                         fc::mutable_variant_object("account", txVoteAccountName)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   /// get top transaction vote receiver list
+   uint32_t tx_vote_receiver_list_offset = 0;
+   uint32_t tx_vote_receiver_list_limit = 30;
+   auto get_top_tx_vote_receiver_list = tx_vote_stat->add_subcommand("top", localized("Retrieve top transaction vote receiver list sorted by weighted transaction vote amount"));
+   get_top_tx_vote_receiver_list->add_option("-o,--offset", tx_vote_receiver_list_offset, localized("offset of first result item. offset n means the result list starts from the rank n+1 tx vote receiver (default = 0)"));
+   get_top_tx_vote_receiver_list->add_option("-l,--limit", tx_vote_receiver_list_limit, localized("max limit of result item count (default = 30)"));
+   get_top_tx_vote_receiver_list->callback([&] {
+      auto result = call(get_top_tx_vote_receiver_list_func,
+                         fc::mutable_variant_object("offset", tx_vote_receiver_list_offset)("limit", tx_vote_receiver_list_limit)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
    //////////////////////////////////////////////
 
    // currency accessors
