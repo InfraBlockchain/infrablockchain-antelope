@@ -29,6 +29,7 @@
 
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 namespace fc { class variant; }
 
@@ -436,6 +437,19 @@ public:
    };
 
    infrablockchain::chain::tx_fee_list_result get_txfee_list(const get_txfee_list_params &params) const;
+
+   struct get_tx_vote_stat_for_account_params {
+      name account;
+   };
+
+   infrablockchain::chain::tx_vote_stat_for_account get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const;
+
+   struct get_top_tx_vote_receiver_list_params {
+      uint32_t offset = 0;
+      uint32_t limit = 30;
+   };
+
+   infrablockchain::chain::tx_vote_receiver_list_result get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const;
 
    struct get_currency_balance_params {
       name                  code;

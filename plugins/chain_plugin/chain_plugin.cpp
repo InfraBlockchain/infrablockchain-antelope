@@ -38,6 +38,7 @@
 #include <infrablockchain/chain/system_accounts.hpp>
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 // reflect chainbase::environment for --print-build-info option
 FC_REFLECT_ENUM( chainbase::environment::os_t,
@@ -2655,6 +2656,16 @@ infrablockchain::chain::tx_fee_for_action read_only::get_txfee_item(const get_tx
 infrablockchain::chain::tx_fee_list_result read_only::get_txfee_list(const get_txfee_list_params &params) const {
    auto& tx_fee_table_manager = db.get_transaction_fee_table_manager();
    return tx_fee_table_manager.get_tx_fee_list(params.code_lower_bound, params.code_upper_bound, params.limit);
+}
+
+infrablockchain::chain::tx_vote_stat_for_account read_only::get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const {
+   auto& tx_vote_stat_manager = db.get_transaction_vote_stat_manager();
+   return tx_vote_stat_manager.get_transaction_vote_stat_for_account( params.account );
+}
+
+infrablockchain::chain::tx_vote_receiver_list_result read_only::get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const {
+   auto& tx_vote_stat_manager = db.get_transaction_vote_stat_manager();
+   return tx_vote_stat_manager.get_top_sorted_transaction_vote_receivers( params.offset, params.limit, true );
 }
 
 vector<asset> read_only::get_currency_balance( const read_only::get_currency_balance_params& p )const {

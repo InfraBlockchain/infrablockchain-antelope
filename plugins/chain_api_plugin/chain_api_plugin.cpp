@@ -122,6 +122,8 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_table_by_scope, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_token_balance, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_token_info, 200, http_params_types::params_required),
+      CHAIN_RO_CALL(get_tx_vote_stat_for_account, 200, http_params_types::params_required),
+      CHAIN_RO_CALL(get_top_tx_vote_receiver_list, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_system_token_list, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_system_token_balance, 200, http_params_types::params_required),
       CHAIN_RO_CALL(get_txfee_item, 200, http_params_types::params_required),
