@@ -39,6 +39,7 @@
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
 #include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
 
 // reflect chainbase::environment for --print-build-info option
 FC_REFLECT_ENUM( chainbase::environment::os_t,
@@ -2729,6 +2730,9 @@ read_only::get_producers_result read_only::get_producers( const read_only::get_p
    const auto& d = db.db();
    const auto lower = name{p.lower_bound};
 
+   bool proofOfTransactionEnabled = db.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol);
+   auto& tx_vote_stat_manager = db.get_transaction_vote_stat_manager();
+
    keep_processing kp;
    read_only::get_producers_result result;
    auto done = [&kp,&result,&limit=p.limit](const auto& row) {
@@ -2739,11 +2743,42 @@ read_only::get_producers_result read_only::get_producers( const read_only::get_p
       return false;
    };
    auto type = abis.get_table_type(producers_table);
-   auto get_val = get_primary_key_value(type, abis, p.json);
-   auto add_val = [&result,get_val{std::move(get_val)}](const auto& row) {
-      fc::variant data_var;
-      get_val(data_var, row);
-      result.rows.emplace_back(std::move(data_var));
+   auto get_val = get_primary_key_value(type, abis, true /*p.json*/);
+   auto add_val = [&result,get_val{std::move(get_val)},&tx_vote_stat_manager,&proofOfTransactionEnabled](const auto& row) {
+      fc::variant producer_item;
+      get_val(producer_item, row);
+
+      if (proofOfTransactionEnabled) {
+         //      account_name          owner;
+         //      double                total_votes = 0;
+         //      double                total_votes_weight = 0;
+         //      eosio::public_key     producer_key; /// a packed public key object
+         //      bool                  is_active = true;
+         //      bool                  is_trusted_seed = false; // authorized flag for permissioned setup
+         //      std::string           url;
+         //      uint32_t              unpaid_blocks = 0;
+         //      uint64_t              last_claim_time = 0;
+         //      uint16_t              location = 0;
+
+         auto owner = producer_item["owner"];
+         account_name producer_account_name(owner.as_string());
+         auto tx_vote_receiver_stat = tx_vote_stat_manager.get_transaction_vote_stat_for_account(producer_account_name);
+
+         result.rows.emplace_back(
+            fc::mutable_variant_object("owner", owner)
+               ("total_votes_weight", tx_vote_receiver_stat.tx_votes_weighted)
+               ("total_votes", tx_vote_receiver_stat.tx_votes)
+               ("producer_key", producer_item["producer_key"])
+               ("is_active", producer_item["is_active"])
+               ("is_trusted_seed", producer_item["is_trusted_seed"])
+               ("url", producer_item["url"])
+               ("unpaid_blocks", producer_item["unpaid_blocks"])
+               ("last_claim_time", producer_item["last_claim_time"])
+               ("location", producer_item["location"])
+         );
+      } else {
+         result.rows.emplace_back(std::move(producer_item));
+      }
    };
 
    const auto code = config::system_account_name;
@@ -2848,11 +2883,15 @@ read_only::get_producers_result read_only::get_producers( const read_only::get_p
       eosio::chain::backing_store::walk_rocksdb_entries_with_prefix(kv_database.get_kv_undo_stack(), lower_key, upper_key, writer);
    };
 
-   constexpr name global = "global"_n;
-   const auto global_table_type = get_table_type(abi, global);
-   EOS_ASSERT(global_table_type == read_only::KEYi64, chain::contract_table_query_exception, "Invalid table type ${type} for table global", ("type",global_table_type));
-   auto var = get_primary_key(config::system_account_name, config::system_account_name, global, global.to_uint64_t(), row_requirements::required, row_requirements::required, abis.get_table_type(global));
-   result.total_producer_vote_weight = var["total_producer_vote_weight"].as_double();
+   if (proofOfTransactionEnabled) {
+      result.total_producer_vote_weight = db.get_infrablockchain_global_properties().total_tx_votes_weighted;
+   } else {
+      constexpr name global = "global"_n;
+      const auto global_table_type = get_table_type(abi, global);
+      EOS_ASSERT(global_table_type == read_only::KEYi64, chain::contract_table_query_exception, "Invalid table type ${type} for table global", ("type",global_table_type));
+      auto var = get_primary_key(config::system_account_name, config::system_account_name, global, global.to_uint64_t(), row_requirements::required, row_requirements::required, abis.get_table_type(global));
+      result.total_producer_vote_weight = var["total_producer_vote_weight"].as_double();
+   }
    return result;
 } catch (...) {
    read_only::get_producers_result result;
