@@ -289,7 +289,7 @@ inline constexpr auto get_intrinsic_table() {
       "env.set_system_token_list_packed",
       "env.set_trx_fee_for_action",
       "env.unset_trx_fee_for_action",
-      "env.get_trx_fee_for_action",
+      "env.get_trx_fee_for_action_packed",
       "env.trx_fee_payer",
       "env.get_top_transaction_vote_receivers_packed",
       "env.get_total_weighted_transaction_votes"

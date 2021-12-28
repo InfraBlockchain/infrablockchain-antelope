@@ -49,7 +49,7 @@ namespace eosio { namespace chain { namespace webassembly {
     *  @param[out] packed_trx_fee_for_action - output buffer of the packed 'infrablockchain::chain::tx_fee_for_action' object, only retrieved if sufficent size to hold packed data.
     *  @return size of the packed 'infrablockchain::chain::tx_fee_for_action' data
     */
-   uint32_t interface::get_trx_fee_for_action( account_name code, action_name action, legacy_span<char> packed_trx_fee_for_action ) const {
+   uint32_t interface::get_trx_fee_for_action_packed( account_name code, action_name action, legacy_span<char> packed_trx_fee_for_action ) const {
       infrablockchain::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
 
       auto s = fc::raw::pack_size( tx_fee_for_action );

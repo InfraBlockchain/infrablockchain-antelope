@@ -2053,7 +2053,7 @@ namespace webassembly {
           *  @param[out] packed_trx_fee_for_action - output buffer of the packed 'infrablockchain::chain::tx_fee_for_action' object, only retrieved if sufficent size to hold packed data.
           *  @return size of the packed 'infrablockchain::chain::tx_fee_for_action' data
           */
-         uint32_t get_trx_fee_for_action( account_name code, action_name action, legacy_span<char> packed_trx_fee_for_action ) const;
+         uint32_t get_trx_fee_for_action_packed( account_name code, action_name action, legacy_span<char> packed_trx_fee_for_action ) const;
 
          /**
           *  Get the transaction fee payer account name

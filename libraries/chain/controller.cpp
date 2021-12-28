@@ -3579,7 +3579,7 @@ void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_
 
        add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "set_trx_fee_for_action" );
        add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "unset_trx_fee_for_action" );
-       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_trx_fee_for_action" );
+       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_trx_fee_for_action_packed" );
        add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "trx_fee_payer" );
     } );
 }
