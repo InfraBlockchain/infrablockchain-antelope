@@ -48,6 +48,7 @@ namespace infrablockchain { namespace chain {
       try {
          const token_id_type token_id = context.get_action().account;
          EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "issue built-in standard token action handler should be invoked only in first receiver context" );
+         EOS_ASSERT( token_id == issue_action.t, token_action_validate_exception, "issue action account, token id (t) mismatch" );
 
          EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
          EOS_ASSERT( issue_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
@@ -86,6 +87,7 @@ namespace infrablockchain { namespace chain {
       try {
          const token_id_type token_id = context.get_action().account;
          EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "transfer built-in standard token action handler should be invoked only in first receiver context" );
+         EOS_ASSERT( token_id == transfer_action.t, token_action_validate_exception, "transfer action account, token id (t) mismatch" );
 
          const account_name from_account = transfer_action.from;
          const account_name to_account = transfer_action.to;
@@ -128,6 +130,7 @@ namespace infrablockchain { namespace chain {
       try {
          const token_id_type token_id = context.get_action().account;
          EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "txfee built-in standard token action handler should be invoked only in first receiver context" );
+         EOS_ASSERT( token_id == txfee_action.t, token_action_validate_exception, "txfee action account, token id (t) mismatch" );
 
          const account_name payer_account = txfee_action.payer;
          EOS_ASSERT( payer_account.good(), token_action_validate_exception, "invalid payer account name" );
