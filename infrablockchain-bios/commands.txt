@@ -1,0 +1,19 @@
+
+$INFRA_KEYCHAIN --http-server-address 127.0.0.1:8888
+$INFRA_KEYCHAIN --unlock-timeout 999999999 --http-server-address 127.0.0.1:8900 --wallet-dir $INFRABLOCKCHAIN_DEV_WALLET_DIR
+
+$INFRA_CLI wallet create -n local-testnet --to-console
+Creating wallet: local-testnet
+Save password to use in the future to unlock this wallet.
+Without password imported keys will not be retrievable.
+"PW5JcN2AfwXxAV12W1mofb7pbeyJEwwie4JsCaTZvMx5kt38P8TP1"
+
+$INFRA_CLI create key --to-console
+
+export INFRA_CLI_V1=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain-git/build/bin/infra-cli
+$INFRA_CLI_V1 create key --to-console
+
+$INFRA_NODE --print-default-config
+
+
+curl -X POST ${INFRA_NODE_API_ENDPOINT}/v1/producer/schedule_protocol_feature_activations -d '{"protocol_features_to_activate": ["0ec7e080177b2c02b278d5088611686b49d739925a92d9bfcacd7fc6b74053bd"]}'
