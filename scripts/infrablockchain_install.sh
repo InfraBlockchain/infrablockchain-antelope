@@ -17,7 +17,8 @@ execute cd $BUILD_DIR
 execute make install
 execute cd ..
 
-echo "\n${COLOR_RED}  _____        __           ____  _            _        _           _"
+echo " "
+echo "  _____        __           ____  _            _        _           _"
 echo " |_   _|      / _|         |  _ \| |          | |      | |         (_)"
 echo "   | |  _ __ | |_ _ __ __ _| |_) | | ___   ___| | _____| |__   __ _ _ _ __"
 echo "   | | | '_ \|  _| '__/ _\` |  _ <| |/ _ \ / __| |/ / __| '_ \ / _\` | | '_ \\"
