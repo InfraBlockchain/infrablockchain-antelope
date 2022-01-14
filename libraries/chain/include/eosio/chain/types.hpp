@@ -1,27 +1,24 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #pragma once
 #include <eosio/chain/name.hpp>
 #include <eosio/chain/chain_id_type.hpp>
 
 #include <chainbase/chainbase.hpp>
 
-#include <fc/container/flat_fwd.hpp>
+#include <fc/interprocess/container.hpp>
 #include <fc/io/varint.hpp>
 #include <fc/io/enum_type.hpp>
 #include <fc/crypto/sha224.hpp>
-#include <fc/optional.hpp>
 #include <fc/safe.hpp>
 #include <fc/container/flat.hpp>
 #include <fc/string.hpp>
 #include <fc/io/raw.hpp>
 #include <fc/static_variant.hpp>
-#include <fc/smart_ref_fwd.hpp>
 #include <fc/crypto/ripemd160.hpp>
 #include <fc/fixed_string.hpp>
 #include <fc/crypto/private_key.hpp>
+
+#include <boost/version.hpp>
+#include <boost/container/deque.hpp>
 
 #include <memory>
 #include <vector>
@@ -51,7 +48,6 @@ namespace eosio { namespace chain {
    using                               std::vector;
    using                               std::unordered_map;
    using                               std::string;
-   using                               std::deque;
    using                               std::shared_ptr;
    using                               std::weak_ptr;
    using                               std::unique_ptr;
@@ -66,19 +62,18 @@ namespace eosio { namespace chain {
    using                               std::all_of;
 
    using                               fc::path;
-   using                               fc::smart_ref;
    using                               fc::variant_object;
    using                               fc::variant;
    using                               fc::enum_type;
-   using                               fc::optional;
    using                               fc::unsigned_int;
    using                               fc::signed_int;
    using                               fc::time_point_sec;
    using                               fc::time_point;
    using                               fc::safe;
    using                               fc::flat_map;
+   using                               fc::flat_multimap;
    using                               fc::flat_set;
-   using                               fc::static_variant;
+   using                               std::variant;
    using                               fc::ecc::range_proof_type;
    using                               fc::ecc::range_proof_info;
    using                               fc::ecc::commitment_type;
@@ -87,14 +82,26 @@ namespace eosio { namespace chain {
    using private_key_type = fc::crypto::private_key;
    using signature_type   = fc::crypto::signature;
 
+#if BOOST_VERSION >= 107100
+   // configurable boost deque performs much better than std::deque in our use cases
+   using block_1024_option_t = boost::container::deque_options< boost::container::block_size<1024u> >::type;
+   template<typename T>
+   using deque = boost::container::deque< T, void, block_1024_option_t >;
+#else
+   template<typename T>
+   using deque = std::deque<T>;
+#endif
+
    struct void_t{};
 
    using chainbase::allocator;
-   using shared_string = boost::interprocess::basic_string<char, std::char_traits<char>, allocator<char>>;
+   using shared_string = chainbase::shared_string;
    template<typename T>
    using shared_vector = boost::interprocess::vector<T, allocator<T>>;
    template<typename T>
    using shared_set = boost::interprocess::set<T, std::less<T>, allocator<T>>;
+   template<typename K, typename V>
+   using shared_flat_multimap = boost::interprocess::flat_multimap< K, V, std::less<K>, allocator< std::pair<K,V> > >;
 
    /**
     * For bugs in boost interprocess we moved our blob data to shared_string
@@ -106,17 +113,10 @@ namespace eosio { namespace chain {
          shared_blob() = delete;
          shared_blob(shared_blob&&) = default;
 
-         shared_blob(const shared_blob& s)
-         :shared_string(s.get_allocator())
-         {
-            assign(s.c_str(), s.size());
-         }
+         shared_blob(const shared_blob& s) = default;
 
 
-         shared_blob& operator=(const shared_blob& s) {
-            assign(s.c_str(), s.size());
-            return *this;
-         }
+         shared_blob& operator=(const shared_blob& s) = default;
 
          shared_blob& operator=(shared_blob&& ) = default;
 
@@ -128,6 +128,71 @@ namespace eosio { namespace chain {
          shared_blob(const allocator_type& a)
          :shared_string(a)
          {}
+   };
+
+   /* Compares equivalent to any blob that has this as a prefix. */
+   struct blob_prefix {
+      std::string_view _data;
+      const char* data() const { return _data.data(); }
+      std::size_t size() const { return _data.size(); }
+   };
+
+   /**
+    * Compare vector, string, string_view, shared_blob (unsigned)
+    */
+   template<typename A, typename B>
+   inline int compare_blob(const A& a, const B& b) {
+      static_assert(
+         std::is_same_v<std::decay_t<decltype(*a.data())>, char> ||
+         std::is_same_v<std::decay_t<decltype(*a.data())>, unsigned char>);
+      static_assert(
+         std::is_same_v<std::decay_t<decltype(*b.data())>, char> ||
+         std::is_same_v<std::decay_t<decltype(*b.data())>, unsigned char>);
+      auto r = memcmp(
+         a.data(),
+         b.data(),
+         std::min(a.size(), b.size()));
+      if (r)
+         return r;
+      if (a.size() < b.size())
+         return -1;
+      if (a.size() > b.size())
+         return 1;
+      return 0;
+   }
+
+   template<typename A>
+   inline int compare_blob(const A& a, const blob_prefix& b) {
+      static_assert(
+         std::is_same_v<std::decay_t<decltype(*a.data())>, char> ||
+         std::is_same_v<std::decay_t<decltype(*a.data())>, unsigned char>);
+      int r = std::memcmp(a.data(), b.data(), std::min(a.size(), b.size()));
+      if (r) return r;
+      if (a.size() < b.size())
+         return -1;
+      return 0;
+   }
+
+   template<typename B>
+   inline int compare_blob(const blob_prefix& a, const B& b) {
+      static_assert(
+         std::is_same_v<std::decay_t<decltype(*b.data())>, char> ||
+         std::is_same_v<std::decay_t<decltype(*b.data())>, unsigned char>);
+      int r = std::memcmp(a.data(), b.data(), std::min(a.size(), b.size()));
+      if (r) return r;
+      if (a.size() > b.size())
+         return 1;
+      return 0;
+   }
+
+   /**
+    * Compare vector, string, string_view, shared_blob (unsigned)
+    */
+   struct unsigned_blob_less {
+      template<typename A, typename B>
+      bool operator()(const A& a, const B& b) const {
+         return compare_blob(a, b) < 0;
+      }
    };
 
    using action_name      = name;
@@ -151,7 +216,7 @@ namespace eosio { namespace chain {
    {
       null_object_type = 0,
       account_object_type,
-      account_sequence_object_type,
+      account_metadata_object_type,
       permission_object_type,
       permission_usage_object_type,
       permission_link_object_type,
@@ -167,7 +232,7 @@ namespace eosio { namespace chain {
       block_summary_object_type,
       transaction_object_type,
       generated_transaction_object_type,
-      producer_object_type,
+      UNUSED_producer_object_type,
       UNUSED_chain_property_object_type,
       account_control_history_object_type,     ///< Defined by history_plugin
       UNUSED_account_transaction_history_object_type,
@@ -187,8 +252,15 @@ namespace eosio { namespace chain {
       account_history_object_type,              ///< Defined by history_plugin
       action_history_object_type,               ///< Defined by history_plugin
       reversible_block_object_type,
+      protocol_state_object_type,
+      account_ram_correction_object_type,
+      code_object_type,
+      database_header_object_type,
+      kv_object_type,
+      kv_db_config_object_type,
       OBJECT_TYPE_COUNT, ///< Sentry value which contains the number of different object types
-      INFRABLOCKCHAIN_OBJECT_TYPE_DELIMITER = 1000,
+
+      INFRABLOCKCHAIN_OBJECT_TYPE_DELIMITER = 256,
       infrablockchain_global_property_object_type,
       infrablockchain_token_meta_object_type,
       infrablockchain_token_balance_object_type,
@@ -196,8 +268,54 @@ namespace eosio { namespace chain {
       infrablockchain_received_transaction_votes_object_type
    };
 
+   /**
+    *  Important notes on using chainbase objects in EOSIO code:
+    *
+    *  There are several constraints that need to be followed when using chainbase objects.
+    *  Some of these constraints are due to the requirements imposed by the chainbase library,
+    *  others are due to requirements to ensure determinism in the EOSIO chain library.
+    *
+    *  Before listing the constraints, the "restricted field set" must be defined.
+    *
+    *  Every chainbase object includes a field called id which has the type id_type.
+    *  The id field is always included in the restricted field set.
+    *
+    *  A field of a chainbase object is considered to be in the restricted field set if it is involved in the
+    *  derivation of the key used for one of the indices in the chainbase multi-index unless its only involvement
+    *  is through being included in composite_keys that end with the id field.
+    *
+    *  So if the multi-index includes an index like the following
+    *  ```
+    *    ordered_unique< tag<by_sender_id>,
+    *       composite_key< generated_transaction_object,
+    *          BOOST_MULTI_INDEX_MEMBER( generated_transaction_object, account_name, sender),
+    *          BOOST_MULTI_INDEX_MEMBER( generated_transaction_object, uint128_t, sender_id)
+    *       >
+    *    >
+    *  ```
+    *  both `sender` and `sender_id` fields are part of the restricted field set.
+    *
+    *  On the other hand, an index like the following
+    *  ```
+    *    ordered_unique< tag<by_expiration>,
+    *       composite_key< generated_transaction_object,
+    *          BOOST_MULTI_INDEX_MEMBER( generated_transaction_object, time_point, expiration),
+    *          BOOST_MULTI_INDEX_MEMBER( generated_transaction_object, generated_transaction_object::id_type, id)
+    *       >
+    *    >
+    *  ```
+    *  would not by itself require the `expiration` field to be part of the restricted field set.
+    *
+    *  The restrictions on usage of the chainbase objects within this code base are:
+    *     + The chainbase object includes the id field discussed above.
+    *     + The multi-index must include an ordered_unique index tagged with by_id that is based on the id field as the sole key.
+    *     + No other types of indices other than ordered_unique are allowed.
+    *       If an index is desired that does not enforce uniqueness, then use a composite key that ends with the id field.
+    *     + When creating a chainbase object, the constructor lambda should never mutate the id field.
+    *     + When modifying a chainbase object, the modifier lambda should never mutate any fields in the restricted field set.
+    */
+
    class account_object;
-   class producer_object;
 
    using block_id_type       = fc::sha256;
    using checksum_type       = fc::sha256;
@@ -212,6 +330,15 @@ namespace eosio { namespace chain {
    using int128_t            = __int128;
    using uint128_t           = unsigned __int128;
    using bytes               = vector<char>;
+   using digests_t           = deque<digest_type>;
+
+   struct sha256_less {
+      bool operator()( const fc::sha256& lhs, const fc::sha256& rhs ) const {
+       return
+             std::tie(lhs._hash[0], lhs._hash[1], lhs._hash[2], lhs._hash[3]) <
+             std::tie(rhs._hash[0], rhs._hash[1], rhs._hash[2], rhs._hash[3]);
+      }
+   };
 
 
    /**
@@ -220,7 +347,146 @@ namespace eosio { namespace chain {
     */
    typedef vector<std::pair<uint16_t,vector<char>>> extensions_type;
 
+   /**
+    * emplace an extension into the extensions type such that it is properly ordered by extension id
+    * this assumes exts is already sorted by extension id
+    */
+   inline auto emplace_extension( extensions_type& exts, uint16_t eid, vector<char>&& data) {
+      auto insert_itr = std::upper_bound(exts.begin(), exts.end(), eid, [](uint16_t id, const auto& ext){
+         return id < ext.first;
+      });
+
+      return exts.emplace(insert_itr, eid, std::move(data));
+   }
+
+
+   template<typename Container>
+   class end_insert_iterator : public std::iterator< std::output_iterator_tag, void, void, void, void >
+   {
+   protected:
+      Container* container;
+
+   public:
+      using container_type = Container;
+
+      explicit end_insert_iterator( Container& c )
+      :container(&c)
+      {}
+
+      end_insert_iterator& operator=( typename Container::const_reference value ) {
+         container->insert( container->cend(), value );
+         return *this;
+      }
+
+      end_insert_iterator& operator*() { return *this; }
+      end_insert_iterator& operator++() { return *this; }
+      end_insert_iterator  operator++(int) { return *this; }
+   };
+
+   template<typename Container>
+   inline end_insert_iterator<Container> end_inserter( Container& c ) {
+      return end_insert_iterator<Container>( c );
+   }
+
+   template<typename T>
+   struct enum_hash
+   {
+      static_assert( std::is_enum<T>::value, "enum_hash can only be used on enumeration types" );
+
+      using underlying_type = typename std::underlying_type<T>::type;
+
+      std::size_t operator()(T t) const
+      {
+           return std::hash<underlying_type>{}( static_cast<underlying_type>(t) );
+      }
+   };
+   // enum_hash needed to support old gcc compiler of Ubuntu 16.04
+
+   namespace detail {
+      struct extract_match {
+         bool enforce_unique = false;
+      };
+
+      template<typename... Ts>
+      struct decompose;
+
+      template<>
+      struct decompose<> {
+         template<typename ResultVariant>
+         static auto extract( uint16_t id, const vector<char>& data, ResultVariant& result )
+         -> std::optional<extract_match>
+         {
+            return {};
+         }
+      };
+
+      template<typename T, typename... Rest>
+      struct decompose<T, Rest...> {
+         using head_t = T;
+         using tail_t = decompose< Rest... >;
+
+         template<typename ResultVariant>
+         static auto extract( uint16_t id, const vector<char>& data, ResultVariant& result )
+         -> std::optional<extract_match>
+         {
+            if( id == head_t::extension_id() ) {
+               result = fc::raw::unpack<head_t>( data );
+               return { extract_match{ head_t::enforce_unique() } };
+            }
+
+            return tail_t::template extract<ResultVariant>( id, data, result );
+         }
+      };
+
+      template<typename T, typename ... Ts>
+      struct is_any_of {
+         static constexpr bool value = std::disjunction_v<std::is_same<T, Ts>...>;
+      };
+
+      template<typename T, typename ... Ts>
+      constexpr bool is_any_of_v = is_any_of<T, Ts...>::value;
+   }
+
+   template<typename E, typename F>
+   static inline auto has_field( F flags, E field )
+   -> std::enable_if_t< std::is_integral<F>::value && std::is_unsigned<F>::value &&
+                        std::is_enum<E>::value && std::is_same< F, std::underlying_type_t<E> >::value, bool>
+   {
+      return ( (flags & static_cast<F>(field)) != 0 );
+   }
+
+   template<typename E, typename F>
+   static inline auto set_field( F flags, E field, bool value = true )
+   -> std::enable_if_t< std::is_integral<F>::value && std::is_unsigned<F>::value &&
+                        std::is_enum<E>::value && std::is_same< F, std::underlying_type_t<E> >::value, F >
+   {
+      if( value )
+         return ( flags | static_cast<F>(field) );
+      else
+         return ( flags & ~static_cast<F>(field) );
+   }
+
+   template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+   template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 } }  // eosio::chain
 
-FC_REFLECT( eosio::chain::void_t, )
+namespace chainbase {
+   // chainbase::shared_cow_string
+   template<typename DataStream> inline DataStream& operator<<( DataStream& s, const chainbase::shared_cow_string& v )  {
+      FC_ASSERT( v.size() <= MAX_SIZE_OF_BYTE_ARRAYS );
+      fc::raw::pack( s, fc::unsigned_int((uint32_t)v.size()));
+      if( v.size() ) s.write( v.data(), v.size() );
+      return s;
+   }
+
+   template<typename DataStream> inline DataStream& operator>>( DataStream& s, chainbase::shared_cow_string& v )  {
+      fc::unsigned_int size; fc::raw::unpack( s, size );
+      FC_ASSERT( size.value <= MAX_SIZE_OF_BYTE_ARRAYS );
+      FC_ASSERT( v.size() == 0 );
+      v.resize_and_fill(size.value, [&s](char* buf, std::size_t sz) { s.read(buf, sz); });
+      return s;
+   }
+}
+
+FC_REFLECT_EMPTY( eosio::chain::void_t )

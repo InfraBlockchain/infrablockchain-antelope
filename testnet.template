@@ -12,7 +12,19 @@ if [ -z "$biosport" ]; then
     biosport=9776
 fi
 
-wddir=infrablockchain-ignition-wd
+bioscontractpath=$BIOS_CONTRACT_PATH
+if [ -z "$bioscontractpath" ]; then
+    # this is defaulted to the version of bios that only requires the preactivate_feature
+    # newer versions may require 
+    bioscontractpath="unittests/contracts/old_versions/v1.7.0-develop-preactivate_feature/eosio.bios"
+fi
+
+bioscurrencysymbol=$BIOS_CURRENCY_SYMBOL
+if [ -z "$bioscurrencysymbol" ]; then
+    bioscurrencysymbol="SYS"
+fi
+
+wddir=eosio-ignition-wd
 wdaddr=localhost:8899
 wdurl=http://$wdaddr
 # Manual deployers, add a line below this block that looks like:
@@ -35,18 +47,20 @@ mkdir $wddir
 step=1
 echo Initializing ignition sequence  at $(date) | tee $logfile
 
+echo "FEATURE_DIGESTS: $FEATURE_DIGESTS" >> $logfile
+
 echo "http-server-address = $wdaddr" > $wddir/config.ini
 
-programs/infra-keystore/infra-keystore --config-dir $wddir --data-dir $wddir 2> $wddir/wdlog.txt &
+programs/keosd/keosd --config-dir $wddir --data-dir $wddir --http-max-response-time-ms 99999 2> $wddir/wdlog.txt &
 echo $$ > ignition_wallet.pid
-echo infra-keystore log in $wddir/wdlog.txt >> $logfile
+echo keosd log in $wddir/wdlog.txt >> $logfile
 sleep 1
 
 ecmd () {
     echo ===== Start: $step ============ >> $logfile
-    echo executing: infra-cli --wallet-url $wdurl --url http://$bioshost:$biosport "$@" | tee -a $logfile
+    echo executing: cleos --wallet-url $wdurl --url http://$bioshost:$biosport $* | tee -a $logfile
     echo ----------------------- >> $logfile
-    programs/infra-cli/infra-cli  --wallet-url $wdurl --url http://$bioshost:$biosport "$@" >> $logfile 2>&1
+    programs/cleos/cleos  --wallet-url $wdurl --url http://$bioshost:$biosport $* >> $logfile 2>&1
     echo ==== End: $step ============== >> $logfile
     step=$(($step + 1))
 }
@@ -56,10 +70,9 @@ wcmd () {
 }
 
 cacmd () {
-    programs/infra-cli/infra-cli  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount infrasys "$@" >> $logfile 2>&1
+    programs/cleos/cleos  --wallet-url $wdurl --url http://$bioshost:$biosport system newaccount --transfer --stake-net "10000000.0000 "$bioscurrencysymbol --stake-cpu "10000000.0000 "$bioscurrencysymbol  --buy-ram "10000000.0000 "$bioscurrencysymbol eosio $* >> $logfile 2>&1
     ecmd system regproducer $1 $2
-    ecmd push action infrasys authproducer "[\"$1\"]" -p infrasys
-    ecmd push action yx.ntoken nissue "{\"to\":\"$1\", \"token\":{\"amount\":\"1000000.00 DKRW\",\"issuer\":\"sysdepo1\"}, \"memo\":\"my memo\"}" -p sysdepo1
+    ecmd system voteproducer prods $1 $1
 }
 
 sleep 2
@@ -75,79 +88,48 @@ wcmd create --to-console -n ignition
 # where $BIOSKEY is replaced by the private key for the bios node
 # ------ DO NOT ALTER THE NEXT LINE -------
 ###INSERT prodkeys
+echo "Activated Features Check:" >> $logfile
+curl http://$bioshost:$biosport/v1/chain/get_activated_protocol_features >> $logfile
+ecmd set contract eosio $bioscontractpath eosio.bios.wasm eosio.bios.abi
 
-ecmd set contract infrasys contracts/eosio.bios eosio.bios.wasm eosio.bios.abi
+# Preactivate all digests
+for digest in $FEATURE_DIGESTS;
+do
+ecmd push action eosio activate "{\"feature_digest\":\"$digest\"}" -p eosio
+done
 
 # Create required system accounts
 ecmd create key --to-console
 pubsyskey=`grep "^Public key:" $logfile | tail -1 | sed "s/^Public key://"`
 prisyskey=`grep "^Private key:" $logfile | tail -1 | sed "s/^Private key://"`
-echo sys.* keys: $prisyskey $pubsyskey >> $logfile
+echo eosio.* keys: $prisyskey $pubsyskey >> $logfile
 wcmd import -n ignition --private-key $prisyskey
-ecmd create account infrasys sys.identity $pubsyskey $pubsyskey
-ecmd create account infrasys sys.msig $pubsyskey $pubsyskey
-ecmd create account infrasys sys.txfee $pubsyskey $pubsyskey
-ecmd create account infrasys sys.sudo $pubsyskey $pubsyskey
-ecmd create account infrasys sysdepo1 $pubsyskey $pubsyskey
-ecmd create account infrasys sysdepo2 $pubsyskey $pubsyskey
-ecmd create account infrasys idauth1 $pubsyskey $pubsyskey
-ecmd create account infrasys idauth2 $pubsyskey $pubsyskey
-ecmd create account infrasys yx.ntoken $pubsyskey $pubsyskey
-ecmd create account infrasys yx.token $pubsyskey $pubsyskey
-ecmd create account infrasys yx.dcontract $pubsyskey $pubsyskey
+ecmd create account eosio eosio.bpay $pubsyskey $pubsyskey
+ecmd create account eosio eosio.msig $pubsyskey $pubsyskey
+ecmd create account eosio eosio.names $pubsyskey $pubsyskey
+ecmd create account eosio eosio.ram $pubsyskey $pubsyskey
+ecmd create account eosio eosio.ramfee $pubsyskey $pubsyskey
+ecmd create account eosio eosio.saving $pubsyskey $pubsyskey
+ecmd create account eosio eosio.stake $pubsyskey $pubsyskey
+ecmd create account eosio eosio.token $pubsyskey $pubsyskey
+ecmd create account eosio eosio.vpay $pubsyskey $pubsyskey
+ecmd create account eosio eosio.wrap $pubsyskey $pubsyskey
 
+ecmd set contract eosio.token unittests/contracts/eosio.token eosio.token.wasm eosio.token.abi
+ecmd set contract eosio.msig unittests/contracts/eosio.msig eosio.msig.wasm eosio.msig.abi
+ecmd set contract eosio.wrap unittests/contracts/eosio.wrap eosio.wrap.wasm eosio.wrap.abi
 
-ecmd set contract sys.txfee contracts/sys.txfee sys.txfee.wasm sys.txfee.abi
-ecmd set contract sys.identity contracts/sys.identity sys.identity.wasm sys.identity.abi
-ecmd set contract sys.msig contracts/eosio.msig eosio.msig.wasm eosio.msig.abi
-ecmd set contract sys.sudo contracts/eosio.sudo eosio.sudo.wasm eosio.sudo.abi
-ecmd set contract yx.ntoken contracts/yx.ntoken yx.ntoken.wasm yx.ntoken.abi
-ecmd set contract yx.token contracts/yx.token yx.token.wasm yx.token.abi
-ecmd set contract yx.dcontract contracts/yx.dcontract yx.dcontract.wasm yx.dcontract.abi
+echo ===== Start: $step ============ >> $logfile
+echo executing: cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token create '[ "eosio", "10000000000.0000 '$bioscurrencysymbol'" ]' -p eosio.token | tee -a $logfile
+echo executing: cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token issue '[ "eosio", "1000000000.0000 '$bioscurrencysymbol'", "memo" ]' -p eosio | tee -a $logfile
+echo ----------------------- >> $logfile
+programs/cleos/cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token create '[ "eosio", "10000000000.0000 '$bioscurrencysymbol'" ]' -p eosio.token >> $logfile 2>&1
+programs/cleos/cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio.token issue '[ "eosio", "1000000000.0000 '$bioscurrencysymbol'", "memo" ]' -p eosio >> $logfile 2>&1
+echo ==== End: $step ============== >> $logfile
+step=$(($step + 1))
 
-ecmd push action infrasys setpriv '["yx.ntoken",1]' -p infrasys
-ecmd push action yx.ntoken setkycrule '{"type":0,"kyc":0}' -p infrasys
-ecmd push action yx.ntoken setkycrule '{"type":1,"kyc":0}' -p infrasys
-ecmd push action infrasys setpriv '["yx.token",1]' -p infrasys
-ecmd push action infrasys setpriv '["yx.dcontract",1]' -p infrasys
-
-ecmd set contract infrasys contracts/infrasys infrasys.wasm infrasys.abi
-
-ecmd push action infrasys regidauth '["idauth1","http://idauth1.org",1]' -p idauth1 -p infrasys
-ecmd push action infrasys authidauth '["idauth1"]' -p infrasys
-ecmd push action infrasys regidauth '["idauth2","http://idauth2.org",1]' -p idauth2 -p infrasys
-ecmd push action infrasys authidauth '["idauth2"]' -p infrasys
-ecmd push action infrasys regsysdepo '["sysdepo1","http://sysdepo1.org",1]' -p sysdepo1 -p infrasys
-ecmd push action infrasys authsysdepo '["sysdepo1"]' -p infrasys
-ecmd push action infrasys regsysdepo '["sysdepo2","http://sysdepo2.org",1]' -p sysdepo2 -p infrasys
-ecmd push action infrasys authsysdepo '["sysdepo2"]' -p infrasys
-
-# sys.system (turn off tx fee for test convenience)
-ecmd push action sys.txfee settxfee '["tf.newacc","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.regprod","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.regsysdep","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.regidauth","0.00 DKRW"]' -p infrasys
-
-# yx.ntoken
-ecmd push action sys.txfee settxfee '["tf.nissue","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.nredeem","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.transfer","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.ntransfer","0.00 DKRW"]' -p infrasys
-
-# yx.token
-ecmd push action sys.txfee settxfee '["tf.tcreate","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.tissue","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.tredeem","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.ttransfer","0.00 DKRW"]' -p infrasys
-
-# yx.dcontract
-ecmd push action sys.txfee settxfee '["tf.dccreate","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.dcaddsign","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.dcsign","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.dcupadd","0.00 DKRW"]' -p infrasys
-ecmd push action sys.txfee settxfee '["tf.dcremove","0.00 DKRW"]' -p infrasys
-
-ecmd push action yx.ntoken nissue '{"to":"infrasys", "token":{"amount":"1000000000.00 DKRW","issuer":"sysdepo1"}, "memo":"my memo"}' -p sysdepo1
+ecmd set contract eosio unittests/contracts/eosio.system eosio.system.wasm eosio.system.abi
+programs/cleos/cleos --wallet-url $wdurl --url http://$bioshost:$biosport push action eosio init '[0, "4,'$bioscurrencysymbol'"]' -p eosio >> $logfile 2>&1
 
 # Manual deployers, add a series of lines below this block that looks like:
 #    cacmd $PRODNAME[0] $OWNERKEY[0] $ACTIVEKEY[0]
@@ -159,4 +141,4 @@ ecmd push action yx.ntoken nissue '{"to":"infrasys", "token":{"amount":"10000000
 # ------ DO NOT ALTER THE NEXT LINE -------
 ###INSERT cacmd
 
-pkill -15 infra-keystore
+pkill -15 keosd

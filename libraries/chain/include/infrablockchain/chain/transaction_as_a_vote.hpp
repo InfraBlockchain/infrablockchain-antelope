@@ -1,5 +1,5 @@
 /**
- *  @file transaction_as_a_vote.hpp
+ *  @file infrablockchain/chain/transaction_as_a_vote.hpp
  *  @brief InfraBlockchain Transaction-as-a-vote Data Structure
  *  @author bezalel@infrablockchain.com
  *  @copyright defined in LICENSE.txt
@@ -9,13 +9,11 @@
 #include <map>
 #include <vector>
 #include <eosio/chain/name.hpp>
-#include <infrablockchain/chain/exceptions.hpp>
 #include <fc/reflect/reflect.hpp>
 
-namespace infrablockchain { namespace chain {
+#include <infrablockchain/chain/exceptions.hpp>
 
-    using std::map;
-    using std::vector;
+namespace infrablockchain { namespace chain {
 
     /**
      *
@@ -35,28 +33,10 @@ namespace infrablockchain { namespace chain {
      * having the voted address to be a block producer.
      *
      *
-     *
      * ### Transaction-as-a-Vote message protocol
      *
-     * struct transaction_header {
-     *    time_point_sec         expiration;   ///< the time at which a transaction expires
-     *    uint16_t               ref_block_num       = 0U; ///< specifies a block num in the last 2^16 blocks.
-     *    uint32_t               ref_block_prefix    = 0UL; ///< specifies the lower 32 bits of the blockid at get_ref_blocknum
-     *    fc::unsigned_int       max_net_usage_words = 0UL; /// upper limit on total network bandwidth (in 8 byte words) billed for this transaction
-     *    uint8_t                max_cpu_usage_ms    = 0; /// upper limit on the total CPU time billed for this transaction
-     *    fc::unsigned_int       delay_sec           = 0UL; /// number of seconds to delay this transaction for during which it may be canceled.
-     * };
-     *
-     * typedef vector<std::pair<uint16_t,vector<char>>> extensions_type;
-     *
-     * struct transaction : public transaction_header {
-     *    vector<action>         context_free_actions;
-     *    vector<action>         actions;
-     *    extensions_type        transaction_extensions;
-     * }
-     *
-     * InfraBlockchain Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOS transaction binary data format.
-     * The transaction-extension field code for InfraBlockchain TaaV is 1001,
+     * InfraBlockchain Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOSIO transaction binary data format.
+     * The transaction-extension field code for InfraBlockchain TaaV is 1025,
      * and the field value should be encoded as the binary representation of 64bit base-32 encoding for blockchain account name of transaction-vote target
      *
      * Example of json representation blockchain transaction with InfraBlockchain TaaV
@@ -69,7 +49,7 @@ namespace infrablockchain { namespace chain {
      *   "delay_sec": 0,
      *   "context_free_actions": [],
      *   "actions": [{
-     *       "account": "yx.ntoken",
+     *       "account": "infra.token",
      *       "name": "transfer",
      *       "authorization": [{
      *           "actor": "useraccount3",
@@ -80,7 +60,7 @@ namespace infrablockchain { namespace chain {
      *     }
      *   ],
      *   "transaction_extensions": [[
-     *       1001,
+     *       1025,
      *       "00c00257219de8ad"
      *     ]
      *   ],
@@ -92,17 +72,17 @@ namespace infrablockchain { namespace chain {
      *
      */
 
-    using transaction_vote_to_name_type = eosio::chain::name;
+    using transaction_vote_target_name_type = eosio::chain::name;
     using transaction_vote_amount_type = uint32_t;
 
     struct transaction_vote {
 
-        explicit transaction_vote(transaction_vote_to_name_type t, transaction_vote_amount_type a) : to(t), amt(a) {}
+        explicit transaction_vote(transaction_vote_target_name_type t, transaction_vote_amount_type a) : to(t), amt(a) {}
 
-        transaction_vote_to_name_type to; // eosio::chain::name
+        transaction_vote_target_name_type to; // eosio::chain::name
         transaction_vote_amount_type amt;
 
-        bool has_vote() {
+        bool has_vote() const {
             return !to.empty() && amt != 0;
         }
     };
@@ -110,7 +90,7 @@ namespace infrablockchain { namespace chain {
     struct transaction_votes_in_block {
 
         // ordered map
-        map<transaction_vote_to_name_type, transaction_vote_amount_type> tx_votes;
+        std::map<transaction_vote_target_name_type, transaction_vote_amount_type> tx_votes;
 
         void add_transaction_vote(const transaction_vote& tx_vote) {
 
@@ -120,19 +100,19 @@ namespace infrablockchain { namespace chain {
             } else {
                 auto current = tx_votes[tx_vote.to];
                 auto new_val = current + tx_vote.amt;
-                EOS_ASSERT( new_val > current, eosio::chain::arithmetic_exception, "overflow of transaction vote amount");
+                EOS_ASSERT( new_val > current, transaction_vote_amount_overflow, "overflow of transaction vote amount");
                 tx_votes[tx_vote.to] =  new_val;
             }
         }
 
-        vector<transaction_vote> get_tx_vote_list() {
+        std::vector<transaction_vote> get_tx_vote_list() {
 
-            vector<transaction_vote> tx_vote_list;
+            std::vector<transaction_vote> tx_vote_list;
             tx_vote_list.reserve( tx_votes.size() );
 
             // tx_votes : ordered map
             for (auto i = tx_votes.begin(); i != tx_votes.end(); i++) {
-                tx_vote_list.push_back( transaction_vote(i->first, i->second) );
+                tx_vote_list.push_back( transaction_vote{ i->first, i->second } );
             }
 
             return tx_vote_list;
@@ -144,8 +124,6 @@ namespace infrablockchain { namespace chain {
     };
 
 } } /// infrablockchain::chain
-
-#define INFRABLOCKCHAIN_MAX_TRANSACTION_FEE_AMOUNT_PER_TRANSACTION 1000000000
 
 FC_REFLECT(infrablockchain::chain::transaction_vote, (to)(amt))
 FC_REFLECT(infrablockchain::chain::transaction_votes_in_block, (tx_votes))

@@ -1,8 +1,3 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
-
 #include <eosio/chain/authorization_manager.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/permission_object.hpp>
@@ -14,8 +9,8 @@
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <eosio/chain/database_utils.hpp>
+#include <eosio/chain/protocol_state_object.hpp>
 
-#include <infrablockchain/chain/transaction_extensions.hpp>
 
 namespace eosio { namespace chain {
 
@@ -138,9 +133,14 @@ namespace eosio { namespace chain {
                                                                       permission_name name,
                                                                       permission_id_type parent,
                                                                       const authority& auth,
+                                                                      uint32_t action_id,
                                                                       time_point initial_creation_time
                                                                     )
    {
+      for(const key_weight& k: auth.keys)
+         EOS_ASSERT(static_cast<uint32_t>(k.key.which()) < _db.get<protocol_state_object>().num_supported_key_types, unactivated_key_type,
+           "Unactivated key type used when creating permission");
+
       auto creation_time = initial_creation_time;
       if( creation_time == time_point() ) {
          creation_time = _control.pending_block_time();
@@ -157,6 +157,14 @@ namespace eosio { namespace chain {
          p.name         = name;
          p.last_updated = creation_time;
          p.auth         = auth;
+
+         if (auto dm_logger = _control.get_deep_mind_logger()) {
+            fc_dlog(*dm_logger, "PERM_OP INS ${action_id} ${permission_id} ${data}",
+               ("action_id", action_id)
+               ("permission_id", p.id)
+               ("data", p)
+            );
+         }
       });
       return perm;
    }
@@ -165,9 +173,14 @@ namespace eosio { namespace chain {
                                                                       permission_name name,
                                                                       permission_id_type parent,
                                                                       authority&& auth,
+                                                                      uint32_t action_id,
                                                                       time_point initial_creation_time
                                                                     )
    {
+      for(const key_weight& k: auth.keys)
+         EOS_ASSERT(static_cast<uint32_t>(k.key.which()) < _db.get<protocol_state_object>().num_supported_key_types, unactivated_key_type,
+           "Unactivated key type used when creating permission");
+
       auto creation_time = initial_creation_time;
       if( creation_time == time_point() ) {
          creation_time = _control.pending_block_time();
@@ -184,24 +197,63 @@ namespace eosio { namespace chain {
          p.name         = name;
          p.last_updated = creation_time;
          p.auth         = std::move(auth);
+
+         if (auto dm_logger = _control.get_deep_mind_logger()) {
+            fc_dlog(*dm_logger, "PERM_OP INS ${action_id} ${permission_id} ${data}",
+               ("action_id", action_id)
+               ("permission_id", p.id)
+               ("data", p)
+            );
+         }
       });
       return perm;
    }
 
-   void authorization_manager::modify_permission( const permission_object& permission, const authority& auth ) {
+   void authorization_manager::modify_permission( const permission_object& permission, const authority& auth, uint32_t action_id ) {
+      for(const key_weight& k: auth.keys)
+         EOS_ASSERT(static_cast<uint32_t>(k.key.which()) < _db.get<protocol_state_object>().num_supported_key_types, unactivated_key_type,
+           "Unactivated key type used when modifying permission");
+
       _db.modify( permission, [&](permission_object& po) {
+         auto dm_logger = _control.get_deep_mind_logger();
+
+         fc::variant old_permission;
+         if (dm_logger) {
+            old_permission = po;
+         }
+
          po.auth = auth;
          po.last_updated = _control.pending_block_time();
+
+         if (auto dm_logger = _control.get_deep_mind_logger()) {
+            fc_dlog(*dm_logger, "PERM_OP UPD ${action_id} ${permission_id} ${data}",
+               ("action_id", action_id)
+               ("permission_id", po.id)
+               ("data", fc::mutable_variant_object()
+                  ("old", old_permission)
+                  ("new", po)
+               )
+            );
+         }
       });
    }
 
-   void authorization_manager::remove_permission( const permission_object& permission ) {
+   void authorization_manager::remove_permission( const permission_object& permission, uint32_t action_id) {
       const auto& index = _db.template get_index<permission_index, by_parent>();
       auto range = index.equal_range(permission.id);
       EOS_ASSERT( range.first == range.second, action_validate_exception,
                   "Cannot remove a permission which has children. Remove the children first.");
 
       _db.get_mutable_index<permission_usage_index>().remove_object( permission.usage_id._id );
+
+      if (auto dm_logger = _control.get_deep_mind_logger()) {
+         fc_dlog(*dm_logger, "PERM_OP REM ${action_id} ${permission_id} ${data}",
+              ("action_id", action_id)
+              ("permission_id", permission.id)
+              ("data", permission)
+         );
+      }
+
       _db.remove( permission );
    }
 
@@ -228,10 +280,10 @@ namespace eosio { namespace chain {
       return _db.get<permission_object, by_owner>( boost::make_tuple(level.actor,level.permission) );
    } EOS_RETHROW_EXCEPTIONS( chain::permission_query_exception, "Failed to retrieve permission: ${level}", ("level", level) ) }
 
-   optional<permission_name> authorization_manager::lookup_linked_permission( account_name authorizer_account,
-                                                                              account_name scope,
-                                                                              action_name act_name
-                                                                            )const
+   std::optional<permission_name> authorization_manager::lookup_linked_permission( account_name authorizer_account,
+                                                                                   account_name scope,
+                                                                                   action_name act_name
+                                                                                 )const
    {
       try {
          // First look up a specific link for this message act_name
@@ -239,7 +291,7 @@ namespace eosio { namespace chain {
          auto link = _db.find<permission_link_object, by_action_name>(key);
          // If no specific link found, check for a contract-wide default
          if (link == nullptr) {
-            boost::get<2>(key) = "";
+            boost::get<2>(key) = {};
             link = _db.find<permission_link_object, by_action_name>(key);
          }
 
@@ -247,16 +299,14 @@ namespace eosio { namespace chain {
          if (link != nullptr) {
             return link->required_permission;
          }
-         return optional<permission_name>();
-
-       //  return optional<permission_name>();
+         return std::optional<permission_name>();
       } FC_CAPTURE_AND_RETHROW((authorizer_account)(scope)(act_name))
    }
 
-   optional<permission_name> authorization_manager::lookup_minimum_permission( account_name authorizer_account,
-                                                                               account_name scope,
-                                                                               action_name act_name
-                                                                             )const
+   std::optional<permission_name> authorization_manager::lookup_minimum_permission( account_name authorizer_account,
+                                                                                    account_name scope,
+                                                                                    action_name act_name
+                                                                                  )const
    {
       // Special case native actions cannot be linked to a minimum permission, so there is no need to check.
       if( scope == config::system_account_name ) {
@@ -270,12 +320,12 @@ namespace eosio { namespace chain {
       }
 
       try {
-         optional<permission_name> linked_permission = lookup_linked_permission(authorizer_account, scope, act_name);
+         std::optional<permission_name> linked_permission = lookup_linked_permission(authorizer_account, scope, act_name);
          if( !linked_permission )
             return config::active_name;
 
          if( *linked_permission == config::eosio_any_name )
-            return optional<permission_name>();
+            return std::optional<permission_name>();
 
          return linked_permission;
       } FC_CAPTURE_AND_RETHROW((authorizer_account)(scope)(act_name))
@@ -332,16 +382,20 @@ namespace eosio { namespace chain {
       EOS_ASSERT( auth.actor == link.account, irrelevant_auth_exception,
                   "the owner of the linked permission needs to be the actor of the declared authorization" );
 
-      EOS_ASSERT( link.type != updateauth::get_name(),  action_validate_exception,
-                  "Cannot link eosio::updateauth to a minimum permission" );
-      EOS_ASSERT( link.type != deleteauth::get_name(),  action_validate_exception,
-                  "Cannot link eosio::deleteauth to a minimum permission" );
-      EOS_ASSERT( link.type != linkauth::get_name(),    action_validate_exception,
-                  "Cannot link eosio::linkauth to a minimum permission" );
-      EOS_ASSERT( link.type != unlinkauth::get_name(),  action_validate_exception,
-                  "Cannot link eosio::unlinkauth to a minimum permission" );
-      EOS_ASSERT( link.type != canceldelay::get_name(), action_validate_exception,
-                  "Cannot link eosio::canceldelay to a minimum permission" );
+      if( link.code == config::system_account_name
+            || !_control.is_builtin_activated( builtin_protocol_feature_t::fix_linkauth_restriction ) )
+      {
+         EOS_ASSERT( link.type != updateauth::get_name(),  action_validate_exception,
+                     "Cannot link eosio::updateauth to a minimum permission" );
+         EOS_ASSERT( link.type != deleteauth::get_name(),  action_validate_exception,
+                     "Cannot link eosio::deleteauth to a minimum permission" );
+         EOS_ASSERT( link.type != linkauth::get_name(),    action_validate_exception,
+                     "Cannot link eosio::linkauth to a minimum permission" );
+         EOS_ASSERT( link.type != unlinkauth::get_name(),  action_validate_exception,
+                     "Cannot link eosio::unlinkauth to a minimum permission" );
+         EOS_ASSERT( link.type != canceldelay::get_name(), action_validate_exception,
+                     "Cannot link eosio::canceldelay to a minimum permission" );
+      }
 
       const auto linked_permission_name = lookup_minimum_permission(link.account, link.code, link.type);
 
@@ -366,7 +420,7 @@ namespace eosio { namespace chain {
                   "the owner of the linked permission needs to be the actor of the declared authorization" );
 
       const auto unlinked_permission_name = lookup_linked_permission(unlink.account, unlink.code, unlink.type);
-      EOS_ASSERT( unlinked_permission_name.valid(), transaction_exception,
+      EOS_ASSERT( unlinked_permission_name, transaction_exception,
                   "cannot unlink non-existent permission link of account '${account}' for actions matching '${code}::${action}'",
                   ("account", unlink.account)("code", unlink.code)("action", unlink.type) );
 
@@ -429,6 +483,7 @@ namespace eosio { namespace chain {
    void
    authorization_manager::check_authorization( const vector<action>&                actions,
                                                const flat_set<public_key_type>&     provided_keys,
+                                               std::optional<account_name>          tx_fee_payer,
                                                const flat_set<permission_level>&    provided_permissions,
                                                fc::microseconds                     provided_delay,
                                                const std::function<void()>&         _checktime,
@@ -449,77 +504,6 @@ namespace eosio { namespace chain {
                                         effective_provided_delay,
                                         checktime
                                       );
-
-      _check_authorization_actions(checker, delay_max_limit, effective_provided_delay,
-            actions, provided_keys, provided_permissions, provided_delay, checktime, satisfied_authorizations);
-
-      if( !allow_unused_keys ) {
-         EOS_ASSERT( checker.all_keys_used(), tx_irrelevant_sig,
-                     "transaction bears irrelevant signatures from these keys: ${keys}",
-                     ("keys", checker.unused_keys()) );
-      }
-   }
-
-   void
-   authorization_manager::check_authorization( const vector<action>&                actions,
-                                               const vector<permission_level>&      permissions,
-                                               const flat_set<public_key_type>&     provided_keys,
-                                               const flat_set<permission_level>&    provided_permissions,
-                                               fc::microseconds                     provided_delay,
-                                               const std::function<void()>&         _checktime,
-                                               bool                                 allow_unused_keys,
-                                               const flat_set<permission_level>&    satisfied_authorizations
-                                             )const
-   {
-      const auto& checktime = ( static_cast<bool>(_checktime) ? _checktime : _noop_checktime );
-
-      auto delay_max_limit = fc::seconds( _control.get_global_properties().configuration.max_transaction_delay );
-
-      auto effective_provided_delay =  (provided_delay >= delay_max_limit) ? fc::microseconds::maximum() : provided_delay;
-
-      auto checker = make_auth_checker( [&](const permission_level& p){ return get_permission(p).auth; },
-                                        _control.get_global_properties().configuration.max_authority_depth,
-                                        provided_keys,
-                                        provided_permissions,
-                                        effective_provided_delay,
-                                        checktime
-      );
-
-      _check_authorization_actions(checker, delay_max_limit, effective_provided_delay,
-                                   actions, provided_keys, provided_permissions, provided_delay, checktime, satisfied_authorizations);
-
-      for(const auto& permission: permissions) {
-         EOS_ASSERT( checker.satisfied(permission), unsatisfied_authorization,
-                     "permission '${auth}' was not satisfied under a provided delay of ${provided_delay} ms, "
-                     "provided permissions ${provided_permissions}, provided keys ${provided_keys}, "
-                     "and a delay max limit of ${delay_max_limit_ms} ms",
-                     ("auth", permission)
-                           ("provided_delay", provided_delay.count()/1000)
-                           ("provided_permissions", provided_permissions)
-                           ("provided_keys", provided_keys)
-                           ("delay_max_limit_ms", delay_max_limit.count()/1000)
-         );
-      }
-
-      if( !allow_unused_keys ) {
-         EOS_ASSERT( checker.all_keys_used(), tx_irrelevant_sig,
-                     "transaction bears irrelevant signatures from these keys: ${keys}",
-                     ("keys", checker.unused_keys()) );
-      }
-   }
-
-   template <typename T>
-   void
-   authorization_manager::_check_authorization_actions( T& checker,
-                                                        fc::microseconds& delay_max_limit,
-                                                        fc::microseconds& effective_provided_delay,
-                                                        const vector<action>&                actions,
-                                                        const flat_set<public_key_type>&     provided_keys,
-                                                        const flat_set<permission_level>&    provided_permissions,
-                                                        fc::microseconds&                    provided_delay,
-                                                        const std::function<void()>&         checktime,
-                                                        const flat_set<permission_level>&    satisfied_authorizations ) const
-   {
 
       map<permission_level, fc::microseconds> permissions_to_satisfy;
 
@@ -570,6 +554,11 @@ namespace eosio { namespace chain {
          }
       }
 
+      // InfraBlockchain Transaction Fee Payer
+      if (tx_fee_payer) {
+         permissions_to_satisfy.emplace(permission_level{*tx_fee_payer, config::active_name},effective_provided_delay);
+      }
+
       // Now verify that all the declared authorizations are satisfied:
 
       // Although this can be made parallel (especially for input transactions) with the optimistic assumption that the
@@ -585,12 +574,18 @@ namespace eosio { namespace chain {
                      "provided permissions ${provided_permissions}, provided keys ${provided_keys}, "
                      "and a delay max limit of ${delay_max_limit_ms} ms",
                      ("auth", p.first)
-                           ("provided_delay", provided_delay.count()/1000)
-                           ("provided_permissions", provided_permissions)
-                           ("provided_keys", provided_keys)
-                           ("delay_max_limit_ms", delay_max_limit.count()/1000)
-         );
+                     ("provided_delay", provided_delay.count()/1000)
+                     ("provided_permissions", provided_permissions)
+                     ("provided_keys", provided_keys)
+                     ("delay_max_limit_ms", delay_max_limit.count()/1000)
+                   );
 
+      }
+
+      if( !allow_unused_keys ) {
+         EOS_ASSERT( checker.all_keys_used(), tx_irrelevant_sig,
+                     "transaction bears irrelevant signatures from these keys: ${keys}",
+                     ("keys", checker.unused_keys()) );
       }
    }
 
@@ -655,14 +650,14 @@ namespace eosio { namespace chain {
          }
       }
 
-      auto &tx_ext = trx.transaction_extensions;
-      for (auto&& tx_ext_item: tx_ext) {
-         if (tx_ext_item.first == INFRABLOCKCHAIN_TRANSACTION_FEE_PAYER_TX_EXTENSION_FIELD) {
-            auto fee_payer = fc::raw::unpack<account_name>(tx_ext_item.second);
-            EOS_ASSERT( checker.satisfied(permission_level{fee_payer,config::active_name}), unsatisfied_authorization,
-                        "transaction declares transaction fee payer '${fee_payer}', but does not have signatures for it.",
-                        ("fee_payer", fee_payer) );
-         }
+      auto exts = trx.validate_and_extract_extensions();
+      auto itr = exts.find(transaction_fee_payer_tx_ext::extension_id());
+      if (itr != exts.end()) {
+         const auto& tx_fee_payer_info = std::get<transaction_fee_payer_tx_ext>(itr->second);
+         tx_fee_payer_info.fee_payer;
+         EOS_ASSERT( checker.satisfied(permission_level{tx_fee_payer_info.fee_payer,config::active_name}), unsatisfied_authorization,
+                     "transaction declares transaction fee payer '${fee_payer}', but does not have signatures for it.",
+                     ("fee_payer", tx_fee_payer_info.fee_payer) );
       }
 
       return checker.used_keys();

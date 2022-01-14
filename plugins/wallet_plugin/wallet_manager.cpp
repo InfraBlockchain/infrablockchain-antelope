@@ -1,7 +1,4 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
+#include <appbase/application.hpp>
 #include <eosio/wallet_plugin/wallet_manager.hpp>
 #include <eosio/wallet_plugin/wallet.hpp>
 #include <eosio/wallet_plugin/se_wallet.hpp>
@@ -14,8 +11,8 @@ constexpr auto file_ext = ".wallet";
 constexpr auto password_prefix = "PW";
 
 std::string gen_password() {
-   auto key = private_key_type::generate<fc::ecc::private_key_shim>();
-   return password_prefix + string(key);
+   auto key = private_key_type::generate();
+   return password_prefix + key.to_string();
 
 }
 
@@ -29,7 +26,7 @@ wallet_manager::wallet_manager() {
 #ifdef __APPLE__
    try {
       wallets.emplace("SecureEnclave", std::make_unique<se_wallet>());
-   } catch(fc::exception& ) {}
+   } catch(const std::exception& ) {}
 #endif
 }
 
@@ -236,7 +233,7 @@ wallet_manager::sign_transaction(const chain::signed_transaction& txn, const fla
       bool found = false;
       for (const auto& i : wallets) {
          if (!i.second->is_locked()) {
-            optional<signature_type> sig = i.second->try_sign_digest(stxn.sig_digest(id, stxn.context_free_data), pk);
+            std::optional<signature_type> sig = i.second->try_sign_digest(stxn.sig_digest(id, stxn.context_free_data), pk);
             if (sig) {
                stxn.signatures.push_back(*sig);
                found = true;
@@ -259,7 +256,7 @@ wallet_manager::sign_digest(const chain::digest_type& digest, const public_key_t
    try {
       for (const auto& i : wallets) {
          if (!i.second->is_locked()) {
-            optional<signature_type> sig = i.second->try_sign_digest(digest, key);
+            std::optional<signature_type> sig = i.second->try_sign_digest(digest, key);
             if (sig)
                return *sig;
          }
@@ -271,12 +268,30 @@ wallet_manager::sign_digest(const chain::digest_type& digest, const public_key_t
 
 void wallet_manager::own_and_use_wallet(const string& name, std::unique_ptr<wallet_api>&& wallet) {
    if(wallets.find(name) != wallets.end())
-      FC_THROW("tried to use wallet name the already existed");
+      EOS_THROW(wallet_exception, "Tried to use wallet name that already exists.");
    wallets.emplace(name, std::move(wallet));
 }
 
+void wallet_manager::start_lock_watch(std::shared_ptr<boost::asio::deadline_timer> t)
+{
+   t->async_wait([t, this](const boost::system::error_code& /*ec*/)
+   {
+      namespace bfs = boost::filesystem;
+      boost::system::error_code ec;
+      auto rc = bfs::status(lock_path, ec);
+      if(ec != boost::system::error_code()) {
+         if(rc.type() == bfs::file_not_found) {
+            appbase::app().quit();
+            EOS_THROW(wallet_exception, "Lock file removed while keosd still running.  Terminating.");
+         }
+      }
+      t->expires_from_now(boost::posix_time::seconds(1));
+      start_lock_watch(t);
+   });
+}
+
 void wallet_manager::initialize_lock() {
-   //This is technically somewhat racy in here -- if multiple infra-keystore are in this function at once.
+   //This is technically somewhat racy in here -- if multiple keosd are in this function at once.
    //I've considered that an acceptable tradeoff to maintain cross-platform boost constructs here
    lock_path = dir / "wallet.lock";
    {
@@ -286,8 +301,10 @@ void wallet_manager::initialize_lock() {
    wallet_dir_lock = std::make_unique<boost::interprocess::file_lock>(lock_path.string().c_str());
    if(!wallet_dir_lock->try_lock()) {
       wallet_dir_lock.reset();
-      EOS_THROW(wallet_exception, "Failed to lock access to wallet directory; is another infra-keystore running?");
+      EOS_THROW(wallet_exception, "Failed to lock access to wallet directory; is another keosd running?");
    }
+   auto timer = std::make_shared<boost::asio::deadline_timer>(appbase::app().get_io_service(), boost::posix_time::seconds(1));
+   start_lock_watch(timer);
 }
 
 } // namespace wallet

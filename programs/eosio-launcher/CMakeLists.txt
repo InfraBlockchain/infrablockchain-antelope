@@ -1,12 +1,6 @@
-add_executable( ${LAUNCHER_EXECUTABLE_NAME} main.cpp )
+add_executable( eosio-launcher main.cpp )
 if( UNIX AND NOT APPLE )
   set(rt_library rt )
-endif()
-
-find_package( Gperftools QUIET )
-if( GPERFTOOLS_FOUND )
-    message( STATUS "Found gperftools; compiling with TCMalloc")
-    list( APPEND PLATFORM_SPECIFIC_LIBS tcmalloc )
 endif()
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../.git)
@@ -26,13 +20,13 @@ endif()
 
 configure_file(config.hpp.in config.hpp ESCAPE_QUOTES)
 
-target_include_directories(${LAUNCHER_EXECUTABLE_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(eosio-launcher PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(${LAUNCHER_EXECUTABLE_NAME}
-                      PRIVATE eosio_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
+target_link_libraries(eosio-launcher
+                      PRIVATE eosio_chain fc Boost::program_options ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
 
 install( TARGETS
-   ${LAUNCHER_EXECUTABLE_NAME}
+   eosio-launcher
 
    RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}

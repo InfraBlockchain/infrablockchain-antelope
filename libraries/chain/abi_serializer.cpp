@@ -1,22 +1,12 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #include <eosio/chain/abi_serializer.hpp>
-#include <eosio/chain/contract_types.hpp>
-#include <eosio/chain/authority.hpp>
-#include <eosio/chain/chain_config.hpp>
-#include <eosio/chain/transaction.hpp>
 #include <eosio/chain/asset.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <fc/io/raw.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <fc/io/varint.hpp>
-#include <infrablockchain/chain/digital_contract.hpp>
-#include <infrablockchain/chain/yx_symbol.hpp>
-#include <infrablockchain/chain/yx_asset.hpp>
 
 using namespace boost;
+
 
 namespace eosio { namespace chain {
 
@@ -24,6 +14,7 @@ namespace eosio { namespace chain {
 
    using boost::algorithm::ends_with;
    using std::string;
+   using std::string_view;
 
    template <typename T>
    inline fc::variant variant_from_stream(fc::datastream<const char*>& stream) {
@@ -33,29 +24,57 @@ namespace eosio { namespace chain {
    }
 
    template <typename T>
+   inline fc::variant variant_from_stream(fc::datastream<const char*>& stream, const abi_serializer::yield_function_t& yield) {
+      fc::yield_function_t y = [&yield](){ yield(0); }; // create yield function matching fc::variant requirements, 0 for recursive depth
+      T temp;
+      fc::raw::unpack( stream, temp );
+      y();
+      return fc::variant( temp, y );
+   }
+
+   template <typename T>
+   auto pack_function() {
+      return []( const fc::variant& var, fc::datastream<char*>& ds, bool is_array, bool is_optional, const abi_serializer::yield_function_t& yield ){
+         if( is_array )
+            fc::raw::pack( ds, var.as<vector<T>>() );
+         else if ( is_optional )
+            fc::raw::pack( ds, var.as<std::optional<T>>() );
+         else
+            fc::raw::pack( ds,  var.as<T>());
+      };
+   }
+
+   template <typename T>
    auto pack_unpack() {
       return std::make_pair<abi_serializer::unpack_function, abi_serializer::pack_function>(
-         []( fc::datastream<const char*>& stream, bool is_array, bool is_optional) -> fc::variant  {
+         []( fc::datastream<const char*>& stream, bool is_array, bool is_optional, const abi_serializer::yield_function_t& yield) {
             if( is_array )
                return variant_from_stream<vector<T>>(stream);
             else if ( is_optional )
-               return variant_from_stream<optional<T>>(stream);
+               return variant_from_stream<std::optional<T>>(stream);
             return variant_from_stream<T>(stream);
          },
-         []( const fc::variant& var, fc::datastream<char*>& ds, bool is_array, bool is_optional ){
-            if( is_array )
-               fc::raw::pack( ds, var.as<vector<T>>() );
-            else if ( is_optional )
-               fc::raw::pack( ds, var.as<optional<T>>() );
-            else
-               fc::raw::pack( ds,  var.as<T>());
-         }
+         pack_function<T>()
       );
    }
 
-   abi_serializer::abi_serializer( const abi_def& abi, const fc::microseconds& max_serialization_time ) {
+   template <typename T>
+   auto pack_unpack_deadline() {
+      return std::make_pair<abi_serializer::unpack_function, abi_serializer::pack_function>(
+         []( fc::datastream<const char*>& stream, bool is_array, bool is_optional, const abi_serializer::yield_function_t& yield) {
+            if( is_array )
+               return variant_from_stream<vector<T>>(stream);
+            else if ( is_optional )
+               return variant_from_stream<std::optional<T>>(stream);
+            return variant_from_stream<T>(stream, yield);
+         },
+         pack_function<T>()
+      );
+   }
+
+   abi_serializer::abi_serializer( const abi_def& abi, const yield_function_t& yield ) {
       configure_built_in_types();
-      set_abi(abi, max_serialization_time);
+      set_abi(abi, yield);
    }
 
    void abi_serializer::add_specialized_unpack_pack( const string& name,
@@ -82,7 +101,7 @@ namespace eosio { namespace chain {
       // TODO: Add proper support for floating point types. For now this is good enough.
       built_in_types.emplace("float32",                   pack_unpack<float>());
       built_in_types.emplace("float64",                   pack_unpack<double>());
-      built_in_types.emplace("float128",                  pack_unpack<uint128_t>());
+      built_in_types.emplace("float128",                  pack_unpack<float128_t>());
 
       built_in_types.emplace("time_point",                pack_unpack<fc::time_point>());
       built_in_types.emplace("time_point_sec",            pack_unpack<fc::time_point_sec>());
@@ -97,20 +116,17 @@ namespace eosio { namespace chain {
       built_in_types.emplace("checksum256",               pack_unpack<checksum256_type>());
       built_in_types.emplace("checksum512",               pack_unpack<checksum512_type>());
 
-      built_in_types.emplace("public_key",                pack_unpack<public_key_type>());
-      built_in_types.emplace("signature",                 pack_unpack<signature_type>());
+      built_in_types.emplace("public_key",                pack_unpack_deadline<public_key_type>());
+      built_in_types.emplace("signature",                 pack_unpack_deadline<signature_type>());
 
       built_in_types.emplace("symbol",                    pack_unpack<symbol>());
       built_in_types.emplace("symbol_code",               pack_unpack<symbol_code>());
       built_in_types.emplace("asset",                     pack_unpack<asset>());
       built_in_types.emplace("extended_asset",            pack_unpack<extended_asset>());
-      built_in_types.emplace("yx_symbol",                 pack_unpack<infrablockchain::chain::yx_symbol>());
-      built_in_types.emplace("yx_asset",                  pack_unpack<infrablockchain::chain::yx_asset>());
-      built_in_types.emplace("dcid",                      pack_unpack<infrablockchain::chain::dcid>());
    }
 
-   void abi_serializer::set_abi(const abi_def& abi, const fc::microseconds& max_serialization_time) {
-      impl::abi_traverse_context ctx(max_serialization_time);
+   void abi_serializer::set_abi(const abi_def& abi, const yield_function_t& yield) {
+      impl::abi_traverse_context ctx(yield);
 
       EOS_ASSERT(starts_with(abi.version, "eosio::abi/1."), unsupported_abi_version_exception, "ABI has an unsupported version");
 
@@ -118,15 +134,17 @@ namespace eosio { namespace chain {
       structs.clear();
       actions.clear();
       tables.clear();
+      kv_tables.clear();
       error_messages.clear();
       variants.clear();
+      action_results.clear();
 
       for( const auto& st : abi.structs )
          structs[st.name] = st;
 
       for( const auto& td : abi.types ) {
-         EOS_ASSERT(_is_type(td.type, ctx), invalid_type_inside_abi, "invalid type ${type}", ("type",td.type));
-         EOS_ASSERT(!_is_type(td.new_type_name, ctx), duplicate_abi_type_def_exception, "type already exists", ("new_type_name",td.new_type_name));
+         EOS_ASSERT(!_is_type(td.new_type_name, ctx), duplicate_abi_type_def_exception,
+                    "type already exists", ("new_type_name",impl::limit_size(td.new_type_name)));
          typedefs[td.new_type_name] = td.type;
       }
 
@@ -136,11 +154,17 @@ namespace eosio { namespace chain {
       for( const auto& t : abi.tables )
          tables[t.name] = t.type;
 
+      for( const auto& kt : abi.kv_tables.value )
+         kv_tables[kt.first] = kt.second;
+
       for( const auto& e : abi.error_messages )
          error_messages[e.error_code] = e.error_msg;
 
       for( const auto& v : abi.variants.value )
          variants[v.name] = v;
+
+      for( const auto& r : abi.action_results.value )
+         action_results[r.name] = r.result_type;
 
       /**
        *  The ABI vector may contain duplicates which would make it
@@ -150,134 +174,156 @@ namespace eosio { namespace chain {
       EOS_ASSERT( structs.size() == abi.structs.size(), duplicate_abi_struct_def_exception, "duplicate struct definition detected" );
       EOS_ASSERT( actions.size() == abi.actions.size(), duplicate_abi_action_def_exception, "duplicate action definition detected" );
       EOS_ASSERT( tables.size() == abi.tables.size(), duplicate_abi_table_def_exception, "duplicate table definition detected" );
+      EOS_ASSERT( kv_tables.size() == abi.kv_tables.value.size(), duplicate_abi_kv_table_def_exception, "duplicate kv table definition detected" );
       EOS_ASSERT( error_messages.size() == abi.error_messages.size(), duplicate_abi_err_msg_def_exception, "duplicate error message definition detected" );
       EOS_ASSERT( variants.size() == abi.variants.value.size(), duplicate_abi_variant_def_exception, "duplicate variant definition detected" );
+      EOS_ASSERT( action_results.size() == abi.action_results.value.size(), duplicate_abi_action_results_def_exception, "duplicate action results definition detected" );
 
       validate(ctx);
    }
 
-   bool abi_serializer::is_builtin_type(const type_name& type)const {
+   bool abi_serializer::is_builtin_type(const std::string_view& type)const {
       return built_in_types.find(type) != built_in_types.end();
    }
 
-   bool abi_serializer::is_integer(const type_name& type) const {
-      string stype = type;
-      return boost::starts_with(stype, "uint") || boost::starts_with(stype, "int");
+   bool abi_serializer::is_integer(const std::string_view& type) const {
+      return boost::starts_with(type, "uint") || boost::starts_with(type, "int");
    }
 
-   int abi_serializer::get_integer_size(const type_name& type) const {
-      string stype = type;
-      EOS_ASSERT( is_integer(type), invalid_type_inside_abi, "${stype} is not an integer type", ("stype",stype));
-      if( boost::starts_with(stype, "uint") ) {
-         return boost::lexical_cast<int>(stype.substr(4));
+   int abi_serializer::get_integer_size(const std::string_view& type) const {
+      EOS_ASSERT( is_integer(type), invalid_type_inside_abi, "${type} is not an integer type", ("type",impl::limit_size(type)));
+      if( boost::starts_with(type, "uint") ) {
+         return boost::lexical_cast<int>(type.substr(4));
       } else {
-         return boost::lexical_cast<int>(stype.substr(3));
+         return boost::lexical_cast<int>(type.substr(3));
       }
    }
 
-   bool abi_serializer::is_struct(const type_name& type)const {
+   bool abi_serializer::is_struct(const std::string_view& type)const {
       return structs.find(resolve_type(type)) != structs.end();
    }
 
-   bool abi_serializer::is_array(const type_name& type)const {
-      return ends_with(string(type), "[]");
+   bool abi_serializer::is_array(const string_view& type)const {
+      return ends_with(type, "[]");
    }
 
-   bool abi_serializer::is_optional(const type_name& type)const {
-      return ends_with(string(type), "?");
+   bool abi_serializer::is_optional(const string_view& type)const {
+      return ends_with(type, "?");
    }
 
-   bool abi_serializer::is_type(const type_name& type, const fc::microseconds& max_serialization_time)const {
-      impl::abi_traverse_context ctx(max_serialization_time);
+   bool abi_serializer::is_type(const std::string_view& type, const yield_function_t& yield)const {
+      impl::abi_traverse_context ctx(yield);
       return _is_type(type, ctx);
    }
 
-   type_name abi_serializer::fundamental_type(const type_name& type)const {
+   bool abi_serializer::is_kv_table(const std::string_view& type)const {
+      return kv_tables.find(name(type)) != kv_tables.end();
+   }
+
+   std::string_view abi_serializer::fundamental_type(const std::string_view& type)const {
       if( is_array(type) ) {
-         return type_name(string(type).substr(0, type.size()-2));
+         return type.substr(0, type.size()-2);
       } else if ( is_optional(type) ) {
-         return type_name(string(type).substr(0, type.size()-1));
+         return type.substr(0, type.size()-1);
       } else {
        return type;
       }
    }
 
-   type_name abi_serializer::_remove_bin_extension(const type_name& type) {
+   std::string_view abi_serializer::_remove_bin_extension(const std::string_view& type) {
       if( ends_with(type, "$") )
          return type.substr(0, type.size()-1);
       else
          return type;
    }
 
-   bool abi_serializer::_is_type(const type_name& rtype, impl::abi_traverse_context& ctx )const {
+   bool abi_serializer::_is_type(const std::string_view& rtype, impl::abi_traverse_context& ctx )const {
       auto h = ctx.enter_scope();
       auto type = fundamental_type(rtype);
       if( built_in_types.find(type) != built_in_types.end() ) return true;
       if( typedefs.find(type) != typedefs.end() ) return _is_type(typedefs.find(type)->second, ctx);
       if( structs.find(type) != structs.end() ) return true;
       if( variants.find(type) != variants.end() ) return true;
+      if( eosio::chain::is_string_valid_name(type) ) {
+         if( kv_tables.find(name(type)) != kv_tables.end() ) return true;
+      }
       return false;
    }
 
-   const struct_def& abi_serializer::get_struct(const type_name& type)const {
+   const struct_def& abi_serializer::get_struct(const std::string_view& type)const {
       auto itr = structs.find(resolve_type(type) );
-      EOS_ASSERT( itr != structs.end(), invalid_type_inside_abi, "Unknown struct ${type}", ("type",type) );
+      EOS_ASSERT( itr != structs.end(), invalid_type_inside_abi, "Unknown struct ${type}", ("type",impl::limit_size(type)) );
       return itr->second;
    }
 
    void abi_serializer::validate( impl::abi_traverse_context& ctx )const {
       for( const auto& t : typedefs ) { try {
-         vector<type_name> types_seen{t.first, t.second};
+         vector<std::string_view> types_seen{t.first, t.second};
          auto itr = typedefs.find(t.second);
          while( itr != typedefs.end() ) {
             ctx.check_deadline();
-            EOS_ASSERT( find(types_seen.begin(), types_seen.end(), itr->second) == types_seen.end(), abi_circular_def_exception, "Circular reference in type ${type}", ("type",t.first) );
+            EOS_ASSERT( find(types_seen.begin(), types_seen.end(), itr->second) == types_seen.end(), abi_circular_def_exception,
+                        "Circular reference in type ${type}", ("type", impl::limit_size(t.first)) );
             types_seen.emplace_back(itr->second);
             itr = typedefs.find(itr->second);
          }
       } FC_CAPTURE_AND_RETHROW( (t) ) }
       for( const auto& t : typedefs ) { try {
-         EOS_ASSERT(_is_type(t.second, ctx), invalid_type_inside_abi, "${type}", ("type",t.second) );
+         EOS_ASSERT(_is_type(t.second, ctx), invalid_type_inside_abi, "${type}", ("type",impl::limit_size(t.second)) );
       } FC_CAPTURE_AND_RETHROW( (t) ) }
       for( const auto& s : structs ) { try {
          if( s.second.base != type_name() ) {
-            struct_def current = s.second;
-            vector<type_name> types_seen{current.name};
-            while( current.base != type_name() ) {
+            const struct_def* current = &s.second;
+            vector<std::string_view> types_seen{current->name};
+            while( current->base != type_name() ) {
                ctx.check_deadline();
-               const auto& base = get_struct(current.base); //<-- force struct to inherit from another struct
-               EOS_ASSERT( find(types_seen.begin(), types_seen.end(), base.name) == types_seen.end(), abi_circular_def_exception, "Circular reference in struct ${type}", ("type",s.second.name) );
+               const struct_def& base = get_struct(current->base); //<-- force struct to inherit from another struct
+               EOS_ASSERT( find(types_seen.begin(), types_seen.end(), base.name) == types_seen.end(), abi_circular_def_exception,
+                           "Circular reference in struct ${type}", ("type",impl::limit_size(s.second.name)) );
                types_seen.emplace_back(base.name);
-               current = base;
+               current = &base;
             }
          }
          for( const auto& field : s.second.fields ) { try {
             ctx.check_deadline();
-            EOS_ASSERT(_is_type(_remove_bin_extension(field.type), ctx), invalid_type_inside_abi, "${type}", ("type",field.type) );
+            EOS_ASSERT(_is_type(_remove_bin_extension(field.type), ctx), invalid_type_inside_abi,
+                       "${type}", ("type",impl::limit_size(field.type)) );
          } FC_CAPTURE_AND_RETHROW( (field) ) }
       } FC_CAPTURE_AND_RETHROW( (s) ) }
       for( const auto& s : variants ) { try {
          for( const auto& type : s.second.types ) { try {
             ctx.check_deadline();
-            EOS_ASSERT(_is_type(type, ctx), invalid_type_inside_abi, "${type}", ("type",type) );
+            EOS_ASSERT(_is_type(type, ctx), invalid_type_inside_abi, "${type}", ("type",impl::limit_size(type)) );
          } FC_CAPTURE_AND_RETHROW( (type) ) }
       } FC_CAPTURE_AND_RETHROW( (s) ) }
       for( const auto& a : actions ) { try {
         ctx.check_deadline();
-        EOS_ASSERT(_is_type(a.second, ctx), invalid_type_inside_abi, "${type}", ("type",a.second) );
+        EOS_ASSERT(_is_type(a.second, ctx), invalid_type_inside_abi, "${type}", ("type",impl::limit_size(a.second)) );
       } FC_CAPTURE_AND_RETHROW( (a)  ) }
 
       for( const auto& t : tables ) { try {
         ctx.check_deadline();
-        EOS_ASSERT(_is_type(t.second, ctx), invalid_type_inside_abi, "${type}", ("type",t.second) );
+        EOS_ASSERT(_is_type(t.second, ctx), invalid_type_inside_abi, "${type}", ("type",impl::limit_size(t.second)) );
       } FC_CAPTURE_AND_RETHROW( (t)  ) }
+
+      for( const auto& kt : kv_tables ) {
+        ctx.check_deadline();
+        EOS_ASSERT(_is_type(kt.second.type, ctx), invalid_type_inside_abi,
+                   "Invalid reference in struct ${type}", ("type", impl::limit_size(kt.second.type)));
+        EOS_ASSERT( !kt.second.primary_index.type.empty(), invalid_type_inside_abi, "missing primary index$ {p}", ("p",impl::limit_size(kt.first.to_string())));
+      }
+
+      for( const auto& r : action_results ) { try {
+        ctx.check_deadline();
+        EOS_ASSERT(_is_type(r.second, ctx), invalid_type_inside_abi, "${type}", ("type",impl::limit_size(r.second)) );
+      } FC_CAPTURE_AND_RETHROW( (r)  ) }
    }
 
-   type_name abi_serializer::resolve_type(const type_name& type)const {
+   std::string_view abi_serializer::resolve_type(const std::string_view& type)const {
       auto itr = typedefs.find(type);
       if( itr != typedefs.end() ) {
          for( auto i = typedefs.size(); i > 0; --i ) { // avoid infinite recursion
-            const type_name& t = itr->second;
+            const std::string_view& t = itr->second;
             itr = typedefs.find( t );
             if( itr == typedefs.end() ) return t;
          }
@@ -285,7 +331,7 @@ namespace eosio { namespace chain {
       return type;
    }
 
-   void abi_serializer::_binary_to_variant( const type_name& type, fc::datastream<const char *>& stream,
+   void abi_serializer::_binary_to_variant( const std::string_view& type, fc::datastream<const char *>& stream,
                                             fc::mutable_variant_object& obj, impl::binary_to_variant_context& ctx )const
    {
       auto h = ctx.enter_scope();
@@ -318,19 +364,19 @@ namespace eosio { namespace chain {
       }
    }
 
-   fc::variant abi_serializer::_binary_to_variant( const type_name& type, fc::datastream<const char *>& stream,
+   fc::variant abi_serializer::_binary_to_variant( const std::string_view& type, fc::datastream<const char *>& stream,
                                                    impl::binary_to_variant_context& ctx )const
    {
       auto h = ctx.enter_scope();
-      type_name rtype = resolve_type(type);
+      auto rtype = resolve_type(type);
       auto ftype = fundamental_type(rtype);
       auto btype = built_in_types.find(ftype );
       if( btype != built_in_types.end() ) {
          try {
-            return btype->second.first(stream, is_array(rtype), is_optional(rtype));
+            return btype->second.first(stream, is_array(rtype), is_optional(rtype), ctx.get_yield_function());
          } EOS_RETHROW_EXCEPTIONS( unpack_exception, "Unable to unpack ${class} type '${type}' while processing '${p}'",
                                    ("class", is_array(rtype) ? "array of built-in" : is_optional(rtype) ? "optional of built-in" : "built-in")
-                                   ("type", ftype)("p", ctx.get_path_string()) )
+                                   ("type", impl::limit_size(ftype))("p", ctx.get_path_string()) )
       }
       if ( is_array(rtype) ) {
          ctx.hint_array_type_if_in_array();
@@ -364,7 +410,7 @@ namespace eosio { namespace chain {
       } else {
          auto v_itr = variants.find(rtype);
          if( v_itr != variants.end() ) {
-            ctx.hint_variant_type_if_in_array( v_itr );
+            ctx.hint_variant_type_if_in_array(v_itr);
             fc::unsigned_int select;
             try {
                fc::raw::unpack(stream, select);
@@ -373,6 +419,13 @@ namespace eosio { namespace chain {
                         "Unpacked invalid tag (${select}) for variant '${p}'", ("select", select.value)("p",ctx.get_path_string()) );
             auto h1 = ctx.push_to_path( impl::variant_path_item{ .variant_itr = v_itr, .variant_ordinal = static_cast<uint32_t>(select) } );
             return vector<fc::variant>{v_itr->second.types[select], _binary_to_variant(v_itr->second.types[select], stream, ctx)};
+         }
+
+         if( !kv_tables.empty() && is_string_valid_name(rtype) ) {
+            if( auto kv_itr = kv_tables.find(name(rtype)); kv_itr != kv_tables.end() ) {
+               auto &kv_table = kv_itr->second;
+               return _binary_to_variant(kv_table.type, stream, ctx);
+            }
          }
       }
 
@@ -383,26 +436,26 @@ namespace eosio { namespace chain {
       return fc::variant( std::move(mvo) );
    }
 
-   fc::variant abi_serializer::_binary_to_variant( const type_name& type, const bytes& binary, impl::binary_to_variant_context& ctx )const
+   fc::variant abi_serializer::_binary_to_variant( const std::string_view& type, const bytes& binary, impl::binary_to_variant_context& ctx )const
    {
       auto h = ctx.enter_scope();
       fc::datastream<const char*> ds( binary.data(), binary.size() );
       return _binary_to_variant(type, ds, ctx);
    }
 
-   fc::variant abi_serializer::binary_to_variant( const type_name& type, const bytes& binary, const fc::microseconds& max_serialization_time, bool short_path )const {
-      impl::binary_to_variant_context ctx(*this, max_serialization_time, type);
+   fc::variant abi_serializer::binary_to_variant( const std::string_view& type, const bytes& binary, const yield_function_t& yield, bool short_path )const {
+      impl::binary_to_variant_context ctx(*this, yield, type);
       ctx.short_path = short_path;
       return _binary_to_variant(type, binary, ctx);
    }
 
-   fc::variant abi_serializer::binary_to_variant( const type_name& type, fc::datastream<const char*>& binary, const fc::microseconds& max_serialization_time, bool short_path )const {
-      impl::binary_to_variant_context ctx(*this, max_serialization_time, type);
+   fc::variant abi_serializer::binary_to_variant( const std::string_view& type, fc::datastream<const char*>& binary, const yield_function_t& yield, bool short_path )const {
+      impl::binary_to_variant_context ctx(*this, yield, type);
       ctx.short_path = short_path;
       return _binary_to_variant(type, binary, ctx);
    }
 
-   void abi_serializer::_variant_to_binary( const type_name& type, const fc::variant& var, fc::datastream<char *>& ds, impl::variant_to_binary_context& ctx )const
+   void abi_serializer::_variant_to_binary( const std::string_view& type, const fc::variant& var, fc::datastream<char *>& ds, impl::variant_to_binary_context& ctx )const
    { try {
       auto h = ctx.enter_scope();
       auto rtype = resolve_type(type);
@@ -412,7 +465,7 @@ namespace eosio { namespace chain {
 
       auto btype = built_in_types.find(fundamental_type(rtype));
       if( btype != built_in_types.end() ) {
-         btype->second.second(var, ds, is_array(rtype), is_optional(rtype));
+         btype->second.second(var, ds, is_array(rtype), is_optional(rtype), ctx.get_yield_function());
       } else if ( is_array(rtype) ) {
          ctx.hint_array_type_if_in_array();
          vector<fc::variant> vars = var.get_array();
@@ -426,6 +479,12 @@ namespace eosio { namespace chain {
             ctx.set_array_index_of_path_back(i);
            _variant_to_binary(fundamental_type(rtype), var, ds, ctx);
            ++i;
+         }
+      } else if( is_optional(rtype) ) {
+         char flag = !var.is_null();
+         fc::raw::pack(ds, flag);
+         if( flag ) {
+            _variant_to_binary(fundamental_type(rtype), var, ds, ctx);
          }
       } else if( (v_itr = variants.find(rtype)) != variants.end() ) {
          ctx.hint_variant_type_if_in_array( v_itr );
@@ -496,12 +555,21 @@ namespace eosio { namespace chain {
          } else {
             EOS_THROW( pack_exception, "Unexpected input encountered while processing struct '${p}'", ("p",ctx.get_path_string()) );
          }
+      } else if( var.is_object() ) {
+         if( !kv_tables.empty() && is_string_valid_name(rtype) ) {
+            if( auto kv_itr = kv_tables.find(name(rtype));kv_itr != kv_tables.end() ) {
+               auto& kv_table = kv_itr->second;
+               _variant_to_binary( kv_table.type, var, ds, ctx );
+            }
+         } else {
+            EOS_THROW(invalid_type_inside_abi, "Unknown type ${type}", ("type", ctx.maybe_shorten(type)));
+         }
       } else {
          EOS_THROW( invalid_type_inside_abi, "Unknown type ${type}", ("type",ctx.maybe_shorten(type)) );
       }
-   } FC_CAPTURE_AND_RETHROW( (type)(var) ) }
+   } FC_CAPTURE_AND_RETHROW() }
 
-   bytes abi_serializer::_variant_to_binary( const type_name& type, const fc::variant& var, impl::variant_to_binary_context& ctx )const
+   bytes abi_serializer::_variant_to_binary( const std::string_view& type, const fc::variant& var, impl::variant_to_binary_context& ctx )const
    { try {
       auto h = ctx.enter_scope();
       if( !_is_type(type, ctx) ) {
@@ -513,16 +581,16 @@ namespace eosio { namespace chain {
       _variant_to_binary(type, var, ds, ctx);
       temp.resize(ds.tellp());
       return temp;
-   } FC_CAPTURE_AND_RETHROW( (type)(var) ) }
+   } FC_CAPTURE_AND_RETHROW() }
 
-   bytes abi_serializer::variant_to_binary( const type_name& type, const fc::variant& var, const fc::microseconds& max_serialization_time, bool short_path )const {
-      impl::variant_to_binary_context ctx(*this, max_serialization_time, type);
+   bytes abi_serializer::variant_to_binary( const std::string_view& type, const fc::variant& var, const yield_function_t& yield, bool short_path )const {
+      impl::variant_to_binary_context ctx(*this, yield, type);
       ctx.short_path = short_path;
       return _variant_to_binary(type, var, ctx);
    }
 
-   void  abi_serializer::variant_to_binary( const type_name& type, const fc::variant& var, fc::datastream<char*>& ds, const fc::microseconds& max_serialization_time, bool short_path )const {
-      impl::variant_to_binary_context ctx(*this, max_serialization_time, type);
+   void  abi_serializer::variant_to_binary( const std::string_view& type, const fc::variant& var, fc::datastream<char*>& ds, const yield_function_t& yield, bool short_path )const {
+      impl::variant_to_binary_context ctx(*this, yield, type);
       ctx.short_path = short_path;
       _variant_to_binary(type, var, ds, ctx);
    }
@@ -538,20 +606,28 @@ namespace eosio { namespace chain {
       return type_name();
    }
 
-   optional<string> abi_serializer::get_error_message( uint64_t error_code )const {
+   type_name abi_serializer::get_kv_table_type(name action)const {
+      if( auto itr = kv_tables.find(action);itr != kv_tables.end() )
+         return itr->second.type;
+
+      return type_name();
+   }
+
+   type_name abi_serializer::get_action_result_type(name action_result)const {
+      auto itr = action_results.find(action_result);
+      if( itr != action_results.end() ) return itr->second;
+      return type_name();
+   }
+
+   std::optional<string> abi_serializer::get_error_message( uint64_t error_code )const {
       auto itr = error_messages.find( error_code );
       if( itr == error_messages.end() )
-         return optional<string>();
+         return std::optional<string>();
 
       return itr->second;
    }
 
    namespace impl {
-
-      void abi_traverse_context::check_deadline()const {
-         EOS_ASSERT( fc::time_point::now() < deadline, abi_serialization_deadline_exception,
-                     "serialization time limit ${t}us exceeded", ("t", max_serialization_time) );
-      }
 
       fc::scoped_exit<std::function<void()>> abi_traverse_context::enter_scope() {
          std::function<void()> callback = [old_recursion_depth=recursion_depth, this](){
@@ -559,15 +635,12 @@ namespace eosio { namespace chain {
          };
 
          ++recursion_depth;
-         EOS_ASSERT( recursion_depth < abi_serializer::max_recursion_depth, abi_recursion_depth_exception,
-                     "recursive definition, max_recursion_depth ${r} ", ("r", abi_serializer::max_recursion_depth) );
-
-         check_deadline();
+         yield( recursion_depth );
 
          return {std::move(callback)};
       }
 
-      void abi_traverse_context_with_path::set_path_root( const type_name& type ) {
+      void abi_traverse_context_with_path::set_path_root( const std::string_view& type ) {
          auto rtype = abis.resolve_type(type);
 
          if( abis.is_array(rtype) ) {
@@ -602,30 +675,30 @@ namespace eosio { namespace chain {
 
          auto& b = path.back();
 
-         EOS_ASSERT( b.contains<array_index_path_item>(), abi_exception, "trying to set array index without first pushing new array index item" );
+         EOS_ASSERT( std::holds_alternative<array_index_path_item>(b), abi_exception, "trying to set array index without first pushing new array index item" );
 
-         b.get<array_index_path_item>().array_index = i;
+         std::get<array_index_path_item>(b).array_index = i;
       }
 
       void abi_traverse_context_with_path::hint_array_type_if_in_array() {
-         if( path.size() == 0 || !path.back().contains<array_index_path_item>() )
+         if( path.size() == 0 || !std::holds_alternative<array_index_path_item>(path.back()) )
             return;
 
-         path.back().get<array_index_path_item>().type_hint = array_type_path_root{};
+         std::get<array_index_path_item>(path.back()).type_hint = array_type_path_root{};
       }
 
       void abi_traverse_context_with_path::hint_struct_type_if_in_array( const map<type_name, struct_def>::const_iterator& itr ) {
-         if( path.size() == 0 || !path.back().contains<array_index_path_item>() )
+         if( path.size() == 0 || !std::holds_alternative<array_index_path_item>(path.back()) )
             return;
 
-         path.back().get<array_index_path_item>().type_hint = struct_type_path_root{ .struct_itr = itr };
+         std::get<array_index_path_item>(path.back()).type_hint = struct_type_path_root{ .struct_itr = itr };
       }
 
       void abi_traverse_context_with_path::hint_variant_type_if_in_array( const map<type_name, variant_def>::const_iterator& itr ) {
-         if( path.size() == 0 || !path.back().contains<array_index_path_item>() )
+         if( path.size() == 0 || !std::holds_alternative<array_index_path_item>(path.back()) )
             return;
 
-         path.back().get<array_index_path_item>().type_hint = variant_type_path_root{ .variant_itr = itr };
+         std::get<array_index_path_item>(path.back()).type_hint = variant_type_path_root{ .variant_itr = itr };
       }
 
       constexpr size_t const_strlen( const char* str )
@@ -633,7 +706,7 @@ namespace eosio { namespace chain {
           return (*str == 0) ? 0 : const_strlen(str + 1) + 1;
       }
 
-      void output_name( std::ostream& s, const string& str, bool shorten, size_t max_length = 64 ) {
+      void output_name( std::ostream& s, const string_view& str, bool shorten, size_t max_length = 64 ) {
          constexpr size_t min_num_characters_at_ends = 4;
          constexpr size_t preferred_num_tail_end_characters = 6;
          constexpr const char* fill_in = "...";
@@ -745,13 +818,13 @@ namespace eosio { namespace chain {
 
          void operator()( const array_index_path_item& item ) {
             const auto& th = item.type_hint;
-            if( th.contains<struct_type_path_root>() ) {
-               const auto& str = th.get<struct_type_path_root>().struct_itr->first;
+            if( std::holds_alternative<struct_type_path_root>(th) ) {
+               const auto& str = std::get<struct_type_path_root>(th).struct_itr->first;
                output_name( s, str, shorten_names );
-            } else if( th.contains<variant_type_path_root>() ) {
-               const auto& str = th.get<variant_type_path_root>().variant_itr->first;
+            } else if( std::holds_alternative<variant_type_path_root>(th) ) {
+               const auto& str = std::get<variant_type_path_root>(th).variant_itr->first;
                output_name( s, str, shorten_names );
-            } else if( th.contains<array_type_path_root>() ) {
+            } else if( std::holds_alternative<array_type_path_root>(th) ) {
                s << "ARRAY";
             } else {
                s << "UNKNOWN";
@@ -775,33 +848,39 @@ namespace eosio { namespace chain {
 
          generate_path_string_visitor visitor(shorten_names, !full_path);
          if( full_path )
-            root_of_path.visit( visitor );
+            std::visit( visitor, root_of_path );
          for( size_t i = 0, n = path.size(); i < n; ++i ) {
-            if( full_path && !path[i].contains<array_index_path_item>() )
+            if( full_path && !std::holds_alternative<array_index_path_item>(path[i]) )
                visitor.add_dot();
 
-            path[i].visit( visitor );
+            std::visit( visitor, path[i] );
 
          }
 
          if( !full_path ) {
-            if( visitor.last_path_item.contains<empty_path_item>() ) {
-               root_of_path.visit( visitor );
+            if( std::holds_alternative<empty_path_item>(visitor.last_path_item) ) {
+               std::visit( visitor, root_of_path );
             } else {
                path_item_type_visitor vis2(visitor.s, shorten_names);
-               visitor.last_path_item.visit(vis2);
+               std::visit(vis2, visitor.last_path_item);
             }
          }
 
          return visitor.s.str();
       }
 
-      string abi_traverse_context_with_path::maybe_shorten( const string& str ) {
+      string abi_traverse_context_with_path::maybe_shorten( const std::string_view& str ) {
          if( !short_path )
-            return str;
+            return std::string(str);
 
          std::stringstream s;
          output_name( s, str, true );
+         return s.str();
+      }
+
+      string limit_size( const std::string_view& str ) {
+         std::stringstream s;
+         output_name( s, str, false );
          return s.str();
       }
 

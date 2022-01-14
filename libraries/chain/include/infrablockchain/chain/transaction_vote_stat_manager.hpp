@@ -1,18 +1,17 @@
 /**
- *  @file infrablockchain/chain/received_transaction_votes_manager.hpp
+ *  @file infrablockchain/chain/transaction_vote_stat_manager.hpp
  *  @author bezalel@infrablockchain.com
  *  @copyright defined in infrablockchain/LICENSE.txt
  */
 #pragma once
 
-#include <infrablockchain/chain/transaction_as_a_vote.hpp>
-#include <infrablockchain/chain/received_transaction_votes_database.hpp>
-
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/snapshot.hpp>
 #include <eosio/chain/transaction_context.hpp>
-
 #include <chainbase/chainbase.hpp>
+
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+#include <infrablockchain/chain/received_transaction_votes_object.hpp>
 
 namespace infrablockchain { namespace chain {
 
@@ -43,11 +42,11 @@ namespace infrablockchain { namespace chain {
       void add_to_snapshot( const snapshot_writer_ptr &snapshot ) const;
       void read_from_snapshot( const snapshot_reader_ptr &snapshot );
 
-      void add_transaction_vote_to_target_account( transaction_context& context, const account_name vote_target_account, const transaction_vote_amount_type tx_vote_amount );
+      void add_transaction_vote_amount_to_target_account( transaction_context& context, const account_name vote_target_account, const transaction_vote_amount_type tx_vote_amount );
 
       tx_votes_sum_weighted_type get_total_weighted_transaction_vote_amount() const;
 
-      tx_vote_stat_for_account get_transaction_vote_stat_for_account( const transaction_vote_to_name_type vote_target_account ) const;
+      tx_vote_stat_for_account get_transaction_vote_stat_for_account( const transaction_vote_target_name_type vote_target_account ) const;
 
       tx_vote_receiver_list_result get_top_sorted_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit, const bool retrieve_total_votes ) const;
 

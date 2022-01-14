@@ -1,8 +1,6 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #pragma once
+
+#include "config.hpp"
 
 namespace eosio { namespace client { namespace http {
 
@@ -82,13 +80,16 @@ namespace eosio { namespace client { namespace http {
 
    const string chain_func_base = "/v1/chain";
    const string get_info_func = chain_func_base + "/get_info";
+   const string send_txn_func = chain_func_base + "/send_transaction";
    const string push_txn_func = chain_func_base + "/push_transaction";
    const string push_txns_func = chain_func_base + "/push_transactions";
    const string json_to_bin_func = chain_func_base + "/abi_json_to_bin";
    const string get_block_func = chain_func_base + "/get_block";
+   const string get_block_info_func = chain_func_base + "/get_block_info";
    const string get_block_header_state_func = chain_func_base + "/get_block_header_state";
    const string get_account_func = chain_func_base + "/get_account";
    const string get_table_func = chain_func_base + "/get_table_rows";
+   const string get_kv_table_func = chain_func_base + "/get_kv_table_rows";
    const string get_table_by_scope_func = chain_func_base + "/get_table_by_scope";
    const string get_code_func = chain_func_base + "/get_code";
    const string get_code_hash_func = chain_func_base + "/get_code_hash";
@@ -105,15 +106,11 @@ namespace eosio { namespace client { namespace http {
    const string get_tx_vote_stat_for_account_func = chain_func_base + "/get_tx_vote_stat_for_account";
    const string get_top_tx_vote_receiver_list_func = chain_func_base + "/get_top_tx_vote_receiver_list";
 
-   const string get_yx_token_balance_func = chain_func_base + "/get_yx_token_balance";
-   const string get_yx_token_stats_func = chain_func_base + "/get_yx_token_stats";
-   const string get_native_token_balance_func = chain_func_base + "/get_native_token_balance";
-   const string get_native_token_stats_func = chain_func_base + "/get_native_token_stats";
-
+   const string get_currency_balance_func = chain_func_base + "/get_currency_balance";
+   const string get_currency_stats_func = chain_func_base + "/get_currency_stats";
    const string get_producers_func = chain_func_base + "/get_producers";
    const string get_schedule_func = chain_func_base + "/get_producer_schedule";
    const string get_required_keys = chain_func_base + "/get_required_keys";
-
 
    const string history_func_base = "/v1/history";
    const string get_actions_func = history_func_base + "/get_actions";
@@ -141,7 +138,7 @@ namespace eosio { namespace client { namespace http {
    const string wallet_remove_key = wallet_func_base + "/remove_key";
    const string wallet_create_key = wallet_func_base + "/create_key";
    const string wallet_sign_trx = wallet_func_base + "/sign_transaction";
-   const string keosd_stop = "/v1/keystore/stop";
+   const string keosd_stop = "/v1/" + string(client::config::key_store_executable_name) + "/stop";
 
    FC_DECLARE_EXCEPTION( connection_exception, 1100000, "Connection Exception" );
  }}}

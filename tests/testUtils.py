@@ -1,3 +1,4 @@
+import re
 import errno
 import subprocess
 import time
@@ -9,35 +10,156 @@ import inspect
 import json
 import shlex
 import socket
+from datetime import datetime
 from sys import stdout
 from sys import exit
 import traceback
 
 ###########################################################################################
+
+def addEnum(enumClassType, type):
+    setattr(enumClassType, type, enumClassType(type))
+
+def unhandledEnumType(type):
+    raise RuntimeError("No case defined for type=%s" % (type.type))
+
+class EnumType:
+
+    def __init__(self, type):
+        self.type=type
+
+    def __str__(self):
+        return self.type
+
+###########################################################################################
+
+class ReturnType(EnumType):
+    pass
+
+addEnum(ReturnType, "raw")
+addEnum(ReturnType, "json")
+
+###########################################################################################
+
+class BlockLogAction(EnumType):
+    pass
+
+addEnum(BlockLogAction, "make_index")
+addEnum(BlockLogAction, "trim")
+addEnum(BlockLogAction, "smoke_test")
+addEnum(BlockLogAction, "return_blocks")
+addEnum(BlockLogAction, "prune_transactions")
+addEnum(BlockLogAction, "fix_irreversible_blocks")
+
+###########################################################################################
+
+class WaitSpec:
+
+    def __init__(self, value, leeway=None):
+        self.toCalculate = True if value == -1 else False
+        if value is not None:
+            assert isinstance(value, (int))
+            assert value >= -1
+        self.value = value
+        self.leeway = leeway if leeway is not None else WaitSpec.default_leeway
+
+    def __str__(self):
+        append = "[calculated based on block production]" if self.toCalculate else ""
+        desc = None
+        if self.value is None:
+            desc = "defaulted"
+        elif self.value >= 0:
+            desc = "%d sec" % (self.value)
+        else:
+            desc = ""
+        return "WaitSpec timeout %s%s" % (desc, append)
+
+    def convert(self, startBlockNum, endBlockNum):
+        if self.value is None or self.value != -1:
+            return
+
+        timeout = self.leeway
+        if (endBlockNum > startBlockNum):
+            # calculation is performing worst case (irreversible block progression) which at worst will waste 5 seconds
+            blocksPerWindow = 12
+            blockWindowsToWait = (endBlockNum - startBlockNum + blocksPerWindow - 1) / blocksPerWindow
+            secondsPerWindow = blocksPerWindow / 2
+            timeout += blockWindowsToWait * secondsPerWindow
+
+        self.value = timeout
+
+    def asSeconds(self):
+        assert self.value != -1, "Called method with WaitSpec for calculating the appropriate timeout (WaitSpec.convert)," +\
+                                 " but convert method was never called. This means that either one of the methods the WaitSpec" +\
+                                 " is passed to needs to call convert, or else WaitSpec.calculate(...) should not have been passed."
+        retVal = self.value if self.value is not None else WaitSpec.default_seconds
+        return retVal
+
+    @staticmethod
+    def calculate(leeway=None):
+        return WaitSpec(value=-1, leeway=leeway)
+
+    @staticmethod
+    def default(leeway=None):
+        return WaitSpec(value=None, leeway=leeway)
+
+    default_seconds = 60
+    default_leeway = 10
+
+###########################################################################################
+
 class Utils:
     Debug=False
     FNull = open(os.devnull, 'w')
 
-    EosClientPath="programs/infra-cli/infra-cli"
-    MiscEosClientArgs="--no-auto-keystore"
+    EosClientPath="programs/cleos/cleos"
+    MiscEosClientArgs="--no-auto-keosd"
 
-    EosWalletName="infra-keystore"
-    EosWalletPath="programs/infra-keystore/"+ EosWalletName
+    EosWalletName="keosd"
+    EosWalletPath="programs/keosd/"+ EosWalletName
 
-    EosServerName="infra-node"
-    EosServerPath="programs/infrablockchain/"+ EosServerName
+    EosServerName="nodeos"
+    EosServerPath="programs/nodeos/"+ EosServerName
 
-    EosLauncherPath="programs/yoslauncher/yoslauncher"
-    MongoPath="mongo"
+    EosLauncherPath="programs/eosio-launcher/eosio-launcher"
     ShuttingDown=False
-    CheckOutputDeque=deque(maxlen=10)
 
-    EosBlockLogPath="programs/infra-blocklog/infra-blocklog"
+    EosBlockLogPath="programs/eosio-blocklog/eosio-blocklog"
+
+    FileDivider="================================================================="
+    DataRoot="var"
+    DataDir="%s/lib/" % (DataRoot)
+    ConfigDir="etc/eosio/"
+
+    TimeFmt='%Y-%m-%dT%H:%M:%S.%f'
+
+    @staticmethod
+    def timestamp():
+        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%f")
+
+    @staticmethod
+    def checkOutputFileWrite(time, cmd, output, error):
+        stop=Utils.timestamp()
+        if not hasattr(Utils, "checkOutputFile"):
+            if not os.path.isdir(Utils.DataRoot):
+                if Utils.Debug: Utils.Print("creating dir %s in dir: %s" % (Utils.DataRoot, os.getcwd()))
+                os.mkdir(Utils.DataRoot)
+            filename="%s/subprocess_results.log" % (Utils.DataRoot)
+            if Utils.Debug: Utils.Print("opening %s in dir: %s" % (filename, os.getcwd()))
+            Utils.checkOutputFile=open(filename,"w")
+
+        Utils.checkOutputFile.write(Utils.FileDivider + "\n")
+        Utils.checkOutputFile.write("start={%s}\n" % (time))
+        Utils.checkOutputFile.write("cmd={%s}\n" % (" ".join(cmd)))
+        Utils.checkOutputFile.write("cout={%s}\n" % (output))
+        Utils.checkOutputFile.write("cerr={%s}\n" % (error))
+        Utils.checkOutputFile.write("stop={%s}\n" % (stop))
 
     @staticmethod
     def Print(*args, **kwargs):
         stackDepth=len(inspect.stack())-2
         s=' '*stackDepth
+        stdout.write(Utils.timestamp() + " ")
         stdout.write(s)
         print(*args, **kwargs)
 
@@ -63,6 +185,38 @@ class Utils:
         Utils.systemWaitTimeout=timeout
 
     @staticmethod
+    def getDateString(dt):
+        return "%d_%02d_%02d_%02d_%02d_%02d" % (
+            dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+
+    @staticmethod
+    def nodeExtensionToName(ext):
+        r"""Convert node extension (bios, 0, 1, etc) to node name. """
+        prefix="node_"
+        if ext == "bios":
+            return prefix + ext
+
+        return "node_%02d" % (ext)
+
+    @staticmethod
+    def getNodeDataDir(ext, relativeDir=None, trailingSlash=False):
+        path=os.path.join(Utils.DataDir, Utils.nodeExtensionToName(ext))
+        if relativeDir is not None:
+           path=os.path.join(path, relativeDir)
+        if trailingSlash:
+           path=os.path.join(path, "")
+        return path
+
+    @staticmethod
+    def getNodeConfigDir(ext, relativeDir=None, trailingSlash=False):
+        path=os.path.join(Utils.ConfigDir, Utils.nodeExtensionToName(ext))
+        if relativeDir is not None:
+           path=os.path.join(path, relativeDir)
+        if trailingSlash:
+           path=os.path.join(path, "")
+        return path
+
+    @staticmethod
     def getChainStrategies():
         chainSyncStrategies={}
 
@@ -82,10 +236,24 @@ class Utils:
 
     @staticmethod
     def checkOutput(cmd, ignoreError=False):
-        assert(isinstance(cmd, list))
-        popen=subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        popen = Utils.delayedCheckOutput(cmd)
+        return Utils.checkDelayedOutput(popen, cmd, ignoreError=ignoreError)
+
+    @staticmethod
+    def delayedCheckOutput(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+        if (isinstance(cmd, list)):
+            popen=subprocess.Popen(cmd, stdout=stdout, stderr=stderr)
+        else:
+            popen=subprocess.Popen(cmd, stdout=stdout, stderr=stderr, shell=True)
+        return popen
+
+    @staticmethod
+    def checkDelayedOutput(popen, cmd, ignoreError=False):
+        assert isinstance(popen, subprocess.Popen)
+        assert isinstance(cmd, (str,list))
+        start=Utils.timestamp()
         (output,error)=popen.communicate()
-        Utils.CheckOutputDeque.append((output,error,cmd))
+        Utils.checkOutputFileWrite(start, cmd, output, error)
         if popen.returncode != 0 and not ignoreError:
             raise subprocess.CalledProcessError(returncode=popen.returncode, cmd=cmd, output=error)
         return output.decode("utf-8")
@@ -105,37 +273,43 @@ class Utils:
         Utils.Print(msg)
 
     @staticmethod
-    def waitForObj(lam, timeout=None):
+    def waitForTruth(lam, timeout=None, sleepTime=3, reporter=None):
         if timeout is None:
-            timeout=60
+            timeout=WaitSpec.default()
+        if isinstance(timeout, WaitSpec):
+            timeout = timeout.asSeconds()
 
-        endTime=time.time()+timeout
+        currentTime=time.time()
+        endTime=currentTime+timeout
         needsNewLine=False
+        failReturnVal=None
         try:
-            while endTime > time.time():
+            while endTime > currentTime:
                 ret=lam()
-                if ret is not None:
+                if ret:
                     return ret
-                sleepTime=3
+                # save this to return the not Truth state for the passed in method
+                failReturnVal=ret
+                remaining = endTime - currentTime
+                if sleepTime > remaining:
+                    sleepTime = remaining
                 if Utils.Debug:
                     Utils.Print("cmd: sleep %d seconds, remaining time: %d seconds" %
-                                (sleepTime, endTime - time.time()))
+                                (sleepTime, remaining))
                 else:
                     stdout.write('.')
                     stdout.flush()
                     needsNewLine=True
+                if reporter is not None:
+                    reporter()
                 time.sleep(sleepTime)
+                currentTime=time.time()
         finally:
             if needsNewLine:
                 Utils.Print()
 
-        return None
+        return failReturnVal
 
-    @staticmethod
-    def waitForBool(lam, timeout=None):
-        myLam = lambda: True if lam() else None
-        ret=Utils.waitForObj(myLam, timeout)
-        return False if ret is None else ret
 
     @staticmethod
     def filterJsonObjectOrArray(data):
@@ -176,8 +350,13 @@ class Utils:
             raise
 
     @staticmethod
-    def runCmdReturnStr(cmd, trace=False):
-        retStr=Utils.checkOutput(cmd.split())
+    def runCmdReturnStr(cmd, trace=False, silentErrors=False):
+        cmdArr=shlex.split(cmd)
+        return Utils.runCmdArrReturnStr(cmdArr, trace=trace, silentErrors=silentErrors)
+
+    @staticmethod
+    def runCmdArrReturnStr(cmdArr, trace=False, silentErrors=False):
+        retStr=Utils.checkOutput(cmdArr,ignoreError=silentErrors)
         if trace: Utils.Print ("RAW > %s" % (retStr))
         return retStr
 
@@ -217,22 +396,55 @@ class Utils:
 
     @staticmethod
     def pgrepCmd(serverName):
-        pgrepOpts="-fl"
         # pylint: disable=deprecated-method
-        if platform.linux_distribution()[0] in ["Ubuntu", "LinuxMint", "Fedora","CentOS Linux","arch"]:
+        # pgrep differs on different platform (amazonlinux1 and 2 for example). We need to check if pgrep -h has -a available and add that if so:
+        try:
+            pgrepHelp = re.search('-a', subprocess.Popen("pgrep --help 2>/dev/null", shell=True, stdout=subprocess.PIPE).stdout.read().decode('utf-8'))
+            pgrepHelp.group(0) # group() errors if -a is not found, so we don't need to do anything else special here.
             pgrepOpts="-a"
+        except AttributeError as error:
+            # If no -a, AttributeError: 'NoneType' object has no attribute 'group'
+            pgrepOpts="-fl"
 
         return "pgrep %s %s" % (pgrepOpts, serverName)
 
     @staticmethod
-    def getBlockLog(blockLogLocation, silentErrors=False, exitOnError=False):
+    def getBlockLog(nodeDataDir, blockLogAction=BlockLogAction.return_blocks, outputFile=None, first=None, last=None, extraArgs="", throwException=False, silentErrors=False, exitOnError=False):
+        blockLogLocation = os.path.join(nodeDataDir, "blocks")
         assert(isinstance(blockLogLocation, str))
-        cmd="%s --blocks-dir %s --as-json-array" % (Utils.EosBlockLogPath, blockLogLocation)
+        outputFileStr=" --output-file %s " % (outputFile) if outputFile is not None else ""
+        firstStr=" --first %s " % (first) if first is not None else ""
+        lastStr = " --last %s " % (last) if last is not None else ""
+
+        blockLogActionStr=None
+        returnType=ReturnType.raw
+        if blockLogAction==BlockLogAction.return_blocks:
+            blockLogActionStr=""
+            returnType=ReturnType.json
+        elif blockLogAction==BlockLogAction.make_index:
+            blockLogActionStr=" --make-index "
+        elif blockLogAction==BlockLogAction.trim:
+            blockLogActionStr=" --trim "
+        elif blockLogAction==BlockLogAction.fix_irreversible_blocks:
+            blockLogActionStr=" --fix-irreversible-blocks "
+        elif blockLogAction==BlockLogAction.smoke_test:
+            blockLogActionStr = " --smoke-test "
+        elif blockLogAction == BlockLogAction.prune_transactions:
+            blockLogActionStr = " --state-history-dir {}/state-history --prune-transactions ".format(nodeDataDir)
+        else:
+            unhandledEnumType(blockLogAction)
+
+        cmd="%s --blocks-dir %s --as-json-array %s%s%s%s %s" % (Utils.EosBlockLogPath, blockLogLocation, outputFileStr, firstStr, lastStr, blockLogActionStr, extraArgs)
         if Utils.Debug: Utils.Print("cmd: %s" % (cmd))
         rtn=None
         try:
-            rtn=Utils.runCmdReturnJson(cmd, silentErrors=silentErrors)
+            if returnType==ReturnType.json:
+                rtn=Utils.runCmdReturnJson(cmd, silentErrors=silentErrors)
+            else:
+                rtn=Utils.runCmdReturnStr(cmd, silentErrors=silentErrors)
         except subprocess.CalledProcessError as ex:
+            if throwException:
+                raise
             if not silentErrors:
                 msg=ex.output.decode("utf-8")
                 errorMsg="Exception during \"%s\". %s" % (cmd, msg)
@@ -311,6 +523,29 @@ class Utils:
 
         return "comparison of %s type is not supported, context=%s" % (typeName,context)
 
+    @staticmethod
+    def addAmount(assetStr: str, deltaStr: str) -> str:
+        asset = assetStr.split()
+        if len(asset) != 2:
+            return None
+        delta = deltaStr.split()
+        if len(delta) != 2:
+            return None
+        if asset[1] != delta[1]:
+            return None
+        return "{0} {1}".format(round(float(asset[0]) + float(delta[0]), 4), asset[1])
+
+    @staticmethod
+    def deduceAmount(assetStr: str, deltaStr: str) -> str:
+        asset = assetStr.split()
+        if len(asset) != 2:
+            return None
+        delta = deltaStr.split()
+        if len(delta) != 2:
+            return None
+        if asset[1] != delta[1]:
+            return None
+        return "{0} {1}".format(round(float(asset[0]) - float(delta[0]), 4), asset[1])
 ###########################################################################################
 class Account(object):
     # pylint: disable=too-few-public-methods
@@ -327,18 +562,3 @@ class Account(object):
     def __str__(self):
         return "Name: %s" % (self.name)
 
-###########################################################################################
-
-def addEnum(enumClassType, type):
-    setattr(enumClassType, type, enumClassType(type))
-
-def unhandledEnumType(type):
-    raise RuntimeError("No case defined for type=%s" % (type.type))
-
-class EnumType:
-
-    def __init__(self, type):
-        self.type=type
-
-    def __str__(self):
-        return self.type

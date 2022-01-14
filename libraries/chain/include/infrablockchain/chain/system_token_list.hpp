@@ -19,8 +19,8 @@ namespace infrablockchain { namespace chain {
    /**
     * system token is a authorized token used as transaction fee payment.
     * to be selected as a system token, a token should meet below criteria.
-    *  - token account should be ranked within top n tokens by acquiring enough transaction votes (InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote)
     *  - the token should be granted as system token used as a transaction fee token signed by (2/3)+ block producers
+    *  - (optional, currently not implemented) token account should be ranked within top n tokens by acquiring enough transaction votes (InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote)
     */
    struct system_token {
       system_token_id_type  token_id; // token account name selected as system token
@@ -33,51 +33,37 @@ namespace infrablockchain { namespace chain {
       static constexpr uint32_t token_weight_1x = 10000;
 
       friend bool operator == ( const system_token& lhs, const system_token& rhs ) {
-         return tie( lhs.token_id, lhs.token_weight ) == tie( rhs.token_id, rhs.token_weight );
+         return std::tie( lhs.token_id, lhs.token_weight ) == std::tie( rhs.token_id, rhs.token_weight );
       }
 
       friend bool operator != (const system_token& a, const system_token& b) { return !(a == b); }
-
-//      friend bool operator < (const system_token& a, const system_token& b)
-//      {
-//         return std::tie(a.token_id,a.token_weight) < std::tie(b.token_id,b.token_weight);
-//      }
-//
-//      friend bool operator <= (const system_token& a, const system_token& b) { return (a == b) || (a < b); }
-//
-//      friend bool operator > (const system_token& a, const system_token& b)  { return !(a <= b); }
-//
-//      friend bool operator >= (const system_token& a, const system_token& b) { return !(a < b);  }
    };
 
    /**
     * defines the order of system tokens, system token list version
     */
-   struct system_token_list_type {
-      uint32_t              version = 0; ///< sequentially incrementing version number
-      vector<system_token>  system_tokens;
+   struct system_token_list {
+      uint32_t                   version = 0; ///< sequentially incrementing version number
+      std::vector<system_token>  system_tokens;
    };
 
-   struct shared_system_token_list_type {
-      shared_system_token_list_type( chainbase::allocator<char> alloc )
+   struct shared_system_token_list {
+      shared_system_token_list( chainbase::allocator<char> alloc )
       :system_tokens(alloc) {}
 
-      shared_system_token_list_type& operator=( const system_token_list_type& a ) {
+      shared_system_token_list& operator=( const system_token_list& a ) {
          version = a.version;
-         system_tokens.clear();
-         system_tokens.reserve( a.system_tokens.size() );
-         for( const auto& sys_token : a.system_tokens ) {
-            system_tokens.push_back(sys_token);
-         }
+         system_tokens = shared_vector<system_token>(a.system_tokens.begin(), a.system_tokens.end(), system_tokens.get_allocator());
          return *this;
       }
 
-      operator system_token_list_type()const {
-         system_token_list_type result;
+      operator system_token_list()const { return to_system_token_list(); }
+      system_token_list to_system_token_list()const {
+         system_token_list result;
          result.version = version;
          result.system_tokens.reserve(system_tokens.size());
          for( const auto& sys_token : system_tokens ) {
-            result.system_tokens.push_back(sys_token);
+            result.system_tokens.emplace_back( sys_token );
          }
          return result;
       }
@@ -100,7 +86,7 @@ namespace infrablockchain { namespace chain {
       shared_vector<system_token>  system_tokens;
    };
 
-   inline bool operator == ( const system_token_list_type& a, const system_token_list_type& b )
+   inline bool operator == ( const system_token_list& a, const system_token_list& b )
    {
       if( a.version != b.version ) return false;
       if ( a.system_tokens.size() != b.system_tokens.size() ) return false;
@@ -109,7 +95,7 @@ namespace infrablockchain { namespace chain {
       return true;
    }
 
-   inline bool operator != ( const system_token_list_type& a, const system_token_list_type& b )
+   inline bool operator != ( const system_token_list& a, const system_token_list& b )
    {
       return !(a==b);
    }
@@ -117,5 +103,5 @@ namespace infrablockchain { namespace chain {
 } } /// infrablockchain::chain
 
 FC_REFLECT( infrablockchain::chain::system_token, (token_id)(token_weight) )
-FC_REFLECT( infrablockchain::chain::system_token_list_type, (version)(system_tokens) )
-FC_REFLECT( infrablockchain::chain::shared_system_token_list_type, (version)(system_tokens) )
+FC_REFLECT( infrablockchain::chain::system_token_list, (version)(system_tokens) )
+FC_REFLECT( infrablockchain::chain::shared_system_token_list, (version)(system_tokens) )

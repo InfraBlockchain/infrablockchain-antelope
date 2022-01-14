@@ -8,18 +8,18 @@
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/contract_types.hpp>
 #include <eosio/chain/apply_context.hpp>
-#include <infrablockchain/chain/standard_token_database.hpp>
+#include <infrablockchain/chain/standard_token_object.hpp>
 
 namespace infrablockchain { namespace chain {
 
    using namespace eosio::chain;
 
    /**
-    * @defgroup native_standard_token_action_handlers Native Standard Token Action Handlers
+    * @defgroup native_standard_token_action_handlers InfraBlockchain Built-in Standard Token Action Handlers
     */
    ///@{
 
-   void apply_infrablockchain_built_in_action_settokenmeta( apply_context& context);
+   void apply_infrablockchain_built_in_action_settokenmeta( apply_context& context );
 
    void apply_infrablockchain_built_in_action_issue( apply_context& context );
 
@@ -29,6 +29,7 @@ namespace infrablockchain { namespace chain {
 
    void apply_infrablockchain_built_in_action_redeem( apply_context& context );
 
-   ///@}  end action handlers
 
-} } /// namespace infrablockchain::chain::stdtoken
+      ///@}  end action handlers
+
+} } /// namespace infrablockchain::chain

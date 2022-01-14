@@ -1,14 +1,11 @@
 #pragma once
 
-#include <eosio/chain/config.hpp>
 #include <eosio/chain/types.hpp>
 
-#define INFRABLOCKCHAIN_SYSTEM_ACCOUNT_NAME N(infrasys)
-#define INFRABLOCKCHAIN_STANDARD_TOKEN_INTERFACE_ABI_ACCOUNT N(sys.tokenabi)
-#define INFRABLOCKCHAIN_SYS_TX_FEE_ACCOUNT N(sys.txfee)
-#define INFRABLOCKCHAIN_SYS_IDENTITY_ACCOUNT N(sys.identity)
-#define INFRABLOCKCHAIN_SYS_NATIVE_TOKEN_ACCOUNT N(yx.ntoken)
-#define INFRABLOCKCHAIN_SYS_USER_TOKEN_ACCOUNT N(yx.token)
-#define INFRABLOCKCHAIN_SYS_DIGITAL_CONTRACT_ACCOUNT N(yx.dcontract)
-#define INFRABLOCKCHAIN_SYS_NON_FUNGIBLE_TOKEN_ACCOUNT N(yx.nft)
-#define INFRABLOCKCHAIN_SYS_NON_FUNGIBLE_TOKEN_EXCHANGE_ACCOUNT N(yx.nftex)
+namespace infrablockchain { namespace chain {
+
+   const static name infrablockchain_system_account_name { "eosio"_n };
+   const static name infrablockchain_standard_token_interface_abi_account_name { "sys.tokenabi"_n };
+   const static name infrablockchain_sys_tx_fee_account_name { "sys.txfee"_n };
+
+} } // namespace infrablockchain::chain

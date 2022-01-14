@@ -1,12 +1,7 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #pragma once
 #include <fc/exception/exception.hpp>
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/core_symbol.hpp>
-#include <infrablockchain/chain/native_token_symbol.hpp>
 #include <string>
 #include <functional>
 
@@ -59,7 +54,7 @@ namespace eosio {
          operator uint64_t()const { return value; }
       };
 
-      class symbol {
+      class symbol : fc::reflect_init {
          public:
 
             static constexpr uint8_t max_precision = 18;
@@ -170,6 +165,25 @@ namespace eosio {
          return lhs.value() > rhs.value();
       }
 
+      inline bool operator== (const extended_symbol& lhs, const extended_symbol& rhs)
+      {
+         return std::tie(lhs.sym, lhs.contract) == std::tie(rhs.sym, rhs.contract);
+      }
+
+      inline bool operator!= (const extended_symbol& lhs, const extended_symbol& rhs)
+      {
+         return std::tie(lhs.sym, lhs.contract) != std::tie(rhs.sym, rhs.contract);
+      }
+
+      inline bool operator< (const extended_symbol& lhs, const extended_symbol& rhs)
+      {
+         return std::tie(lhs.sym, lhs.contract) < std::tie(rhs.sym, rhs.contract);
+      }
+
+      inline bool operator> (const extended_symbol& lhs, const extended_symbol& rhs)
+      {
+         return std::tie(lhs.sym, lhs.contract) > std::tie(rhs.sym, rhs.contract);
+      }
    } // namespace chain
 } // namespace eosio
 

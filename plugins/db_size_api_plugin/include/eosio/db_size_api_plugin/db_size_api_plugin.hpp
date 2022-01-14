@@ -1,7 +1,3 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #pragma once
 
 #include <eosio/http_plugin/http_plugin.hpp>
@@ -42,8 +38,10 @@ public:
    void plugin_shutdown() {}
 
    db_size_stats get();
+   db_size_stats get_reversible();
 
 private:
+   db_size_stats get_db_stats(const chainbase::database& );
 };
 
 }

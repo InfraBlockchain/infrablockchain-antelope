@@ -5,11 +5,12 @@
 *.bc
 *.wast
 *.wast.hpp
-*.wasm
 *.s
 *.dot
 *.abi.hpp
 *.cmake
+!.cicd
+!CMakeModules/*.cmake
 *.ninja
 \#*
 \.#*
@@ -22,11 +23,10 @@ Makefile
 compile_commands.json
 moc_*
 *.moc
+.clangd/
 
 genesis.json
 hardfork.hpp
-
-contracts/infrablockchainlib/native_token_symbol.hpp
 
 libraries/utilities/git_revision.cpp
 libraries/egenesis/egenesis_brief.cpp
@@ -47,15 +47,15 @@ libraries/wasm-jit/Source/Programs/Disassemble
 libraries/wasm-jit/Source/Programs/Test
 libraries/wasm-jit/Source/Programs/wavm
 
-programs/infra-cli/infra-cli
+programs/cleos/cleos
 programs/js_operation_serializer/js_operation_serializer
 programs/data-dir
 programs/eosio-abigen/eosio-abigen
-programs/infra-cli/config.hpp
+programs/cleos/config.hpp
 programs/eosio-applesedemo/eosio-applesedemo
 programs/eosio-launcher/config.hpp
 programs/eosio-launcher/eosio-launcher
-programs/infra-keystore/infra-keystore
+programs/keosd/keosd
 programs/nodeos/config.hpp
 programs/nodeos/nodeos
 
@@ -75,6 +75,8 @@ witness_node_data_dir
 *.pyc
 *.pyo
 
+Testing/*
+build.tar.gz
 build/*
 build-debug/*
 
@@ -85,9 +87,4 @@ var/lib/node_*
 *.iws
 .DS_Store
 
-infrablockchain_config/config_infrablockchain_testnet_boot_local.ini
-infrablockchain_bios/reset_infrablockchain_testnet_on_local.sh
-infrablockchain_bios/reset_std_token_infrablockchain_testnet_on_local.sh
-infrablockchain_bios/stop_infrablockchain_testnet_node_local.sh
-infrablockchain_bios/start_infrablockchain_testnet_node_local.sh
-infrablockchain_bios/clean_data_infrablockchain_testnet_on_local.sh
+!*.swagger.*

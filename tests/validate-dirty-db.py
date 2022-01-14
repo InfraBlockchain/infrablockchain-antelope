@@ -9,7 +9,10 @@ import subprocess
 import signal
 
 ###############################################################
+# validate-dirty-db
+#
 # Test for validating the dirty db flag sticks repeated nodeos restart attempts
+#
 ###############################################################
 
 
@@ -38,7 +41,7 @@ testSuccessful=False
 def runNodeosAndGetOutput(myTimeout=3):
     """Startup nodeos, wait for timeout (before forced shutdown) and collect output. Stdout, stderr and return code are returned in a dictionary."""
     Print("Launching nodeos process.")
-    cmd="programs/infrablockchain/infra-node --config-dir etc/infrablockchain/node_bios --data-dir var/lib/node_bios --verbose-http-errors --http-validate-host=false"
+    cmd="programs/nodeos/nodeos --config-dir etc/eosio/node_bios --data-dir var/lib/node_bios --verbose-http-errors --http-validate-host=false"
     Print("cmd: %s" % (cmd))
     proc=subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if debug: Print("Nodeos process launched.")
@@ -74,7 +77,7 @@ try:
         pnodes, topo, delay, chainSyncStrategyStr))
 
     Print("Stand up cluster")
-    if cluster.launch(pnodes, total_nodes, topo=topo, delay=delay, dontBootstrap=True) is False:
+    if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay, dontBootstrap=True) is False:
         errorExit("Failed to stand up eos cluster.")
 
     node=cluster.getNode(0)
@@ -99,8 +102,8 @@ try:
         retCode=ret[1]["returncode"]
         expectedRetCode=2
         if retCode != expectedRetCode:
-            errorExit("Expected return code to be %d, but instead received %d." % (expectedRetCode, retCode))
-        db_dirty_msg="database dirty flag set"
+            errorExit("Expected return code to be %d, but instead received %d. output={\n%s\n}" % (expectedRetCode, retCode, ret))
+        db_dirty_msg="atabase dirty flag set"
         if db_dirty_msg not in stderr:
             errorExit("stderr should have contained \"%s\" but it did not. stderr=\n%s" % (db_dirty_msg, stderr))
 

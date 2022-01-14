@@ -1,48 +1,27 @@
-# will be implictly used for any compilation unit if not overrided by SYSTEM_INCLUDE_FOLDERS parameter
-# these directories go as -isystem <dir> to avoid warnings from code of third-party libraries
-set(DEFAULT_SYSTEM_INCLUDE_FOLDERS ${CMAKE_SOURCE_DIR}/contracts/libc++/upstream/include ${CMAKE_SOURCE_DIR}/contracts/musl/upstream/include ${Boost_INCLUDE_DIR})
+### Build contracts with cdt if EOSIO_COMPILE_TEST_CONTRACTS is on
+include(ExternalProject)
 
-set(STANDARD_INCLUDE_FOLDERS ${CMAKE_SOURCE_DIR}/contracts ${CMAKE_BINARY_DIR}/contracts ${CMAKE_SOURCE_DIR}/externals/magic_get/include)
+if( EOSIO_COMPILE_TEST_CONTRACTS )
+   set(EOSIO_WASM_OLD_BEHAVIOR "Off")
+   find_package(eosio.cdt REQUIRED)
 
-add_subdirectory(eosiolib)
-add_subdirectory(musl)
-add_subdirectory(libc++)
-
-add_subdirectory(eosio.token)
-add_subdirectory(multi_index_test)
-add_subdirectory(snapshot_test)
-add_subdirectory(eosio.system)
-#add_subdirectory(identity)
-add_subdirectory(stltest)
-add_subdirectory(test.inline)
-
-#add_subdirectory(hello)
-add_subdirectory(asserter)
-#add_subdirectory(proxy)
-add_subdirectory(test_api)
-add_subdirectory(test_api_mem)
-add_subdirectory(test_api_db)
-add_subdirectory(test_api_multi_index)
-add_subdirectory(test_ram_limit)
-add_subdirectory(eosio.bios)
-add_subdirectory(noop)
-#add_subdirectory(tic_tac_toe)
-#add_subdirectory(payloadless)
-add_subdirectory(integration_test)
-
-add_subdirectory(eosio.msig)
-add_subdirectory(eosio.sudo)
-add_subdirectory(infrablockchainlib)
-add_subdirectory(infrasys)
-add_subdirectory(sys.tokenabi)
-add_subdirectory(sys.txfee)
-add_subdirectory(sys.identity)
-add_subdirectory(yosemitex.fiat.stable.token)
-add_subdirectory(yosemitex.credit.token)
-add_subdirectory(yosemite.card.ytoken)
-add_subdirectory(yx.ntoken)
-add_subdirectory(yx.token)
-add_subdirectory(yx.dcontract)
-add_subdirectory(yx.nft)
-add_subdirectory(yx.escrow)
-add_subdirectory(yx.nftex)
+   set(CMAKE_ARGS_VAL -DCMAKE_TOOLCHAIN_FILE=${EOSIO_CDT_ROOT}/lib/cmake/eosio.cdt/EosioWasmToolchain.cmake -DEOSIO_COMPILE_TEST_CONTRACTS=${EOSIO_COMPILE_TEST_CONTRACTS} )
+   if( USE_EOSIO_CDT_1_7_X)
+      list(APPEND CMAKE_ARGS_VAL -DUSE_EOSIO_CDT_1_7_X=${USE_EOSIO_CDT_1_7_X})
+   endif()
+   message( STATUS "Building contracts in directory `eos/contracts/`" )
+   ExternalProject_Add(
+      bios_boot_contracts_project
+      SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contracts
+      BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/contracts
+      CMAKE_ARGS ${CMAKE_ARGS_VAL}
+      UPDATE_COMMAND ""
+      PATCH_COMMAND ""
+      TEST_COMMAND ""
+      INSTALL_COMMAND ""
+      BUILD_ALWAYS 1
+   )
+else()
+  message( STATUS "Not building contracts in directory `eos/contracts/`" )
+  add_subdirectory(contracts)
+endif()

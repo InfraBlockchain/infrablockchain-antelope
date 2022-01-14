@@ -1,7 +1,3 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #pragma once
 #include <appbase/application.hpp>
 
@@ -14,7 +10,6 @@ namespace eosio {
    using std::shared_ptr;
    using namespace appbase;
    using chain::name;
-   using fc::optional;
    using chain::uint128_t;
 
    typedef shared_ptr<class history_plugin_impl> history_ptr;
@@ -31,9 +26,9 @@ class read_only {
 
 
       struct get_actions_params {
-         chain::account_name account_name;
-         optional<int32_t>   pos; /// a absolute sequence positon -1 is the end/last action
-         optional<int32_t>   offset; ///< the number of actions relative to pos, negative numbers return [pos-offset,pos), positive numbers return [pos,pos+offset)
+         chain::account_name     account_name;
+         std::optional<int32_t>  pos; /// a absolute sequence positon -1 is the end/last action
+         std::optional<int32_t>  offset; ///< the number of actions relative to pos, negative numbers return [pos-offset,pos), positive numbers return [pos,pos+offset)
       };
 
       struct ordered_action_result {
@@ -47,7 +42,7 @@ class read_only {
       struct get_actions_result {
          vector<ordered_action_result> actions;
          uint32_t                      last_irreversible_block;
-         optional<bool>                time_limit_exceeded_error;
+         std::optional<bool>           time_limit_exceeded_error;
       };
 
 
@@ -56,8 +51,7 @@ class read_only {
 
       struct get_transaction_params {
          string                        id;
-         optional<uint32_t>            block_num_hint;
-         optional<bool>                simplified; /* get_transaction_result::id, block_num, block_time, last_irreversible_block are only given */
+         std::optional<uint32_t>       block_num_hint;
       };
 
       struct get_transaction_result {
@@ -142,7 +136,7 @@ FC_REFLECT( eosio::history_apis::read_only::get_actions_params, (account_name)(p
 FC_REFLECT( eosio::history_apis::read_only::get_actions_result, (actions)(last_irreversible_block)(time_limit_exceeded_error) )
 FC_REFLECT( eosio::history_apis::read_only::ordered_action_result, (global_action_seq)(account_action_seq)(block_num)(block_time)(action_trace) )
 
-FC_REFLECT( eosio::history_apis::read_only::get_transaction_params, (id)(block_num_hint)(simplified) )
+FC_REFLECT( eosio::history_apis::read_only::get_transaction_params, (id)(block_num_hint) )
 FC_REFLECT( eosio::history_apis::read_only::get_transaction_result, (id)(trx)(block_time)(block_num)(last_irreversible_block)(traces) )
 /*
 FC_REFLECT(eosio::history_apis::read_only::get_transaction_params, (transaction_id) )

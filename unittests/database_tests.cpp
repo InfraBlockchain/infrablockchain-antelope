@@ -1,10 +1,6 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
-
-#include <eosio/testing/tester.hpp>
 #include <eosio/chain/global_property_object.hpp>
+#include <eosio/testing/tester.hpp>
+
 #include <fc/crypto/digest.hpp>
 
 #include <boost/test/unit_test.hpp>
@@ -14,7 +10,6 @@
 #else
 #define TESTER validating_tester
 #endif
-
 
 using namespace eosio::chain;
 using namespace eosio::testing;
@@ -34,18 +29,18 @@ BOOST_AUTO_TEST_SUITE(database_tests)
 
          // Create an account
          db.create<account_object>([](account_object &a) {
-            a.name = "billy";
+            a.name = name("billy");
          });
 
          // Make sure we can retrieve that account by name
-         auto ptr = db.find<account_object, by_name, std::string>("billy");
+         auto ptr = db.find<account_object, by_name>(name("billy"));
          BOOST_TEST(ptr != nullptr);
 
          // Undo creation of the account
          ses.undo();
 
          // Make sure we can no longer find the account
-         ptr = db.find<account_object, by_name, std::string>("billy");
+         ptr = db.find<account_object, by_name>(name("billy"));
          BOOST_TEST(ptr == nullptr);
       } FC_LOG_AND_RETHROW()
    }
@@ -60,45 +55,30 @@ BOOST_AUTO_TEST_SUITE(database_tests)
          // Produce 200 blocks and check their IDs should match the above
          test.produce_blocks(num_of_blocks_to_prod);
          for (uint32_t i = 0; i < num_of_blocks_to_prod; ++i) {
-            block_ids.emplace_back(test.control->fetch_block_by_number(i + 1)->id());
+            block_ids.emplace_back(test.control->fetch_block_by_number(i + 1)->calculate_id());
             BOOST_TEST(block_header::num_from_id(block_ids.back()) == i + 1);
-            BOOST_TEST(test.control->fetch_block_by_number(i + 1)->id() == block_ids.back());
+            BOOST_TEST(test.control->fetch_block_by_number(i + 1)->calculate_id() == block_ids.back());
          }
 
-         // Utility function to check expected irreversible block
-         auto calc_exp_last_irr_block_num = [&](uint32_t head_block_num) -> uint32_t {
-            const auto producers_size = test.control->head_block_state()->active_schedule.producers.size();
-            const auto max_reversible_rounds = EOS_PERCENT(producers_size, config::percent_100 - config::irreversible_threshold_percent);
-            if( max_reversible_rounds == 0) {
-               return head_block_num;
-            } else {
-               const auto current_round = head_block_num / config::producer_repetitions;
-               const auto irreversible_round = current_round - max_reversible_rounds;
-               return (irreversible_round + 1) * config::producer_repetitions - 1;
-            }
-         };
-
-         // Check the last irreversible block number is set correctly
-         const auto expected_last_irreversible_block_number = calc_exp_last_irr_block_num(num_of_blocks_to_prod);
+         // Check the last irreversible block number is set correctly, with one producer, irreversibility should only just 1 block before
+         const auto expected_last_irreversible_block_number = test.control->head_block_num() - 1;
          BOOST_TEST(test.control->head_block_state()->dpos_irreversible_blocknum == expected_last_irreversible_block_number);
-         // Check that block 201 cannot be found (only 20 blocks exist)
-         BOOST_TEST(test.control->fetch_block_by_number(num_of_blocks_to_prod + 1 + 1) == nullptr);
+         // Ensure that future block doesn't exist
+         const auto nonexisting_future_block_num = test.control->head_block_num() + 1;
+         BOOST_TEST(test.control->fetch_block_by_number(nonexisting_future_block_num) == nullptr);
 
          const uint32_t next_num_of_blocks_to_prod = 100;
-         // Produce 100 blocks and check their IDs should match the above
          test.produce_blocks(next_num_of_blocks_to_prod);
 
-         const auto next_expected_last_irreversible_block_number = calc_exp_last_irr_block_num(
-                 num_of_blocks_to_prod + next_num_of_blocks_to_prod);
+         const auto next_expected_last_irreversible_block_number = test.control->head_block_num() - 1;
          // Check the last irreversible block number is updated correctly
          BOOST_TEST(test.control->head_block_state()->dpos_irreversible_blocknum == next_expected_last_irreversible_block_number);
-         // Check that block 201 can now be found
-         BOOST_CHECK_NO_THROW(test.control->fetch_block_by_number(num_of_blocks_to_prod + 1));
+         // Previous nonexisting future block should exist by now
+         BOOST_CHECK_NO_THROW(test.control->fetch_block_by_number(nonexisting_future_block_num));
          // Check the latest head block match
-         BOOST_TEST(test.control->fetch_block_by_number(num_of_blocks_to_prod + next_num_of_blocks_to_prod + 1)->id() ==
+         BOOST_TEST(test.control->fetch_block_by_number(test.control->head_block_num())->calculate_id() ==
                     test.control->head_block_id());
       } FC_LOG_AND_RETHROW()
    }
-
 
 BOOST_AUTO_TEST_SUITE_END()

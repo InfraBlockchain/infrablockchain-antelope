@@ -50,10 +50,10 @@ class StressNetwork:
         print("transaction id %s" % (trid))
 
         print("issue currency0000 into %s" % (acc1.name))
-        contract="infrasys"
+        contract="eosio"
         action="issue"
         data="{\"to\":\"" + acc1.name + "\",\"quantity\":\"1000000.0000 "+CORE_SYMBOL+"\"}"
-        opts="--permission infrasys@active"
+        opts="--permission eosio@active"
         tr=node.pushMessage(contract, action, data, opts)
         trid = node.getTransId(tr[1])
         if trid is None:

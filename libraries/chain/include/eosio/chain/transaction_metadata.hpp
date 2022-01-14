@@ -1,10 +1,7 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE
- */
 #pragma once
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/types.hpp>
+#include <boost/asio/io_context.hpp>
 #include <future>
 
 namespace boost { namespace asio {
@@ -15,22 +12,54 @@ namespace eosio { namespace chain {
 
 class transaction_metadata;
 using transaction_metadata_ptr = std::shared_ptr<transaction_metadata>;
+using recover_keys_future = std::future<transaction_metadata_ptr>;
+
 /**
  *  This data structure should store context-free cached data about a transaction such as
  *  packed/unpacked/compressed and recovered keys
  */
 class transaction_metadata {
    public:
-      transaction_id_type                                        id;
-      transaction_id_type                                        signed_id;
-      packed_transaction_ptr                                     packed_trx;
-      fc::microseconds                                           sig_cpu_usage;
-      optional<pair<chain_id_type, flat_set<public_key_type>>>   signing_keys;
-      std::future<std::tuple<chain_id_type, fc::microseconds, flat_set<public_key_type>>>
-                                                                 signing_keys_future;
-      bool                                                       accepted = false;
-      bool                                                       implicit = false;
-      bool                                                       scheduled = false;
+      enum class trx_type {
+         input,
+         implicit,
+         scheduled
+      };
+
+   private:
+      const packed_transaction_ptr                               _packed_trx;
+      const fc::microseconds                                     _sig_cpu_usage;
+      const flat_set<public_key_type>                            _recovered_pub_keys;
+
+   public:
+      const bool                                                 implicit;
+      const bool                                                 scheduled;
+      bool                                                       accepted = false;       // not thread safe
+      uint32_t                                                   billed_cpu_time_us = 0; // not thread safe
+
+   private:
+      struct private_type{};
+
+      static const vector<signature_type>& check_variable_sig_size(const packed_transaction_ptr& trx, uint32_t max) {
+         const vector<signature_type>* sigs = trx->get_signatures();
+         EOS_ASSERT( sigs, tx_no_signature, "signatures pruned from packed_transaction" );
+         for(const signature_type& sig : *sigs)
+            EOS_ASSERT(sig.variable_size() <= max, sig_variable_size_limit_exception,
+                  "signature variable length component size (${s}) greater than subjective maximum (${m})", ("s", sig.variable_size())("m", max));
+         return *sigs;
+      }
+
+   public:
+      // creation of tranaction_metadata restricted to start_recover_keys and create_no_recover_keys below, public for make_shared
+      explicit transaction_metadata( const private_type& pt, packed_transaction_ptr ptrx,
+                                     fc::microseconds sig_cpu_usage, flat_set<public_key_type> recovered_pub_keys,
+                                     bool _implicit = false, bool _scheduled = false)
+         : _packed_trx( std::move( ptrx ) )
+         , _sig_cpu_usage( sig_cpu_usage )
+         , _recovered_pub_keys( std::move( recovered_pub_keys ) )
+         , implicit( _implicit )
+         , scheduled( _scheduled ) {
+      }
 
       transaction_metadata() = delete;
       transaction_metadata(const transaction_metadata&) = delete;
@@ -38,22 +67,26 @@ class transaction_metadata {
       transaction_metadata operator=(transaction_metadata&) = delete;
       transaction_metadata operator=(transaction_metadata&&) = delete;
 
-      explicit transaction_metadata( const signed_transaction& t, packed_transaction::compression_type c = packed_transaction::none )
-      :id(t.id()), packed_trx(std::make_shared<packed_transaction>(t, c)) {
-         //raw_packed = fc::raw::pack( static_cast<const transaction&>(trx) );
-         signed_id = digest_type::hash(*packed_trx);
+
+      const packed_transaction_ptr& packed_trx()const { return _packed_trx; }
+      const transaction_id_type& id()const { return _packed_trx->id(); }
+      fc::microseconds signature_cpu_usage()const { return _sig_cpu_usage; }
+      const flat_set<public_key_type>& recovered_keys()const { return _recovered_pub_keys; }
+      uint32_t get_estimated_size() const;
+
+      /// Thread safe.
+      /// @returns transaction_metadata_ptr or exception via future
+      static recover_keys_future
+      start_recover_keys( packed_transaction_ptr trx, boost::asio::io_context& thread_pool,
+                          const chain_id_type& chain_id, fc::microseconds time_limit,
+                          uint32_t max_variable_sig_size = UINT32_MAX );
+
+      /// @returns constructed transaction_metadata with no key recovery (sig_cpu_usage=0, recovered_pub_keys=empty)
+      static transaction_metadata_ptr
+      create_no_recover_keys( packed_transaction_ptr trx, trx_type t ) {
+         return std::make_shared<transaction_metadata>( private_type(), std::move(trx),
+               fc::microseconds(), flat_set<public_key_type>(), t == trx_type::implicit, t == trx_type::scheduled );
       }
-
-      explicit transaction_metadata( const packed_transaction_ptr& ptrx )
-      :id(ptrx->id()), packed_trx(ptrx) {
-         //raw_packed = fc::raw::pack( static_cast<const transaction&>(trx) );
-         signed_id = digest_type::hash(*packed_trx);
-      }
-
-      const flat_set<public_key_type>& recover_keys( const chain_id_type& chain_id );
-
-      static void create_signing_keys_future( const transaction_metadata_ptr& mtrx, boost::asio::thread_pool& thread_pool,
-                                              const chain_id_type& chain_id, fc::microseconds time_limit );
 
 };
 

@@ -10,7 +10,7 @@
 #include <eosio/chain/symbol.hpp>
 #include <eosio/chain/asset.hpp>
 
-namespace infrablockchain { namespace chain { namespace token {
+namespace infrablockchain { namespace chain { namespace standard_token {
 
    using namespace eosio::chain;
 
@@ -21,54 +21,54 @@ namespace infrablockchain { namespace chain { namespace token {
     */
 
    struct settokenmeta {
-      symbol       sym; // token symbol
-      std::string  url;
-      std::string  desc; // token description
+      symbol        sym;  // token symbol
+      std::string   url;
+      std::string   desc; // token description
 
       static action_name get_name() {
-         return N(settokenmeta);
+         return "settokenmeta"_n;
       }
    };
 
    struct issue {
       account_name  t;   // token-id (token account name)
-      account_name  to;
+      account_name  to;  // token receiver account
       asset         qty; // token quantity
       std::string   tag;
 
       static action_name get_name() {
-         return N(issue);
+         return "issue"_n;
       }
    };
 
    struct transfer {
       account_name  t;   // token-id (token account name)
-      account_name  from;
-      account_name  to;
-      asset         qty; // token quantity
+      account_name  from; // token sender account
+      account_name  to;   // token receiver account
+      asset         qty;  // token quantity
       std::string   tag;
 
       static action_name get_name() {
-         return N(transfer);
+         return "transfer"_n;
       }
    };
 
    struct txfee {
       account_name  t;   // token-id (token account name)
-      account_name  payer;
-      asset         fee; // token quantity to pay tx fee
+      account_name  payer;  // transaction fee payer
+      asset         fee;    // token quantity to pay tx fee
 
       static action_name get_name() {
-         return N(txfee);
+         return "txfee"_n;
       }
    };
 
    struct redeem {
-      asset         qty; // token quantity to redeem(burn)
+      asset         qty;  // token quantity to redeem(burn)
       std::string   tag;
 
       static action_name get_name() {
-         return N(redeem);
+         return "redeem"_n;
       }
    };
 
@@ -82,10 +82,10 @@ namespace infrablockchain { namespace chain { namespace token {
       }
    };
 
-} } } /// infrablockchain::chain::token
+} } } /// infrablockchain::chain::standard_token
 
-FC_REFLECT( infrablockchain::chain::token::settokenmeta , (sym)(url)(desc) )
-FC_REFLECT( infrablockchain::chain::token::issue, (t)(to)(qty)(tag) )
-FC_REFLECT( infrablockchain::chain::token::transfer, (t)(from)(to)(qty)(tag) )
-FC_REFLECT( infrablockchain::chain::token::txfee, (t)(payer)(fee) )
-FC_REFLECT( infrablockchain::chain::token::redeem, (qty)(tag) )
+FC_REFLECT( infrablockchain::chain::standard_token::settokenmeta , (sym)(url)(desc) )
+FC_REFLECT( infrablockchain::chain::standard_token::issue, (t)(to)(qty)(tag) )
+FC_REFLECT( infrablockchain::chain::standard_token::transfer, (t)(from)(to)(qty)(tag) )
+FC_REFLECT( infrablockchain::chain::standard_token::txfee, (t)(payer)(fee) )
+FC_REFLECT( infrablockchain::chain::standard_token::redeem, (qty)(tag) )

@@ -16,6 +16,8 @@
 
 #define LOGTAB_SCALE 8
 
+/// implementing 64bit floating point 'power' function using Berkeley soft-float library
+
 namespace infrablockchain { namespace chain {
 
       // .9670371139572337719125840413672004409288e-2

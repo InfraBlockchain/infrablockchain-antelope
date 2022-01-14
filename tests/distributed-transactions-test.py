@@ -7,10 +7,22 @@ from TestHelper import TestHelper
 
 import random
 
+###############################################################
+# distributed-transactions-test
+#
+# Performs currency transfers between N accounts sent to http endpoints of
+# N nodes and verifies, after a steady state is reached, that the accounts
+# balances are correct
+# if called with --nodes-file it will will load a json description of nodes
+# that are already running and run distributed test against them (not
+# currently testing this feature)
+#
+###############################################################
+
 Print=Utils.Print
 errorExit=Utils.errorExit
 
-args=TestHelper.parse_args({"-p","-n","-d","-s","--nodes-file","--seed","--p2p-plugin"
+args=TestHelper.parse_args({"-p","-n","-d","-s","--nodes-file","--seed"
                            ,"--dump-error-details","-v","--leave-running","--clean-run","--keep-logs"})
 
 pnodes=args.p
@@ -25,7 +37,6 @@ dontKill=args.leave_running
 dumpErrorDetails=args.dump_error_details
 killAll=args.clean_run
 keepLogs=args.keep_logs
-p2pPlugin=args.p2p_plugin
 
 killWallet=not dontKill
 killEosInstances=not dontKill
@@ -54,7 +65,7 @@ try:
         walletMgr.cleanup()
         print("Stand up walletd")
         if walletMgr.launch() is False:
-            errorExit("Failed to stand up infra-keystore.")
+            errorExit("Failed to stand up keosd.")
     else:
         cluster.killall(allInstances=killAll)
         cluster.cleanup()
@@ -63,7 +74,7 @@ try:
                (pnodes, total_nodes-pnodes, topo, delay))
 
         Print("Stand up cluster")
-        if cluster.launch(pnodes, total_nodes, topo=topo, delay=delay, p2pPlugin=p2pPlugin) is False:
+        if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay) is False:
             errorExit("Failed to stand up eos cluster.")
 
         Print ("Wait for Cluster stabilization")

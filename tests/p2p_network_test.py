@@ -41,7 +41,6 @@ parser.add_argument("--stress_network", help="test load/stress network", action=
 parser.add_argument("--not_kill_wallet", help="not killing walletd", action='store_true')
 
 args = parser.parse_args()
-enableMongo=False
 defproduceraPrvtKey=args.defproducera_prvt_key
 defproducerbPrvtKey=args.defproducerb_prvt_key
 
@@ -56,7 +55,7 @@ elif args.stress_network:
 else:
     errorExit("one of impaired_network, lossy_network or stress_network must be set. Please also check peer configs in p2p_test_peers.py.")
 
-cluster=testUtils.Cluster(walletd=True, enableMongo=enableMongo, defproduceraPrvtKey=defproduceraPrvtKey, defproducerbPrvtKey=defproducerbPrvtKey, walletHost=args.wallet_host, walletPort=args.wallet_port)
+cluster=testUtils.Cluster(walletd=True, defproduceraPrvtKey=defproduceraPrvtKey, defproducerbPrvtKey=defproducerbPrvtKey, walletHost=args.wallet_host, walletPort=args.wallet_port)
 
 print("BEGIN")
 
@@ -135,7 +134,7 @@ node0=cluster.getNode(0)
 
 # eosio should have the same key as defproducera
 eosio = copy.copy(defproduceraAccount)
-eosio.name = "infrasys"
+eosio.name = "eosio"
 
 Print("Info of each node:")
 for i in range(len(hosts)):
@@ -145,12 +144,12 @@ for i in range(len(hosts)):
     Print("host %s: %s" % (hosts[i], trans))
 
 
-wasmFile="yx.system.wasm"
-abiFile="yx.system.abi"
+wasmFile="eosio.system.wasm"
+abiFile="eosio.system.abi"
 Print("\nPush system contract %s %s" % (wasmFile, abiFile))
-trans=node0.publishContract(eosio.name, wasmFile, abiFile, waitForTransBlock=True)
+trans=node0.publishContract(eosio, wasmFile, abiFile, waitForTransBlock=True)
 if trans is None:
-    Utils.errorExit("Failed to publish yx.system.")
+    Utils.errorExit("Failed to publish eosio.system.")
 else:
     Print("transaction id %s" % (node0.getTransId(trans)))
 

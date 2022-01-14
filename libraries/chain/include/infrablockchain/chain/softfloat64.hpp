@@ -1,10 +1,11 @@
 /**
- *  @file infrablockchain/chain/received_transaction_votes_database.hpp
+ *  @file infrablockchain/chain/softfloat.hpp
  *  @author bezalel@infrablockchain.com
  *  @copyright defined in infrablockchain/LICENSE.txt
  */
 #pragma once
 
+#include <memory>
 #include <softfloat.hpp>
 
 namespace infrablockchain { namespace chain {

@@ -4,44 +4,29 @@
 
 namespace eosio { namespace chain {
 
-
-const flat_set<public_key_type>& transaction_metadata::recover_keys( const chain_id_type& chain_id ) {
-   // Unlikely for more than one chain_id to be used in one nodeos instance
-   if( !signing_keys || signing_keys->first != chain_id ) {
-      if( signing_keys_future.valid() ) {
-         std::tuple<chain_id_type, fc::microseconds, flat_set<public_key_type>> sig_keys = signing_keys_future.get();
-         if( std::get<0>( sig_keys ) == chain_id ) {
-            sig_cpu_usage = std::get<1>( sig_keys );
-            signing_keys.emplace( std::get<0>( sig_keys ), std::move( std::get<2>( sig_keys )));
-            return signing_keys->second;
-         }
+recover_keys_future transaction_metadata::start_recover_keys( packed_transaction_ptr trx,
+                                                              boost::asio::io_context& thread_pool,
+                                                              const chain_id_type& chain_id,
+                                                              fc::microseconds time_limit,
+                                                              uint32_t max_variable_sig_size )
+{
+   return async_thread_pool( thread_pool, [trx{std::move(trx)}, chain_id, time_limit, max_variable_sig_size]() mutable {
+         fc::time_point deadline = time_limit == fc::microseconds::maximum() ?
+                                   fc::time_point::maximum() : fc::time_point::now() + time_limit;
+         const vector<signature_type>& sigs = check_variable_sig_size( trx, max_variable_sig_size );
+         const vector<bytes>* context_free_data = trx->get_context_free_data();
+         EOS_ASSERT( context_free_data, tx_no_context_free_data, "context free data pruned from packed_transaction" );
+         flat_set<public_key_type> recovered_pub_keys;
+         const bool allow_duplicate_keys = false;
+         fc::microseconds cpu_usage =
+               trx->get_transaction().get_signature_keys(sigs, chain_id, deadline, *context_free_data, recovered_pub_keys, allow_duplicate_keys);
+         return std::make_shared<transaction_metadata>( private_type(), std::move( trx ), cpu_usage, std::move( recovered_pub_keys ) );
       }
-      flat_set<public_key_type> recovered_pub_keys;
-      sig_cpu_usage = packed_trx->get_signed_transaction().get_signature_keys( chain_id, fc::time_point::maximum(), recovered_pub_keys );
-      signing_keys.emplace( chain_id, std::move( recovered_pub_keys ));
-   }
-   return signing_keys->second;
+   );
 }
 
-void transaction_metadata::create_signing_keys_future( const transaction_metadata_ptr& mtrx,
-      boost::asio::thread_pool& thread_pool, const chain_id_type& chain_id, fc::microseconds time_limit ) {
-   if( mtrx->signing_keys.valid() ) // already created
-      return;
-
-   std::weak_ptr<transaction_metadata> mtrx_wp = mtrx;
-   mtrx->signing_keys_future = async_thread_pool( thread_pool, [time_limit, chain_id, mtrx_wp]() {
-      fc::time_point deadline = time_limit == fc::microseconds::maximum() ?
-            fc::time_point::maximum() : fc::time_point::now() + time_limit;
-      auto mtrx = mtrx_wp.lock();
-      fc::microseconds cpu_usage;
-      flat_set<public_key_type> recovered_pub_keys;
-      if( mtrx ) {
-         const signed_transaction& trn = mtrx->packed_trx->get_signed_transaction();
-         cpu_usage = trn.get_signature_keys( chain_id, deadline, recovered_pub_keys );
-      }
-      return std::make_tuple( chain_id, cpu_usage, std::move( recovered_pub_keys ));
-   } );
+uint32_t transaction_metadata::get_estimated_size() const {
+   return sizeof(*this) + _recovered_pub_keys.size() * sizeof(public_key_type) + packed_trx()->get_estimated_size();
 }
-
 
 } } // eosio::chain

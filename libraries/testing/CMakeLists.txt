@@ -1,4 +1,8 @@
-file(GLOB HEADERS "include/eosio/testing/*.hpp" "include/infrablockchain/testing/*.hpp")
+file(GLOB HEADERS "include/eosio/testing/*.hpp")
+
+configure_file(contracts.hpp.in include/testing_contracts/contracts.hpp ESCAPE_QUOTES)
+add_library(eosio_testing_contracts INTERFACE)
+target_include_directories(eosio_testing_contracts INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include/testing_contracts)
 
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_testing
@@ -7,14 +11,12 @@ add_library( eosio_testing
              ${HEADERS}
         )
 
-target_link_libraries( eosio_testing eosio_chain fc chainbase Logging IR WAST WASM Runtime )
+target_link_libraries( eosio_testing eosio_testing_contracts eosio_chain fc chainbase Logging IR WAST WASM Runtime )
 target_include_directories( eosio_testing
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
-                                   "${CMAKE_BINARY_DIR}/contracts"
+                                   "${CMAKE_BINARY_DIR}/unittests/include"
                             )
-
-add_dependencies( eosio_testing eosio.bios )
 
 if(MSVC)
   set_source_files_properties( db_init.cpp db_block.cpp database.cpp block_log.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )
@@ -27,5 +29,5 @@ install( TARGETS eosio_testing
    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/eosio/testing
 )
-install_directory_permissions( DIRECTORY ${CMAKE_INSTALL_FULL_INCLUDEDIR}/eosio/testing ${CMAKE_INSTALL_FULL_INCLUDEDIR}/infrablockchain/testing )
+install_directory_permissions( DIRECTORY ${CMAKE_INSTALL_FULL_INCLUDEDIR}/eosio/testing )
 

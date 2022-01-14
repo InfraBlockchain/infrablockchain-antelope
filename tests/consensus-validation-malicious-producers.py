@@ -181,7 +181,7 @@ def stageScenario(stagedNodeInfos):
     os.makedirs(stagingDir)
     count=0
     for stagedNodeInfo in stagedNodeInfos:
-        configPath=os.path.join(stagingDir, "etc/infrablockchain/node_%02d" % (count))
+        configPath=os.path.join(stagingDir, "etc/eosio/node_%02d" % (count))
         os.makedirs(configPath)
         with open(os.path.join(configPath, "config.ini"), "w") as textFile:
             print(stagedNodeInfo.config,file=textFile)
@@ -203,7 +203,7 @@ parser.add_argument("-t", "--tests", type=str, help="1|2|3 1=run no malicious pr
 parser.add_argument("-w", type=int, help="system wait time", default=testUtils.Utils.systemWaitTimeout)
 parser.add_argument("-v", help="verbose logging", action='store_true')
 parser.add_argument("--dump-error-details",
-                    help="Upon error print etc/infrablockchain/node_*/config.ini and var/lib/node_*/stderr.log to stdout",
+                    help="Upon error print etc/eosio/node_*/config.ini and var/lib/node_*/stderr.log to stdout",
                     action='store_true')
 parser.add_argument("--keep-logs", help="Don't delete var/lib/node_* folders upon test completion",
                     action='store_true')
@@ -246,7 +246,7 @@ def myTest(transWillEnterBlock):
         topo="mesh"
         delay=0
         Print("Stand up cluster")
-        if cluster.launch(pnodes, total_nodes, topo, delay) is False:
+        if cluster.launch(pnodes=pnodes, totalNodes=total_nodes, topo=topo, delay=delay) is False:
             error("Failed to stand up eos cluster.")
             return False
 
@@ -286,7 +286,7 @@ def myTest(transWillEnterBlock):
         wasmFile="currency.wasm"
         abiFile="currency.abi"
         Print("Publish contract")
-        trans=node.publishContract(currencyAccount.name, wasmFile, abiFile, waitForTransBlock=True)
+        trans=node.publishContract(currencyAccount, wasmFile, abiFile, waitForTransBlock=True)
         if trans is None:
             error("Failed to publish contract.")
             return False

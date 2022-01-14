@@ -13,12 +13,12 @@
 
 pushd $EOSIO_HOME
 
-if [ ! -f programs/infra-node/infra-node ]; then
-    echo unable to locate binary for infra-node
+if [ ! -f programs/nodeos/nodeos ]; then
+    echo unable to locate binary for nodeos
     exit 1
 fi
 
-config_base=etc/infrablockchain/node_
+config_base=etc/eosio/node_
 if [ -z "$EOSIO_NODE" ]; then
     DD=`ls -d ${config_base}[012]?`
     ddcount=`echo $DD | wc -w`

@@ -12,13 +12,13 @@ from testUtils import Utils
 Wallet=namedtuple("Wallet", "name password host port")
 # pylint: disable=too-many-instance-attributes
 class WalletMgr(object):
-    __walletLogOutFile="test_keystore_out.log"
-    __walletLogErrFile="test_keystore_err.log"
+    __walletLogOutFile="test_keosd_out.log"
+    __walletLogErrFile="test_keosd_err.log"
     __walletDataDir="test_wallet_0"
     __MaxPort=9999
 
     # pylint: disable=too-many-arguments
-    # walletd [True|False] True=Launch wallet(infra-keystore) process; False=Manage launch process externally.
+    # walletd [True|False] True=Launch wallet(keosd) process; False=Manage launch process externally.
     def __init__(self, walletd, nodeosPort=8888, nodeosHost="localhost", port=9899, host="localhost"):
         self.walletd=walletd
         self.nodeosPort=nodeosPort
@@ -56,7 +56,7 @@ class WalletMgr(object):
 
     def launch(self):
         if not self.walletd:
-            Utils.Print("ERROR: Wallet Manager wasn't configured to launch infra-keystore")
+            Utils.Print("ERROR: Wallet Manager wasn't configured to launch keosd")
             return False
 
         if self.isLaunched():
@@ -87,7 +87,7 @@ class WalletMgr(object):
             popen=subprocess.Popen(cmd.split(), stdout=sout, stderr=serr)
             self.__walletPid=popen.pid
 
-        # Give infra-keystore time to warm up
+        # Give keosd time to warm up
         time.sleep(2)
 
         try:
