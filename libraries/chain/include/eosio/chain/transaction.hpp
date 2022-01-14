@@ -9,10 +9,20 @@ namespace eosio { namespace chain {
 
    enum transaction_extension_id {
       deferred_transaction_generation_context_id = 0,
-      resource_payer_id,
+      reserved_tx_ext_id_1 = 1,
+      reserved_tx_ext_id_2 = 2,
+      reserved_tx_ext_id_3 = 3,
+      reserved_tx_ext_id_4 = 4,
+      reserved_tx_ext_id_5 = 5,
+      reserved_tx_ext_id_6 = 6,
+      reserved_tx_ext_id_7 = 7,
+      reserved_tx_ext_id_8 = 8,
+      reserved_tx_ext_id_9 = 9,
+      infrablockchain_transaction_fee_payer_tx_ext_id = 10,
+      infrablockchain_transaction_vote_tx_ext_id = 11,
       TRANSACTION_EXTENSION_ID_COUNT,
 
-      // @see infrablockchain::chain::transaction_extension_id for additional tx exts for InfraBlockchain
+      // @see infrablockchain/chain/transaction_extensions.hpp for additional tx exts for InfraBlockchain
    };
 
    struct deferred_transaction_generation_context : fc::reflect_init {
@@ -34,6 +44,27 @@ namespace eosio { namespace chain {
       account_name        sender;
    };
 
+   #define RESERVED_DUMMY_TX_EXT_CONTEXT(num) \
+      struct reserved_dummy_transaction_extension_context_##num : fc::reflect_init { \
+         static constexpr uint16_t extension_id() { return transaction_extension_id::reserved_tx_ext_id_##num; } \
+         static constexpr bool     enforce_unique() { return true; } \
+         reserved_dummy_transaction_extension_context_##num() = default; \
+         reserved_dummy_transaction_extension_context_##num( uint64_t dummy ) \
+            :dummy( dummy ) {} \
+         void reflector_init() {} \
+         uint64_t dummy; \
+      };
+
+   RESERVED_DUMMY_TX_EXT_CONTEXT(1)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(2)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(3)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(4)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(5)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(6)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(7)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(8)
+   RESERVED_DUMMY_TX_EXT_CONTEXT(9)
+
    namespace detail {
       template<typename... Ts>
       struct transaction_extension_types {
@@ -43,9 +74,18 @@ namespace eosio { namespace chain {
    }
 
    using transaction_extension_types = detail::transaction_extension_types<
-      deferred_transaction_generation_context,
-      infrablockchain::chain::transaction_fee_payer_tx_ext,
-      infrablockchain::chain::transaction_vote_tx_ext
+      deferred_transaction_generation_context,         // 0
+      reserved_dummy_transaction_extension_context_1,  // 1
+      reserved_dummy_transaction_extension_context_2,  // 2
+      reserved_dummy_transaction_extension_context_3,  // 3
+      reserved_dummy_transaction_extension_context_4,  // 4
+      reserved_dummy_transaction_extension_context_5,  // 5
+      reserved_dummy_transaction_extension_context_6,  // 6
+      reserved_dummy_transaction_extension_context_7,  // 7
+      reserved_dummy_transaction_extension_context_8,  // 8
+      reserved_dummy_transaction_extension_context_9,  // 9
+      infrablockchain::chain::transaction_fee_payer_tx_ext, // 10
+      infrablockchain::chain::transaction_vote_tx_ext       // 11
    >;
 
    using transaction_extension = transaction_extension_types::transaction_extension_t;
@@ -364,6 +404,15 @@ namespace eosio { namespace chain {
 } } /// namespace eosio::chain
 
 FC_REFLECT(eosio::chain::deferred_transaction_generation_context, (sender_trx_id)(sender_id)(sender) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_1, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_2, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_3, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_4, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_5, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_6, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_7, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_8, (dummy) )
+FC_REFLECT(eosio::chain::reserved_dummy_transaction_extension_context_9, (dummy) )
 FC_REFLECT( eosio::chain::transaction_header, (expiration)(ref_block_num)(ref_block_prefix)
                                               (max_net_usage_words)(max_cpu_usage_ms)(delay_sec) )
 FC_REFLECT_DERIVED( eosio::chain::transaction, (eosio::chain::transaction_header), (context_free_actions)(actions)(transaction_extensions) )
