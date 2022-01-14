@@ -893,6 +893,8 @@ struct controller_impl {
       authorization.initialize_database();
       resource_limits.initialize_database();
 
+      db.create<infrablockchain_global_property_object>([](auto&){});
+
       standard_token.initialize_database();
       transaction_fee_table.initialize_database();
       transaction_vote_stat.initialize_database();
