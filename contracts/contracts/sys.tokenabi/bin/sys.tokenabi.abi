@@ -1,0 +1,137 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.2",
+    "types": [],
+    "structs": [
+        {
+            "name": "issue",
+            "base": "",
+            "fields": [
+                {
+                    "name": "t",
+                    "type": "name"
+                },
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "qty",
+                    "type": "asset"
+                },
+                {
+                    "name": "tag",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "redeem",
+            "base": "",
+            "fields": [
+                {
+                    "name": "qty",
+                    "type": "asset"
+                },
+                {
+                    "name": "tag",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "settokenmeta",
+            "base": "",
+            "fields": [
+                {
+                    "name": "sym",
+                    "type": "symbol"
+                },
+                {
+                    "name": "url",
+                    "type": "string"
+                },
+                {
+                    "name": "desc",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "transfer",
+            "base": "",
+            "fields": [
+                {
+                    "name": "t",
+                    "type": "name"
+                },
+                {
+                    "name": "from",
+                    "type": "name"
+                },
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "qty",
+                    "type": "asset"
+                },
+                {
+                    "name": "tag",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "txfee",
+            "base": "",
+            "fields": [
+                {
+                    "name": "t",
+                    "type": "name"
+                },
+                {
+                    "name": "payer",
+                    "type": "name"
+                },
+                {
+                    "name": "fee",
+                    "type": "asset"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "issue",
+            "type": "issue",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "redeem",
+            "type": "redeem",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "settokenmeta",
+            "type": "settokenmeta",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "transfer",
+            "type": "transfer",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "txfee",
+            "type": "txfee",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [],
+    "kv_tables": {},
+    "ricardian_clauses": [],
+    "variants": [],
+    "action_results": []
+}
