@@ -1,0 +1,29 @@
+export INFRABLOCKCHAIN_HOME=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain-2-git
+
+export INFRA_NODE_BIN_NAME=infra-node
+export INFRA_CLI_BIN_NAME=infra-cli
+export INFRA_KEYCHAIN_BIN_NAME=infra-keychain
+
+export INFRA_BLOCKCHAIN_DATA_BASE_DIR=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain_local_testnet_data
+export INFRA_BLOCKCHAIN_LOG_BASE_DIR=${INFRA_BLOCKCHAIN_DATA_BASE_DIR}/log
+
+export INFRA_NODE=${INFRABLOCKCHAIN_HOME}/build/bin/$INFRA_NODE_BIN_NAME
+export INFRA_NODE_LOG_FILE=${INFRA_BLOCKCHAIN_LOG_BASE_DIR}/$INFRA_NODE_BIN_NAME.log
+
+export INFRA_CLI=($INFRABLOCKCHAIN_HOME/build/bin/$INFRA_CLI_BIN_NAME --wallet-url http://127.0.0.1:8900/)
+export INFRA_KEYCHAIN=${INFRABLOCKCHAIN_HOME}/build/bin/$INFRA_KEYCHAIN_BIN_NAME
+export INFRA_KEYCHAIN_LOG_FILE=${INFRA_BLOCKCHAIN_LOG_BASE_DIR}/$INFRA_KEYCHAIN_BIN_NAME.log
+export INFRABLOCKCHAIN_DEV_WALLET_DIR=${INFRA_BLOCKCHAIN_DATA_BASE_DIR}/infrablockchain_dev_wallet
+export INFRA_KEYCHAIN_WALLET_PASSWORD=PW5JcN2AfwXxAV12W1mofb7pbeyJEwwie4JsCaTZvMx5kt38P8TP1
+export INFRA_KEYCHAIN_WALLET_NAME=local-testnet
+
+export INFRA_NODE_CONFIG=${INFRABLOCKCHAIN_HOME}/infrablockchain-bios/config/config_infrablockchain_local_testnet.ini
+export INFRA_NODE_GENESIS_JSON=${INFRABLOCKCHAIN_HOME}/infrablockchain-bios/config/genesis_infrablockchain_local_testnet.json
+export INFRA_NODE_DATA_DIR=${INFRA_BLOCKCHAIN_DATA_BASE_DIR}/infra_node_data
+
+export INFRABLOCKCHAIN_CONTRACTS_DIR=${INFRABLOCKCHAIN_HOME}/contracts/contracts
+
+export SYS_ACCOUNT=eosio
+#export SYS_ACCOUNT=infrasys
+
+export INFRA_NODE_API_ENDPOINT=http://127.0.0.1:8888
