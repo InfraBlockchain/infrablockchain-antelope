@@ -1,29 +1,34 @@
-#!/usr/bin/env zsh
-# chmod +x ./infrablockchain_bios_local_testnet.sh
+#!/usr/bin/env bash
+# chmod +x ./local_testnet_boot_bios_infrablockchain.sh
 
 setopt shwordsplit
+
+export SCRIPT_DIR=$(dirname $(realpath "$0"))
+export INFRABLOCKCHAIN_HOME=$(realpath "$SCRIPT_DIR/..")
+#export INFRABLOCKCHAIN_HOME=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain-2-git
 
 export INFRA_NODE_BIN_NAME=infra-node
 export INFRA_CLI_BIN_NAME=infra-cli
 export INFRA_KEYCHAIN_BIN_NAME=infra-keychain
 
-export INFRABLOCKCHAIN_HOME=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain-2-git
+export INFRA_BLOCKCHAIN_DATA_BASE_DIR=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain_local_testnet_data
+export INFRA_BLOCKCHAIN_LOG_BASE_DIR=${INFRA_BLOCKCHAIN_DATA_BASE_DIR}/log
 
-export INFRA_NODE=$INFRABLOCKCHAIN_HOME/build/bin/$INFRA_NODE_BIN_NAME
-export INFRA_NODE_LOG_FILE=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain_local_testnet_data/log/$INFRA_NODE_BIN_NAME.log
+export INFRA_NODE=${INFRABLOCKCHAIN_HOME}/build/bin/$INFRA_NODE_BIN_NAME
+export INFRA_NODE_LOG_FILE=${INFRA_BLOCKCHAIN_LOG_BASE_DIR}/$INFRA_NODE_BIN_NAME.log
 
 export INFRA_CLI=($INFRABLOCKCHAIN_HOME/build/bin/$INFRA_CLI_BIN_NAME --wallet-url http://127.0.0.1:8900/)
-export INFRA_KEYCHAIN=$INFRABLOCKCHAIN_HOME/build/bin/$INFRA_KEYCHAIN_BIN_NAME
-export INFRA_KEYCHAIN_LOG_FILE=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain_local_testnet_data/log/$INFRA_KEYCHAIN_BIN_NAME.log
-export INFRABLOCKCHAIN_DEV_WALLET_DIR=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain_local_testnet_data/infrablockchain_dev_wallet
+export INFRA_KEYCHAIN=${INFRABLOCKCHAIN_HOME}/build/bin/$INFRA_KEYCHAIN_BIN_NAME
+export INFRA_KEYCHAIN_LOG_FILE=${INFRA_BLOCKCHAIN_LOG_BASE_DIR}/$INFRA_KEYCHAIN_BIN_NAME.log
+export INFRABLOCKCHAIN_DEV_WALLET_DIR=${INFRA_BLOCKCHAIN_DATA_BASE_DIR}/infrablockchain_dev_wallet
 export INFRA_KEYCHAIN_WALLET_PASSWORD=PW5JcN2AfwXxAV12W1mofb7pbeyJEwwie4JsCaTZvMx5kt38P8TP1
 export INFRA_KEYCHAIN_WALLET_NAME=local-testnet
 
-export INFRA_NODE_CONFIG=$INFRABLOCKCHAIN_HOME/infrablockchain-bios/config/config_infrablockchain_local_testnet.ini
-export INFRA_NODE_GENESIS_JSON=$INFRABLOCKCHAIN_HOME/infrablockchain-bios/config/genesis_infrablockchain_local_testnet.json
-export INFRA_NODE_DATA_DIR=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain_local_testnet_data/infra_node_data
+export INFRA_NODE_CONFIG=${INFRABLOCKCHAIN_HOME}/infrablockchain-bios/config/config_infrablockchain_local_testnet.ini
+export INFRA_NODE_GENESIS_JSON=${INFRABLOCKCHAIN_HOME}/infrablockchain-bios/config/genesis_infrablockchain_local_testnet.json
+export INFRA_NODE_DATA_DIR=${INFRA_BLOCKCHAIN_DATA_BASE_DIR}/infra_node_data
 
-export INFRABLOCKCHAIN_CONTRACTS_DIR=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain.contracts-git/build/contracts
+export INFRABLOCKCHAIN_CONTRACTS_DIR=${INFRABLOCKCHAIN_HOME}/contracts/contracts
 
 export SYS_ACCOUNT=eosio
 #export SYS_ACCOUNT=infrasys
@@ -75,6 +80,9 @@ print_section_title() {
   echo
   set -x
 }
+
+mkdir -p ${INFRA_BLOCKCHAIN_DATA_BASE_DIR}
+mkdir -p ${INFRA_BLOCKCHAIN_LOG_BASE_DIR}
 
 { print_section_title "Reset infra-node data"; } 2>/dev/null
 
@@ -132,7 +140,7 @@ curl -X POST ${INFRA_NODE_API_ENDPOINT}/v1/producer/schedule_protocol_feature_ac
 { print_section_title "Install InfraBlockchain BOOT Contract"; } 2>/dev/null
 
 sleep 2
-$INFRA_CLI set contract ${SYS_ACCOUNT} $INFRABLOCKCHAIN_HOME/build/contracts/contracts/eosio.boot/ -p ${SYS_ACCOUNT}@active
+$INFRA_CLI set contract ${SYS_ACCOUNT} $INFRABLOCKCHAIN_CONTRACTS_DIR/eosio.boot/bin eosio.boot.wasm eosio.boot.abi -p ${SYS_ACCOUNT}@active
 sleep 2
 
 # Activate Protocol Feature for InfraBlockchain
@@ -162,14 +170,14 @@ $INFRA_CLI create account ${SYS_ACCOUNT} sys.txfee PUB_K1_73E1bUPyVMTb7gjvvhk3bh
 { print_section_title "Install InfraBlockchain System Contract"; } 2>/dev/null
 
 sleep 2
-$INFRA_CLI set contract ${SYS_ACCOUNT} $INFRABLOCKCHAIN_CONTRACTS_DIR/infra.system/ -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
+$INFRA_CLI set contract ${SYS_ACCOUNT} $INFRABLOCKCHAIN_CONTRACTS_DIR/infra.system/bin infra.system.wasm infra.system.abi -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 sleep 2
 
 
 { print_section_title "Install Standard Token ABI Interface System Contract"; } 2>/dev/null
 
 sleep 2
-$INFRA_CLI set contract sys.tokenabi $INFRABLOCKCHAIN_CONTRACTS_DIR/sys.tokenabi/ -p sys.tokenabi@active --txfee-payer ${SYS_ACCOUNT}
+$INFRA_CLI set contract sys.tokenabi $INFRABLOCKCHAIN_CONTRACTS_DIR/sys.tokenabi/bin sys.tokenabi.wasm sys.tokenabi.abi -p sys.tokenabi@active --txfee-payer ${SYS_ACCOUNT}
 sleep 2
 
 
