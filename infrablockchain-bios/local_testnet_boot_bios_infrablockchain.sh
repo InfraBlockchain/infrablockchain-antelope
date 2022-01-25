@@ -265,7 +265,7 @@ $INFRA_CLI push action ${SYS_ACCOUNT} settxfee "{\"code\":\"${SYS_ACCOUNT}\",\"a
 $INFRA_CLI get txfee list -L "${SYS_ACCOUNT}" -U "${SYS_ACCOUNT}"
 $INFRA_CLI push action ${SYS_ACCOUNT} unsettxfee "{\"code\":\"${SYS_ACCOUNT}\",\"action\":\"linkauth\"}" -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 $INFRA_CLI get txfee list -L "${SYS_ACCOUNT}" -U "${SYS_ACCOUNT}"
-$INFRA_CLI push action ${SYS_ACCOUNT} settxfee "{\"code\":\"${SYS_ACCOUNT}\",\"action\":\"linkauth\",\"value\":1000,\"feetype\":1}" -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
+$INFRA_CLI push action ${SYS_ACCOUNT} settxfee "{\"code\":\"${SYS_ACCOUNT}\",\"action\":\"linkauth\",\"value\":1500,\"feetype\":1}" -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 
 sleep 1
 
@@ -511,6 +511,9 @@ $INFRA_CLI get token balance systoken.a useraccountb
 $INFRA_CLI get token balance systoken.a useraccountc
 
 $INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccounta","to":"useraccountb","qty":"999.5000 DUSD","tag":"transfer tag"}' -p useraccounta@active --txfee-payer useraccounta -v producer.a
+
+# first authorizer as tx fee payer
+$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccounta","to":"useraccountb","qty":"0.1000 DUSD","tag":"transfer tag"}' -p useraccounta@active -v producer.a
 
 $INFRA_CLI get systoken balance useraccounta
 $INFRA_CLI get systoken balance useraccountb

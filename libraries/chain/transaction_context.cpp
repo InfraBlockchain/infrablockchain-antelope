@@ -209,13 +209,11 @@ namespace eosio { namespace chain {
             const auto& tx_fee_payer_info = std::get<transaction_fee_payer_tx_ext>(itr->second);
             tx_fee_payer = tx_fee_payer_info.fee_payer;
          }
-         //if (!tx_fee_payer) {
-         //   // if tx-fee-payer is not specified on transaction message, then 'bill-first-authorizer' policy is used
-         //   tx_fee_payer = trx.first_authorizer();
-         //}
-         if (tx_fee_payer) {
-            bill_to_accounts.insert(*tx_fee_payer);
+         if (!tx_fee_payer) {
+            // if tx-fee-payer is not specified on transaction message, then 'bill-first-authorizer' policy is used
+            tx_fee_payer = trx.first_authorizer();
          }
+         bill_to_accounts.insert(*tx_fee_payer);
 
          ////////////////////////////////////////////////////////////////
          /// InfraBlockchain Transaction-Extension support for Transaction-as-a-vote and Proof-of-Transaction
