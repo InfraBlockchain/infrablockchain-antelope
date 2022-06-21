@@ -26,6 +26,17 @@ namespace infrablockchain { namespace chain {
     */
    void apply_infrablockchain_built_in_action_settokenmeta( apply_context& context ) {
 
+      auto settokenmeta_action = context.get_action().data_as_built_in_common_action<settokenmeta>();
+      try {
+         token_id_type token_id = context.get_action().account;
+         EOS_ASSERT( token_id == context.get_receiver(), infrablockchain_standard_token_exception, "settokenmeta built-in action handler should be invoked only in first receiver context" );
+
+         // only the account owner can set token metadata for its own token
+         context.require_authorization(token_id);
+
+         context.control.get_mutable_standard_token_manager().set_token_meta_info(context, token_id, settokenmeta_action);
+
+      } FC_CAPTURE_AND_RETHROW( (settokenmeta_action) )
    }
 
    /**
