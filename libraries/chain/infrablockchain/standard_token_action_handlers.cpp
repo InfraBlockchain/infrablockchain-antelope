@@ -10,7 +10,7 @@
 #include <eosio/chain/transaction.hpp>
 #include <eosio/chain/account_object.hpp>
 
-//#include <infrablockchain/chain/system_accounts.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
 #include <infrablockchain/chain/standard_token_action_handlers.hpp>
 #include <infrablockchain/chain/standard_token_action_types.hpp>
 #include <infrablockchain/chain/standard_token_manager.hpp>
