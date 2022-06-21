@@ -82,6 +82,40 @@ namespace infrablockchain { namespace chain {
     */
    void apply_infrablockchain_built_in_action_transfer( apply_context& context ) {
 
+      auto transfer_action = context.get_action().data_as_built_in_common_action<transfer>();
+      try {
+         const token_id_type token_id = context.get_action().account;
+         EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "transfer built-in standard token action handler should be invoked only in first receiver context" );
+
+         const account_name from_account = transfer_action.from;
+         const account_name to_account = transfer_action.to;
+         const share_type transfer_amount = transfer_action.qty.get_amount();
+
+         EOS_ASSERT( from_account != to_account, token_action_validate_exception, "same from, to account" );
+         EOS_ASSERT( transfer_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
+         EOS_ASSERT( transfer_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
+         // action parameter validation will be done in context.transfer_token()
+
+         auto& standard_token_manager = context.control.get_mutable_standard_token_manager();
+
+         auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
+         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", action_receiver) );
+         auto token_meta_obj = *token_meta_obj_ptr;
+         EOS_ASSERT( transfer_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
+                     "token symbol of quantity field mismatches with the symbol(${sym}) of the registered token metadata",
+                     ("sym", token_meta_obj.sym.to_string()) );
+
+         // need 'from' account signature
+         context.require_authorization( from_account );
+
+         // update token balance and ram usage
+         context.transfer_token( from_account, to_account, transfer_amount );
+
+         // notify 'transfer' action to 'from' and 'to' accounts who could process additional operations for their own sake
+         context.require_recipient( from_account );
+         context.require_recipient( to_account );
+
+      } FC_CAPTURE_AND_RETHROW( (transfer_action) )
    }
 
 
