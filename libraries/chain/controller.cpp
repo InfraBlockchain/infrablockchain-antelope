@@ -37,6 +37,7 @@
 #include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/standard_token_action_handlers.hpp>
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
 
 namespace eosio { namespace chain {
 
@@ -243,6 +244,7 @@ struct controller_impl {
    authorization_manager          authorization;
    protocol_feature_manager       protocol_features;
    standard_token_manager         standard_token;
+   transaction_fee_table_manager  transaction_fee_table;
    controller::config             conf;
    const chain_id_type            chain_id; // read by thread_pool threads, value will not be changed
    optional<fc::time_point>       replay_head_time;
@@ -331,6 +333,7 @@ struct controller_impl {
     authorization( s, db ),
     protocol_features( std::move(pfs) ),
     standard_token( db ),
+    transaction_fee_table( db ),
     conf( cfg ),
     chain_id( chain_id ),
     read_mode( cfg.read_mode ),
@@ -806,7 +809,7 @@ struct controller_impl {
       resource_limits.add_indices();
 
       standard_token.add_indices();
-      // TODO add transaction-fee-table index
+      transaction_fee_table.add_indices();
       // TODO add transaction-vote-table index
    }
 
@@ -910,7 +913,7 @@ struct controller_impl {
       resource_limits.add_to_snapshot(snapshot);
 
       standard_token.add_to_snapshot(snapshot);
-      // TODO transaction-fee-table
+      transaction_fee_table.add_to_snapshot(snapshot);
       // TODO transaction-vote-table
    }
 
@@ -1015,7 +1018,7 @@ struct controller_impl {
       resource_limits.read_from_snapshot(snapshot);
 
       standard_token.read_from_snapshot(snapshot);
-      // TODO transaction-fee-table
+      transaction_fee_table.read_from_snapshot(snapshot);
       // TODO transaction-vote-table
 
       db.set_revision( head->block_num );
@@ -1106,7 +1109,7 @@ struct controller_impl {
       resource_limits.initialize_database();
 
       standard_token.initialize_database();
-      // TODO: transaction fee manager
+      transaction_fee_table.initialize_database();
       // TODO: tx vote manager
 
       authority system_auth(genesis.initial_key);
@@ -2489,6 +2492,16 @@ const standard_token_manager&  controller::get_standard_token_manager()const
 standard_token_manager&        controller::get_mutable_standard_token_manager()
 {
    return my->standard_token;
+}
+
+const transaction_fee_table_manager&  controller::get_transaction_fee_table_manager()const
+{
+   return my->transaction_fee_table;
+}
+
+transaction_fee_table_manager&        controller::get_mutable_transaction_fee_table_manager()
+{
+   return my->transaction_fee_table;
 }
 
 uint32_t controller::get_max_nonprivileged_inline_action_size()const

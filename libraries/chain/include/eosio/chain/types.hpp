@@ -196,7 +196,7 @@ namespace eosio { namespace chain {
       infrablockchain_global_property_object_type,
       infrablockchain_token_meta_object_type,
       infrablockchain_token_balance_object_type,
-      infrablockchain_transaction_fee_table_object_type,
+      infrablockchain_transaction_fee_object_type,
       infrablockchain_received_transaction_votes_object_type
    };
 
