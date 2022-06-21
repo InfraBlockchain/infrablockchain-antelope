@@ -194,7 +194,8 @@ namespace eosio { namespace chain {
 
       INFRABLOCKCHAIN_OBJECT_TYPE_DELIMITER = 1000,
       infrablockchain_token_meta_object_type,
-      infrablockchain_token_balance_object_type
+      infrablockchain_token_balance_object_type,
+      infrablockchain_transaction_fee_table_object_type
    };
 
    /**
