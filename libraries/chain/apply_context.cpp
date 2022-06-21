@@ -13,6 +13,7 @@
 #include <boost/container/flat_set.hpp>
 
 #include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/exceptions.hpp>
 
 using boost::container::flat_set;
 using namespace infrablockchain::chain;
@@ -911,6 +912,37 @@ action_name apply_context::get_sender() const {
       return creator_trace.receiver;
    }
    return action_name();
+}
+
+//////////////////////////////////////
+/// InfraBlockchain Core API - Standard-Token
+
+void apply_context::issue_token( const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can issue its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token issuance must be greater than 0" );
+
+   token_id_type token_id = receiver;
+   auto& standard_token_manager = control.get_mutable_standard_token_manager();
+
+   auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
+   EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
+   auto token_meta_obj = *token_meta_obj_ptr;
+
+   EOS_ASSERT( is_account(to), no_token_target_account_exception,
+               "token issuance target account ${account} does not exist", ("account", to) );
+
+   const share_type old_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( old_total_supply + amount > 0, token_balance_overflow_exception, "total supply balance overflow" );
+
+   // update total supply
+   standard_token_manager.update_token_total_supply(token_meta_obj_ptr, amount);
+
+   // issue new token to 'to' account
+   standard_token_manager.add_token_balance( *this, token_id, to, amount );
 }
 
 } } /// eosio::chain

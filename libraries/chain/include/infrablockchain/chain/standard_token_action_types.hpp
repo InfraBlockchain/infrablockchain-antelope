@@ -21,9 +21,9 @@ namespace infrablockchain { namespace chain { namespace standard_token {
     */
 
    struct settokenmeta {
-      symbol       sym; // token symbol
-      std::string  url;
-      std::string  desc; // token description
+      symbol        sym;  // token symbol
+      std::string   url;
+      std::string   desc; // token description
 
       static action_name get_name() {
          return N(settokenmeta);
@@ -31,7 +31,6 @@ namespace infrablockchain { namespace chain { namespace standard_token {
    };
 
    struct issue {
-      account_name  t;   // token-id (token account name)
       account_name  to;  // token receiver account
       asset         qty; // token quantity
       std::string   tag;
@@ -42,7 +41,6 @@ namespace infrablockchain { namespace chain { namespace standard_token {
    };
 
    struct transfer {
-      account_name  t;    // token-id (token account name)
       account_name  from; // token sender account
       account_name  to;   // token receiver account
       asset         qty;  // token quantity
@@ -54,7 +52,6 @@ namespace infrablockchain { namespace chain { namespace standard_token {
    };
 
    struct txfee {
-      account_name  t;      // token-id (token account name)
       account_name  payer;  // transaction fee payer
       asset         fee;    // token quantity to pay tx fee
 
@@ -85,7 +82,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
 } } } /// infrablockchain::chain::standard_token
 
 FC_REFLECT( infrablockchain::chain::standard_token::settokenmeta , (sym)(url)(desc) )
-FC_REFLECT( infrablockchain::chain::standard_token::issue, (t)(to)(qty)(tag) )
-FC_REFLECT( infrablockchain::chain::standard_token::transfer, (t)(from)(to)(qty)(tag) )
-FC_REFLECT( infrablockchain::chain::standard_token::txfee, (t)(payer)(fee) )
+FC_REFLECT( infrablockchain::chain::standard_token::issue, (to)(qty)(tag) )
+FC_REFLECT( infrablockchain::chain::standard_token::transfer, (from)(to)(qty)(tag) )
+FC_REFLECT( infrablockchain::chain::standard_token::txfee, (payer)(fee) )
 FC_REFLECT( infrablockchain::chain::standard_token::redeem, (qty)(tag) )

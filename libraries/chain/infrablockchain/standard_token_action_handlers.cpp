@@ -28,8 +28,8 @@ namespace infrablockchain { namespace chain {
 
       auto settokenmeta_action = context.get_action().data_as_built_in_common_action<settokenmeta>();
       try {
-         token_id_type token_id = context.get_action().account;
-         EOS_ASSERT( token_id == context.get_receiver(), infrablockchain_standard_token_exception, "settokenmeta built-in action handler should be invoked only in first receiver context" );
+         const token_id_type token_id = context.get_action().account;
+         EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "settokenmeta built-in standard token action handler should be invoked only in first receiver context" );
 
          // only the account owner can set token metadata for its own token
          context.require_authorization(token_id);
@@ -44,6 +44,37 @@ namespace infrablockchain { namespace chain {
     */
    void apply_infrablockchain_built_in_action_issue( apply_context& context ) {
 
+      auto issue_action = context.get_action().data_as_built_in_common_action<issue>();
+      try {
+         const token_id_type token_id = context.get_action().account;
+         EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "issue built-in standard token action handler should be invoked only in first receiver context" );
+
+         EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
+         EOS_ASSERT( issue_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
+         // action parameter validation will be done in context.issue_token()
+
+         const account_name to_account = issue_action.to;
+         const share_type issue_amount = issue_action.qty.get_amount();
+
+         auto& standard_token_manager = context.control.get_standard_token_manager();
+
+         auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
+         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", action_receiver) );
+         auto token_meta_obj = *token_meta_obj_ptr;
+         EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
+                     "token symbol of quantity field mismatches with the symbol(${sym}) of the registered token metadata",
+                     ("sym", token_meta_obj.sym.to_string()) );
+
+         // only the token account owner can issue new token
+         context.require_authorization( token_id );
+
+         // update token balance and ram usage
+         context.issue_token( to_account, issue_amount );
+
+         // notify 'issue' action to 'to account who could process additional operations for their own sake
+         context.require_recipient( to_account );
+
+      } FC_CAPTURE_AND_RETHROW( (issue_action) )
    }
 
    /**
