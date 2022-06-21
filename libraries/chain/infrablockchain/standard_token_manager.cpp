@@ -214,7 +214,7 @@ namespace infrablockchain { namespace chain {
 
             share_type weighted_token_balance = token_balance;
             if ( sys_token.token_weight != system_token::token_weight_1x ) {
-               uint128_t weighted_token_balance_128 = ((uint128_t)token_balance * sys_token.token_weight) / (uint128_t)system_token::token_weight_1x;
+               eosio::chain::uint128_t weighted_token_balance_128 = ((eosio::chain::uint128_t)token_balance * sys_token.token_weight) / (eosio::chain::uint128_t)system_token::token_weight_1x;
 
                EOS_ASSERT(weighted_token_balance_128 <= std::numeric_limits<share_type>::max(), weighted_system_token_balance_overflow_exception,
                           "weighted system token balance overflow (account: ${account}, system-token-id: ${sys_token_id})", ("account", account)("sys_token_id", sys_token_id) );
