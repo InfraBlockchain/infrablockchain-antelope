@@ -35,6 +35,7 @@
 #include <new>
 
 #include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
 
 namespace eosio { namespace chain {
 
@@ -240,6 +241,7 @@ struct controller_impl {
    resource_limits_manager        resource_limits;
    authorization_manager          authorization;
    protocol_feature_manager       protocol_features;
+   standard_token_manager         standard_token;
    controller::config             conf;
    const chain_id_type            chain_id; // read by thread_pool threads, value will not be changed
    optional<fc::time_point>       replay_head_time;
@@ -316,6 +318,7 @@ struct controller_impl {
     resource_limits( db ),
     authorization( s, db ),
     protocol_features( std::move(pfs) ),
+    standard_token( db ),
     conf( cfg ),
     chain_id( chain_id ),
     read_mode( cfg.read_mode ),
@@ -779,7 +782,7 @@ struct controller_impl {
       authorization.add_indices();
       resource_limits.add_indices();
 
-      // TODO add standard-token index
+      standard_token.add_indices();
       // TODO add transaction-fee-table index
       // TODO add transaction-vote-table index
    }
@@ -882,6 +885,10 @@ struct controller_impl {
 
       authorization.add_to_snapshot(snapshot);
       resource_limits.add_to_snapshot(snapshot);
+
+      standard_token.add_to_snapshot(snapshot);
+      // TODO transaction-fee-table
+      // TODO transaction-vote-table
    }
 
    static fc::optional<genesis_state> extract_legacy_genesis_state( snapshot_reader& snapshot, uint32_t version ) {
@@ -984,6 +991,10 @@ struct controller_impl {
       authorization.read_from_snapshot(snapshot);
       resource_limits.read_from_snapshot(snapshot);
 
+      standard_token.read_from_snapshot(snapshot);
+      // TODO transaction-fee-table
+      // TODO transaction-vote-table
+
       db.set_revision( head->block_num );
       db.create<database_header_object>([](const auto& header){
          // nothing to do
@@ -1070,6 +1081,10 @@ struct controller_impl {
 
       authorization.initialize_database();
       resource_limits.initialize_database();
+
+      standard_token.initialize_database();
+      // TODO: transaction fee manager
+      // TODO: tx vote manager
 
       authority system_auth(genesis.initial_key);
       create_native_account( genesis.initial_timestamp, config::system_account_name, system_auth, system_auth, true );
@@ -2443,6 +2458,16 @@ const protocol_feature_manager& controller::get_protocol_feature_manager()const
    return my->protocol_features;
 }
 
+const standard_token_manager&  controller::get_standard_token_manager()const
+{
+   return my->standard_token;
+}
+
+standard_token_manager&        controller::get_mutable_standard_token_manager()
+{
+   return my->standard_token;
+}
+
 uint32_t controller::get_max_nonprivileged_inline_action_size()const
 {
    return my->conf.max_nonprivileged_inline_action_size;
@@ -2866,6 +2891,10 @@ const dynamic_global_property_object& controller::get_dynamic_global_properties(
 }
 const global_property_object& controller::get_global_properties()const {
   return my->db.get<global_property_object>();
+}
+
+const infrablockchain_global_property_object& controller::get_infrablockchain_global_properties()const {
+   return my->db.get<infrablockchain_global_property_object>();
 }
 
 signed_block_ptr controller::fetch_block_by_id( block_id_type id )const {

@@ -124,5 +124,3 @@ FC_REFLECT(infrablockchain::chain::token_meta_object, (token_id)(sym)(total_supp
 FC_REFLECT(infrablockchain::chain::token_balance_object, (token_id)(account)(balance) )
 
 FC_REFLECT(infrablockchain::chain::snapshot_token_meta_object, (token_id)(sym)(total_supply)(url)(desc) )
-
-FC_REFLECT(infrablockchain::chain::snapshot_token_meta_object, (token_id)(sym)(total_supply)(url)(desc) )

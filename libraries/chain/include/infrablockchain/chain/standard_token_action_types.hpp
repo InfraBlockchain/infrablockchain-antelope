@@ -26,7 +26,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
       std::string  desc; // token description
 
       static action_name get_name() {
-         return "settokenmeta"_n;
+         return N(settokenmeta);
       }
    };
 
@@ -37,7 +37,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
       std::string   tag;
 
       static action_name get_name() {
-         return "issue"_n;
+         return N(issue);
       }
    };
 
@@ -49,7 +49,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
       std::string   tag;
 
       static action_name get_name() {
-         return "transfer"_n;
+         return N(transfer);
       }
    };
 
@@ -59,7 +59,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
       asset         fee;    // token quantity to pay tx fee
 
       static action_name get_name() {
-         return "txfee"_n;
+         return N(txfee);
       }
    };
 
@@ -68,7 +68,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
       std::string   tag;
 
       static action_name get_name() {
-         return "redeem"_n;
+         return N(redeem);
       }
    };
 

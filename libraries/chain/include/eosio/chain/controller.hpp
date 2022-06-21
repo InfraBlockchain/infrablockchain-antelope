@@ -11,6 +11,8 @@
 #include <eosio/chain/protocol_feature_manager.hpp>
 #include <eosio/chain/webassembly/eos-vm-oc/config.hpp>
 
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+
 namespace chainbase {
    class database;
 }
@@ -18,7 +20,14 @@ namespace boost { namespace asio {
    class thread_pool;
 }}
 
+namespace infrablockchain { namespace chain {
+   class infrablockchain_global_property_object;
+   class standard_token_manager;
+} }
+
 namespace eosio { namespace chain {
+
+   using namespace infrablockchain::chain;
 
    class authorization_manager;
 
@@ -176,13 +185,20 @@ namespace eosio { namespace chain {
          const fork_database& fork_db()const;
 
          const account_object&                 get_account( account_name n )const;
+
          const global_property_object&         get_global_properties()const;
          const dynamic_global_property_object& get_dynamic_global_properties()const;
+         const infrablockchain_global_property_object& get_infrablockchain_global_properties()const;
+
          const resource_limits_manager&        get_resource_limits_manager()const;
          resource_limits_manager&              get_mutable_resource_limits_manager();
          const authorization_manager&          get_authorization_manager()const;
          authorization_manager&                get_mutable_authorization_manager();
          const protocol_feature_manager&       get_protocol_feature_manager()const;
+
+         const standard_token_manager&         get_standard_token_manager()const;
+         standard_token_manager&               get_mutable_standard_token_manager();
+
          uint32_t                              get_max_nonprivileged_inline_action_size()const;
 
          const flat_set<account_name>&   get_actor_whitelist() const;

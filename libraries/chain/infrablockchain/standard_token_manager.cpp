@@ -19,8 +19,47 @@ namespace infrablockchain { namespace chain {
 
    using namespace eosio::chain;
 
+   using standard_token_db_index_set = index_set<
+      token_meta_multi_index,
+      token_balance_multi_index
+   >;
+
    standard_token_manager::standard_token_manager( chainbase::database& db )
       : _db(db) {
+   }
+
+   void standard_token_manager::add_indices() {
+      standard_token_db_index_set::add_indices(_db);
+   }
+
+   void standard_token_manager::initialize_database() {
+
+   }
+
+   void standard_token_manager::add_to_snapshot( const snapshot_writer_ptr& snapshot ) const {
+      standard_token_db_index_set::walk_indices([this, &snapshot]( auto utils ){
+         using section_t = typename decltype(utils)::index_t::value_type;
+         snapshot->write_section<section_t>([this]( auto& section ){
+            decltype(utils)::walk(_db, [this, &section]( const auto &row ) {
+               section.add_row(row, _db);
+            });
+         });
+      });
+   }
+
+   void standard_token_manager::read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
+      standard_token_db_index_set::walk_indices([this, &snapshot]( auto utils ){
+         using section_t = typename decltype(utils)::index_t::value_type;
+
+         snapshot->read_section<section_t>([this]( auto& section ) {
+            bool more = !section.empty();
+            while(more) {
+               decltype(utils)::create(_db, [this, &section, &more]( auto &row ) {
+                  more = section.read_row(row, _db);
+               });
+            }
+         });
+      });
    }
 
    void standard_token_manager::set_token_meta_info( apply_context& context, const token_id_type &token_id, const standard_token::settokenmeta &token_meta ) {
@@ -51,12 +90,7 @@ namespace infrablockchain { namespace chain {
             token_meta_obj.desc.assign(token_meta.desc.data(), desc_size);
          } );
 
-         std::string event_id;
-         if (context.control.get_deep_mind_logger() != nullptr) {
-            event_id = STORAGE_EVENT_ID("${token_id}", ("token_id", token_id));
-         }
-         context.add_ram_usage(token_id, (int64_t)(config::billable_size_v<token_meta_object>),
-                               storage_usage_trace(context.get_action_id(), std::move(event_id), "stdtoken", "setmeta", "settokenmeta"));
+         context.add_ram_usage(token_id, (int64_t)(config::billable_size_v<token_meta_object>) );
       }
    }
 
@@ -98,12 +132,7 @@ namespace infrablockchain { namespace chain {
             balance_obj.balance = value;
          });
 
-         std::string event_id;
-         if (context.control.get_deep_mind_logger() != nullptr) {
-            event_id = STORAGE_EVENT_ID("${token_id}:${account}", ("token_id", token_id)("account", owner));
-         }
-         context.add_ram_usage(owner, (int64_t)(config::billable_size_v<token_balance_object>),
-                               storage_usage_trace(context.get_action_id(), std::move(event_id), "stdtoken", "addbal", "add_token_balance"));
+         context.add_ram_usage(owner, (int64_t)(config::billable_size_v<token_balance_object>) );
       }
    }
 
@@ -119,12 +148,7 @@ namespace infrablockchain { namespace chain {
          if ( cur_balance == value ) {
             _db.remove( *balance_obj_ptr );
 
-            std::string event_id;
-            if (context.control.get_deep_mind_logger() != nullptr) {
-               event_id = STORAGE_EVENT_ID("${token_id}:${account}", ("token_id", token_id)("account", owner));
-            }
-            context.add_ram_usage(owner, -(int64_t)(config::billable_size_v<token_balance_object>),
-                                  storage_usage_trace(context.get_action_id(), std::move(event_id), "stdtoken", "subbal", "subtract_token_balance"));
+            context.add_ram_usage(owner, -(int64_t)(config::billable_size_v<token_balance_object>) );
          } else {
             _db.modify<token_balance_object>( *balance_obj_ptr, [&]( token_balance_object& balance_obj ) {
                balance_obj.balance -= value;

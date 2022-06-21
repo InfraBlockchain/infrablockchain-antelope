@@ -37,6 +37,11 @@ namespace infrablockchain { namespace chain {
    public:
       explicit standard_token_manager( chainbase::database &db );
 
+      void add_indices();
+      void initialize_database();
+      void add_to_snapshot( const snapshot_writer_ptr &snapshot ) const;
+      void read_from_snapshot( const snapshot_reader_ptr &snapshot );
+
       void set_token_meta_info( apply_context& context, const token_id_type &token_id, const standard_token::settokenmeta &token_meta );
       const token_meta_object* get_token_meta_object( const token_id_type& token_id ) const;
       const symbol get_token_symbol( const token_id_type& token_id ) const;
@@ -46,6 +51,7 @@ namespace infrablockchain { namespace chain {
       void add_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );
       void subtract_token_balance( apply_context& context, token_id_type token_id, account_name owner, share_type value );
       share_type get_token_balance( const token_id_type& token_id, const account_name& account ) const;
+
 
    private:
       chainbase::database &_db;

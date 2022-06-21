@@ -50,6 +50,13 @@ if("eos-vm" IN_LIST EOSIO_WASM_RUNTIMES OR "eos-vm-jit" IN_LIST EOSIO_WASM_RUNTI
    set(CHAIN_EOSVM_LIBRARIES eos-vm)
 endif()
 
+set(INFRABLOCKCHAIN_CORE_SOURCES
+   infrablockchain/infrablockchain_global_property_object.cpp
+   infrablockchain/standard_token_manager.cpp
+#   infrablockchain/standard_token_action_handlers.cpp
+   infrablockchain/standard_token_object.cpp
+)
+
 ## SORT .cpp by most likely to change / break compile
 add_library( eosio_chain
              merkle.cpp
@@ -102,6 +109,9 @@ add_library( eosio_chain
              whitelisted_intrinsics.cpp
              thread_utils.cpp
              platform_timer_accuracy.cpp
+
+             ${INFRABLOCKCHAIN_CORE_SOURCES}
+
              ${PLATFORM_TIMER_IMPL}
              ${HEADERS}
              )
