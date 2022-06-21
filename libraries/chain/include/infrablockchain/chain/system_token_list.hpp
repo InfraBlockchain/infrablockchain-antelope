@@ -43,8 +43,8 @@ namespace infrablockchain { namespace chain {
     * defines the order of system tokens, system token list version
     */
    struct system_token_list {
-      uint32_t              version = 0; ///< sequentially incrementing version number
-      vector<system_token>  system_tokens;
+      uint32_t                   version = 0; ///< sequentially incrementing version number
+      std::vector<system_token>  system_tokens;
    };
 
    struct shared_system_token_list {
@@ -57,7 +57,8 @@ namespace infrablockchain { namespace chain {
          return *this;
       }
 
-      operator system_token_list()const {
+      operator system_token_list()const { return to_system_token_list(); }
+      system_token_list to_system_token_list()const {
          system_token_list result;
          result.version = version;
          result.system_tokens.reserve(system_tokens.size());
