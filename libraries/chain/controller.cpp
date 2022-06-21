@@ -34,7 +34,11 @@
 
 #include <new>
 
+#include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
+
 namespace eosio { namespace chain {
+
+using namespace infrablockchain::chain;
 
 using resource_limits::resource_limits_manager;
 
@@ -45,6 +49,7 @@ using controller_index_set = index_set<
    global_property_multi_index,
    protocol_state_multi_index,
    dynamic_global_property_multi_index,
+   infrablockchain_global_property_multi_index,
    block_summary_multi_index,
    transaction_multi_index,
    generated_transaction_multi_index,
@@ -773,6 +778,10 @@ struct controller_impl {
 
       authorization.add_indices();
       resource_limits.add_indices();
+
+      // TODO add standard-token index
+      // TODO add transaction-fee-table index
+      // TODO add transaction-vote-table index
    }
 
    void clear_all_undo() {
