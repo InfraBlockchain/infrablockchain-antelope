@@ -59,7 +59,7 @@ namespace infrablockchain { namespace chain {
          auto& standard_token_manager = context.control.get_standard_token_manager();
 
          auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
-         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", action_receiver) );
+         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", token_id) );
          auto token_meta_obj = *token_meta_obj_ptr;
          EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of the registered token metadata",
@@ -99,7 +99,7 @@ namespace infrablockchain { namespace chain {
          auto& standard_token_manager = context.control.get_mutable_standard_token_manager();
 
          auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
-         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", action_receiver) );
+         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", token_id) );
          auto token_meta_obj = *token_meta_obj_ptr;
          EOS_ASSERT( transfer_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of the registered token metadata",
@@ -124,6 +124,43 @@ namespace infrablockchain { namespace chain {
     */
    void apply_infrablockchain_built_in_action_txfee( apply_context& context ) {
 
+      auto txfee_action = context.get_action().data_as_built_in_common_action<txfee>();
+      try {
+         const token_id_type token_id = context.get_action().account;
+         EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "txfee built-in standard token action handler should be invoked only in first receiver context" );
+
+         const account_name payer_account = txfee_action.payer;
+         EOS_ASSERT( payer_account.good(), token_action_validate_exception, "invalid payer account name" );
+         EOS_ASSERT( txfee_action.fee.is_valid(), token_action_validate_exception, "invalid fee quantity" );
+
+         const share_type txfee_amount = txfee_action.fee.get_amount();
+         EOS_ASSERT( txfee_amount > 0, token_action_validate_exception, "tx fee amount must be greater than 0" );
+
+         auto& db = context.db;
+         auto& standard_token_manager = context.control.get_mutable_standard_token_manager();
+
+         auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
+         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", token_id) );
+         auto token_meta_obj = *token_meta_obj_ptr;
+
+         EOS_ASSERT( txfee_action.fee.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
+                     "token symbol of fee quantity field mismatches with the symbol(${sym}) of the registered token metadata",
+                     ("sym", token_meta_obj.sym.to_string()) );
+
+         auto* payer_account_obj_ptr = db.find<account_object, by_name>( payer_account );
+         EOS_ASSERT( payer_account_obj_ptr != nullptr, no_token_target_account_exception,
+                     "tx fee payer account ${account} does not exist", ("account", payer_account) );
+
+         context.require_authorization( payer_account );
+
+         standard_token_manager.subtract_token_balance( context, token_id, payer_account, txfee_amount );
+         standard_token_manager.add_token_balance( context, token_id, config::infrablockchain_sys_tx_fee_account_name, txfee_amount );
+
+         // notify 'txfee' action to payer account //and tx-fee system account
+         context.require_recipient( payer_account );
+         //context.require_recipient( INFRABLOCKCHAIN_SYS_TX_FEE_ACCOUNT );
+
+      } FC_CAPTURE_AND_RETHROW( (txfee_action) )
    }
 
 
