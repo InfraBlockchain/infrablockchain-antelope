@@ -553,14 +553,6 @@ class apply_context {
 
       action_name get_sender() const;
 
-
-   /// InfraBlockchain Core API - Standard-Token
-   public:
-
-      /// issue new token to an account
-      void issue_token( const account_name to, const share_type amount );
-
-
    /// InfraBlockchain Core API - Standard-Token
    public:
 
