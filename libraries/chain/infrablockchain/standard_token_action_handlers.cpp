@@ -169,6 +169,34 @@ namespace infrablockchain { namespace chain {
     */
    void apply_infrablockchain_built_in_action_redeem( apply_context& context ) {
 
+      auto redeem_action = context.get_action().data_as_built_in_common_action<redeem>();
+      try {
+         const token_id_type token_id = context.get_action().account;
+         EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "redeem built-in standard token action handler should be invoked only in first receiver context" );
+
+         EOS_ASSERT( redeem_action.qty.is_valid(), token_action_validate_exception, "invalid token redemption quantity" );
+         EOS_ASSERT( redeem_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
+         // action parameter validation will be done in context.issue_token()
+
+         const share_type redeem_amount = redeem_action.qty.get_amount();
+
+         auto& standard_token_manager = context.control.get_mutable_standard_token_manager();
+
+         auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
+         EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", token_id) );
+         auto token_meta_obj = *token_meta_obj_ptr;
+
+         EOS_ASSERT( redeem_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
+                     "token symbol of redemption quantity field mismatches with the symbol(${sym}) of the registered token metadata",
+                     ("sym", token_meta_obj.sym.to_string()) );
+
+         // only the token account owner can redeem(burn) tokens held by token account
+         context.require_authorization( token_id );
+
+         // update token balance and ram usage
+         context.redeem_token( redeem_amount );
+
+      } FC_CAPTURE_AND_RETHROW( (redeem_action) )
    }
 
 } } // namespace infrablockchain::chain

@@ -969,6 +969,31 @@ void apply_context::transfer_token( const account_name from, const account_name 
    standard_token_manager.add_token_balance( *this, token_id, to, amount );
 }
 
+void apply_context::redeem_token( const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can redeem(burn) its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
+
+   token_id_type token_account = receiver;
+
+   auto& standard_token_manager = control.get_mutable_standard_token_manager();
+
+   auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_account);
+   EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_account) );
+   auto token_meta_obj = *token_meta_obj_ptr;
+
+   share_type current_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( current_total_supply - amount > 0, token_balance_underflow_exception, "total supply balance underflow" );
+
+   // update total supply
+   standard_token_manager.update_token_total_supply(token_meta_obj_ptr, -amount);
+
+   // redeem(burn) tokens
+   standard_token_manager.subtract_token_balance( *this, token_account, token_account, amount );
+}
+
 //////////////////////////////////////////////
 
 } } /// eosio::chain
