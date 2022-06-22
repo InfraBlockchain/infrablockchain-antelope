@@ -3526,7 +3526,11 @@ void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_
 
 template<>
 void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol>() {
-   // TODO activate InfraBlockchain System Token / Transaction Fee Payment intrinsics
+   db.modify( db.get<protocol_state_object>(), [&]( auto& ps ) {
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_system_token_count" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_system_token_list_packed" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "set_system_token_list_packed" );
+   } );
 }
 
 template<>

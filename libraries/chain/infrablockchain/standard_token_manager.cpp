@@ -191,7 +191,7 @@ namespace infrablockchain { namespace chain {
       return version;
    }
 
-   int standard_token_manager::get_system_token_count() const {
+   uint32_t standard_token_manager::get_system_token_count() const {
       return static_cast<int>(_db.get<infrablockchain_global_property_object>().system_token_list.system_tokens.size());
    }
 

@@ -53,7 +53,7 @@ namespace infrablockchain { namespace chain {
       share_type get_token_balance( const token_id_type& token_id, const account_name& account ) const;
 
       int64_t set_system_token_list( vector<system_token> system_tokens );
-      int get_system_token_count() const;
+      uint32_t get_system_token_count() const;
       system_token_list get_system_token_list() const;
 
       system_token_balance get_system_token_balance( const account_name& account ) const;
