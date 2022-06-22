@@ -186,6 +186,17 @@ may use a new `set_proposed_producers_ex` intrinsic to access extended features.
 */
             {}
          } )
+         (  builtin_protocol_feature_t::infrablockchain_builtin_standard_token, builtin_protocol_feature_spec{
+            "BUILTIN_STANDARD_TOKEN",
+            fc::variant("1b1da971c23a54427185b7cfb5ea8e62db150ab7ed1203b0207698d0d205dec1").as<digest_type>(),
+            {}
+         } )
+            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
+/*
+Builtin protocol feature: BUILTIN_STANDARD_TOKEN
+
+Every account created can mint a Standard Token and run standard token operations natively supported at the blockchain core level.
+*/
    ;
 
 
