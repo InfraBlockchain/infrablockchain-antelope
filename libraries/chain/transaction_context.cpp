@@ -24,6 +24,7 @@
 #include <infrablockchain/chain/transaction_extensions.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
 #include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 namespace eosio { namespace chain {
 
@@ -124,9 +125,26 @@ namespace eosio { namespace chain {
          // dispatch 'txfee' actions to system token accounts that transaction fee payer has token balance for
          control.get_mutable_standard_token_manager().pay_transaction_fee( *this, fee_payer, tx_fee_amount );
 
-//         // Cast Transaction Vote - InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote
-//         cast_transaction_vote( tx_fee_amount );
+         // Cast Transaction Vote - InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote
+         cast_transaction_vote( tx_fee_amount );
       }
+   }
+
+   void transaction_context::cast_transaction_vote(transaction_vote_amount_type vote_amount) {
+      if (vote_amount > 0 && trx_vote.has_value() && !(trx_vote->to.empty())) {
+         EOS_ASSERT( trx_vote->amt <= std::numeric_limits<transaction_vote_amount_type>::max() - vote_amount, transaction_vote_amount_overflow, "transaction vote amount overflow per account on a transaction");
+         trx_vote->amt += vote_amount;
+         // update transaction vote statistics database
+         control.get_mutable_transaction_vote_stat_manager().add_transaction_vote_amount_to_target_account( *this, trx_vote->to, vote_amount );
+      }
+   }
+
+   bool transaction_context::has_transaction_vote() const {
+      return trx_vote.has_value() && trx_vote->has_vote();
+   }
+
+   const transaction_vote& transaction_context::get_transaction_vote() const {
+      return (*trx_vote);
    }
 
    void transaction_context::init(uint64_t initial_net_usage)
@@ -182,7 +200,7 @@ namespace eosio { namespace chain {
 
       if( control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol) ) {
 
-         unpacked_transaction_extensions = std::move(trx.validate_and_extract_extensions());
+         unpacked_transaction_extensions = trx.validate_and_extract_extensions();
 
          auto itr = unpacked_transaction_extensions.find(transaction_fee_payer_tx_ext::extension_id());
          if (itr != unpacked_transaction_extensions.end()) {
@@ -194,6 +212,17 @@ namespace eosio { namespace chain {
             tx_fee_payer = trx.first_authorizer();
          }
          bill_to_accounts.insert(*tx_fee_payer);
+
+         ////////////////////////////////////////////////////////////////
+         /// InfraBlockchain Transaction-Extension support for Transaction-as-a-vote and Proof-of-Transaction
+
+         if( control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol) ) {
+            auto itr_tx_vote = unpacked_transaction_extensions.find(transaction_vote_tx_ext::extension_id());
+            if (itr_tx_vote != unpacked_transaction_extensions.end()) {
+               const auto& tx_vote_info = itr_tx_vote->second.get<transaction_vote_tx_ext>();
+               trx_vote = transaction_vote{ tx_vote_info.vote_to, 0 };
+            }
+         }
 
       } else {
 

@@ -38,6 +38,7 @@
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/standard_token_action_handlers.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
 #include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 namespace eosio { namespace chain {
@@ -133,6 +134,10 @@ struct building_block {
    vector<transaction_receipt>           _pending_trx_receipts;
    vector<action_receipt>                _actions;
    optional<checksum256_type>            _transaction_mroot;
+
+   /// InfraBlockchain Transaction-as-a-Vote for Proof-of-Transaction
+   /// the accumulated transaction votes data of this block.
+   transaction_votes_in_block                 _trx_votes;
 };
 
 struct assembled_block {
@@ -143,6 +148,8 @@ struct assembled_block {
 
    // if the _unsigned_block pre-dates block-signing authorities this may be present.
    optional<producer_authority_schedule> _new_producer_authority_cache;
+
+   transaction_votes_in_block        _trx_votes; // will be moved to completed_block::_block_state
 };
 
 struct completed_block {
@@ -246,6 +253,7 @@ struct controller_impl {
    protocol_feature_manager       protocol_features;
    standard_token_manager         standard_token;
    transaction_fee_table_manager  transaction_fee_table;
+   transaction_vote_stat_manager  transaction_vote_stat;
    controller::config             conf;
    const chain_id_type            chain_id; // read by thread_pool threads, value will not be changed
    optional<fc::time_point>       replay_head_time;
@@ -335,6 +343,7 @@ struct controller_impl {
     protocol_features( std::move(pfs) ),
     standard_token( db ),
     transaction_fee_table( db ),
+    transaction_vote_stat( db ),
     conf( cfg ),
     chain_id( chain_id ),
     read_mode( cfg.read_mode ),
@@ -815,7 +824,7 @@ struct controller_impl {
 
       standard_token.add_indices();
       transaction_fee_table.add_indices();
-      // TODO add transaction-vote-table index
+      transaction_vote_stat.add_indices();
    }
 
    void clear_all_undo() {
@@ -1115,7 +1124,7 @@ struct controller_impl {
 
       standard_token.initialize_database();
       transaction_fee_table.initialize_database();
-      // TODO: tx vote manager
+      transaction_vote_stat.initialize_database();
 
       authority system_auth(genesis.initial_key);
       create_native_account( genesis.initial_timestamp, config::system_account_name, system_auth, system_auth, true );
@@ -1341,6 +1350,18 @@ struct controller_impl {
                                         trx_context.billed_cpu_time_us,
                                         trace->net_usage );
 
+         // InfraBlockchain Proof-of-Transaction
+         // accumulate transaction vote of this transaction to current block data,
+         // in a block, there can be multiple transaction-vote to multiple vote-to(candidate) accounts.
+         // the accumulated transaction vote data will finally be stored in the 'block_state' data structure of completed block data
+         // which will be propagated to the other blockchain node components (such as state_history_plugin)
+         if (self.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol)) {
+            if ( trx_context.has_transaction_vote() ) {
+               auto& bb = pending->_block_stage.get<building_block>();
+               bb._trx_votes.add_transaction_vote( trx_context.get_transaction_vote() );
+            }
+         }
+
          fc::move_append( pending->_block_stage.get<building_block>()._actions, move(trx_context.executed) );
 
          trace->account_ram_delta = account_delta( gtrx.payer, trx_removal_ram_delta );
@@ -1532,6 +1553,18 @@ struct controller_impl {
                r.cpu_usage_us = trx_context.billed_cpu_time_us;
                r.net_usage_words = trace->net_usage / 8;
                trace->receipt = r;
+            }
+
+            // InfraBlockchain Proof-of-Transaction
+            // accumulate transaction vote of this transaction to current block data,
+            // in a block, there can be multiple transaction-vote to multiple vote-to(candidate) accounts.
+            // the accumulated transaction vote data will finally be stored in the 'block_state' data structure of completed block data
+            // which will be propagated to the other blockchain node components (such as state_history_plugin)
+            if (self.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol)) {
+               if ( trx_context.has_transaction_vote() ) {
+                  auto& bb = pending->_block_stage.get<building_block>();
+                  bb._trx_votes.add_transaction_vote( trx_context.get_transaction_vote() );
+               }
             }
 
             fc::move_append(pending->_block_stage.get<building_block>()._actions, move(trx_context.executed));
@@ -1781,7 +1814,8 @@ struct controller_impl {
                                  std::move( bb._pending_block_header_state ),
                                  std::move( bb._pending_trx_metas ),
                                  std::move( block_ptr ),
-                                 std::move( bb._new_pending_producer_schedule )
+                                 std::move( bb._new_pending_producer_schedule ),
+                                 std::move( bb._trx_votes ) // to forward transaction-votes-in-block info to block_state
                               };
    } FC_CAPTURE_AND_RETHROW() } /// finalize_block
 
@@ -2009,6 +2043,12 @@ struct controller_impl {
          if( !use_bsp_cached ) {
             bsp->set_trxs_metas( std::move( ab._trx_metas ), !skip_auth_checks );
          }
+
+         if( self.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol) ) {
+            // forward transaction-votes-in-block info to block_state
+            bsp->set_transaction_votes_in_block( std::move(ab._trx_votes) );
+         }
+
          // create completed_block with the existing block_state as we just verified it is the same as assembled_block
          pending->_block_stage = completed_block{ bsp };
 
@@ -2510,6 +2550,16 @@ transaction_fee_table_manager&        controller::get_mutable_transaction_fee_ta
    return my->transaction_fee_table;
 }
 
+const transaction_vote_stat_manager&  controller::get_transaction_vote_stat_manager()const
+{
+   return my->transaction_vote_stat;
+}
+
+transaction_vote_stat_manager&        controller::get_mutable_transaction_vote_stat_manager()
+{
+   return my->transaction_vote_stat;
+}
+
 uint32_t controller::get_max_nonprivileged_inline_action_size()const
 {
    return my->conf.max_nonprivileged_inline_action_size;
@@ -2734,6 +2784,11 @@ block_state_ptr controller::finalize_block( const signer_callback_type& signer_c
                   {},
                   signer_callback
               );
+
+   if( is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol) ) {
+      // forward transaction-votes-in-block info to block_state
+      bsp->set_transaction_votes_in_block( std::move(ab._trx_votes) );
+   }
 
    my->pending->_block_stage = completed_block{ bsp };
 

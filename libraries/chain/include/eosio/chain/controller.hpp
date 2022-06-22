@@ -202,6 +202,8 @@ namespace eosio { namespace chain {
          standard_token_manager&               get_mutable_standard_token_manager();
          const transaction_fee_table_manager&  get_transaction_fee_table_manager()const;
          transaction_fee_table_manager&        get_mutable_transaction_fee_table_manager();
+         const transaction_vote_stat_manager&  get_transaction_vote_stat_manager()const;
+         transaction_vote_stat_manager&        get_mutable_transaction_vote_stat_manager();
 
          uint32_t                              get_max_nonprivileged_inline_action_size()const;
 
