@@ -556,6 +556,15 @@ class apply_context {
    /// InfraBlockchain Core API - Standard-Token
    public:
 
+      /// get token symbol of a token
+      symbol get_token_symbol( const account_name token_id ) const;
+
+      /// get total supply amount of a token
+      share_type get_token_total_supply( const account_name token_id ) const;
+
+      /// get token balance of an account for a token
+      share_type get_token_balance( const account_name token_id, const account_name account ) const;
+
       /// issue new token to an account
       void issue_token( const account_name to, const share_type amount );
 

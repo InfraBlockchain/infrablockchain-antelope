@@ -921,6 +921,18 @@ action_name apply_context::get_sender() const {
 //////////////////////////////////////
 /// InfraBlockchain Core API - Standard-Token
 
+symbol apply_context::get_token_symbol( const account_name token_id ) const {
+   return control.get_standard_token_manager().get_token_symbol(token_id);
+}
+
+share_type apply_context::get_token_total_supply( const account_name token_id ) const {
+   return control.get_standard_token_manager().get_token_total_supply(token_id);
+}
+
+share_type apply_context::get_token_balance( const account_name token_id, const account_name account ) const {
+   return control.get_standard_token_manager().get_token_balance( token_id, account );
+}
+
 void apply_context::issue_token( const account_name to, const share_type amount ) {
 
    /// Only the contract code of an token account or native built-in token action handler code can issue its own (action receiver's) tokens
