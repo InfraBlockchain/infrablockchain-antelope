@@ -3,10 +3,20 @@
 #include <eosio/chain/action.hpp>
 #include <numeric>
 
+#include <infrablockchain/chain/transaction_extensions.hpp>
+
 namespace eosio { namespace chain {
 
+   enum transaction_extension_id {
+      deferred_transaction_generation_context_id = 0,
+      resource_payer_id,
+      TRANSACTION_EXTENSION_ID_COUNT,
+
+      // @see infrablockchain::chain::transaction_extension_id for additional tx exts for InfraBlockchain
+   };
+
    struct deferred_transaction_generation_context : fc::reflect_init {
-      static constexpr uint16_t extension_id() { return 0; }
+      static constexpr uint16_t extension_id() { return transaction_extension_id::deferred_transaction_generation_context_id; }
       static constexpr bool     enforce_unique() { return true; }
 
       deferred_transaction_generation_context() = default;
@@ -33,7 +43,8 @@ namespace eosio { namespace chain {
    }
 
    using transaction_extension_types = detail::transaction_extension_types<
-      deferred_transaction_generation_context
+      deferred_transaction_generation_context,
+      infrablockchain::chain::transaction_fee_payer_tx_ext
    >;
 
    using transaction_extension = transaction_extension_types::transaction_extension_t;
