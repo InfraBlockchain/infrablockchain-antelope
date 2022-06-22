@@ -26,6 +26,7 @@ enum class builtin_protocol_feature_t : uint32_t {
 
    INFRABLOCKCHAIN_BUILTIN_PROTOCOL_FEATURE_TYPE_DELIMITER = 65536,
    infrablockchain_builtin_standard_token,
+   infrablockchain_selected_system_tokens_for_transaction_fee_payment,
 //   infrablockchain_transaction_fee_payer,
 //   infrablockchain_proof_of_transaction
 };

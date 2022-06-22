@@ -352,6 +352,7 @@ struct controller_impl {
       set_activation_handler<builtin_protocol_feature_t::wtmsig_block_signatures>();
 
       set_activation_handler<builtin_protocol_feature_t::infrablockchain_builtin_standard_token>();
+      set_activation_handler<builtin_protocol_feature_t::infrablockchain_selected_system_tokens_for_transaction_fee_payment>();
 
       self.irreversible_block.connect([this](const block_state_ptr& bsp) {
          wasmif.current_lib(bsp->block_num);
@@ -3456,6 +3457,11 @@ void controller_impl::on_activation<builtin_protocol_feature_t::wtmsig_block_sig
 template<>
 void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_builtin_standard_token>() {
    // TODO activate InfraBlockchain Standard Token intrinsics
+}
+
+template<>
+void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_selected_system_tokens_for_transaction_fee_payment>() {
+   // TODO activate InfraBlockchain System Token intrinsics
 }
 
 /// End of protocol feature activation handlers
