@@ -13,8 +13,8 @@ namespace infrablockchain { namespace chain {
 
    enum transaction_extension_id {
       INFRABLOCKCHAIN_TRANSACTION_EXTENSION_ID_DELIMITER = 1024,
-      infrablockchain_transaction_vote_tx_ext_id,       // 1025
-      infrablockchain_transaction_fee_payer_tx_ext_id   // 1026
+      infrablockchain_transaction_fee_payer_tx_ext_id,  // 1025
+      infrablockchain_transaction_vote_tx_ext_id        // 1026
    };
 
    /**
@@ -81,9 +81,61 @@ namespace infrablockchain { namespace chain {
 
       void reflector_init();
 
-      account_name        fee_payer;
+      account_name fee_payer;
+   };
+
+
+   /**
+    * InfraBlockchain Transaction-as-a-Vote protocol uses "transaction_extensions" field of EOSIO transaction binary data format.
+    * The transaction-extension field code for InfraBlockchain TaaV is 1026,
+    * and the field value should be encoded as the binary representation of 64bit base-32 encoding for blockchain account name of transaction-vote target
+    *
+    * Example of json representation blockchain transaction with InfraBlockchain TaaV
+    * {
+    *   "expiration": "2018-08-16T06:17:11",
+    *   "ref_block_num": 30369,
+    *   "ref_block_prefix": 1005358512,
+    *   "max_net_usage_words": 0,
+    *   "max_cpu_usage_ms": 0,
+    *   "delay_sec": 0,
+    *   "context_free_actions": [],
+    *   "actions": [{
+    *       "account": "infra.token",
+    *       "name": "transfer",
+    *       "authorization": [{
+    *           "actor": "useraccount3",
+    *           "permission": "active"
+    *         }
+    *       ],
+    *       "data": "30f2d414217315d620f2d414217315d600e1f5050000000004444b5257000000046d656d6f"
+    *     }
+    *   ],
+    *   "transaction_extensions": [[
+    *       1026,
+    *       "00c00257219de8ad"
+    *     ]
+    *   ],
+    *   "signatures": [
+    *     "SIG_K1_K24Pe1TVtdCzY2s4NvfvPd28NL1jHoFUEsugxPCXqonoSJDZ4XD9S7CMBP8WyTbhkBFweWT9GLBDDJgQCv9qSaL8SLbR2s"
+    *   ],
+    *   "context_free_data": []
+    * }
+    */
+   struct transaction_vote_tx_ext : fc::reflect_init {
+      static constexpr uint16_t extension_id() { return transaction_extension_id::infrablockchain_transaction_vote_tx_ext_id; }
+      static constexpr bool     enforce_unique() { return true; }
+
+      transaction_vote_tx_ext() = default;
+
+      transaction_vote_tx_ext( account_name vote_to )
+      :vote_to( vote_to ) {}
+
+      void reflector_init();
+
+      account_name vote_to;
    };
 
 } } /// infrablockchain::chain
 
 FC_REFLECT(infrablockchain::chain::transaction_fee_payer_tx_ext, (fee_payer) )
+FC_REFLECT(infrablockchain::chain::transaction_vote_tx_ext, (vote_to) )
