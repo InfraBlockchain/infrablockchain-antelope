@@ -208,6 +208,17 @@ Builtin protocol feature: SELECTED_SYSTEM_TOKENS_FOR_TX_FEE_PAYMENT
 
 Among the user-issued built-in Standard Tokens, the elected block producers can select some tokens to be used for blockchain transaction fee payment.
 */
+         (  builtin_protocol_feature_t::infrablockchain_transaction_fee_payer, builtin_protocol_feature_spec{
+            "TRANSACTION_FEE_PAYER",
+            fc::variant("7aa05b0956f31f601814693063fd424ab9790745e1d6233f738990db20334c19").as<digest_type>(),
+            {builtin_protocol_feature_t::infrablockchain_selected_system_tokens_for_transaction_fee_payment}
+         } )
+            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
+/*
+Builtin protocol feature: TRANSACTION_FEE_PAYER
+
+The transaction fee payer can be specified separately from the accounts directly involved in a transaction, the transaction fee payment can be delegated to some other account.
+*/
    ;
 
 
