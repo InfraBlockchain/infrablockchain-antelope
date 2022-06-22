@@ -24,6 +24,7 @@ namespace infrablockchain { namespace chain {
    class infrablockchain_global_property_object;
    class standard_token_manager;
    class transaction_fee_table_manager;
+   class transaction_vote_stat_manager;
 } }
 
 namespace eosio { namespace chain {

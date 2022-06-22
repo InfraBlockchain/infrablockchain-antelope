@@ -38,6 +38,7 @@
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/standard_token_action_handlers.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 
 namespace eosio { namespace chain {
 
@@ -918,7 +919,7 @@ struct controller_impl {
 
       standard_token.add_to_snapshot(snapshot);
       transaction_fee_table.add_to_snapshot(snapshot);
-      // TODO transaction-vote-table
+      transaction_vote_stat.add_to_snapshot(snapshot);
    }
 
    static fc::optional<genesis_state> extract_legacy_genesis_state( snapshot_reader& snapshot, uint32_t version ) {
@@ -1023,7 +1024,7 @@ struct controller_impl {
 
       standard_token.read_from_snapshot(snapshot);
       transaction_fee_table.read_from_snapshot(snapshot);
-      // TODO transaction-vote-table
+      transaction_vote_stat.read_from_snapshot(snapshot);
 
       db.set_revision( head->block_num );
       db.create<database_header_object>([](const auto& header){

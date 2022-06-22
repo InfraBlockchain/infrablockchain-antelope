@@ -82,7 +82,7 @@ namespace infrablockchain { namespace chain {
         transaction_vote_target_name_type to; // eosio::chain::name
         transaction_vote_amount_type amt;
 
-        bool has_vote() {
+        bool has_vote() const {
             return !to.empty() && amt != 0;
         }
     };
