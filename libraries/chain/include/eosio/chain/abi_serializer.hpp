@@ -503,8 +503,14 @@ namespace impl {
 
          // InfraBlockchain Transaction Fee Payer tx extension
          if (exts.count(transaction_fee_payer_tx_ext::extension_id()) > 0) {
-            const auto& transaction_fee_payer_context = exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second.get<transaction_fee_payer_tx_ext>();
-            mvo("transaction_fee_payer", transaction_fee_payer_context);
+            const auto& transaction_fee_payer = exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second.get<transaction_fee_payer_tx_ext>();
+            mvo("transaction_fee_payer", transaction_fee_payer);
+         }
+
+         // InfraBlockchain Transaction Vote tx extension
+         if (exts.count(transaction_vote_tx_ext::extension_id()) > 0) {
+            const auto& transaction_vote = exts.lower_bound(transaction_vote_tx_ext::extension_id())->second.get<transaction_vote_tx_ext>();
+            mvo("transaction_vote", transaction_vote);
          }
 
          out(name, std::move(mvo));
