@@ -6,6 +6,8 @@
 #include <fc/variant_object.hpp>
 #include <fc/scoped_exit.hpp>
 
+#include <infrablockchain/chain/transaction_extensions.hpp>
+
 namespace eosio { namespace chain {
 
 using std::map;
@@ -478,6 +480,8 @@ namespace impl {
       template<typename Resolver>
       static void add( mutable_variant_object &out, const char* name, const transaction& trx, Resolver resolver, abi_traverse_context& ctx )
       {
+         using namespace infrablockchain::chain;
+
          static_assert(fc::reflector<transaction>::total_member_count == 9);
          auto h = ctx.enter_scope();
          mutable_variant_object mvo;
@@ -495,6 +499,12 @@ namespace impl {
          if (exts.count(deferred_transaction_generation_context::extension_id()) > 0) {
             const auto& deferred_transaction_generation = exts.lower_bound(deferred_transaction_generation_context::extension_id())->second.get<deferred_transaction_generation_context>();
             mvo("deferred_transaction_generation", deferred_transaction_generation);
+         }
+
+         // InfraBlockchain Transaction Fee Payer tx extension
+         if (exts.count(transaction_fee_payer_tx_ext::extension_id()) > 0) {
+            const auto& transaction_fee_payer_context = exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second.get<transaction_fee_payer_tx_ext>();
+            mvo("transaction_fee_payer", transaction_fee_payer_context);
          }
 
          out(name, std::move(mvo));

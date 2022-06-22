@@ -4,7 +4,13 @@
 #include <eosio/chain/platform_timer.hpp>
 #include <signal.h>
 
+namespace infrablockchain { namespace chain {
+   class transaction_fee_table_manager;
+} }
+
 namespace eosio { namespace chain {
+
+   using namespace infrablockchain::chain;
 
    struct transaction_checktime_timer {
       public:
@@ -73,6 +79,7 @@ namespace eosio { namespace chain {
 
          friend struct controller_impl;
          friend class apply_context;
+         friend class infrablockchain::chain::standard_token_manager;
 
          void add_ram_usage( account_name account, int64_t ram_delta );
 
@@ -101,6 +108,8 @@ namespace eosio { namespace chain {
          void validate_account_cpu_usage_estimate( int64_t billed_us, int64_t account_cpu_limit )const;
 
          void disallow_transaction_extensions( const char* error_msg )const;
+
+         void process_transaction_fee_payment();
 
       /// Fields:
       public:
@@ -134,6 +143,16 @@ namespace eosio { namespace chain {
          bool                          explicit_billed_cpu_time = false;
 
          transaction_checktime_timer   transaction_timer;
+
+         bool                          implicit_tx = false;
+
+         flat_multimap<uint16_t, transaction_extension> unpacked_transaction_extensions;
+
+         /// InfraBlockchain Transaction Fee Payer
+         /// InfraBlockchain provides 'transaction fee payer' field for a blockchain transaction.
+         /// If 'transaction fee payer' field is specified in a submitted transaction, transaction fee is charged to
+         /// the specified transaction fee payer who signed the transaction message.
+         std::optional<account_name>   tx_fee_payer;
 
       private:
          bool                          is_initialized = false;

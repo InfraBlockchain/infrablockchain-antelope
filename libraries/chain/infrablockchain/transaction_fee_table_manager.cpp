@@ -125,4 +125,13 @@ namespace infrablockchain { namespace chain {
       }
    }
 
+   tx_fee_for_action transaction_fee_table_manager::get_tx_fee_for_action_trace(const action_trace& action_trace) const {
+      const account_name& code = action_trace.act.account;
+      if (code == action_trace.receiver) {  // exclude notified actions
+         return get_tx_fee_for_action(code, action_trace.act.name);
+      } else {
+         return tx_fee_for_action { 0, fixed_tx_fee_per_action_type };
+      }
+   }
+
 } } // namespace infrablockchain::chain
