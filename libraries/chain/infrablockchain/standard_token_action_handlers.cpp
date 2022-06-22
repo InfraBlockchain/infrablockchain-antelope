@@ -154,7 +154,7 @@ namespace infrablockchain { namespace chain {
          context.require_authorization( payer_account );
 
          standard_token_manager.subtract_token_balance( context, token_id, payer_account, txfee_amount );
-         standard_token_manager.add_token_balance( context, token_id, config::infrablockchain_sys_tx_fee_account_name, txfee_amount );
+         standard_token_manager.add_token_balance( context, token_id, infrablockchain_sys_tx_fee_account_name, txfee_amount );
 
          // notify 'txfee' action to payer account //and tx-fee system account
          context.require_recipient( payer_account );
