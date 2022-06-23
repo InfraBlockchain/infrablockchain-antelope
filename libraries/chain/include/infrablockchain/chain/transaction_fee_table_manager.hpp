@@ -63,4 +63,6 @@ namespace infrablockchain { namespace chain {
 
 } } /// infrablockchain::chain
 
-FC_REFLECT(infrablockchain::chain::tx_fee_for_action, (value)(fee_type) )
+FC_REFLECT( infrablockchain::chain::tx_fee_for_action, (value)(fee_type) )
+FC_REFLECT( infrablockchain::chain::tx_fee_list_item, (code)(action)(value)(fee_type) )
+FC_REFLECT( infrablockchain::chain::tx_fee_list_result, (tx_fee_list)(more) )

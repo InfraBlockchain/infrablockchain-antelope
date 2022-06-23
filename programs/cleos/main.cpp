@@ -2856,6 +2856,44 @@ int main( int argc, char** argv ) {
                  << std::endl;
    });
 
+   /////////////////////////////////////////////////
+   /// InfraBlockchain Transaction Fee Management
+
+   /// get txfee info
+   string codeName;
+   string actionName;
+   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve InfraBlockchain Transaction Fee Table information"));
+   get_txfee->require_subcommand();
+
+   auto get_txfee_item = get_txfee->add_subcommand("item", localized("Retrieve the transaction fee info for an action"));
+   get_txfee_item->add_option("code", codeName, localized("contract account name (if code==\"\", retrieve txfee for common actions (e.g. standard token actions))"))->required();
+   get_txfee_item->add_option("action", actionName, localized("action name (if code==\"\" and action==\"\", retrieves default txfee info"))->required();
+   get_txfee_item->callback([&] {
+       auto result = call(get_txfee_item_func,
+                          fc::mutable_variant_object("code", codeName)("action", actionName)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
+   /// get txfee list
+   string code_lower_bound;
+   string code_upper_bound;
+   uint32_t tx_fee_list_limit = 100;
+   auto get_txfee_list = get_txfee->add_subcommand("list", localized("Retrieve transaction fee item list"));
+   get_txfee_list->add_option("-L,--code-lower", code_lower_bound, localized("lower bound (inclusive) of contract code account name (if \"\", retrieves default transaction fee value and common built-in actions transaction fee values)"));
+   get_txfee_list->add_option("-U,--code-upper", code_upper_bound, localized("upper bound (inclusive) of contract code account name (if empty or not specified, upper bound is the end of all tx fee list)"));
+   get_txfee_list->add_option("-l,--limit", tx_fee_list_limit, localized("max limit of result item count (default = 100)"));
+   get_txfee_list->callback([&] {
+       auto result = call(get_txfee_list_func,
+                          fc::mutable_variant_object("code_lower_bound", code_lower_bound)("code_upper_bound", code_upper_bound)("limit", tx_fee_list_limit)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
    //////////////////////////////////////////////
 
    // currency accessors
