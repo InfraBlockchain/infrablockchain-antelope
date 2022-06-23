@@ -94,6 +94,10 @@ namespace eosio { namespace client { namespace http {
    const string get_abi_func = chain_func_base + "/get_abi";
    const string get_raw_abi_func = chain_func_base + "/get_raw_abi";
    const string get_raw_code_and_abi_func = chain_func_base + "/get_raw_code_and_abi";
+
+   const string get_token_balance_func = chain_func_base + "/get_token_balance";
+   const string get_token_info_func = chain_func_base + "/get_token_info";
+
    const string get_currency_balance_func = chain_func_base + "/get_currency_balance";
    const string get_currency_stats_func = chain_func_base + "/get_currency_stats";
    const string get_producers_func = chain_func_base + "/get_producers";

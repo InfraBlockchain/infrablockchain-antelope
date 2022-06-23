@@ -341,6 +341,19 @@ public:
 
    get_table_by_scope_result get_table_by_scope( const get_table_by_scope_params& params )const;
 
+   struct get_token_balance_params {
+      name token;
+      name account;
+   };
+
+   asset get_token_balance(const get_token_balance_params &params) const;
+
+   struct get_token_info_params {
+      name token;
+   };
+
+   fc::variant get_token_info(const get_token_info_params &params) const;
+
    struct get_currency_balance_params {
       name             code;
       name             account;
@@ -787,6 +800,9 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more)(ne
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit)(reverse) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
+
+FC_REFLECT( eosio::chain_apis::read_only::get_token_balance_params, (token)(account));
+FC_REFLECT( eosio::chain_apis::read_only::get_token_info_params, (token));
 
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
