@@ -30,6 +30,7 @@
 #include <infrablockchain/chain/standard_token_action_types.hpp>
 #include <infrablockchain/chain/system_accounts.hpp>
 #include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
 
 // reflect chainbase::environment for --print-build-info option
 FC_REFLECT_ENUM( chainbase::environment::os_t,
@@ -1926,6 +1927,16 @@ fc::variant read_only::get_system_token_list(const get_system_token_list_params 
 infrablockchain::chain::system_token_balance read_only::get_system_token_balance(const get_system_token_balance_params &params) const {
     auto& token_manager = db.get_standard_token_manager();
     return token_manager.get_system_token_balance( params.account );
+}
+
+infrablockchain::chain::tx_fee_for_action read_only::get_txfee_item(const get_txfee_item_params &params) const {
+   auto& tx_fee_table_manager = db.get_transaction_fee_table_manager();
+   return tx_fee_table_manager.get_tx_fee_for_action(params.code, params.action);
+}
+
+infrablockchain::chain::tx_fee_list_result read_only::get_txfee_list(const get_txfee_list_params &params) const {
+   auto& tx_fee_table_manager = db.get_transaction_fee_table_manager();
+   return tx_fee_table_manager.get_tx_fee_list(params.code_lower_bound, params.code_upper_bound, params.limit);
 }
 
 vector<asset> read_only::get_currency_balance( const read_only::get_currency_balance_params& p )const {

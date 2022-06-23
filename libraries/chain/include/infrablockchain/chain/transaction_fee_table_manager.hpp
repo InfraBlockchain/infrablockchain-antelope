@@ -22,6 +22,18 @@ namespace infrablockchain { namespace chain {
       tx_fee_type_type fee_type;
    };
 
+   struct tx_fee_list_item {
+       account_name code;
+       action_name action;
+       tx_fee_value_type value;
+       tx_fee_type_type fee_type;
+   };
+
+   struct tx_fee_list_result {
+       vector<tx_fee_list_item> tx_fee_list;
+       bool more = false;
+   };
+
    class transaction_fee_table_manager {
    public:
       explicit transaction_fee_table_manager(chainbase::database& db);
@@ -42,6 +54,8 @@ namespace infrablockchain { namespace chain {
       tx_fee_for_action get_default_tx_fee() const;
 
       tx_fee_for_action get_tx_fee_for_action_trace(const action_trace& action_trace) const;
+
+      tx_fee_list_result get_tx_fee_list(const account_name& code_lower_bound, const account_name& code_upper_bound, const uint32_t limit) const;
 
    private:
       chainbase::database& _db;

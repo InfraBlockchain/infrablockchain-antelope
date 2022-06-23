@@ -21,6 +21,7 @@
 #include <fc/static_variant.hpp>
 
 #include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
 
 namespace fc { class variant; }
 
@@ -367,6 +368,21 @@ public:
    };
 
    infrablockchain::chain::system_token_balance get_system_token_balance(const get_system_token_balance_params &params) const;
+
+   struct get_txfee_item_params {
+       name code;
+       name action;
+   };
+
+   infrablockchain::chain::tx_fee_for_action get_txfee_item(const get_txfee_item_params &params) const;
+
+   struct get_txfee_list_params {
+       name code_lower_bound; // lower bound of code account name (inclusive)
+       name code_upper_bound; // upper bound of code account name (inclusive)
+       uint32_t limit = 100; // limit of result item count
+   };
+
+   infrablockchain::chain::tx_fee_list_result get_txfee_list(const get_txfee_list_params &params) const;
 
    struct get_currency_balance_params {
       name             code;
@@ -819,6 +835,8 @@ FC_REFLECT( eosio::chain_apis::read_only::get_token_balance_params, (token)(acco
 FC_REFLECT( eosio::chain_apis::read_only::get_token_info_params, (token) );
 FC_REFLECT( eosio::chain_apis::read_only::get_system_token_list_params, (token_meta) );
 FC_REFLECT( eosio::chain_apis::read_only::get_system_token_balance_params, (account) );
+FC_REFLECT( eosio::chain_apis::read_only::get_txfee_item_params, (code)(action) );
+FC_REFLECT( eosio::chain_apis::read_only::get_txfee_list_params, (code_lower_bound)(code_upper_bound)(limit) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
