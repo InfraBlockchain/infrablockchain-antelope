@@ -101,6 +101,8 @@ namespace eosio { namespace client { namespace http {
    const string get_system_token_balance_func = chain_func_base + "/get_system_token_balance";
    const string get_txfee_item_func = chain_func_base + "/get_txfee_item";
    const string get_txfee_list_func = chain_func_base + "/get_txfee_list";
+   const string get_tx_vote_stat_for_account_func = chain_func_base + "/get_tx_vote_stat_for_account";
+   const string get_top_tx_vote_receiver_list_func = chain_func_base + "/get_top_tx_vote_receiver_list";
 
    const string get_currency_balance_func = chain_func_base + "/get_currency_balance";
    const string get_currency_stats_func = chain_func_base + "/get_currency_stats";
