@@ -127,6 +127,8 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_table_by_scope, 200),
       CHAIN_RO_CALL(get_token_balance, 200),
       CHAIN_RO_CALL(get_token_info, 200),
+      CHAIN_RO_CALL(get_system_token_list, 200),
+      CHAIN_RO_CALL(get_system_token_balance, 200),
       CHAIN_RO_CALL(get_currency_balance, 200),
       CHAIN_RO_CALL(get_currency_stats, 200),
       CHAIN_RO_CALL(get_producers, 200),
