@@ -32,6 +32,7 @@
 #include <infrablockchain/chain/standard_token_manager.hpp>
 #include <infrablockchain/chain/transaction_fee_table_manager.hpp>
 #include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+#include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
 
 // reflect chainbase::environment for --print-build-info option
 FC_REFLECT_ENUM( chainbase::environment::os_t,
@@ -2026,6 +2027,9 @@ read_only::get_producers_result read_only::get_producers( const read_only::get_p
    const auto& d = db.db();
    const auto lower = name{p.lower_bound};
 
+   bool proofOfTransactionEnabled = db.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol);
+   auto& tx_vote_stat_manager = db.get_transaction_vote_stat_manager();
+
    static const uint8_t secondary_index_num = 0;
    const auto* const table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
            boost::make_tuple(config::system_account_name, config::system_account_name, N(producers)));
@@ -2058,13 +2062,49 @@ read_only::get_producers_result read_only::get_producers( const read_only::get_p
          break;
       }
       copy_inline_row(*kv_index.find(boost::make_tuple(table_id->id, it->primary_key)), data);
-      if (p.json)
-         result.rows.emplace_back( abis.binary_to_variant( abis.get_table_type(N(producers)), data, abi_serializer::create_yield_function( abi_serializer_max_time ), shorten_abi_errors ) );
-      else
-         result.rows.emplace_back(fc::variant(data));
+      if (proofOfTransactionEnabled) {
+         auto producer_item = abis.binary_to_variant( abis.get_table_type(N(producers)), data, abi_serializer_max_time, shorten_abi_errors );
+
+         //      account_name          owner;
+         //      double                total_votes = 0;
+         //      double                total_votes_weight = 0;
+         //      eosio::public_key     producer_key; /// a packed public key object
+         //      bool                  is_active = true;
+         //      bool                  is_trusted_seed = false; // authorized flag for permissioned setup
+         //      std::string           url;
+         //      uint32_t              unpaid_blocks = 0;
+         //      uint64_t              last_claim_time = 0;
+         //      uint16_t              location = 0;
+
+         auto owner = producer_item["owner"];
+         account_name producer_account_name(owner.as_string());
+         auto tx_vote_receiver_stat = tx_vote_stat_manager.get_transaction_vote_stat_for_account(producer_account_name);
+
+         result.rows.emplace_back(
+            fc::mutable_variant_object("owner", owner)
+               ("total_votes_weight", tx_vote_receiver_stat.tx_votes_weighted)
+               ("total_votes", tx_vote_receiver_stat.tx_votes)
+               ("producer_key", producer_item["producer_key"])
+               ("is_active", producer_item["is_active"])
+               ("is_trusted_seed", producer_item["is_trusted_seed"])
+               ("url", producer_item["url"])
+               ("unpaid_blocks", producer_item["unpaid_blocks"])
+               ("last_claim_time", producer_item["last_claim_time"])
+               ("location", producer_item["location"])
+         );
+      } else {
+         if (p.json)
+            result.rows.emplace_back( abis.binary_to_variant( abis.get_table_type(N(producers)), data, abi_serializer::create_yield_function( abi_serializer_max_time ), shorten_abi_errors ) );
+         else
+            result.rows.emplace_back(fc::variant(data));
+      }
    }
 
-   result.total_producer_vote_weight = get_global_row(d, abi, abis, abi_serializer_max_time, shorten_abi_errors)["total_producer_vote_weight"].as_double();
+   if (proofOfTransactionEnabled) {
+      result.total_producer_vote_weight = db.get_infrablockchain_global_properties().total_tx_votes_weighted;
+   } else {
+      result.total_producer_vote_weight = get_global_row(d, abi, abis, abi_serializer_max_time, shorten_abi_errors)["total_producer_vote_weight"].as_double();
+   }
    return result;
 } catch (...) {
    read_only::get_producers_result result;
