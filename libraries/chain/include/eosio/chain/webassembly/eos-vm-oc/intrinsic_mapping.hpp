@@ -261,7 +261,9 @@ constexpr auto intrinsic_table = boost::hana::make_tuple(
    "env.set_trx_fee_for_action"_s,
    "env.unset_trx_fee_for_action"_s,
    "env.get_trx_fee_for_action"_s,
-   "env.trx_fee_payer"_s
+   "env.trx_fee_payer"_s,
+   "env.get_top_transaction_vote_receivers_packed"_s,
+   "env.get_total_weighted_transaction_votes"_s
 );
 
 }}}

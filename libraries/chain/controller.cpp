@@ -3540,7 +3540,10 @@ void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_
 
 template<>
 void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol>() {
-   // TODO activate InfraBlockchain Proof-of-Transaction intrinsics
+   db.modify( db.get<protocol_state_object>(), [&]( auto& ps ) {
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_top_transaction_vote_receivers_packed" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_total_weighted_transaction_votes" );
+   } );
 }
 
 /// End of protocol feature activation handlers

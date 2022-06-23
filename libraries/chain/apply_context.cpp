@@ -613,7 +613,7 @@ void apply_context::remove_table( const table_id_object& tid ) {
    db.remove(tid);
 }
 
-vector<account_name> apply_context::get_active_producers() const {
+std::vector<account_name> apply_context::get_active_producers() const {
    const auto& ap = control.active_producers();
    vector<account_name> accounts; accounts.reserve( ap.producers.size() );
 
@@ -1042,6 +1042,14 @@ tx_fee_for_action apply_context::get_transaction_fee_for_action( const account_n
 
 account_name apply_context::get_transaction_fee_payer() const {
    return trx_context.get_tx_fee_payer();
+}
+
+std::vector<tx_vote_stat_for_account> apply_context::get_top_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit ) const {
+   return control.get_transaction_vote_stat_manager().get_top_sorted_transaction_vote_receivers( offset_rank, limit, false ).tx_vote_receiver_list;
+}
+
+double apply_context::get_total_weighted_transaction_votes() const {
+   return control.get_transaction_vote_stat_manager().get_total_weighted_transaction_vote_amount();
 }
 
 //////////////////////////////////////////////
