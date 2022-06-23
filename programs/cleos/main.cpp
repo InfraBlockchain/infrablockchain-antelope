@@ -2828,6 +2828,35 @@ int main( int argc, char** argv ) {
    });
 
    //////////////////////////////////////////////
+   /// InfraBlockchain System Token
+
+   /// get systoken list
+   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve InfraBlockchain System Token Information"));
+   get_systoken->require_subcommand();
+
+   auto get_systoken_list = get_systoken->add_subcommand("list", localized("Retrieve the system token list used as transaction fee payment token(s)"));
+   get_systoken_list->callback([&] {
+       auto result = call(get_system_token_list_func,
+                          fc::mutable_variant_object("token_meta", true)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
+   /// get systoken balance
+   auto get_systoken_balance = get_systoken->add_subcommand("balance", localized("Retrieve system token balance info of an account"));
+   get_systoken_balance->add_option("account", accountName, localized("The name of the account to retrieve system token balance"))->required();
+   get_systoken_balance->callback([&] {
+       auto result = call(get_system_token_balance_func,
+                          fc::mutable_variant_object("account", accountName)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
+   //////////////////////////////////////////////
 
    // currency accessors
    // get currency balance
