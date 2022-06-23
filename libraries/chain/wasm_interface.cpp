@@ -1702,6 +1702,77 @@ class system_token_api : public context_aware_api {
       }
 };
 
+class infrablockchain_transaction_api : public context_aware_api {
+   public:
+      using context_aware_api::context_aware_api;
+
+      ///////////////////////////////////////////////////////////////
+      /// InfraBlockchain Transaction Fee Management Core API (Intrinsics)
+
+      /**
+       *  Set Transaction Fee For Action
+       *  @brief set transaction fee for an action. the transaction fee for each code/action is determined by the 2/3+ block producers.
+       *  if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. InfraBlockchain standard token actions) that every account has.
+       *  if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup.
+       *
+       *  @param code - account name of contract code
+       *  @param action - action name
+       *  @param value - transaction fee value
+       *  @param fee_type - transaction fee type (1: fixed_tx_fee_per_action_type)
+       */
+      void set_trx_fee_for_action( account_name code, action_name action, int32_t value, uint32_t fee_type ) {
+         // "priviliged" condition is checked on apply_context impl.
+         context.set_transaction_fee_for_action( code, action, value, fee_type );
+      }
+
+      /**
+       *  Unset Transaction Fee For Action
+       *  @brief delete transaction fee entry for an action (to the unsset status)
+       *
+       *  @param code - account name of contract code
+       *  @param action - action name
+       */
+      void unset_trx_fee_for_action( account_name code, action_name action ) {
+         // "priviliged" condition is checked on apply_context impl.
+         context.unset_transaction_fee_for_action( code, action );
+      }
+
+      /**
+       *  Get Transaction Fee For Action
+       *  @brief get transaction fee for an action,
+       *  if code == account_name(0), transaction fee info for an built-in common action is retrieved.
+       *  if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup.
+       *
+       *  @param code - account name of contract code
+       *  @param action - action name
+       *  @param[out] packed_trx_fee_for_action - output buffer of the packed 'infrablockchain::chain::tx_fee_for_action' object, only retrieved if sufficent size to hold packed data.
+       *  @param buffer_size output buffer size
+       *  @return size of the packed 'infrablockchain::chain::tx_fee_for_action' data
+       */
+      uint32_t get_trx_fee_for_action( account_name code, action_name action, array_ptr<char> packed_trx_fee_for_action, uint32_t buffer_size ) const {
+         infrablockchain::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
+
+         auto s = fc::raw::pack_size( tx_fee_for_action );
+         if( buffer_size == 0 ) return s;
+
+         if ( s <= buffer_size ) {
+            datastream<char*> ds( packed_trx_fee_for_action, s );
+            fc::raw::pack(ds, tx_fee_for_action);
+            return s;
+         }
+         return 0;
+      }
+
+      /**
+       *  Get the transaction fee payer account name
+       *  @brief Get the transaction fee payer account to which transaction fee is charged
+       *  @return the transaction fee payer account name
+       */
+      account_name trx_fee_payer() const {
+         return context.get_transaction_fee_payer();
+      }
+};
+
 class compiler_builtins : public context_aware_api {
    public:
       compiler_builtins( apply_context& ctx )
@@ -2177,6 +2248,13 @@ REGISTER_INTRINSICS(system_token_api,
    (get_system_token_count,        int()                 )
    (get_system_token_list_packed,  int(int, int)         )
    (set_system_token_list_packed,  int64_t(int, int)      )
+);
+
+REGISTER_INTRINSICS(infrablockchain_transaction_api,
+   (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int)  )
+   (unset_trx_fee_for_action,  void(int64_t, int64_t)                )
+   (get_trx_fee_for_action,    int(int64_t, int64_t, int, int)       )
+   (trx_fee_payer,             int64_t()                             )
 );
 
 REGISTER_INTRINSICS(context_free_api,

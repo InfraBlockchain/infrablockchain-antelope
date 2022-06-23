@@ -257,7 +257,11 @@ constexpr auto intrinsic_table = boost::hana::make_tuple(
    "env.redeem_token"_s,
    "env.get_system_token_count"_s,
    "env.get_system_token_list_packed"_s,
-   "env.set_system_token_list_packed"_s
+   "env.set_system_token_list_packed"_s,
+   "env.set_trx_fee_for_action"_s,
+   "env.unset_trx_fee_for_action"_s,
+   "env.get_trx_fee_for_action"_s,
+   "env.trx_fee_payer"_s
 );
 
 }}}

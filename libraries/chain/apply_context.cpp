@@ -1010,6 +1010,40 @@ void apply_context::redeem_token( const share_type amount ) {
    standard_token_manager.subtract_token_balance( *this, token_account, token_account, amount );
 }
 
+//////////////////////////////////////
+/// InfraBlockchain Core API - Transaction-Fee-Management
+
+void apply_context::set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call set_trx_fee_for_action API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   if ( !code.empty() ) {
+      EOS_ASSERT( is_account(code), account_query_exception, "account ${code} does not exist", ("code", code) );
+      if ( !infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+         auto abis = control.get_abi_serializer( code, abi_serializer::create_yield_function( fc::microseconds(chain::config::default_abi_serializer_max_time_us) /*control.get_abi_serializer_max_time()*/ ) );
+         EOS_ASSERT( abis.valid()/*has_value()*/, abi_not_found_exception, "failed to get abi_serializer for account ${code}", ("code", code) );
+         EOS_ASSERT( abis->get_action_type( action ).size() > 0, abi_exception, "abi does not contain action ${action}", ("action", action) );
+      }
+   }
+
+   control.get_mutable_transaction_fee_table_manager().set_tx_fee_for_action( code, action, value, fee_type );
+}
+
+void apply_context::unset_transaction_fee_for_action( const account_name& code, const action_name& action ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call unset_trx_fee_for_action API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   control.get_mutable_transaction_fee_table_manager().unset_tx_fee_entry_for_action(code, action);
+}
+
+tx_fee_for_action apply_context::get_transaction_fee_for_action( const account_name& code, const action_name& action ) const {
+   return control.get_transaction_fee_table_manager().get_tx_fee_for_action( code, action );
+}
+
+account_name apply_context::get_transaction_fee_payer() const {
+   return trx_context.get_tx_fee_payer();
+}
+
 //////////////////////////////////////////////
 
 } } /// eosio::chain
