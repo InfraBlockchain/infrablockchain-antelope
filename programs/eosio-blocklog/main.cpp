@@ -123,7 +123,7 @@ void blocklog::read_log() {
    auto print_block = [&](signed_block_ptr& next) {
       abi_serializer::to_variant(*next,
                                  pretty_output,
-                                 []( account_name n ) { return optional<abi_serializer>(); },
+                                 []( account_name n, action_name a ) { return optional<abi_serializer>(); },
                                  abi_serializer::create_yield_function( deadline ));
       const auto block_id = next->id();
       const uint32_t ref_block_prefix = block_id._hash[1];

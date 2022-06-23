@@ -441,20 +441,24 @@ void print_action( const fc::variant& at ) {
 }
 
 //resolver for ABI serializer to decode actions in proposed transaction in multisig contract
-auto abi_serializer_resolver = [](const name& account) -> fc::optional<abi_serializer> {
+auto abi_serializer_resolver = [](name code, name action) -> fc::optional<abi_serializer> {
    static unordered_map<account_name, fc::optional<abi_serializer> > abi_cache;
-   auto it = abi_cache.find( account );
+
+   if ( infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+      code = infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name;
+   }
+   auto it = abi_cache.find( code );
    if ( it == abi_cache.end() ) {
-      auto result = call(get_abi_func, fc::mutable_variant_object("account_name", account));
+      auto result = call(get_abi_func, fc::mutable_variant_object("account_name", code));
       auto abi_results = result.as<eosio::chain_apis::read_only::get_abi_results>();
 
       fc::optional<abi_serializer> abis;
       if( abi_results.abi.valid() ) {
          abis.emplace( *abi_results.abi, abi_serializer::create_yield_function( abi_serializer_max_time ) );
       } else {
-         std::cerr << "ABI for contract " << account.to_string() << " not found. Action data will be shown in hex only." << std::endl;
+         std::cerr << "ABI for contract " << code.to_string() << " not found. Action data will be shown in hex only." << std::endl;
       }
-      abi_cache.emplace( account, abis );
+      abi_cache.emplace( code, abis );
 
       return abis;
    }
@@ -465,7 +469,7 @@ auto abi_serializer_resolver = [](const name& account) -> fc::optional<abi_seria
 bytes variant_to_bin( const account_name& account, const action_name& action, const fc::variant& action_args_var ) {
    account_name contract = infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action)?
       infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name : account;
-   auto abis = abi_serializer_resolver( contract );
+   auto abis = abi_serializer_resolver( contract, action );
    FC_ASSERT( abis, "No ABI found for ${contract}", ("contract", contract));
 
    auto action_type = abis->get_action_type( action );
@@ -474,7 +478,7 @@ bytes variant_to_bin( const account_name& account, const action_name& action, co
 }
 
 fc::variant bin_to_variant( const account_name& account, const action_name& action, const bytes& action_args) {
-   auto abis = abi_serializer_resolver( account );
+   auto abis = abi_serializer_resolver( account, action );
    FC_ASSERT( abis.valid(), "No ABI found for ${contract}", ("contract", account));
 
    auto action_type = abis->get_action_type( action );
