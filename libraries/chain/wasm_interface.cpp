@@ -1749,7 +1749,7 @@ class infrablockchain_transaction_api : public context_aware_api {
        *  @param buffer_size output buffer size
        *  @return size of the packed 'infrablockchain::chain::tx_fee_for_action' data
        */
-      uint32_t get_trx_fee_for_action( account_name code, action_name action, array_ptr<char> packed_trx_fee_for_action, uint32_t buffer_size ) const {
+      uint32_t get_trx_fee_for_action_packed( account_name code, action_name action, array_ptr<char> packed_trx_fee_for_action, uint32_t buffer_size ) const {
          infrablockchain::chain::tx_fee_for_action tx_fee_for_action = context.get_transaction_fee_for_action( code ,action );
 
          auto s = fc::raw::pack_size( tx_fee_for_action );
@@ -2296,7 +2296,7 @@ REGISTER_INTRINSICS(system_token_api,
 REGISTER_INTRINSICS(infrablockchain_transaction_api,
    (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int)  )
    (unset_trx_fee_for_action,  void(int64_t, int64_t)                )
-   (get_trx_fee_for_action,    int(int64_t, int64_t, int, int)       )
+   (get_trx_fee_for_action_packed,  int(int64_t, int64_t, int, int)  )
    (trx_fee_payer,             int64_t()                             )
    (get_total_weighted_transaction_votes,  double()                  )
    (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int)  )
