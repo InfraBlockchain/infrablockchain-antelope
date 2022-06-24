@@ -95,7 +95,7 @@ namespace eosio { namespace chain {
 
       if ( implicit_tx ) return; // no transaction fee for implicit transactions
 
-      EOS_ASSERT( !tx_fee_payer && !((*tx_fee_payer).empty()), invalid_transaction_fee_payer_account, "no transaction fee payer account specified" );
+      EOS_ASSERT( tx_fee_payer && !((*tx_fee_payer).empty()), invalid_transaction_fee_payer_account, "no transaction fee payer account specified" );
 
       account_name fee_payer = *tx_fee_payer;
       if (fee_payer == config::system_account_name) {
@@ -215,11 +215,13 @@ namespace eosio { namespace chain {
             const auto& tx_fee_payer_info = itr->second.get<transaction_fee_payer_tx_ext>();
             tx_fee_payer = tx_fee_payer_info.fee_payer;
          }
-         if (!tx_fee_payer) {
-            // if tx-fee-payer is not specified on transaction message, then 'bill-first-authorizer' policy is used
-            tx_fee_payer = trx.first_authorizer();
+         //if (!tx_fee_payer) {
+         //   // if tx-fee-payer is not specified on transaction message, then 'bill-first-authorizer' policy is used
+         //   tx_fee_payer = trx.first_authorizer();
+         //}
+         if (tx_fee_payer) {
+            bill_to_accounts.insert(*tx_fee_payer);
          }
-         bill_to_accounts.insert(*tx_fee_payer);
 
          ////////////////////////////////////////////////////////////////
          /// InfraBlockchain Transaction-Extension support for Transaction-as-a-vote and Proof-of-Transaction
