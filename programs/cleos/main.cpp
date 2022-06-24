@@ -2505,7 +2505,7 @@ int main( int argc, char** argv ) {
          return;
       }
 
-      auto pk    = r1 ? private_key_type::generate_r1() : private_key_type::generate();
+      auto pk    = r1 ? private_key_type::generate_r1() : private_key_type::generate<fc::ecc::private_key_shim>();
       auto privs = pk.to_string();
       auto pubs  = pk.get_public_key().to_string();
       if (print_console) {
