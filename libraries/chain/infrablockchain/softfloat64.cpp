@@ -5,6 +5,7 @@
  */
 
 #include <cstdlib>
+#include <string.h>
 #include <infrablockchain/chain/softfloat64.hpp>
 
 #define _expF64UI( a ) ((int_fast16_t) ((a)>>52) & 0x7FF)
