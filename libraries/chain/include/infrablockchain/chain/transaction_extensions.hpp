@@ -11,11 +11,12 @@ namespace infrablockchain { namespace chain {
 
    using namespace eosio::chain;
 
-   enum transaction_extension_id {
-      INFRABLOCKCHAIN_TRANSACTION_EXTENSION_ID_DELIMITER = 1024,
-      infrablockchain_transaction_fee_payer_tx_ext_id,  // 1025
-      infrablockchain_transaction_vote_tx_ext_id        // 1026
-   };
+      enum transaction_extension_id {
+         infrablockchain_transaction_fee_payer_tx_ext_id = 10,
+         infrablockchain_transaction_vote_tx_ext_id = 11
+
+         // @see eosio::chain::transaction_extension_id in eosio/chain/transaction.hpp
+      };
 
    /**
     * InfraBlockchain Transaction Fee Payer
@@ -55,11 +56,11 @@ namespace infrablockchain { namespace chain {
     *   ],
     *   "transaction_extensions": [
     *     [
-    *       1025,
+    *       10,
     *       "00c00257219de8ad"
     *     ],
     *     [
-    *       1026,
+    *       11,
     *       "0011223344aabbcc"
     *     ]
     *   ],
@@ -111,7 +112,7 @@ namespace infrablockchain { namespace chain {
     *     }
     *   ],
     *   "transaction_extensions": [[
-    *       1026,
+    *       11,
     *       "00c00257219de8ad"
     *     ]
     *   ],
