@@ -607,6 +607,16 @@ namespace eosio { namespace chain {
          }
       }
 
+      auto exts = trx.validate_and_extract_extensions();
+      auto itr = exts.find(transaction_fee_payer_tx_ext::extension_id());
+      if (itr != exts.end()) {
+         const auto& tx_fee_payer_info = std::get<transaction_fee_payer_tx_ext>(itr->second);
+         tx_fee_payer_info.fee_payer;
+         EOS_ASSERT( checker.satisfied(permission_level{tx_fee_payer_info.fee_payer,config::active_name}), unsatisfied_authorization,
+                     "transaction declares transaction fee payer '${fee_payer}', but does not have signatures for it.",
+                     ("fee_payer", tx_fee_payer_info.fee_payer) );
+      }
+
       return checker.used_keys();
    }
 
