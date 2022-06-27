@@ -2299,7 +2299,7 @@ REGISTER_INTRINSICS(infrablockchain_transaction_api,
    (get_trx_fee_for_action_packed,  int(int64_t, int64_t, int, int)  )
    (trx_fee_payer,             int64_t()                             )
    (get_total_weighted_transaction_votes,  double()                  )
-   (set_trx_fee_for_action,    void(int64_t, int64_t, int32_t, int)  )
+   (get_top_transaction_vote_receivers_packed, int(int32_t, int32_t, int32_t, int32_t))
 );
 
 REGISTER_INTRINSICS(context_free_api,
