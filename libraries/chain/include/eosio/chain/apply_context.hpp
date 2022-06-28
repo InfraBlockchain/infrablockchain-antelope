@@ -486,8 +486,8 @@ class apply_context {
       /// transfer token
       void transfer_token( const account_name from, const account_name to, const share_type amount );
 
-      /// redeem(burn) token
-      void redeem_token( const share_type amount );
+      /// retire(burn) token
+      void retire_token( const share_type amount );
 
 
    /// InfraBlockchain Core API - Transaction-Fee Management

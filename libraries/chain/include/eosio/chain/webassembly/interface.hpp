@@ -1974,14 +1974,14 @@ namespace webassembly {
          void transfer_token( account_name from, account_name to, int64_t amount );
 
          /**
-          *  Redeem(Burn) Token
-          *  @brief redeem(burn) token from token owner account,
+          *  Retire(Burn) Token
+          *  @brief retire(burn) token from token owner account,
           *  token_id is implicitly the action receiver (token owner) account,
           *  the contract code of token owner account can burn its own token only.
           *
-          *  @param amount - amount of token to redeem(burn)
+          *  @param amount - amount of token to retire(burn)
           */
-         void redeem_token( int64_t amount );
+         void retire_token( int64_t amount );
 
 
          ///////////////////////////////////////////////////////////////

@@ -212,7 +212,7 @@ $INFRA_CLI get table ${SYS_ACCOUNT} ${SYS_ACCOUNT} producers
 
 $INFRA_CLI push action systoken.a settokenmeta '{"sym":"4,DUSD","url":"http://sysdepo-a.org","desc":"system depository a"}' -p systoken.a@active --txfee-payer ${SYS_ACCOUNT}
 
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"systoken.a","qty":"1000.0000 DUSD","tag":"issue systoken.a"}' -p systoken.a@active --txfee-payer ${SYS_ACCOUNT}
+$INFRA_CLI push action systoken.a issue '{"to":"systoken.a","quantity":"1000.0000 DUSD","memo":"issue systoken.a"}' -p systoken.a@active --txfee-payer ${SYS_ACCOUNT}
 sleep 1
 
 $INFRA_CLI get token info systoken.a
@@ -222,7 +222,7 @@ $INFRA_CLI get token balance systoken.a systoken.a
 
 $INFRA_CLI push action systoken.b settokenmeta '{"sym":"4,DUSDB","url":"http://sysdepo-b.org","desc":"system depository b"}' -p systoken.b@active --txfee-payer ${SYS_ACCOUNT}
 
-$INFRA_CLI push action systoken.b issue '{"t":"systoken.b","to":"systoken.b","qty":"2000.0000 DUSDB","tag":"issue systoken.b"}' -p systoken.b@active --txfee-payer ${SYS_ACCOUNT}
+$INFRA_CLI push action systoken.b issue '{"to":"systoken.b","quantity":"2000.0000 DUSDB","memo":"issue systoken.b"}' -p systoken.b@active --txfee-payer ${SYS_ACCOUNT}
 
 $INFRA_CLI get token info systoken.b
 $INFRA_CLI get token balance systoken.b systoken.b
@@ -244,8 +244,8 @@ $INFRA_CLI create account ${SYS_ACCOUNT} idauth.a PUB_K1_8QZSZGRFMiXk9GGEc7jPsyq
 $INFRA_CLI wallet import -n ${INFRA_KEYCHAIN_WALLET_NAME} --private-key PVT_K1_2mrT8fELciM7qUvg7TSBG7SUVgvRL3gzATRMkY2JsJn1GMk2A5
 $INFRA_CLI create account ${SYS_ACCOUNT} idauth.b PUB_K1_8acHA5kYZd9ktLC7zHWJcH8h63Zrt19kQbe11ASCobb7NNvZaq -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.a","qty":"5000.0000 DUSD","tag":"issue systoken.a to idauth.a"}' -p systoken.a@active --txfee-payer systoken.a
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"5000.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.a","quantity":"5000.0000 DUSD","memo":"issue systoken.a to idauth.a"}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"5000.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a
 
 $INFRA_CLI get systoken balance idauth.a
 $INFRA_CLI get systoken balance idauth.b
@@ -256,7 +256,7 @@ $INFRA_CLI get systoken balance idauth.b
 $INFRA_CLI push action ${SYS_ACCOUNT} settxfee '{"code":"","action":"","value":1000,"feetype":1}' -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 $INFRA_CLI push action ${SYS_ACCOUNT} settxfee '{"code":"","action":"issue","value":50,"feetype":1}' -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 $INFRA_CLI push action ${SYS_ACCOUNT} settxfee '{"code":"","action":"transfer","value":100,"feetype":1}' -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
-$INFRA_CLI push action ${SYS_ACCOUNT} settxfee '{"code":"","action":"redeem","value":200,"feetype":1}' -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
+$INFRA_CLI push action ${SYS_ACCOUNT} settxfee '{"code":"","action":"retire","value":200,"feetype":1}' -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 
 $INFRA_CLI push action ${SYS_ACCOUNT} settxfee "{\"code\":\"${SYS_ACCOUNT}\",\"action\":\"newaccount\",\"value\":500,\"feetype\":1}" -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 $INFRA_CLI push action ${SYS_ACCOUNT} settxfee "{\"code\":\"${SYS_ACCOUNT}\",\"action\":\"updateauth\",\"value\":1000,\"feetype\":1}" -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
@@ -331,21 +331,21 @@ $INFRA_CLI push action ${SYS_ACCOUNT} authproducer '{"producer":"producer.i"}' -
 $INFRA_CLI push action ${SYS_ACCOUNT} authproducer '{"producer":"producer.j"}' -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 
 ## Transaction votes for initial block producer election
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"10.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.a
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"20.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.b
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"30.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.c
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"40.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.d
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"50.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.e
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"60.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.f
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"70.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.g
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"80.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.h
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"90.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.i
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"100.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.j
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"110.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.a
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"120.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.b
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"130.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.c
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"140.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.d
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.b","qty":"150.0000 DUSD","tag":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.e
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"10.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.a
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"20.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.b
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"30.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.c
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"40.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.d
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"50.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.e
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"60.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.f
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"70.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.g
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"80.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.h
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"90.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.i
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"100.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.j
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"110.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.a
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"120.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.b
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"130.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.c
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"140.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.d
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.b","quantity":"150.0000 DUSD","memo":"issue systoken.a to idauth.b"}' -p systoken.a@active --txfee-payer systoken.a -v producer.e
 
 $INFRA_CLI get txvote top
 $INFRA_CLI get txvote account producer.a
@@ -402,7 +402,7 @@ $INFRA_CLI create account idauth.a useraccount3 PUB_K1_7auEiXsYXmQe5WdyjGJmQ4e4e
 $INFRA_CLI create account ${SYS_ACCOUNT} com PUB_K1_6gr3cnC46CuMW4dEgp42ct64aWqFdcYQzRFdwCKU4X11Qa5ZKA -p ${SYS_ACCOUNT}@active --txfee-payer ${SYS_ACCOUNT}
 
 #$INFRA_CLI push action sys.identity setidinfo "{\"account\":\"com\", \"identity_authority\":\"idauth.a\", \"type\":$(echo 'ibase=2; 0' | bc), \"kyc\":$(echo 'ibase=2; 1111' | bc), \"state\":$(echo 'ibase=2; 0' | bc), \"data\":\"1f32i7t23\"}" -p idauth.a@active --txfee-payer idauth.a
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"com","qty":"3000.0000 DUSD","tag":"issue systoken.a to com"}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"com","quantity":"3000.0000 DUSD","memo":"issue systoken.a to com"}' -p systoken.a@active --txfee-payer systoken.a
 $INFRA_CLI create account com acquire.com PUB_K1_5RyCzTHK13aRPA6nYmPzKgjVhdXUXtbEuj3JfQGhoKUaT56dnH -p com@active --txfee-payer com
 
 $INFRA_CLI get systoken balance com
@@ -419,11 +419,11 @@ sleep 1
 
 { print_section_title "System Token Issue / Transfer"; } 2>/dev/null
 
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccount2","qty":"1000.0000 DUSD","tag":"issue systoken.a"}' -p systoken.a@active --txfee-payer systoken.a
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccount3","qty":"1000.0000 DUSD","tag":"issue systoken.a"}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"useraccount2","quantity":"1000.0000 DUSD","memo":"issue systoken.a"}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"useraccount3","quantity":"1000.0000 DUSD","memo":"issue systoken.a"}' -p systoken.a@active --txfee-payer systoken.a
 
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount2","to":"useraccount3","qty":"100.0000 DUSD","tag":"transfer memo"}' -p useraccount2@active --txfee-payer useraccount2
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount2","to":"useraccount3","qty":"100.0000 DUSD","tag":"transfer memo 2"}' -p useraccount2@active --txfee-payer useraccount3
+$INFRA_CLI push action systoken.a transfer '{"from":"useraccount2","to":"useraccount3","quantity":"100.0000 DUSD","memo":"transfer memo"}' -p useraccount2@active --txfee-payer useraccount2
+$INFRA_CLI push action systoken.a transfer '{"from":"useraccount2","to":"useraccount3","quantity":"100.0000 DUSD","memo":"transfer memo 2"}' -p useraccount2@active --txfee-payer useraccount3
 
 $INFRA_CLI get systoken balance useraccount1
 $INFRA_CLI get systoken balance useraccount2
@@ -435,9 +435,9 @@ sleep 1
 
 { print_section_title "Transaction Votes"; } 2>/dev/null
 
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount3","to":"useraccount2","qty":"50.0000 DUSD","tag":"tag1"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.f
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount3","to":"useraccount2","qty":"50.0000 DUSD","tag":"tag2"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccount3","to":"useraccount2","qty":"50.0000 DUSD","tag":"tag3"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
+$INFRA_CLI push action systoken.a transfer '{"from":"useraccount3","to":"useraccount2","quantity":"50.0000 DUSD","memo":"memo1"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.f
+$INFRA_CLI push action systoken.a transfer '{"from":"useraccount3","to":"useraccount2","quantity":"50.0000 DUSD","memo":"memo2"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
+$INFRA_CLI push action systoken.a transfer '{"from":"useraccount3","to":"useraccount2","quantity":"50.0000 DUSD","memo":"memo3"}' -p useraccount3@active --txfee-payer useraccount2 -v producer.g
 sleep 2
 
 #$INFRA_CLI get table ${SYS_ACCOUNT} ${SYS_ACCOUNT} producers
@@ -478,16 +478,16 @@ sleep 1
 
 { print_section_title "InfraBlockchain Standard Token Test"; } 2>/dev/null
 
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"idauth.a","qty":"10000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"idauth.a","quantity":"10000.0000 DUSD","memo":""}' -p systoken.a@active --txfee-payer systoken.a
 
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"idauth.a","to":"idauth.b","qty":"50.0000 DUSD","tag":"transfer tag"}' -p idauth.a@active --txfee-payer idauth.a
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"idauth.a","to":"idauth.b","qty":"30.0000 DUSD","tag":"transfer tag 2"}' -p idauth.a@active --txfee-payer idauth.b
+$INFRA_CLI push action systoken.a transfer '{"from":"idauth.a","to":"idauth.b","quantity":"50.0000 DUSD","memo":"transfer memo"}' -p idauth.a@active --txfee-payer idauth.a
+$INFRA_CLI push action systoken.a transfer '{"from":"idauth.a","to":"idauth.b","quantity":"30.0000 DUSD","memo":"transfer memo 2"}' -p idauth.a@active --txfee-payer idauth.b
 
 $INFRA_CLI get token balance systoken.a idauth.a
 $INFRA_CLI get token balance systoken.a idauth.b
 
 $INFRA_CLI get token balance systoken.a systoken.a
-$INFRA_CLI push action systoken.a redeem '{"qty":"500.0000 DUSD","tag":"redeem tag"}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a retire '{"quantity":"500.0000 DUSD","memo":"retire memo"}' -p systoken.a@active --txfee-payer systoken.a
 
 $INFRA_CLI wallet import -n ${INFRA_KEYCHAIN_WALLET_NAME} --private-key PVT_K1_2K75BtRGgahpZqT4QfeVNyrNN7gBaSHTpVg5XMWLXkKjNETCWt
 $INFRA_CLI wallet import -n ${INFRA_KEYCHAIN_WALLET_NAME} --private-key PVT_K1_CKtaYYgdJsHnN5kmJ5WuxcqFQVkuG5U1Wspp79BXMYE7m3Zen
@@ -497,11 +497,11 @@ $INFRA_CLI create account idauth.a useraccounta PUB_K1_59GwcpZm6FqQDDfuRsCTsVWQ6
 $INFRA_CLI create account idauth.a useraccountb PUB_K1_8iVnvTrvG4vQMcJ7R45BKhzNeijn5LDE8d4sq32EGknDc3Zro1 -p idauth.a@active --txfee-payer idauth.a
 $INFRA_CLI create account idauth.a useraccountc PUB_K1_62eHR1NUJCULSTfcSKKGxi1Cb3ctPxgnK8MyzXhtZUL2jhkmpq -p idauth.a@active --txfee-payer idauth.a
 
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccounta","qty":"1000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
-$INFRA_CLI push action systoken.b issue '{"t":"systoken.b","to":"useraccounta","qty":"1000.0000 DUSDB","tag":""}' -p systoken.b@active --txfee-payer systoken.b
+$INFRA_CLI push action systoken.a issue '{"to":"useraccounta","quantity":"1000.0000 DUSD","memo":""}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.b issue '{"to":"useraccounta","quantity":"1000.0000 DUSDB","memo":""}' -p systoken.b@active --txfee-payer systoken.b
 
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccountb","qty":"2000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
-$INFRA_CLI push action systoken.a issue '{"t":"systoken.a","to":"useraccountc","qty":"3000.0000 DUSD","tag":""}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"useraccountb","quantity":"2000.0000 DUSD","memo":""}' -p systoken.a@active --txfee-payer systoken.a
+$INFRA_CLI push action systoken.a issue '{"to":"useraccountc","quantity":"3000.0000 DUSD","memo":""}' -p systoken.a@active --txfee-payer systoken.a
 
 $INFRA_CLI get token balance systoken.a useraccounta
 $INFRA_CLI get token balance systoken.b useraccounta
@@ -510,10 +510,10 @@ $INFRA_CLI get systoken balance useraccounta
 $INFRA_CLI get token balance systoken.a useraccountb
 $INFRA_CLI get token balance systoken.a useraccountc
 
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccounta","to":"useraccountb","qty":"999.5000 DUSD","tag":"transfer tag"}' -p useraccounta@active --txfee-payer useraccounta -v producer.a
+$INFRA_CLI push action systoken.a transfer '{"from":"useraccounta","to":"useraccountb","quantity":"999.5000 DUSD","memo":"transfer memo"}' -p useraccounta@active --txfee-payer useraccounta -v producer.a
 
 # first authorizer as tx fee payer
-$INFRA_CLI push action systoken.a transfer '{"t":"systoken.a","from":"useraccounta","to":"useraccountb","qty":"0.1000 DUSD","tag":"transfer tag"}' -p useraccounta@active -v producer.a
+$INFRA_CLI push action systoken.a transfer '{"from":"useraccounta","to":"useraccountb","quantity":"0.1000 DUSD","memo":"transfer memo"}' -p useraccounta@active -v producer.a
 
 $INFRA_CLI get systoken balance useraccounta
 $INFRA_CLI get systoken balance useraccountb

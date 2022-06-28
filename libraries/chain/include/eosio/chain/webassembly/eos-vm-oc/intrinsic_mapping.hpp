@@ -283,7 +283,7 @@ inline constexpr auto get_intrinsic_table() {
       "env.get_token_balance",
       "env.issue_token",
       "env.transfer_token",
-      "env.redeem_token",
+      "env.retire_token",
       "env.get_system_token_count",
       "env.get_system_token_list_packed",
       "env.set_system_token_list_packed",

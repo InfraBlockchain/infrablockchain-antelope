@@ -27,7 +27,7 @@ namespace infrablockchain { namespace chain {
 
    void apply_infrablockchain_built_in_action_txfee( apply_context& context );
 
-   void apply_infrablockchain_built_in_action_redeem( apply_context& context );
+   void apply_infrablockchain_built_in_action_retire( apply_context& context );
 
 
       ///@}  end action handlers

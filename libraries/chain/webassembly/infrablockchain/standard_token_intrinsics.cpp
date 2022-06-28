@@ -74,15 +74,15 @@ namespace eosio { namespace chain { namespace webassembly {
    }
 
    /**
-    *  Redeem(Burn) Token
-    *  @brief redeem(burn) token from token owner account,
+    *  Retire(Burn) Token
+    *  @brief retire(burn) token from token owner account,
     *  token_id is implicitly the action receiver (token owner) account,
     *  the contract code of token owner account can burn its own token only.
     *
-    *  @param amount - amount of token to redeem(burn)
+    *  @param amount - amount of token to retire(burn)
     */
-   void interface::redeem_token( int64_t amount ) {
-      context.redeem_token( amount );
+   void interface::retire_token( int64_t amount ) {
+      context.retire_token( amount );
    }
 
 }}} /// eosio::chain::webassembly

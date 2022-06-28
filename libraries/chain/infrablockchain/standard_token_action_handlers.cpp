@@ -48,21 +48,20 @@ namespace infrablockchain { namespace chain {
       try {
          const token_id_type token_id = context.get_action().account;
          EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "issue built-in standard token action handler should be invoked only in first receiver context" );
-         EOS_ASSERT( token_id == issue_action.t, token_action_validate_exception, "issue action account, token id (t) mismatch" );
 
-         EOS_ASSERT( issue_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
-         EOS_ASSERT( issue_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
+         EOS_ASSERT( issue_action.quantity.is_valid(), token_action_validate_exception, "invalid quantity" );
+         EOS_ASSERT( issue_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
          // action parameter validation will be done in context.issue_token()
 
          const account_name to_account = issue_action.to;
-         const share_type issue_amount = issue_action.qty.get_amount();
+         const share_type issue_amount = issue_action.quantity.get_amount();
 
          auto& standard_token_manager = context.control.get_standard_token_manager();
 
          auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
          EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", token_id) );
          auto token_meta_obj = *token_meta_obj_ptr;
-         EOS_ASSERT( issue_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
+         EOS_ASSERT( issue_action.quantity.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of the registered token metadata",
                      ("sym", token_meta_obj.sym.to_string()) );
 
@@ -87,15 +86,14 @@ namespace infrablockchain { namespace chain {
       try {
          const token_id_type token_id = context.get_action().account;
          EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "transfer built-in standard token action handler should be invoked only in first receiver context" );
-         EOS_ASSERT( token_id == transfer_action.t, token_action_validate_exception, "transfer action account, token id (t) mismatch" );
 
          const account_name from_account = transfer_action.from;
          const account_name to_account = transfer_action.to;
-         const share_type transfer_amount = transfer_action.qty.get_amount();
+         const share_type transfer_amount = transfer_action.quantity.get_amount();
 
          EOS_ASSERT( from_account != to_account, token_action_validate_exception, "same from, to account" );
-         EOS_ASSERT( transfer_action.qty.is_valid(), token_action_validate_exception, "invalid quantity" );
-         EOS_ASSERT( transfer_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
+         EOS_ASSERT( transfer_action.quantity.is_valid(), token_action_validate_exception, "invalid quantity" );
+         EOS_ASSERT( transfer_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
          // action parameter validation will be done in context.transfer_token()
 
          auto& standard_token_manager = context.control.get_mutable_standard_token_manager();
@@ -103,7 +101,7 @@ namespace infrablockchain { namespace chain {
          auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
          EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", token_id) );
          auto token_meta_obj = *token_meta_obj_ptr;
-         EOS_ASSERT( transfer_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
+         EOS_ASSERT( transfer_action.quantity.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of quantity field mismatches with the symbol(${sym}) of the registered token metadata",
                      ("sym", token_meta_obj.sym.to_string()) );
 
@@ -130,7 +128,6 @@ namespace infrablockchain { namespace chain {
       try {
          const token_id_type token_id = context.get_action().account;
          EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "txfee built-in standard token action handler should be invoked only in first receiver context" );
-         EOS_ASSERT( token_id == txfee_action.t, token_action_validate_exception, "txfee action account, token id (t) mismatch" );
 
          const account_name payer_account = txfee_action.payer;
          EOS_ASSERT( payer_account.good(), token_action_validate_exception, "invalid payer account name" );
@@ -168,20 +165,20 @@ namespace infrablockchain { namespace chain {
 
 
    /**
-    * 'redeem' standard token action apply handler
+    * 'retire' standard token action apply handler
     */
-   void apply_infrablockchain_built_in_action_redeem( apply_context& context ) {
+   void apply_infrablockchain_built_in_action_retire( apply_context& context ) {
 
-      auto redeem_action = context.get_action().data_as_built_in_common_action<redeem>();
+      auto retire_action = context.get_action().data_as_built_in_common_action<retire>();
       try {
          const token_id_type token_id = context.get_action().account;
-         EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "redeem built-in standard token action handler should be invoked only in first receiver context" );
+         EOS_ASSERT( token_id == context.get_receiver(), token_action_validate_exception, "retire built-in standard token action handler should be invoked only in first receiver context" );
 
-         EOS_ASSERT( redeem_action.qty.is_valid(), token_action_validate_exception, "invalid token redemption quantity" );
-         EOS_ASSERT( redeem_action.tag.size() <= 256, token_action_validate_exception, "tag has more than 256 bytes" );
+         EOS_ASSERT( retire_action.quantity.is_valid(), token_action_validate_exception, "invalid token redemption quantity" );
+         EOS_ASSERT( retire_action.memo.size() <= 256, token_action_validate_exception, "memo has more than 256 bytes" );
          // action parameter validation will be done in context.issue_token()
 
-         const share_type redeem_amount = redeem_action.qty.get_amount();
+         const share_type retire_amount = retire_action.quantity.get_amount();
 
          auto& standard_token_manager = context.control.get_mutable_standard_token_manager();
 
@@ -189,17 +186,17 @@ namespace infrablockchain { namespace chain {
          EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${account}", ("account", token_id) );
          auto token_meta_obj = *token_meta_obj_ptr;
 
-         EOS_ASSERT( redeem_action.qty.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
+         EOS_ASSERT( retire_action.quantity.get_symbol() == token_meta_obj.sym, token_symbol_mismatch_exception,
                      "token symbol of redemption quantity field mismatches with the symbol(${sym}) of the registered token metadata",
                      ("sym", token_meta_obj.sym.to_string()) );
 
-         // only the token account owner can redeem(burn) tokens held by token account
+         // only the token account owner can retire(burn) tokens held by token account
          context.require_authorization( token_id );
 
          // update token balance and ram usage
-         context.redeem_token( redeem_amount );
+         context.retire_token( retire_amount );
 
-      } FC_CAPTURE_AND_RETHROW( (redeem_action) )
+      } FC_CAPTURE_AND_RETHROW( (retire_action) )
    }
 
 } } // namespace infrablockchain::chain

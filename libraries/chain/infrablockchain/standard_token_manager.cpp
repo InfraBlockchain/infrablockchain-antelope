@@ -285,7 +285,7 @@ namespace infrablockchain { namespace chain {
             uint32_t action_ordinal = trx_context.schedule_action(
                action { vector<permission_level>{ {fee_payer, config::active_name} },
                         sys_token_id,
-                        standard_token::txfee{ sys_token_id, fee_payer, asset(fee_for_this_token, token_meta_obj_ptr->sym) } }
+                        standard_token::txfee{ fee_payer, asset(fee_for_this_token, token_meta_obj_ptr->sym) } }
                , sys_token_id, false, 0, 0 );
             trx_context.execute_action( action_ordinal, 0 );
 

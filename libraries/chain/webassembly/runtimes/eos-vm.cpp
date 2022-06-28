@@ -511,7 +511,7 @@ REGISTER_HOST_FUNCTION(get_token_total_supply);
 REGISTER_HOST_FUNCTION(get_token_balance);
 REGISTER_HOST_FUNCTION(issue_token);
 REGISTER_HOST_FUNCTION(transfer_token);
-REGISTER_HOST_FUNCTION(redeem_token);
+REGISTER_HOST_FUNCTION(retire_token);
 
 // InfraBlockchain system token api
 REGISTER_HOST_FUNCTION(get_system_token_count);
