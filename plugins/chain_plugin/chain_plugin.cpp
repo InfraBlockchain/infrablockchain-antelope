@@ -2470,6 +2470,15 @@ read_only::get_abi_results read_only::get_abi( const get_abi_params& params )con
    const auto& accnt  = d.get<account_object,by_name>( params.account_name );
 
    abi_def abi;
+
+   if (accnt.abi.size() == 0) {
+      const auto& accnt_systokenabi  = d.get<account_object,by_name>( infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name );
+      if( abi_serializer::to_abi(accnt_systokenabi.abi, abi) ) {
+         result.abi = std::move(abi);
+      }
+      return result;
+   }
+
    if( abi_serializer::to_abi(accnt.abi, abi) ) {
       result.abi = std::move(abi);
    }
