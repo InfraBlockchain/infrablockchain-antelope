@@ -1616,15 +1616,15 @@ class standard_token_api : public context_aware_api {
       }
 
       /**
-       *  Redeem(Burn) Token
-       *  @brief redeem(burn) token from token owner account,
+       *  Retire(Burn) Token
+       *  @brief retire(burn) token from token owner account,
        *  token_id is implicitly the action receiver (token owner) account,
        *  the contract code of token owner account can burn its own token only.
        *
-       *  @param amount - amount of token to redeem(burn)
+       *  @param amount - amount of token to retire(burn)
        */
-      void redeem_token( int64_t amount ) {
-         context.redeem_token( amount );
+      void retire_token( int64_t amount ) {
+         context.retire_token( amount );
       }
 };
 
@@ -2284,7 +2284,7 @@ REGISTER_INTRINSICS(standard_token_api,
    (get_token_balance,         int64_t(int64_t, int64_t)        )
    (issue_token,               void(int64_t, int64_t)           )
    (transfer_token,            void(int64_t, int64_t, int64_t)  )
-   (redeem_token,              void(int64_t)                    )
+   (retire_token,              void(int64_t)                    )
 );
 
 REGISTER_INTRINSICS(system_token_api,

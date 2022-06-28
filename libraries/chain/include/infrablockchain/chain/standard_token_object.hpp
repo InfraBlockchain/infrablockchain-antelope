@@ -26,7 +26,7 @@ namespace infrablockchain { namespace chain {
       id_type        id;
       token_id_type  token_id;          // token id = token account name
       symbol         sym;               // symbol name and precision
-      share_type     total_supply = 0;  // total token supply amount issued(+) and redeemed(-) by token account
+      share_type     total_supply = 0;  // total token supply amount issued(+) and retired(burned)(-) by token account
       shared_string  url;               // website url for token information managed by token issuer (owner of token account)
       shared_string  desc;              // token description
    };

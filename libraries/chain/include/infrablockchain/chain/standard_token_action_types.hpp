@@ -15,7 +15,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
    using namespace eosio::chain;
 
    /**
-    * Every account on InfraBlockchain can process built-in standard token actions (settokenmeta, issue, transfer, redeem)
+    * Every account on InfraBlockchain can process built-in standard token actions (settokenmeta, issue, transfer, retire)
     * without custom smart contract code deployed to an account.
     * An account can have optional token contract code inheriting built-in token actions.
     */
@@ -31,10 +31,9 @@ namespace infrablockchain { namespace chain { namespace standard_token {
    };
 
    struct issue {
-      account_name  t;   // token-id (token account name)
       account_name  to;  // token receiver account
-      asset         qty; // token quantity
-      std::string   tag;
+      asset         quantity; // token quantity
+      std::string   memo;
 
       static action_name get_name() {
          return N(issue);
@@ -42,11 +41,10 @@ namespace infrablockchain { namespace chain { namespace standard_token {
    };
 
    struct transfer {
-      account_name  t;   // token-id (token account name)
       account_name  from; // token sender account
       account_name  to;   // token receiver account
-      asset         qty;  // token quantity
-      std::string   tag;
+      asset         quantity;  // token quantity
+      std::string   memo;
 
       static action_name get_name() {
          return N(transfer);
@@ -54,7 +52,6 @@ namespace infrablockchain { namespace chain { namespace standard_token {
    };
 
    struct txfee {
-      account_name  t;   // token-id (token account name)
       account_name  payer;  // transaction fee payer
       asset         fee;    // token quantity to pay tx fee
 
@@ -63,12 +60,12 @@ namespace infrablockchain { namespace chain { namespace standard_token {
       }
    };
 
-   struct redeem {
-      asset         qty;  // token quantity to redeem(burn)
-      std::string   tag;
+   struct retire {
+      asset         quantity;  // token quantity to retire(burn)
+      std::string   memo;
 
       static action_name get_name() {
-         return N(redeem);
+         return N(retire);
       }
    };
 
@@ -76,7 +73,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
       static bool is_infrablockchain_standard_token_action(action_name action) {
          return action == transfer::get_name()
                 || action == issue::get_name()
-                || action == redeem::get_name()
+                || action == retire::get_name()
                 || action == txfee::get_name()
                 || action == settokenmeta::get_name();
       }
@@ -85,7 +82,7 @@ namespace infrablockchain { namespace chain { namespace standard_token {
 } } } /// infrablockchain::chain::standard_token
 
 FC_REFLECT( infrablockchain::chain::standard_token::settokenmeta , (sym)(url)(desc) )
-FC_REFLECT( infrablockchain::chain::standard_token::issue, (t)(to)(qty)(tag) )
-FC_REFLECT( infrablockchain::chain::standard_token::transfer, (t)(from)(to)(qty)(tag) )
-FC_REFLECT( infrablockchain::chain::standard_token::txfee, (t)(payer)(fee) )
-FC_REFLECT( infrablockchain::chain::standard_token::redeem, (qty)(tag) )
+FC_REFLECT( infrablockchain::chain::standard_token::issue, (to)(quantity)(memo) )
+FC_REFLECT( infrablockchain::chain::standard_token::transfer, (from)(to)(quantity)(memo) )
+FC_REFLECT( infrablockchain::chain::standard_token::txfee, (payer)(fee) )
+FC_REFLECT( infrablockchain::chain::standard_token::retire, (quantity)(memo) )

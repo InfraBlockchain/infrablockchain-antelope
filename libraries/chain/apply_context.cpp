@@ -985,9 +985,9 @@ void apply_context::transfer_token( const account_name from, const account_name 
    standard_token_manager.add_token_balance( *this, token_id, to, amount );
 }
 
-void apply_context::redeem_token( const share_type amount ) {
+void apply_context::retire_token( const share_type amount ) {
 
-   /// Only the contract code of an token account or native built-in token action handler code can redeem(burn) its own (action receiver's) tokens
+   /// Only the contract code of an token account or native built-in token action handler code can retire(burn) its own (action receiver's) tokens
    /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
 
    EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
@@ -1006,7 +1006,7 @@ void apply_context::redeem_token( const share_type amount ) {
    // update total supply
    standard_token_manager.update_token_total_supply(token_meta_obj_ptr, -amount);
 
-   // redeem(burn) tokens
+   // retire(burn) tokens
    standard_token_manager.subtract_token_balance( *this, token_account, token_account, amount );
 }
 

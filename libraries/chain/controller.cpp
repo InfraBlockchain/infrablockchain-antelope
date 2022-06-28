@@ -275,7 +275,7 @@ struct controller_impl {
    /**
     * [InfraBlockchain Built-in Actions Feature]
     * predefined actions can be executed on every account even though an account doesn't have contract code.
-    * InfraBlockchain Standard Token operations (issue,redeem,transfer,txfee,...) are built-in actions supported on every account
+    * InfraBlockchain Standard Token operations (issue,retire,transfer,txfee,...) are built-in actions supported on every account
     */
    map< action_name, apply_handler >   built_in_action_apply_handlers;
 
@@ -397,7 +397,7 @@ struct controller_impl {
    SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( issue );
    SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( transfer );
    SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( txfee );
-   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( redeem );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( retire );
 
    }
 
@@ -3522,7 +3522,7 @@ void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_
       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_token_balance" );
       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "issue_token" );
       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "transfer_token" );
-      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "redeem_token" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "retire_token" );
    } );
 }
 
