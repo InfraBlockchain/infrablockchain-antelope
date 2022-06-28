@@ -18,7 +18,7 @@ struct newaccount {
    }
 
    static action_name get_name() {
-      return "newaccount"_n;
+      return N(newaccount);
    }
 };
 
@@ -33,7 +33,7 @@ struct setcode {
    }
 
    static action_name get_name() {
-      return "setcode"_n;
+      return N(setcode);
    }
 };
 
@@ -46,7 +46,7 @@ struct setabi {
    }
 
    static action_name get_name() {
-      return "setabi"_n;
+      return N(setabi);
    }
 };
 
@@ -62,7 +62,7 @@ struct updateauth {
    }
 
    static action_name get_name() {
-      return "updateauth"_n;
+      return N(updateauth);
    }
 };
 
@@ -80,7 +80,7 @@ struct deleteauth {
    }
 
    static action_name get_name() {
-      return "deleteauth"_n;
+      return N(deleteauth);
    }
 };
 
@@ -100,7 +100,7 @@ struct linkauth {
    }
 
    static action_name get_name() {
-      return "linkauth"_n;
+      return N(linkauth);
    }
 };
 
@@ -119,7 +119,7 @@ struct unlinkauth {
    }
 
    static action_name get_name() {
-      return "unlinkauth"_n;
+      return N(unlinkauth);
    }
 };
 
@@ -132,7 +132,7 @@ struct canceldelay {
    }
 
    static action_name get_name() {
-      return "canceldelay"_n;
+      return N(canceldelay);
    }
 };
 
@@ -148,7 +148,7 @@ struct onerror {
    }
 
    static action_name get_name() {
-      return "onerror"_n;
+      return N(onerror);
    }
 };
 

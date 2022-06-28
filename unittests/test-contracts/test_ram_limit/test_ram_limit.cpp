@@ -4,12 +4,10 @@
 
 #include <eosiolib/eosio.hpp>
 
-#if defined(__clang__)
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wsign-conversion"
-# pragma clang diagnostic ignored "-Wshorten-64-to-32"
-# pragma clang diagnostic ignored "-Wsign-compare"
-#endif
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#pragma clang diagnostic ignored "-Wsign-compare"
 
 using namespace eosio;
 
@@ -73,8 +71,6 @@ CONTRACT test_ram_limit : public contract {
       typedef eosio::multi_index< "test.table"_n, test> test_table;
 };
 
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#endif
+#pragma clang diagnostic pop
 
 EOSIO_DISPATCH( test_ram_limit, (setentry)(rmentry)(printentry) )

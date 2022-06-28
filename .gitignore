@@ -23,7 +23,6 @@ Makefile
 compile_commands.json
 moc_*
 *.moc
-.clangd/
 
 genesis.json
 hardfork.hpp

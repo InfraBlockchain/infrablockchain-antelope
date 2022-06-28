@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-VERSION=2.1
+VERSION=2.3
 
 # Ensure we're in the repo root and not inside of scripts
 cd $( dirname "${BASH_SOURCE[0]}" )/..

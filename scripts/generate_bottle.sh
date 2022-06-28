@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-VERS=`sw_vers -productVersion | awk '/10\.14\..*/{print $0}'`
-if [[ -z "$VERS" ]]; then
-   VERS=`sw_vers -productVersion | awk '/10\.15.*/{print $0}'`
-   if [[ -z $VERS ]]; then
+VERS=`sw_vers -productVersion | awk '/10\.13\..*/{print $0}'`
+if [[ -z "$VERS" ]];
+then
+   VERS=`sw_vers -productVersion | awk '/10\.14.*/{print $0}'`
+   if [[ -z "$VERS" ]];
+   then
       echo "Error, unsupported OS X version"
       exit -1
    fi
-   MAC_VERSION="catalina"
-else
    MAC_VERSION="mojave"
+else
+   MAC_VERSION="high_sierra"
 fi
 
 NAME="${PROJECT}-${VERSION}.${MAC_VERSION}.bottle"
@@ -32,7 +34,9 @@ export SSUBPREFIX
 hash=`openssl dgst -sha256 ${NAME}.tar.gz | awk 'NF>1{print $NF}'`
 
 echo "class Eosio < Formula
-
+   # typed: false
+   # frozen_string_literal: true
+   
    homepage \"${URL}\"
    revision 0
    url \"https://github.com/eosio/eos/archive/v${VERSION}.tar.gz\"
@@ -41,15 +45,15 @@ echo "class Eosio < Formula
    option :universal
 
    depends_on \"gmp\"
+   depends_on \"gettext\"
    depends_on \"openssl@1.1\"
    depends_on \"libusb\"
-   depends_on \"libpqxx\"
-   depends_on :macos => :mojave
-   depends_on :arch =>  :intel
+   depends_on macos: :mojave
+   depends_on arch: :intel
 
    bottle do
       root_url \"https://github.com/eosio/eos/releases/download/v${VERSION}\"
-      sha256 \"${hash}\" => :${MAC_VERSION}
+      sha256 ${MAC_VERSION}: \"${hash}\"
    end
    def install
       raise \"Error, only supporting binary packages at this time\"

@@ -55,11 +55,6 @@ class [[eosio::contract]] get_table_test : public eosio::contract {
    [[eosio::action]]
    void addnumobj(uint64_t input);
 
-   [[eosio::action]]
-   void modifynumobj(uint64_t id);
-
-   [[eosio::action]]
-   void erasenumobj(uint64_t id);
 
    [[eosio::action]]
    void addhashobj(std::string hashinput);

@@ -1,9 +1,6 @@
- #include <eosio/eosio.hpp>
- #include <eosio/print.hpp>
+#include <eosiolib/eosio.hpp>
 
 #include "test_api.hpp"
-
-using namespace eosio::internal_use_do_not_use;
 
 void test_print::test_prints_l() {
   char ab[] = { 'a', 'b' };

@@ -8,10 +8,6 @@
 #include <string.h>
 #include <algorithm>
 
-namespace WASM
-{
-	extern bool check_limits;
-}
 namespace Serialization
 {
 	// An exception that is thrown for various errors during serialization.
@@ -271,7 +267,7 @@ namespace Serialization
 			// Advance the stream before resizing the string:
 			// try to get a serialization exception before making a huge allocation for malformed input.
 			const U8* inputBytes = stream.advance(size);
-         if (size >= max_size && WASM::check_limits)
+         if (size >= max_size)
             throw FatalSerializationException(std::string("Trying to deserialize string of size : " + std::to_string((uint64_t)size) + ", which is over by "+std::to_string(size - max_size )+" bytes"));
 			string.resize(size);
 			memcpy(const_cast<char*>(string.data()),inputBytes,size);
@@ -291,7 +287,7 @@ namespace Serialization
 			// Grow the vector one element at a time:
 			// try to get a serialization exception before making a huge allocation for malformed input.
 			vector.clear();
-         if (size >= max_size && WASM::check_limits)
+         if (size >= max_size)
             throw FatalSerializationException(std::string("Trying to deserialize array of size : " + std::to_string((uint64_t)size) + ", which is over by "+std::to_string(size - max_size )+" bytes"));
 			for(Uptr index = 0;index < size;++index)
 			{

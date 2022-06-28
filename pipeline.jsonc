@@ -6,6 +6,8 @@
             "^/coverage/",
             "^/.git/",
             "^/libraries/eos-vm/",
+            "^/libraries/fc/",
+            "^/libraries/wabt/",
             "^/libraries/wasm-jit/",
             "^/node_modules/",
             "^/unittests/"
@@ -39,7 +41,10 @@
         "test":
         [
             {
-                "commit": "16074742f8cfd481b029073e6f01bb920a1bad38"
+                "tag": "v2.0.0-rc2"
+            },
+            {
+                "tag": "v2.0.0-rc3"
             }
         ]
     }

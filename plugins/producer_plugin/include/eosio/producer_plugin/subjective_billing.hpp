@@ -13,8 +13,6 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 
-#include <unordered_map>
-
 namespace eosio {
 
 namespace bmi = boost::multi_index;
@@ -55,8 +53,8 @@ private:
       }
    };
 
-   using account_subjective_bill_cache = std::unordered_map<account_name, subjective_billing_info>;
-   using block_subjective_bill_cache = std::unordered_map<account_name, uint64_t>;
+   using account_subjective_bill_cache = std::map<account_name, subjective_billing_info>;
+   using block_subjective_bill_cache = std::map<account_name, uint64_t>;
 
    bool                                      _disabled = false;
    trx_cache_index                           _trx_cache_index;
@@ -92,8 +90,8 @@ private:
    void remove_subjective_billing( const block_state_ptr& bsp, uint32_t time_ordinal ) {
       if( !_trx_cache_index.empty() ) {
          for( const auto& receipt : bsp->block->transactions ) {
-            if( std::holds_alternative<packed_transaction>(receipt.trx) ) {
-               const auto& pt = std::get<packed_transaction>(receipt.trx);
+            if( receipt.trx.contains<packed_transaction>() ) {
+               const auto& pt = receipt.trx.get<packed_transaction>();
                remove_subjective_billing( pt.id(), time_ordinal );
             }
          }
@@ -115,7 +113,6 @@ public: // public for tests
 
 public:
    void disable() { _disabled = true; }
-   bool is_disabled() const { return _disabled; }
    void disable_account( chain::account_name a ) { _disabled_accounts.emplace( a ); }
 
    /// @param in_pending_block pass true if pt's bill time is accounted for in the pending block

@@ -1,43 +1,20 @@
-
-## Command
-cleos get account [OPTIONS] name [core-symbol]
-
-**Where**
-* [OPTIONS] = See Options in Command Usage section below.
-
-**Note**: The arguments and options enclosed in square brackets are optional.
-
 ## Description
-Retrieve an account from the blockchain
+Retrieves an account from the blockchain
 
-## Command Usage
-The following information shows the different positionals and options you can use with the `cleos create key` command:
-
-### Positionals:
+## Positional Parameters
 - `name` _TEXT_ - The name of the account to retrieve
-- `core-symbol` _TEXT_ - The expected core symbol of the chain you are querying - OPTIONAL
+- `core-symbol` _TEXT_ - The expected core symbol of the chain you are querying
 
-### Options
-- `-h,--help` Print this help message and exit
+## Options
 - `-j,--json` - Output in JSON format
-
-## Requirements
-* Install the currently supported version of `cleos.`
-[[info | Note]] 
-| The `cleos` tool is bundled with the EOSIO software. [Installing EOSIO](../../00_install/index.md) will install the `cleos` and `keosd` command line tools. 
-* You have access to an EOSIO blockchain.
 
 ## Examples
 
-1. Get formatted data for user **eosio**
+### Get formatted data for user **eosio**
 
-```shell
+```sh
 cleos get account eosio
 ```
-**Where**
-`eosio` = The name of the account.
-
-**Example Output**
 ```console
 privileged: true
 permissions: 
@@ -58,13 +35,11 @@ cpu bandwidth: (averaged over 3 days)
 
 producers:     <not voted>
 ```
-2. Get JSON data for user **eosio**
+### Get JSON data for user **eosio**
 
 ```sh
 cleos get account eosio --json
 ```
-**Example Output**
-
 ```json
 {
   "account_name": "eosio",
@@ -131,4 +106,4 @@ cleos get account eosio --json
 ```
 
 ## See Also
-- [Accounts and Permissions](https://developers.eos.io/welcome/v2.1/protocol/accounts_and_permissions) protocol document.
+- [Accounts and Permissions](https://developers.eos.io/welcome/latest/protocol/accounts_and_permissions) protocol document.

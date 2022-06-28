@@ -26,8 +26,8 @@ public:
    {}
 
    /// connect to chain controller applied_transaction signal
-   void signal_applied_transaction( const chain::transaction_trace_ptr& trace, const chain::packed_transaction_ptr& ptrx ) {
-      on_applied_transaction( trace, ptrx );
+   void signal_applied_transaction( const chain::transaction_trace_ptr& trace, const chain::signed_transaction& strx ) {
+      on_applied_transaction( trace, strx );
    }
 
    /// connect to chain controller accepted_block signal
@@ -46,7 +46,8 @@ public:
    }
 
 private:
-   void on_applied_transaction(const chain::transaction_trace_ptr& trace, const chain::packed_transaction_ptr& t) {
+
+   void on_applied_transaction(const chain::transaction_trace_ptr& trace, const chain::signed_transaction& t) {
       if( !trace->receipt ) return;
       // include only executed transactions; soft_fail included so that onerror (and any inlines via onerror) are included
       if((trace->receipt->status != chain::transaction_receipt_header::executed &&
@@ -54,11 +55,11 @@ private:
          return;
       }
       if( chain::is_onblock( *trace )) {
-         onblock_trace.emplace( cache_trace{trace, t} );
+         onblock_trace.emplace( cache_trace{trace, static_cast<const chain::transaction_header&>(t), t.signatures} );
       } else if( trace->failed_dtrx_trace ) {
-         cached_traces[trace->failed_dtrx_trace->id] = {trace, t};
+         cached_traces[trace->failed_dtrx_trace->id] = {trace, static_cast<const chain::transaction_header&>(t), t.signatures};
       } else {
-         cached_traces[trace->id] = {trace, t};
+         cached_traces[trace->id] = {trace, static_cast<const chain::transaction_header&>(t), t.signatures};
       }
    }
 
@@ -81,24 +82,22 @@ private:
 
    void store_block_trace( const chain::block_state_ptr& block_state ) {
       try {
-         using transaction_trace_t = transaction_trace_v2;
+         block_trace_v1 bt = create_block_trace_v1( block_state );
 
-         auto bt = create_block_trace( block_state );
-
-         std::vector<transaction_trace_t>& traces = std::get<std::vector<transaction_trace_t>>(bt.transactions);
+         std::vector<transaction_trace_v1>& traces = bt.transactions_v1;
          traces.reserve( block_state->block->transactions.size() + 1 );
          if( onblock_trace )
-            traces.emplace_back( to_transaction_trace<transaction_trace_t>( *onblock_trace ));
+            traces.emplace_back( to_transaction_trace_v1( *onblock_trace ));
          for( const auto& r : block_state->block->transactions ) {
             transaction_id_type id;
-            if( std::holds_alternative<transaction_id_type>(r.trx)) {
-               id = std::get<transaction_id_type>(r.trx);
+            if( r.trx.contains<transaction_id_type>()) {
+               id = r.trx.get<transaction_id_type>();
             } else {
-               id = std::get<packed_transaction>(r.trx).id();
+               id = r.trx.get<packed_transaction>().id();
             }
             const auto it = cached_traces.find( id );
             if( it != cached_traces.end() ) {
-               traces.emplace_back( to_transaction_trace<transaction_trace_t>( it->second ));
+               traces.emplace_back( to_transaction_trace_v1( it->second ));
             }
          }
          clear_caches();
@@ -122,7 +121,7 @@ private:
    StoreProvider                                                store;
    exception_handler                                            except_handler;
    std::map<transaction_id_type, cache_trace>                   cached_traces;
-   std::optional<cache_trace>                                   onblock_trace;
+   fc::optional<cache_trace>                                    onblock_trace;
 
 };
 

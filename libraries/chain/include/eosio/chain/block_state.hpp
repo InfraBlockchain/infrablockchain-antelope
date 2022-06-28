@@ -21,7 +21,7 @@ namespace eosio { namespace chain {
 
       block_state( pending_block_header_state&& cur,
                    signed_block_ptr&& b, // unsigned block
-                   deque<transaction_metadata_ptr>&& trx_metas,
+                   vector<transaction_metadata_ptr>&& trx_metas,
                    const protocol_feature_set& pfs,
                    const std::function<void( block_timestamp_type,
                                              const flat_set<digest_type>&,
@@ -46,24 +46,24 @@ namespace eosio { namespace chain {
       bool is_valid()const { return validated; }
       bool is_pub_keys_recovered()const { return _pub_keys_recovered; }
 
-      deque<transaction_metadata_ptr> extract_trxs_metas() {
+      vector<transaction_metadata_ptr> extract_trxs_metas() {
          _pub_keys_recovered = false;
          auto result = std::move( _cached_trxs );
          _cached_trxs.clear();
          return result;
       }
-      void set_trxs_metas( deque<transaction_metadata_ptr>&& trxs_metas, bool keys_recovered ) {
+      void set_trxs_metas( vector<transaction_metadata_ptr>&& trxs_metas, bool keys_recovered ) {
          _pub_keys_recovered = keys_recovered;
          _cached_trxs = std::move( trxs_metas );
       }
-      const deque<transaction_metadata_ptr>& trxs_metas()const { return _cached_trxs; }
+      const vector<transaction_metadata_ptr>& trxs_metas()const { return _cached_trxs; }
 
       bool                                                validated = false;
 
       bool                                                _pub_keys_recovered = false;
       /// this data is redundant with the data stored in block, but facilitates
       /// recapturing transactions when we pop a block
-      deque<transaction_metadata_ptr>                     _cached_trxs;
+      vector<transaction_metadata_ptr>                    _cached_trxs;
 
    public:
       void set_transaction_votes_in_block( infrablockchain::chain::transaction_votes_in_block&& trx_votes_in_block ) {
@@ -84,5 +84,4 @@ namespace eosio { namespace chain {
 
 } } /// namespace eosio::chain
 
-// @ignore _pub_keys_recovered _cached_trxs
 FC_REFLECT_DERIVED( eosio::chain::block_state, (eosio::chain::block_header_state), (block)(validated) )

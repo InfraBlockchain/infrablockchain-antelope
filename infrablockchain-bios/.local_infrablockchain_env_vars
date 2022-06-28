@@ -1,4 +1,4 @@
-export INFRABLOCKCHAIN_HOME=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain-2-merge-git
+export INFRABLOCKCHAIN_HOME=/Users/bwlim/Documents/__InfraBlockchain__/infrablockchain-2-git
 
 export INFRA_NODE_BIN_NAME=infra-node
 export INFRA_CLI_BIN_NAME=infra-cli

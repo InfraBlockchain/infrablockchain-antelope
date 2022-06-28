@@ -299,7 +299,6 @@ try:
     producerToSlot={}
     slot=-1
     inRowCountPerProducer=12
-    minNumBlocksPerProducer=10
     lastTimestamp=timestamp
     headBlockNum=node.getBlockNum()
     firstBlockForWindowMissedSlot=None
@@ -320,7 +319,6 @@ try:
         if firstBlockForWindowMissedSlot is not None:
             missedSlotAfter.append(firstBlockForWindowMissedSlot)
             firstBlockForWindowMissedSlot=None
-
         while blockProducer==lastBlockProducer:
             producerToSlot[blockProducer]["count"]+=1
             blockNum+=1
@@ -341,16 +339,13 @@ try:
                 missedSlotAfter.append("%d (%s)" % (blockNum-1, missed))
             lastTimestamp=timestamp
 
-        if producerToSlot[lastBlockProducer]["count"] < minNumBlocksPerProducer or producerToSlot[lastBlockProducer]["count"] > inRowCountPerProducer:
+        if producerToSlot[lastBlockProducer]["count"]!=inRowCountPerProducer:
             Utils.errorExit("Producer %s, in slot %d, expected to produce %d blocks but produced %d blocks.  At block number %d. " %
                             (lastBlockProducer, slot, inRowCountPerProducer, producerToSlot[lastBlockProducer]["count"], blockNum-1) +
                             "Slots were missed after the following blocks: %s" % (", ".join(missedSlotAfter)))
-
-        if len(missedSlotAfter) > 0:
-            # it may be the most recent producer missed a slot
-            possibleMissed=missedSlotAfter[-1]
-            if possibleMissed == blockNum - 1:
-                firstBlockForWindowMissedSlot=possibleMissed
+        elif len(missedSlotAfter) > 0:
+            # if there was a full round, then the most recent producer missed a slot
+            firstBlockForWindowMissedSlot=missedSlotAfter[0]
 
         if blockProducer==productionCycle[0]:
             break
@@ -399,7 +394,7 @@ try:
     Print("Tracking block producers from %d till divergence or %d. Head block is %d and lowest LIB is %d" % (preKillBlockNum, lastBlockNum, headBlockNum, libNumAroundDivergence))
     transitionCount=0
     missedTransitionBlock=None
-    for blockNum in range(preKillBlockNum,lastBlockNum + 1):
+    for blockNum in range(preKillBlockNum,lastBlockNum):
         #avoiding getting LIB until my current block passes the head from the last time I checked
         if blockNum>headBlockNum:
             (headBlockNum, libNumAroundDivergence)=getMinHeadAndLib(prodNodes)
@@ -483,7 +478,7 @@ try:
 
     Print("Relaunching the non-producing bridge node to connect the producing nodes again")
 
-    if not nonProdNode.relaunch():
+    if not nonProdNode.relaunch(nonProdNode.nodeNum, None):
         errorExit("Failure - (non-production) node %d should have restarted" % (nonProdNode.nodeNum))
 
 
@@ -553,7 +548,7 @@ finally:
         Print("Compare Blocklog")
         cluster.compareBlockLogs()
         Print(Utils.FileDivider)
-        Print("Print Blocklog")
+        Print("Compare Blocklog")
         cluster.printBlockLog()
         Print(Utils.FileDivider)
 

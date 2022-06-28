@@ -1,5 +1,5 @@
-#include <eosio/eosio.hpp>
-#include <eosio/transaction.hpp>
+#include <eosiolib/eosio.hpp>
+#include <eosiolib/transaction.hpp>
 
 #include "test_api.hpp"
 

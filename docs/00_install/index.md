@@ -12,18 +12,13 @@ There are various ways to install and use the EOSIO software:
 
 ## Supported Operating Systems
 
-The EOSIO software supports the following environments for development and/or deployment:
+EOSIO currently supports the following operating systems:
 
-**Linux Distributions**
-* Amazon Linux 2
-* CentOS Linux 8.x
-* CentOS Linux 7.x
-* Ubuntu 20.04
-* Ubuntu 18.04
-* Ubuntu 16.04
-
-**macOS**
-* macOS 10.14 (Mojave) or later
+1. Amazon Linux 2
+2. CentOS 7
+3. Ubuntu 16.04
+4. Ubuntu 18.04
+5. MacOS 10.14 (Mojave)
 
 [[info | Note]]
 | It may be possible to install EOSIO on other Unix-based operating systems. This is not officially supported, though.

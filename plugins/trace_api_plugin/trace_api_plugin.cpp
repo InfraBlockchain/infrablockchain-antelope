@@ -7,8 +7,6 @@
 
 #include <eosio/trace_api/configuration_utils.hpp>
 
-#include <eosio/resource_monitor_plugin/resource_monitor_plugin.hpp>
-
 #include <boost/signals2/connection.hpp>
 
 using namespace eosio::trace_api;
@@ -74,8 +72,7 @@ namespace {
       :store(store)
       {}
 
-      template <typename BlockTrace>
-      void append( const BlockTrace& trace ) {
+      void append( const block_trace_v1& trace ) {
          store->append(trace);
       }
 
@@ -117,8 +114,6 @@ struct trace_api_common_impl {
          trace_dir = app().data_dir() / dir_option;
       else
          trace_dir = dir_option;
-      if (auto resmon_plugin = app().find_plugin<resource_monitor_plugin>())
-        resmon_plugin->monitor_directory(trace_dir);
 
       slice_stride = options.at("trace-slice-stride").as<uint32_t>();
 
@@ -315,7 +310,7 @@ struct trace_api_plugin_impl {
       auto& chain = app().find_plugin<chain_plugin>()->chain();
 
       applied_transaction_connection.emplace(
-         chain.applied_transaction.connect([this](std::tuple<const chain::transaction_trace_ptr&, const chain::packed_transaction_ptr&> t) {
+         chain.applied_transaction.connect([this](std::tuple<const chain::transaction_trace_ptr&, const chain::signed_transaction&> t) {
             emit_killer([&](){
                extraction->signal_applied_transaction(std::get<0>(t), std::get<1>(t));
             });
@@ -357,10 +352,10 @@ struct trace_api_plugin_impl {
    using chain_extraction_t = chain_extraction_impl_type<shared_store_provider<store_provider>>;
    std::shared_ptr<chain_extraction_t> extraction;
 
-   std::optional<scoped_connection>                            applied_transaction_connection;
-   std::optional<scoped_connection>                            block_start_connection;
-   std::optional<scoped_connection>                            accepted_block_connection;
-   std::optional<scoped_connection>                            irreversible_block_connection;
+   fc::optional<scoped_connection>                            applied_transaction_connection;
+   fc::optional<scoped_connection>                            block_start_connection;
+   fc::optional<scoped_connection>                            accepted_block_connection;
+   fc::optional<scoped_connection>                            irreversible_block_connection;
 };
 
 trace_api_plugin::trace_api_plugin()

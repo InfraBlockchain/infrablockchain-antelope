@@ -1,6 +1,6 @@
-#include <eosio/crypto.hpp>
-#include <eosio/eosio.hpp>
-#include <eosio/print.hpp>
+#include <eosiolib/crypto.h>
+#include <eosiolib/eosio.hpp>
+#include <eosiolib/print.hpp>
 
 #include "test_api.hpp"
 
@@ -179,9 +179,6 @@ extern "C" {
       }
       return true;
    }
-
-   __attribute__((eosio_wasm_import))
-   int recover_key( const capi_checksum256* digest, const char* sig, size_t siglen, char* pub, size_t publen );
 }
 
 struct sig_hash_key_header {
@@ -198,22 +195,12 @@ struct sig_hash_key_header {
    }
 };
 
-
-using namespace eosio;
-
 void test_crypto::test_recover_key_assert_true() {
    char buffer[action_data_size()];
    read_action_data( buffer, action_data_size() );
    auto sh = (const sig_hash_key_header*)buffer;
 
-   checksum256 digest(sh->hash.hash);
-   ecc_signature ecc_sig = eosio::unpack<ecc_signature>(&sh->sig_base()[1], sh->sig_len);
-   signature sig(std::in_place_index<0>, ecc_sig);
-
-   ecc_public_key ecc_pubkey = eosio::unpack<ecc_public_key>(&sh->pk_base()[1], sh->pk_len);
-   public_key pubkey(std::in_place_index<0>, ecc_pubkey);
-
-   assert_recover_key( sh->hash.hash, sig, pubkey );
+   assert_recover_key( &sh->hash, sh->sig_base(), sh->sig_len, sh->pk_base(), sh->pk_len );
 }
 
 void test_crypto::test_recover_key_assert_false() {
@@ -221,14 +208,7 @@ void test_crypto::test_recover_key_assert_false() {
    read_action_data( buffer, action_data_size() );
    auto sh = (const sig_hash_key_header*)buffer;
 
-   checksum256 digest(sh->hash.hash);
-   ecc_signature ecc_sig = eosio::unpack<ecc_signature>(&sh->sig_base()[1], sh->sig_len);
-   signature sig(std::in_place_index<0>, ecc_sig);
-
-   ecc_public_key ecc_pubkey;
-   public_key pubkey(std::in_place_index<0>, ecc_pubkey);
-
-   assert_recover_key( sh->hash.hash, sig, pubkey );
+   assert_recover_key( &sh->hash, sh->sig_base(), sh->sig_len, sh->pk_base(), sh->pk_len );
    eosio_assert( false, "should have thrown an error" );
 }
 
@@ -237,16 +217,12 @@ void test_crypto::test_recover_key() {
    read_action_data( buffer, action_data_size() );
    auto sh = (const sig_hash_key_header*)buffer;
 
-   checksum256 digest(sh->hash.hash);
-   ecc_signature ecc_sig = eosio::unpack<ecc_signature>(&sh->sig_base()[1], sh->sig_len);
-   signature sig(std::in_place_index<0>, ecc_sig);
-
-   auto pubkey = recover_key( digest, sig );
-   auto ecc_pubkey = std::get<0>(pubkey);
-   eosio_assert(ecc_pubkey.size() == sh->pk_len - 1, "public key does not match");
+   char recovered[sh->pk_len];
+   auto result = recover_key( &sh->hash, sh->sig_base(), sh->sig_len, recovered, sh->pk_len );
+   eosio_assert(result == sh->pk_len, "public key does not match");
    for ( uint32_t i=0; i < sh->pk_len; i++ )
-     if ( ecc_pubkey[i] != sh->pk_base()[i+1] )
-        eosio_assert( false, "public key does not match" );
+      if ( recovered[i] != sh->pk_base()[i] )
+         eosio_assert( false, "public key does not match" );
 }
 
 void test_crypto::test_recover_key_partial() {
@@ -256,8 +232,7 @@ void test_crypto::test_recover_key_partial() {
 
    auto recover_size = std::max<uint32_t>(sh->pk_len / 2, 33);
    char recovered[recover_size];
-   // testing capi recover_key. There is no equivalent C++ recover_key function for this test.
-   auto result = ::recover_key( &sh->hash, sh->sig_base(), sh->sig_len, recovered, recover_size );
+   auto result = recover_key( &sh->hash, sh->sig_base(), sh->sig_len, recovered, recover_size );
    eosio_assert(result == sh->pk_len, "recoverable key is not as long as provided key");
    for ( uint32_t i=0; i < recover_size; i++ )
       if ( recovered[i] != sh->pk_base()[i] )
@@ -265,176 +240,203 @@ void test_crypto::test_recover_key_partial() {
 }
 
 void test_crypto::test_sha1() {
-   auto tmp = eosio::sha1( test1, my_strlen(test1) ).extract_as_byte_array();
-   my_memcmp((void *)test1_ok_1, tmp.data(), tmp.size());
-   eosio_assert(  my_memcmp((void *)test1_ok_1, tmp.data(), tmp.size()), "sha1 test1" );
+   unsigned char tmp[20];
 
-   tmp = eosio::sha1( test3, my_strlen(test3) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test3_ok_1, tmp.data(), tmp.size()), "sha1 test3" );
+   ::sha1( test1, my_strlen(test1), (capi_checksum160*)tmp );
+   eosio_assert(  my_memcmp((void *)test1_ok_1, &tmp, sizeof(tmp)), "sha1 test1" );
 
-   tmp = eosio::sha1( test4, my_strlen(test4) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test4_ok_1, tmp.data(), tmp.size()), "sha1 test4" );
+   ::sha1( test3, my_strlen(test3), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test3_ok_1, &tmp, sizeof(tmp)), "sha1 test3" );
 
-   tmp = eosio::sha1( test5, my_strlen(test5) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test5_ok_1, tmp.data(), tmp.size()), "sha1 test5" );
+   ::sha1( test4, my_strlen(test4), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test4_ok_1, &tmp, sizeof(tmp)), "sha1 test4" );
+
+   ::sha1( test5, my_strlen(test5), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test5_ok_1, &tmp, sizeof(tmp)), "sha1 test5" );
 }
 
 void test_crypto::test_sha256() {
-   auto tmp = eosio::sha256( test1, my_strlen(test1) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test1_ok_256, tmp.data(), tmp.size()), "sha256 test1" );
+   unsigned char tmp[32];
 
-   tmp = eosio::sha256( test3, my_strlen(test3) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test3_ok_256, tmp.data(), tmp.size()), "sha256 test3" );
+   ::sha256( test1, my_strlen(test1), (capi_checksum256*)tmp);
+   eosio_assert( my_memcmp((void *)test1_ok_256, &tmp, sizeof(tmp)), "sha256 test1" );
 
-   tmp = eosio::sha256( test4, my_strlen(test4)).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test4_ok_256, tmp.data(), tmp.size()), "sha256 test4" );
+   ::sha256( test3, my_strlen(test3), (capi_checksum256*)tmp);
+   eosio_assert( my_memcmp((void *)test3_ok_256, &tmp, sizeof(tmp)), "sha256 test3" );
 
-   tmp = eosio::sha256( test5, my_strlen(test5)).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test5_ok_256, tmp.data(), tmp.size()), "sha256 test5" );
+   ::sha256( test4, my_strlen(test4), (capi_checksum256*)tmp);
+   eosio_assert( my_memcmp((void *)test4_ok_256, &tmp, sizeof(tmp)), "sha256 test4" );
+
+   ::sha256( test5, my_strlen(test5), (capi_checksum256*)tmp);
+   eosio_assert( my_memcmp((void *)test5_ok_256, &tmp, sizeof(tmp)), "sha256 test5" );
 }
 
 void test_crypto::test_sha512() {
-   auto tmp = eosio::sha512( test1, my_strlen(test1) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test1_ok_512, tmp.data(), tmp.size()), "sha512 test1" );
+   unsigned char tmp[64];
 
-   tmp = eosio::sha512( test3, my_strlen(test3) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test3_ok_512, tmp.data(), tmp.size()), "sha512 test3" );
+   ::sha512( test1, my_strlen(test1), (capi_checksum512*)tmp );
+   eosio_assert( my_memcmp((void *)test1_ok_512, &tmp, sizeof(tmp)), "sha512 test1" );
 
-   tmp = eosio::sha512( test4, my_strlen(test4) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test4_ok_512, tmp.data(), tmp.size()), "sha512 test4" );
+   ::sha512( test3, my_strlen(test3), (capi_checksum512*)tmp );
+   eosio_assert( my_memcmp((void *)test3_ok_512, &tmp, sizeof(tmp)), "sha512 test3" );
 
-   tmp = eosio::sha512( test5, my_strlen(test5) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test5_ok_512, tmp.data(), tmp.size()), "sha512 test5" );
+   ::sha512( test4, my_strlen(test4), (capi_checksum512*)tmp );
+   eosio_assert( my_memcmp((void *)test4_ok_512, &tmp, sizeof(tmp)), "sha512 test4" );
+
+   ::sha512( test5, my_strlen(test5), (capi_checksum512*)tmp );
+   eosio_assert( my_memcmp((void *)test5_ok_512, &tmp, sizeof(tmp)), "sha512 test5" );
 }
 
 void test_crypto::test_ripemd160() {
-   auto tmp = ripemd160( test1, my_strlen(test1) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test1_ok_ripe, tmp.data(), tmp.size()), "ripemd160 test1" );
+   unsigned char tmp[20];
 
-   tmp = ripemd160( test3, my_strlen(test3) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test3_ok_ripe, tmp.data(), tmp.size()), "ripemd160 test3" );
+   ::ripemd160( test1, my_strlen(test1), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test1_ok_ripe, &tmp, sizeof(tmp)), "ripemd160 test1" );
 
-   tmp = ripemd160( test4, my_strlen(test4) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test4_ok_ripe, tmp.data(), tmp.size()), "ripemd160 test4" );
+   ::ripemd160( test3, my_strlen(test3), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test3_ok_ripe, &tmp, sizeof(tmp)), "ripemd160 test3" );
 
-   tmp = ripemd160( test5, my_strlen(test5) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test5_ok_ripe, tmp.data(), tmp.size()), "ripemd160 test5" );
+   ::ripemd160( test4, my_strlen(test4), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test4_ok_ripe, &tmp, sizeof(tmp)), "ripemd160 test4" );
+
+   ::ripemd160( test5, my_strlen(test5), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test5_ok_ripe, &tmp, sizeof(tmp)), "ripemd160 test5" );
 }
 
 void test_crypto::sha256_null() {
-   auto tmp = sha256( nullptr, 100 );
+   unsigned char tmp[32];
+   ::sha256( nullptr, 100, (capi_checksum256*)tmp);
    eosio_assert( false, "should've thrown an error" );
 }
 
 void test_crypto::sha1_no_data() {
-   auto tmp = sha1( test2, my_strlen(test2) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test2_ok_1, tmp.data(), tmp.size()), "sha1 test2" );
+   unsigned char tmp[20];
+   ::sha1( test2, my_strlen(test2), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test2_ok_1, &tmp, sizeof(tmp)), "sha1 test2" );
 }
 
 void test_crypto::sha256_no_data() {
-   auto tmp = sha256( test2, my_strlen(test2) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test2_ok_256, tmp.data(), tmp.size()), "sha256 test2" );
+   unsigned char tmp[32];
+   ::sha256( test2, my_strlen(test2), (capi_checksum256*)tmp );
+   eosio_assert( my_memcmp((void *)test2_ok_256, &tmp, sizeof(tmp)), "sha256 test2" );
 }
 
 void test_crypto::sha512_no_data() {
-   auto tmp = sha512( test2, my_strlen(test2) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test2_ok_512, tmp.data(), tmp.size()), "sha512 test2" );
+   unsigned char tmp[64];
+   ::sha512( test2, my_strlen(test2), (capi_checksum512*)tmp );
+   eosio_assert( my_memcmp((void *)test2_ok_512, &tmp, sizeof(tmp)), "sha512 test2" );
 }
 
 void test_crypto::ripemd160_no_data() {
-   auto tmp = ripemd160( test2, my_strlen(test2) ).extract_as_byte_array();
-   eosio_assert( my_memcmp((void *)test2_ok_ripe, tmp.data(), tmp.size()), "ripemd160 test2" );
+   unsigned char tmp[20];
+   ::ripemd160( test2, my_strlen(test2), (capi_checksum160*)tmp );
+   eosio_assert( my_memcmp((void *)test2_ok_ripe, &tmp, sizeof(tmp)), "ripemd160 test2" );
 }
 
 
 void test_crypto::assert_sha256_false() {
-   auto tmp = sha256( test1, my_strlen(test1) );
-   tmp.data()[0] ^= (uint128_t)(-1);
+   unsigned char tmp[32];
+
+   ::sha256( test1, my_strlen(test1), (capi_checksum256*)tmp );
+   tmp[0] ^= (uint64_t)(-1);
    assert_sha256( test1, my_strlen(test1), tmp );
 
    eosio_assert( false, "should have failed" );
 }
 
 void test_crypto::assert_sha256_true() {
-   auto tmp = sha256( test1, my_strlen(test1) ).extract_as_byte_array();
+   unsigned char tmp[32];
+   
+   ::sha256( test1, my_strlen(test1), (capi_checksum256*)tmp );
    assert_sha256( test1, my_strlen(test1), tmp );
-
-   tmp = sha256( test3, my_strlen(test3) ).extract_as_byte_array();
+   
+   ::sha256( test3, my_strlen(test3), (capi_checksum256*)tmp );
    assert_sha256( test3, my_strlen(test3), tmp );
-
-   tmp = sha256( test4, my_strlen(test4) ).extract_as_byte_array();
+   
+   ::sha256( test4, my_strlen(test4), (capi_checksum256*)tmp );
    assert_sha256( test4, my_strlen(test4), tmp );
-
-   tmp = sha256( test5, my_strlen(test5) ).extract_as_byte_array();
+   
+   ::sha256( test5, my_strlen(test5), (capi_checksum256*)tmp );
    assert_sha256( test5, my_strlen(test5), tmp );
 }
 
 void test_crypto::assert_sha1_false() {
-   auto tmp = sha1( test1, my_strlen(test1) );
-   tmp.data()[0] ^= (uint128_t)(-1);
+   unsigned char tmp[20];
 
+   ::sha1( test1, my_strlen(test1), (capi_checksum160*)tmp );
+   tmp[0] ^= (uint64_t)(-1);
    assert_sha1( test1, my_strlen(test1), tmp );
-
+   
    eosio_assert( false, "should have failed" );
 }
 
 
 void test_crypto::assert_sha1_true() {
-   auto tmp = sha1( test1, my_strlen(test1) );
+   unsigned char tmp[20];
+
+   ::sha1( test1, my_strlen(test1), (capi_checksum160*)tmp );
    assert_sha1( test1, my_strlen(test1), tmp );
 
-   tmp = sha1( test3, my_strlen(test3) );
+   ::sha1( test3, my_strlen(test3), (capi_checksum160*)tmp );
    assert_sha1( test3, my_strlen(test3), tmp );
 
-   tmp = sha1( test4, my_strlen(test4));
+   ::sha1( test4, my_strlen(test4), (capi_checksum160*)tmp);
    assert_sha1( test4, my_strlen(test4), tmp );
 
-   tmp = sha1( test5, my_strlen(test5));
+   ::sha1( test5, my_strlen(test5), (capi_checksum160*)tmp);
    assert_sha1( test5, my_strlen(test5), tmp );
 }
 
 void test_crypto::assert_sha512_false() { 
-   auto tmp = sha512( test1, my_strlen(test1));
-   tmp.data()[0] ^= (uint128_t)(-1);
-   assert_sha512( test1, my_strlen(test1), tmp );
+   unsigned char tmp[64];
 
+   ::sha512( test1, my_strlen(test1), (capi_checksum512*)tmp);
+   tmp[0] ^= (uint64_t)(-1);
+   assert_sha512( test1, my_strlen(test1), tmp );
+   
    eosio_assert(false, "should have failed");
 }
 
 
 void test_crypto::assert_sha512_true() {
-   auto tmp = sha512( test1, my_strlen(test1));
+   unsigned char tmp[64];
+
+   ::sha512( test1, my_strlen(test1), (capi_checksum512*)tmp);
    assert_sha512( test1, my_strlen(test1), tmp );
 
-   tmp = sha512( test3, my_strlen(test3) );
-   assert_sha512( test3, my_strlen(test3) , tmp );
+   ::sha512( test3, my_strlen(test3), (capi_checksum512*)tmp);
+   assert_sha512( test3, my_strlen(test3), tmp );
 
-   tmp = sha512( test4, my_strlen(test4) );
+   ::sha512( test4, my_strlen(test4), (capi_checksum512*)tmp);
    assert_sha512( test4, my_strlen(test4), tmp );
 
-   tmp = sha512( test5, my_strlen(test5) );
+   ::sha512( test5, my_strlen(test5), (capi_checksum512*)tmp);
    assert_sha512( test5, my_strlen(test5), tmp );
 }
 
 void test_crypto::assert_ripemd160_false() {
-   auto tmp = ripemd160( test1, my_strlen(test1));
-   tmp.data()[0] ^= (uint128_t)(-1);
-   assert_ripemd160( test1, my_strlen(test1), tmp );
+   unsigned char tmp[20];
 
+   ::ripemd160( test1, my_strlen(test1), (capi_checksum160*)tmp);
+   tmp[0] ^= (uint64_t)(-1);
+   assert_ripemd160( test1, my_strlen(test1), tmp );
+   
    eosio_assert( false, "should have failed" );
 }
 
 
 void test_crypto::assert_ripemd160_true() {
-   auto tmp = ripemd160( test1, my_strlen(test1) );
+   unsigned char tmp[20];
+
+   ::ripemd160( test1, my_strlen(test1), (capi_checksum160*)tmp);
    assert_ripemd160( test1, my_strlen(test1), tmp );
 
-   tmp = ripemd160( test3, my_strlen(test3) );
+   ::ripemd160( test3, my_strlen(test3), (capi_checksum160*)tmp);
    assert_ripemd160( test3, my_strlen(test3), tmp );
 
-   tmp = ripemd160( test4, my_strlen(test4) );
+   ::ripemd160( test4, my_strlen(test4), (capi_checksum160*)tmp);
    assert_ripemd160( test4, my_strlen(test4), tmp );
 
-   tmp = ripemd160( test5, my_strlen(test5) );
+   ::ripemd160( test5, my_strlen(test5), (capi_checksum160*)tmp);
    assert_ripemd160( test5, my_strlen(test5), tmp );
 }

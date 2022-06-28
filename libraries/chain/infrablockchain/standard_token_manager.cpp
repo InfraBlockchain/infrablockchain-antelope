@@ -90,12 +90,7 @@ namespace infrablockchain { namespace chain {
             token_meta_obj.desc.assign(token_meta.desc.data(), desc_size);
          } );
 
-         std::string event_id;
-         if (context.control.get_deep_mind_logger() != nullptr) {
-            event_id = STORAGE_EVENT_ID("${token_id}", ("token_id", token_id));
-         }
-         context.add_ram_usage(token_id, (int64_t)(config::billable_size_v<token_meta_object>),
-                               storage_usage_trace(context.get_action_id(), std::move(event_id), "stdtoken", "setmeta", "settokenmeta"));
+         context.add_ram_usage(token_id, (int64_t)(config::billable_size_v<token_meta_object>) );
       }
    }
 
@@ -137,12 +132,7 @@ namespace infrablockchain { namespace chain {
             balance_obj.balance = value;
          });
 
-         std::string event_id;
-         if (context.control.get_deep_mind_logger() != nullptr) {
-            event_id = STORAGE_EVENT_ID("${token_id}:${account}", ("token_id", token_id)("account", owner));
-         }
-         context.add_ram_usage(owner, (int64_t)(config::billable_size_v<token_balance_object>),
-                               storage_usage_trace(context.get_action_id(), std::move(event_id), "stdtoken", "addbal", "add_token_balance"));
+         context.add_ram_usage(owner, (int64_t)(config::billable_size_v<token_balance_object>) );
       }
    }
 
@@ -158,12 +148,7 @@ namespace infrablockchain { namespace chain {
          if ( cur_balance == value ) {
             _db.remove( *balance_obj_ptr );
 
-            std::string event_id;
-            if (context.control.get_deep_mind_logger() != nullptr) {
-               event_id = STORAGE_EVENT_ID("${token_id}:${account}", ("token_id", token_id)("account", owner));
-            }
-            context.add_ram_usage(owner, -(int64_t)(config::billable_size_v<token_balance_object>),
-                                  storage_usage_trace(context.get_action_id(), std::move(event_id), "stdtoken", "subbal", "subtract_token_balance"));
+            context.add_ram_usage(owner, -(int64_t)(config::billable_size_v<token_balance_object>) );
          } else {
             _db.modify<token_balance_object>( *balance_obj_ptr, [&]( token_balance_object& balance_obj ) {
                balance_obj.balance -= value;
@@ -229,7 +214,7 @@ namespace infrablockchain { namespace chain {
 
             share_type weighted_token_balance = token_balance;
             if ( sys_token.token_weight != system_token::token_weight_1x ) {
-               uint128_t weighted_token_balance_128 = ((uint128_t)token_balance * sys_token.token_weight) / (uint128_t)system_token::token_weight_1x;
+               eosio::chain::uint128_t weighted_token_balance_128 = ((eosio::chain::uint128_t)token_balance * sys_token.token_weight) / (eosio::chain::uint128_t)system_token::token_weight_1x;
 
                EOS_ASSERT(weighted_token_balance_128 <= std::numeric_limits<share_type>::max(), weighted_system_token_balance_overflow_exception,
                           "weighted system token balance overflow (account: ${account}, system-token-id: ${sys_token_id})", ("account", account)("sys_token_id", sys_token_id) );

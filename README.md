@@ -82,20 +82,15 @@ InfraBlockchain currently supports the following operating systems:
 
 1. Amazon Linux 2
 2. CentOS 7
-2. CentOS 7.x
-2. CentOS 8
 3. Ubuntu 16.04
 4. Ubuntu 18.04
-4. Ubuntu 20.04
 5. MacOS 10.14 (Mojave)
-6. MacOS 10.15 (Catalina)
 
 ---
 
 **Note: It may be possible to install InfraBlockchain on other Unix-based operating systems. This is not officially supported, though.**
 
 ---
-
 
 ## Build Script
 To build the InfraBlockchain, run:
@@ -115,6 +110,7 @@ To uninstall the InfraBlockchain built/installed binaries and dependencies, run:
 ./scripts/infrablockchain_uninstall.sh
 ```
 
+
 ## License
 
 InfraBlockchain is released under the open source MIT license and is offered “AS IS” without warranty of any kind, express or implied.
@@ -123,8 +119,9 @@ InfraBlockchain is built upon many third-party libraries such as Binaryen (Apach
 Without limiting the generality of the foregoing, Blockchain Labs Inc. makes no representation or guarantee that InfraBlockchain or any third-party libraries will perform as intended or will be free of errors,
 bugs or faulty code. Both may fail in large or small ways that could completely or partially limit functionality or compromise computer systems.
 If you use or implement InfraBlockchain, you do so at your own risk. In no event will Blockchain Labs Inc. be liable to any party for any damages whatsoever,
-even if it had been advised of the possibility of damage.  
+even if it had been advised of the possibility of damage.
 
 ## Important
 
 See [LICENSE](./LICENSE) for copyright and license terms.
+

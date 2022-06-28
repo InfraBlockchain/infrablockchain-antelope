@@ -186,50 +186,6 @@ may use a new `set_proposed_producers_ex` intrinsic to access extended features.
 */
             {}
          } )
-         (  builtin_protocol_feature_t::action_return_value, builtin_protocol_feature_spec{
-            "ACTION_RETURN_VALUE",
-            fc::variant("69b064c5178e2738e144ed6caa9349a3995370d78db29e494b3126ebd9111966").as<digest_type>(),
-            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
-/*
-Builtin protocol feature: ACTION_RETURN_VALUE
-
-Enables new `set_action_return_value` intrinsic which sets a value that is included in action_receipt.
-*/
-            {}
-         } )
-         (  builtin_protocol_feature_t::kv_database, builtin_protocol_feature_spec{
-            "KV_DATABASE",
-            fc::variant("14cfb3252a5fa3ae4c764929e0bbc467528990c9cc46aefcc7f16367f28b6278").as<digest_type>(),
-            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
-/*
-Builtin protocol feature: KV_DATABASE
-
-Enables usage of key-value database intrinsics.
-*/
-            {}
-         } )
-         (  builtin_protocol_feature_t::configurable_wasm_limits, builtin_protocol_feature_spec{
-            "CONFIGURABLE_WASM_LIMITS",
-            fc::variant("67f5f1e92cbf6f7276e7b3fc8c2ad23e63448e657641a1e5de69bccd114542d6").as<digest_type>(),
-            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
-/*
-Builtin protocol feature: CONFIGURABLE_WASM_LIMITS
-
-Allows privileged contracts to set the constraints on WebAssembly code.
-*/
-            {}
-         } )
-         (  builtin_protocol_feature_t::blockchain_parameters, builtin_protocol_feature_spec{
-            "BLOCKCHAIN_PARAMETERS",
-            fc::variant("70787548dcea1a2c52c913a37f74ce99e6caae79110d7ca7b859936a0075b314").as<digest_type>(),
-            {}
-         } )
-            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
-/*
-Builtin protocol feature: BLOCKCHAIN_PARAMETERS
-
-Allows privileged contracts to get and set subsets of blockchain parameters.
-*/
          (  builtin_protocol_feature_t::infrablockchain_builtin_standard_token, builtin_protocol_feature_spec{
             "BUILTIN_STANDARD_TOKEN",
             fc::variant("1b1da971c23a54427185b7cfb5ea8e62db150ab7ed1203b0207698d0d205dec1").as<digest_type>(),
@@ -426,7 +382,7 @@ Counting transactions on the blockchain as votes for block producer election res
       return recognized_t::ready;
    }
 
-   std::optional<digest_type> protocol_feature_set::get_builtin_digest( builtin_protocol_feature_t feature_codename )const {
+   optional<digest_type> protocol_feature_set::get_builtin_digest( builtin_protocol_feature_t feature_codename )const {
       uint32_t indx = static_cast<uint32_t>( feature_codename );
 
       if( indx >= _recognized_builtin_protocol_features.size() )
@@ -574,10 +530,8 @@ Counting transactions on the blockchain as votes for block producer election res
 
 
 
-   protocol_feature_manager::protocol_feature_manager(
-      protocol_feature_set&& pfs,
-      std::function<fc::logger*()> get_deep_mind_logger
-   ):_protocol_feature_set( std::move(pfs) ), _get_deep_mind_logger(get_deep_mind_logger)
+   protocol_feature_manager::protocol_feature_manager( protocol_feature_set&& pfs )
+   :_protocol_feature_set( std::move(pfs) )
    {
       _builtin_protocol_features.resize( _protocol_feature_set._recognized_builtin_protocol_features.size() );
    }
@@ -756,13 +710,6 @@ Counting transactions on the blockchain as votes for block producer election res
                   "cannot activate already activated builtin feature with digest: ${digest}",
                   ("digest", feature_digest)
       );
-
-      if (auto dm_logger = _get_deep_mind_logger()) {
-         fc_dlog(*dm_logger, "FEATURE_OP ACTIVATE ${feature_digest} ${feature}",
-            ("feature_digest", feature_digest)
-            ("feature", itr->to_variant())
-         );
-      }
 
       _activated_protocol_features.push_back( protocol_feature_entry{itr, current_block_num} );
       _builtin_protocol_features[indx].previous = _head_of_builtin_activation_list;
