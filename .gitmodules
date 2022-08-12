@@ -9,9 +9,6 @@
 [submodule "libraries/softfloat"]
 	path = libraries/softfloat
 	url = https://github.com/eosnetworkfoundation/mandel-berkeley-softfloat-3
-[submodule "libraries/fc"]
-	path = libraries/fc
-	url = https://github.com/eosnetworkfoundation/mandel-fc
 [submodule "libraries/yubihsm"]
 	path = libraries/yubihsm
 	url = https://github.com/Yubico/yubihsm-shell
@@ -24,3 +21,6 @@
 [submodule "tests/abieos"]
 	path = tests/abieos
 	url = https://github.com/eosnetworkfoundation/mandel-abieos
+[submodule "libraries/fc"]
+	path = libraries/fc
+	url = https://github.com/eosnetworkfoundation/mandel-fc.git

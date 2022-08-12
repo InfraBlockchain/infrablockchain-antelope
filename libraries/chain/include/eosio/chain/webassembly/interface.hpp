@@ -1785,6 +1785,187 @@ namespace webassembly {
          */
          int32_t k1_recover( span<const char> signature, span<const char> digest, span<char> pub) const;
 
+         ///////////////////////////////////////////////////////////////
+         /// InfraBlockchain Core APIs (Intrinsics)
+         ///
+
+         ///////////////////////////////////////////////////////////////
+         /// InfraBlockchain Standard Token Core API (Intrinsics)
+
+         /**
+          *  Get Token Symbol
+          *  @brief get token symbol of a token
+          *
+          *  @param token_id - token account name
+          *  @return token symbol name (eosio::symbol_name)
+          */
+         uint64_t get_token_symbol( account_name token_id ) const;
+
+         /**
+          *  Get Token Total Supply
+          *  @brief get current total supply of a token
+          *
+          *  @param token_id - token account name
+          *  @return current total supply amount of the token
+          */
+         int64_t get_token_total_supply( account_name token_id ) const;
+
+         /**
+          *  Get Token Balance
+          *  @brief get token balance of an account for an token
+          *
+          *  @param token_id - token account name
+          *  @param account - account name to retrieve token balance
+          *  @return token balance of the account
+          */
+         int64_t get_token_balance( account_name token_id, account_name account ) const;
+
+         /**
+          *  Issue Token
+          *  @brief issue new token to a specific account,
+          *  token_id is implicitly the action receiver (token owner) account,
+          *  the contract code of token owner account can issue its own token only.
+          *
+          *  @param to - account name to which new token is issued
+          *  @param amount - amount of token to issue
+          */
+         void issue_token( account_name to, int64_t amount );
+
+         /**
+          *  Transfer Token
+          *  @brief transfer token from 'from' account to 'to' account,
+          *  token_id is implicitly the action receiver (token owner) account,
+          *  the contract code of token owner account can transfer its own token only.
+          *
+          *  @param from - account from which token amount is transferred (subtracted)
+          *  @param to - account to which token amount is transferred (added)
+          *  @param amount - amount of token to transfer
+          */
+         void transfer_token( account_name from, account_name to, int64_t amount );
+
+         /**
+          *  Retire(Burn) Token
+          *  @brief retire(burn) token from token owner account,
+          *  token_id is implicitly the action receiver (token owner) account,
+          *  the contract code of token owner account can burn its own token only.
+          *
+          *  @param amount - amount of token to retire(burn)
+          */
+         void retire_token( int64_t amount );
+
+
+         ///////////////////////////////////////////////////////////////
+         /// InfraBlockchain System Token Core API (Intrinsics)
+
+         /**
+          *  Get System Token Count
+          *  @brief get the number of active system tokens authorized by block producers and used as transaction fee payment token
+          *
+          *  @return the number of system tokens
+          */
+         uint32_t get_system_token_count() const;
+
+         /**
+          * Get System Token List
+          * @brief Retrieve the system token list
+          *
+          * @param[out] packed_system_token_list - output buffer of the system token list (vector<infrablockchain::chain::system_token>), only retrieved if sufficent size to hold packed data.
+          *
+          * return the number of bytes copied to the buffer, or number of bytes required if the buffer is empty.
+          */
+         uint32_t get_system_token_list_packed( legacy_span<char> packed_system_token_list ) const;
+
+         /**
+          * Set System Token List
+          * @brief set the list of system tokens (vector<infrablockchain::chain::system_token>) used as transaction fee payment token.
+          *        2/3+ block producers have to sign any modification of system token list.
+          *
+          * @param packed_system_token_list - packed data of system_token vector in the appropriate system token order
+          *
+          * @return -1 if setting new system token list was unsuccessful, otherwise returns the version of the new system token list
+          */
+         int64_t set_system_token_list_packed( legacy_span<const char> packed_system_token_list );
+
+
+         ///////////////////////////////////////////////////////////////
+         /// InfraBlockchain Transaction Fee Management Core API (Intrinsics)
+
+         /**
+          *  Set Transaction Fee For Action
+          *  @brief set transaction fee for an action. the transaction fee for each code/action is determined by the 2/3+ block producers.
+          *  if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. InfraBlockchain standard token actions) that every account has.
+          *  if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup.
+          *
+          *  @param code - account name of contract code
+          *  @param action - action name
+          *  @param value - transaction fee value
+          *  @param fee_type - transaction fee type (1: fixed_tx_fee_per_action_type)
+          */
+         void set_trx_fee_for_action( account_name code, action_name action, int32_t value, uint32_t fee_type );
+
+         /**
+          *  Unset Transaction Fee For Action
+          *  @brief delete transaction fee entry for an action (to the unsset status)
+          *
+          *  @param code - account name of contract code
+          *  @param action - action name
+          */
+         void unset_trx_fee_for_action( account_name code, action_name action );
+
+         /**
+          *  Get Transaction Fee For Action
+          *  @brief get transaction fee for an action,
+          *  if code == account_name(0), transaction fee info for an built-in common action is retrieved.
+          *  if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup.
+          *
+          *  @param code - account name of contract code
+          *  @param action - action name
+          *  @param[out] packed_trx_fee_for_action - output buffer of the packed 'infrablockchain::chain::tx_fee_for_action' object, only retrieved if sufficent size to hold packed data.
+          *  @return size of the packed 'infrablockchain::chain::tx_fee_for_action' data
+          */
+         uint32_t get_trx_fee_for_action_packed( account_name code, action_name action, legacy_span<char> packed_trx_fee_for_action ) const;
+
+         /**
+          *  Get the transaction fee payer account name
+          *  @brief Get the transaction fee payer account to which transaction fee is charged
+          *  @return the transaction fee payer account name
+          */
+         account_name trx_fee_payer() const;
+
+
+         ///////////////////////////////////////////////////////////////
+         /// InfraBlockchain Proof-of-Transaction Core API (Intrinsics)
+
+         /**
+          * Get Top Transaction Vote Receivers
+          * @brief Retrieve top transaction vote receiver list from blockchain core.
+          *        Transaction votes are processed and accrued for each vote target account on blockchain core by InfraBlockchain Proof-of-Transaction/Transaction-as-a-Vote protocol
+          *        Smart contract code including system contract can retrieve the top transaction vote receiver list
+          *        sorted by the accumulated time-decaying weighted transaction vote amount for each tx vote receiver account.
+          *        The whole list of transaction vote receivers can be arbitrarily long,
+          *        so the sorted list can be retrieved by multiple function call with different offset_rank and limit parameter values.
+          *
+          * @param[out] packed_vote_receivers - output buffer of the top sorted transaction vote receiver list (vector<infrablockchain::chain::tx_vote_stat_for_account>),
+          *                                    output data retrieved only if the output buffer has sufficient size to hold the packed data.
+          * @param offset_rank - offset-rank of first item in the returned list. offset-rank n means the returned list starts from the rank n+1 tx vote receiver.
+          *                      e.g. if offset_rank = 0, the first item in the returned list is the top 1 vote receiver.
+          * @param limit - max limit of the returned item count
+          *
+          * @return the size of the sorted transaction vote receiver list data written to the buffer (array of 'infrablockchain_tx_vote_stat_for_account' struct),
+          *         or number of bytes required if the output buffer is empty.
+          */
+         uint32_t get_top_transaction_vote_receivers_packed( legacy_span<char> packed_vote_receiver_list, uint32_t offset_rank, uint32_t limit ) const;
+
+         /**
+          * Get Total Weighted Transaction Votes
+          * @brief Retrieve the total weighted (time-decaying) transaction vote amount accumulated for all blockchain transactions in the blockchain history
+          *
+          * @return total weighted transaction vote amount
+          */
+         double get_total_weighted_transaction_votes() const;
+
+         ///////////////////////////////////////////////////////////////
+
          // compiler builtins api
          void __ashlti3(legacy_ptr<int128_t>, uint64_t, uint64_t, uint32_t) const;
          void __ashrti3(legacy_ptr<int128_t>, uint64_t, uint64_t, uint32_t) const;

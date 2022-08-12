@@ -20,7 +20,15 @@
 
 #include <chrono>
 
+#include <infrablockchain/chain/config.hpp>
+#include <infrablockchain/chain/exceptions.hpp>
+#include <infrablockchain/chain/transaction_extensions.hpp>
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 namespace eosio { namespace chain {
+
+   using namespace infrablockchain::chain;
 
    transaction_checktime_timer::transaction_checktime_timer(platform_timer& timer)
          : expired(timer.expired), _timer(timer) {
@@ -82,10 +90,80 @@ namespace eosio { namespace chain {
    }
 
    void transaction_context::disallow_transaction_extensions( const char* error_msg )const {
+
+      if (control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol)) {
+         return;
+      }
+
       if( control.is_producing_block() ) {
          EOS_THROW( subjective_block_production_exception, error_msg );
       } else {
          EOS_THROW( disallowed_transaction_extensions_bad_block_exception, error_msg );
+      }
+   }
+
+   /// InfraBlockchain transaction fee payment processing
+   void transaction_context::process_transaction_fee_payment() {
+
+      if ( implicit_tx ) return; // no transaction fee for implicit transactions
+
+      EOS_ASSERT( tx_fee_payer && !((*tx_fee_payer).empty()), invalid_transaction_fee_payer_account, "no transaction fee payer account specified" );
+
+      account_name fee_payer = *tx_fee_payer;
+      if (fee_payer == config::system_account_name) {
+         // system account is exempt from transaction fee
+         return;
+      }
+
+      int32_t txfee_amount_to_pay = 0;
+      auto& txfee_table_manager = control.get_transaction_fee_table_manager();
+
+      for( const auto& act_trace : trace->action_traces ) {
+         int32_t txfee_amount_for_action = txfee_table_manager.get_tx_fee_for_action_trace(act_trace).value; // 0 txfee for notified actions
+         EOS_ASSERT( txfee_amount_to_pay <= std::numeric_limits<int32_t>::max() - txfee_amount_for_action, infrablockchain_transaction_fee_exception, "transaction fee amount sum overflow");
+         txfee_amount_to_pay += txfee_amount_for_action;
+      }
+
+      EOS_ASSERT( txfee_amount_to_pay >= 0, infrablockchain_transaction_fee_exception, "transaction fee amount must be greater than or equal to 0" );
+      EOS_ASSERT( txfee_amount_to_pay <= infrablockchain_max_transaction_fee_amount_per_transaction, infrablockchain_transaction_fee_exception, "transaction fee amount exceeds max transaction fee amount per transaction" );
+
+//      if (txfee_amount_to_pay == 0) {
+//         txfee_amount_to_pay = txfee_manager.get_default_tx_fee().value;
+//      }
+
+      if ( txfee_amount_to_pay > 0 ) {
+
+         uint32_t tx_fee_amount = static_cast<uint32_t>(txfee_amount_to_pay);
+         // dispatch 'txfee' actions to system token accounts that transaction fee payer has token balance for
+         control.get_mutable_standard_token_manager().pay_transaction_fee( *this, fee_payer, tx_fee_amount );
+
+         // Cast Transaction Vote - InfraBlockchain Proof-of-Transaction / Transaction-as-a-Vote
+         cast_transaction_vote( tx_fee_amount );
+      }
+   }
+
+   void transaction_context::cast_transaction_vote(transaction_vote_amount_type vote_amount) {
+      if (vote_amount > 0 && trx_vote.has_value() && !(trx_vote->to.empty())) {
+         EOS_ASSERT( trx_vote->amt <= std::numeric_limits<transaction_vote_amount_type>::max() - vote_amount, transaction_vote_amount_overflow, "transaction vote amount overflow per account on a transaction");
+         trx_vote->amt += vote_amount;
+         // update transaction vote statistics database
+         control.get_mutable_transaction_vote_stat_manager().add_transaction_vote_amount_to_target_account( *this, trx_vote->to, vote_amount );
+      }
+   }
+
+   bool transaction_context::has_transaction_vote() const {
+      return trx_vote.has_value() && trx_vote->has_vote();
+   }
+
+   const transaction_vote& transaction_context::get_transaction_vote() const {
+      return (*trx_vote);
+   }
+
+   account_name transaction_context::get_tx_fee_payer() const {
+      if (tx_fee_payer) {
+         return *tx_fee_payer;
+      } else {
+         return account_name{};
       }
    }
 
@@ -140,13 +218,44 @@ namespace eosio { namespace chain {
       if( explicit_billed_cpu_time )
          validate_cpu_usage_to_bill( billed_cpu_time_us, std::numeric_limits<int64_t>::max(), false ); // Fail early if the amount to be billed is too high
 
-      // Record accounts to be billed for network and CPU usage
-      if( control.is_builtin_activated(builtin_protocol_feature_t::only_bill_first_authorizer) ) {
-         bill_to_accounts.insert( trx.first_authorizer() );
+      /////////////////////////////////////////////////////
+      /// InfraBlockchain Transaction Fee Payment
+
+      if( control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol) ) {
+
+         unpacked_transaction_extensions = trx.validate_and_extract_extensions();
+
+         auto itr = unpacked_transaction_extensions.find(transaction_fee_payer_tx_ext::extension_id());
+         if (itr != unpacked_transaction_extensions.end()) {
+            const auto& tx_fee_payer_info = std::get<transaction_fee_payer_tx_ext>(unpacked_transaction_extensions.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second);
+            tx_fee_payer = tx_fee_payer_info.fee_payer;
+         }
+         if (!tx_fee_payer) {
+            // if tx-fee-payer is not specified on transaction message, then 'bill-first-authorizer' policy is used
+            tx_fee_payer = trx.first_authorizer();
+         }
+         bill_to_accounts.insert(*tx_fee_payer);
+
+         ////////////////////////////////////////////////////////////////
+         /// InfraBlockchain Transaction-Extension support for Transaction-as-a-vote and Proof-of-Transaction
+
+         if( control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol) ) {
+            auto itr_tx_vote = unpacked_transaction_extensions.find(transaction_vote_tx_ext::extension_id());
+            if (itr_tx_vote != unpacked_transaction_extensions.end()) {
+               const auto& tx_vote_info = std::get<transaction_vote_tx_ext>(unpacked_transaction_extensions.lower_bound(transaction_vote_tx_ext::extension_id())->second);
+               trx_vote = transaction_vote{ tx_vote_info.vote_to, 0 };
+            }
+         }
+
       } else {
-         for( const auto& act : trx.actions ) {
-            for( const auto& auth : act.authorization ) {
-               bill_to_accounts.insert( auth.actor );
+         // Record accounts to be billed for network and CPU usage
+         if( control.is_builtin_activated(builtin_protocol_feature_t::only_bill_first_authorizer) ) {
+            bill_to_accounts.insert( trx.first_authorizer() );
+         } else {
+            for( const auto& act : trx.actions ) {
+               for( const auto& auth : act.authorization ) {
+                  bill_to_accounts.insert( auth.actor );
+               }
             }
          }
       }
@@ -229,6 +338,7 @@ namespace eosio { namespace chain {
          disallow_transaction_extensions( "no transaction extensions supported yet for implicit transactions" );
       }
 
+      implicit_tx = true;
       published = control.pending_block_time();
       init( initial_net_usage);
    }
@@ -313,6 +423,11 @@ namespace eosio { namespace chain {
       uint32_t num_original_actions_to_execute = action_traces.size();
       for( uint32_t i = 1; i <= num_original_actions_to_execute; ++i ) {
          execute_action( i, 0 );
+      }
+
+      // InfraBlockchain system token transaction fee payment processing
+      if( control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol) ) {
+         process_transaction_fee_payment();
       }
 
       if( delay != fc::microseconds() ) {

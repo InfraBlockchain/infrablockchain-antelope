@@ -15,6 +15,7 @@
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/protocol_state_object.hpp>
 #include <eosio/chain/account_object.hpp>
+
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -124,5 +125,6 @@ std::istream& operator>>(std::istream& in, wasm_interface::vm_type& runtime) {
       in.setstate(std::ios_base::failbit);
    return in;
 }
-
 } } /// eosio::chain
+
+

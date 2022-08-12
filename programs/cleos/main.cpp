@@ -85,6 +85,11 @@ Options:
 
 #include <eosio/version/version.hpp>
 
+#include <infrablockchain/chain/system_accounts.hpp>
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/transaction_extensions.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+
 #pragma push_macro("N")
 #undef N
 
@@ -196,6 +201,12 @@ uint32_t delaysec = 0;
 
 vector<string> tx_permission;
 
+// InfraBlockchain Transaction Fee Payer account
+string trx_fee_payer_account;
+
+// InfraBlockchain Proof-of-Transaction transction vote target account
+string trx_vote_target_account;
+
 eosio::client::http::http_context context;
 
 void add_standard_transaction_options(CLI::App* cmd, string default_permission = "") {
@@ -210,7 +221,7 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    };
 
    cmd->add_option("-x,--expiration", parse_expiration, localized("Set the time in seconds before a transaction expires, defaults to 30s"));
-   cmd->add_flag("-f,--force-unique", tx_force_unique, localized("Force the transaction to be unique. this will consume extra bandwidth and remove any protections against accidently issuing the same transaction multiple times"));
+   cmd->add_flag("-q,--force-unique", tx_force_unique, localized("Force the transaction to be unique. this will consume extra bandwidth and remove any protections against accidently issuing the same transaction multiple times"));
    cmd->add_flag("-s,--skip-sign", tx_skip_sign, localized("Specify if unlocked wallet keys should be used to sign transaction"));
    cmd->add_flag("-j,--json", tx_print_json, localized("Print result as JSON"));
    cmd->add_option("--json-file", tx_json_save_file, localized("Save result in JSON format into a file"));
@@ -224,6 +235,12 @@ void add_standard_transaction_options(CLI::App* cmd, string default_permission =
    if(!default_permission.empty())
       msg += " (defaults to '" + default_permission + "')";
    cmd->add_option("-p,--permission", tx_permission, localized(msg.c_str()));
+
+   // InfraBlockchain Transaction-Fee-Payer
+   cmd->add_option("-f,--txfee-payer", trx_fee_payer_account, localized("transaction fee payer account. transaction must be signed by the fee payer account."));
+
+   // InfraBlockchain Transaction-as-a-Vote for Proof-of-Transaction
+   cmd->add_option("-v,--trx-vote", trx_vote_target_account, localized("transaction vote target account, Transaction-as-a-Vote(TaaV) for InfraBlockchain Proof-of-Transaction(PoT)"));
 
    cmd->add_option("--max-cpu-usage-ms", tx_max_cpu_usage, localized("Set an upper limit on the milliseconds of cpu usage budget, for the execution of the transaction (defaults to 0 which means no limit)"));
    cmd->add_option("--max-net-usage", tx_max_net_usage, localized("Set an upper limit on the net usage budget, in bytes, for the transaction (defaults to 0 which means no limit)"));
@@ -347,6 +364,33 @@ fc::variant push_transaction( signed_transaction& trx, packed_transaction::compr
       trx.delay_sec = delaysec;
    }
 
+   try {
+      if (!trx_fee_payer_account.empty()) {
+         eosio::chain::name txfee_payer_account_name(trx_fee_payer_account);
+
+         infrablockchain::chain::transaction_fee_payer_tx_ext tx_fee_payer_tx_ext{ txfee_payer_account_name };
+
+         trx.transaction_extensions.push_back(
+            std::make_pair(infrablockchain::chain::transaction_fee_payer_tx_ext::extension_id(),
+                           fc::raw::pack(tx_fee_payer_tx_ext)));
+      }
+   } EOS_RETHROW_EXCEPTIONS(infrablockchain::chain::ill_formed_transaction_fee_payer_tx_ext,
+                            "Invalid transaction fee payer account: ${trx_fee_payer_account}",
+                            ("trx_fee_payer_account", trx_fee_payer_account));
+
+   try {
+      if (!trx_vote_target_account.empty()) {
+         eosio::chain::name tx_vote_account_name(trx_vote_target_account);
+
+         infrablockchain::chain::transaction_vote_tx_ext tx_vote_tx_ext{ tx_vote_account_name };
+
+         trx.transaction_extensions.push_back(
+            std::make_pair(infrablockchain::chain::transaction_vote_tx_ext::extension_id(),
+                           fc::raw::pack(tx_vote_tx_ext)));
+      }
+   } EOS_RETHROW_EXCEPTIONS(infrablockchain::chain::ill_formed_transaction_vote_tx_ext,
+                            "Invalid transaction vote target account: ${tx_vote_target_account}", ("tx_vote_target_account", trx_vote_target_account));
+
    if (!tx_skip_sign) {
       auto required_keys = determine_required_keys(trx);
       sign_transaction(trx, required_keys, info.chain_id);
@@ -466,20 +510,23 @@ void print_action( const fc::variant& at ) {
 }
 
 //resolver for ABI serializer to decode actions in proposed transaction in multisig contract
-auto abi_serializer_resolver = [](const name& account) -> std::optional<abi_serializer> {
+auto abi_serializer_resolver = [](name code, name action) -> std::optional<abi_serializer> {
    static unordered_map<account_name, std::optional<abi_serializer> > abi_cache;
-   auto it = abi_cache.find( account );
+   if ( infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+      code = infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name;
+   }
+   auto it = abi_cache.find( code );
    if ( it == abi_cache.end() ) {
-      auto result = call(get_abi_func, fc::mutable_variant_object("account_name", account));
+      auto result = call(get_abi_func, fc::mutable_variant_object("account_name", code));
       auto abi_results = result.as<eosio::chain_apis::read_only::get_abi_results>();
 
       std::optional<abi_serializer> abis;
       if( abi_results.abi.has_value() ) {
          abis.emplace( *abi_results.abi, abi_serializer::create_yield_function( abi_serializer_max_time ) );
       } else {
-         std::cerr << "ABI for contract " << account.to_string() << " not found. Action data will be shown in hex only." << std::endl;
+         std::cerr << "ABI for contract " << code.to_string() << " not found. Action data will be shown in hex only." << std::endl;
       }
-      abi_cache.emplace( account, abis );
+      abi_cache.emplace( code, abis );
 
       return abis;
    }
@@ -488,16 +535,18 @@ auto abi_serializer_resolver = [](const name& account) -> std::optional<abi_seri
 };
 
 bytes variant_to_bin( const account_name& account, const action_name& action, const fc::variant& action_args_var ) {
-   auto abis = abi_serializer_resolver( account );
-   FC_ASSERT( abis, "No ABI found for ${contract}", ("contract", account));
+   account_name contract = infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action)?
+      infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name : account;
+   auto abis = abi_serializer_resolver( contract, action );
+   FC_ASSERT( abis, "No ABI found for ${contract}", ("contract", contract));
 
    auto action_type = abis->get_action_type( action );
-   FC_ASSERT( !action_type.empty(), "Unknown action ${action} in contract ${contract}", ("action", action)( "contract", account ));
+   FC_ASSERT( !action_type.empty(), "Unknown action ${action} in contract ${contract}", ("action", action)( "contract", contract ));
    return abis->variant_to_binary( action_type, action_args_var, abi_serializer::create_yield_function( abi_serializer_max_time ) );
 }
 
 fc::variant bin_to_variant( const account_name& account, const action_name& action, const bytes& action_args) {
-   auto abis = abi_serializer_resolver( account );
+   auto abis = abi_serializer_resolver( account, action );
    FC_ASSERT( abis, "No ABI found for ${contract}", ("contract", account));
 
    auto action_type = abis->get_action_type( action );
@@ -2556,7 +2605,7 @@ int main( int argc, char** argv ) {
          return;
       }
 
-      auto pk    = r1 ? private_key_type::generate_r1() : private_key_type::generate();
+      auto pk    = r1 ? private_key_type::generate_r1() : private_key_type::generate<fc::ecc::private_key_shim>();
       auto privs = pk.to_string();
       auto pubs  = pk.get_public_key().to_string();
       if (print_console) {
@@ -2866,6 +2915,141 @@ int main( int argc, char** argv ) {
       std::cout << fc::json::to_pretty_string(result)
                 << std::endl;
    });
+   
+   //////////////////////////////////////////////
+   /// InfraBlockchain Standard Token
+
+   /// get token balance
+   string token_id;
+   auto get_token = get->add_subcommand("token", localized("Retrieve InfraBlockchain Standard Token information"));
+   get_token->require_subcommand();
+
+   auto get_token_balance = get_token->add_subcommand("balance", localized("Retrieve the balance of an account for a given token"));
+   get_token_balance->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
+   get_token_balance->add_option("account", accountName, localized("The account name to query the balance for"))->required();
+   get_token_balance->callback([&] {
+      auto result = call(get_token_balance_func,
+                         fc::mutable_variant_object("token", token_id)("account", accountName)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   /// get token info
+   auto get_token_info = get_token->add_subcommand("info", localized("Retrieve meta information of a token"));
+   get_token_info->add_option("token", token_id, localized("token id (account name of a token account)"))->required();
+   get_token_info->callback([&] {
+      auto result = call(get_token_info_func,
+                         fc::mutable_variant_object("token", token_id)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   //////////////////////////////////////////////
+   /// InfraBlockchain System Token
+
+   /// get systoken list
+   auto get_systoken = get->add_subcommand("systoken", localized("Retrieve InfraBlockchain System Token Information"));
+   get_systoken->require_subcommand();
+
+   auto get_systoken_list = get_systoken->add_subcommand("list", localized("Retrieve the system token list used as transaction fee payment token(s)"));
+   get_systoken_list->callback([&] {
+       auto result = call(get_system_token_list_func,
+                          fc::mutable_variant_object("token_meta", true)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
+   /// get systoken balance
+   auto get_systoken_balance = get_systoken->add_subcommand("balance", localized("Retrieve system token balance info of an account"));
+   get_systoken_balance->add_option("account", accountName, localized("The name of the account to retrieve system token balance"))->required();
+   get_systoken_balance->callback([&] {
+       auto result = call(get_system_token_balance_func,
+                          fc::mutable_variant_object("account", accountName)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
+   /////////////////////////////////////////////////
+   /// InfraBlockchain Transaction Fee Management
+
+   /// get txfee info
+   string codeName;
+   string actionName;
+   auto get_txfee = get->add_subcommand("txfee", localized("Retrieve InfraBlockchain Transaction Fee Table information"));
+   get_txfee->require_subcommand();
+
+   auto get_txfee_item = get_txfee->add_subcommand("item", localized("Retrieve the transaction fee info for an action"));
+   get_txfee_item->add_option("code", codeName, localized("contract account name (if code==\"\", retrieve txfee for common actions (e.g. standard token actions))"))->required();
+   get_txfee_item->add_option("action", actionName, localized("action name (if code==\"\" and action==\"\", retrieves default txfee info"))->required();
+   get_txfee_item->callback([&] {
+       auto result = call(get_txfee_item_func,
+                          fc::mutable_variant_object("code", codeName)("action", actionName)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
+   /// get txfee list
+   string code_lower_bound;
+   string code_upper_bound;
+   uint32_t tx_fee_list_limit = 100;
+   auto get_txfee_list = get_txfee->add_subcommand("list", localized("Retrieve transaction fee item list"));
+   get_txfee_list->add_option("-L,--code-lower", code_lower_bound, localized("lower bound (inclusive) of contract code account name (if \"\", retrieves default transaction fee value and common built-in actions transaction fee values)"));
+   get_txfee_list->add_option("-U,--code-upper", code_upper_bound, localized("upper bound (inclusive) of contract code account name (if empty or not specified, upper bound is the end of all tx fee list)"));
+   get_txfee_list->add_option("-l,--limit", tx_fee_list_limit, localized("max limit of result item count (default = 100)"));
+   get_txfee_list->callback([&] {
+       auto result = call(get_txfee_list_func,
+                          fc::mutable_variant_object("code_lower_bound", code_lower_bound)("code_upper_bound", code_upper_bound)("limit", tx_fee_list_limit)
+       );
+
+       std::cout << fc::json::to_pretty_string(result)
+                 << std::endl;
+   });
+
+   /////////////////////////////////////////////////////////////////////////
+   /// InfraBlockchain Proof-of-Transaction Transaction Vote Statistics
+
+   /// get tx vote stats for an account
+   string txVoteAccountName;
+   auto tx_vote_stat = get->add_subcommand("txvote", localized("Retrieve InfraBlockchain Proof-of-Transaction transaction vote statistics"));
+   tx_vote_stat->require_subcommand();
+
+   auto get_tx_vote_stat_for_account = tx_vote_stat->add_subcommand("account", localized("Retrieve the transaction vote statistics info for an action"));
+   get_tx_vote_stat_for_account->add_option("code", txVoteAccountName, localized("account name to retrieve transaction vote stats."))->required();
+   get_tx_vote_stat_for_account->callback([&] {
+      auto result = call(get_tx_vote_stat_for_account_func,
+                         fc::mutable_variant_object("account", txVoteAccountName)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   /// get top transaction vote receiver list
+   uint32_t tx_vote_receiver_list_offset = 0;
+   uint32_t tx_vote_receiver_list_limit = 30;
+   auto get_top_tx_vote_receiver_list = tx_vote_stat->add_subcommand("top", localized("Retrieve top transaction vote receiver list sorted by weighted transaction vote amount"));
+   get_top_tx_vote_receiver_list->add_option("-o,--offset", tx_vote_receiver_list_offset, localized("offset of first result item. offset n means the result list starts from the rank n+1 tx vote receiver (default = 0)"));
+   get_top_tx_vote_receiver_list->add_option("-l,--limit", tx_vote_receiver_list_limit, localized("max limit of result item count (default = 30)"));
+   get_top_tx_vote_receiver_list->callback([&] {
+      auto result = call(get_top_tx_vote_receiver_list_func,
+                         fc::mutable_variant_object("offset", tx_vote_receiver_list_offset)("limit", tx_vote_receiver_list_limit)
+      );
+
+      std::cout << fc::json::to_pretty_string(result)
+                << std::endl;
+   });
+
+   //////////////////////////////////////////////
 
    // currency accessors
    // get currency balance

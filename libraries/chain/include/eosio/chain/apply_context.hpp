@@ -8,9 +8,14 @@
 #include <algorithm>
 #include <set>
 
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+
 namespace chainbase { class database; }
 
 namespace eosio { namespace chain {
+
+using namespace infrablockchain::chain;
 
 class controller;
 class transaction_context;
@@ -594,6 +599,62 @@ class apply_context {
       const action& get_action()const { return *act; }
 
       action_name get_sender() const;
+
+   /// InfraBlockchain Core API - Standard-Token
+   public:
+
+      /// get token symbol of a token
+      symbol get_token_symbol( const account_name token_id ) const;
+
+      /// get total supply amount of a token
+      share_type get_token_total_supply( const account_name token_id ) const;
+
+      /// get token balance of an account for a token
+      share_type get_token_balance( const account_name token_id, const account_name account ) const;
+
+      /// issue new token to an account
+      void issue_token( const account_name to, const share_type amount );
+
+      /// transfer token
+      void transfer_token( const account_name from, const account_name to, const share_type amount );
+
+      /// retire(burn) token
+      void retire_token( const share_type amount );
+
+
+   /// InfraBlockchain Core API - Transaction-Fee Management
+   public:
+
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
+      /// set transaction fee for an action, transaction fees are determined by the 2/3+ block producers.
+      /// if code == account_name(0), this sets a transaction fee for the built-in common actions (e.g. InfraBlockchain standard token actions) that every account has
+      /// if code == account_name(0) and action == action_name(0), this sets default transaction fee for actions that don't have explicit transaction fee setup
+      void set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type = fixed_tx_fee_per_action_type );
+
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
+      /// unset transaction fee entry for an action, deleting transaction fee database row
+      void unset_transaction_fee_for_action( const account_name& code, const action_name& action );
+
+      /// InfraBlockchain Core API - Transaction-Fee-Setup
+      /// get transaction fee for an action
+      /// if code == account_name(0), transaction fee info for an built-in common action is retrieved
+      /// if code == account_name(0) and action == action_name(0), retrieves default transaction fee setup for actions that don't have explicit transaction fee setup
+      tx_fee_for_action get_transaction_fee_for_action( const account_name& code, const action_name& action ) const;
+
+      /// InfraBlockchain Core API - Transaction-Fee-Payer
+      /// get transaction fee payer account name from transaction message
+      account_name get_transaction_fee_payer() const;
+
+
+   /// InfraBlockchain Core API - Proof-of-Transaction(PoT)
+   public:
+
+      /// get top sorted transaction vote receiver list
+      std::vector<tx_vote_stat_for_account> get_top_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit ) const;
+
+      /// get total weighted transaction vote amount summed up
+      double get_total_weighted_transaction_votes() const;
+
 
    /// Fields:
    public:

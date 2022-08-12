@@ -463,6 +463,7 @@ namespace eosio { namespace chain {
    void
    authorization_manager::check_authorization( const vector<action>&                actions,
                                                const flat_set<public_key_type>&     provided_keys,
+                                               std::optional<account_name>          tx_fee_payer,
                                                const flat_set<permission_level>&    provided_permissions,
                                                fc::microseconds                     provided_delay,
                                                const std::function<void()>&         _checktime,
@@ -532,6 +533,11 @@ namespace eosio { namespace chain {
                }
             }
          }
+      }
+
+      // InfraBlockchain Transaction Fee Payer
+      if (tx_fee_payer) {
+         permissions_to_satisfy.emplace(permission_level{*tx_fee_payer, config::active_name},effective_provided_delay);
       }
 
       // Now verify that all the declared authorizations are satisfied:
@@ -624,7 +630,16 @@ namespace eosio { namespace chain {
                         ("auth", declared_auth) );
          }
       }
-
+      
+      auto exts = trx.validate_and_extract_extensions();
+      auto itr = exts.find(transaction_fee_payer_tx_ext::extension_id());
+      if (itr != exts.end()) {
+         const auto& tx_fee_payer_info = std::get<transaction_fee_payer_tx_ext>(exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second);
+         EOS_ASSERT( checker.satisfied(permission_level{tx_fee_payer_info.fee_payer,config::active_name}), unsatisfied_authorization,
+                     "transaction declares transaction fee payer '${fee_payer}', but does not have signatures for it.",
+                     ("fee_payer", tx_fee_payer_info.fee_payer) );
+      }
+      
       return checker.used_keys();
    }
 

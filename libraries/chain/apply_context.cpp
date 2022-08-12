@@ -13,7 +13,11 @@
 #include <eosio/chain/deep_mind.hpp>
 #include <boost/container/flat_set.hpp>
 
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/exceptions.hpp>
+
 using boost::container::flat_set;
+using namespace infrablockchain::chain;
 
 namespace eosio { namespace chain {
 
@@ -73,13 +77,27 @@ void apply_context::exec_one()
          action_return_value.clear();
          receiver_account = &db.get<account_metadata_object,by_name>( receiver );
          privileged = receiver_account->is_privileged();
-         auto native = control.find_apply_handler( receiver, act->account, act->name );
-         if( native ) {
-            if( trx_context.enforce_whiteblacklist && control.is_producing_block() ) {
-               control.check_contract_list( receiver );
-               control.check_action_list( act->account, act->name );
+         const apply_handler* native = nullptr;
+
+         if( !(context_free && control.skip_trx_checks()) ) {
+            /// InfraBlockchain Built-in Actions
+            if (control.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_builtin_standard_token)) {
+               if (receiver == act->account) { // call native built-in action handler in 'not notify' context only
+                  native = control.find_built_in_action_apply_handler(act->name);
+               }
             }
-            (*native)( *this );
+
+            if (native == nullptr) {
+               native = control.find_apply_handler( receiver, act->account, act->name );
+            }
+
+            if( native ) {
+               if( trx_context.enforce_whiteblacklist && control.is_producing_block() ) {
+                  control.check_contract_list( receiver );
+                  control.check_action_list( act->account, act->name );
+               }
+               (*native)( *this );
+            }
          }
 
          if( ( receiver_account->code_hash != digest_type() ) &&
@@ -358,6 +376,7 @@ void apply_context::execute_inline( action&& a ) {
          control.get_authorization_manager()
                 .check_authorization( {a},
                                       {},
+                                      {},
                                       {{receiver, config::eosio_code_name}},
                                       control.pending_block_time() - trx_context.published,
                                       std::bind(&transaction_context::checktime, &this->trx_context),
@@ -520,6 +539,7 @@ void apply_context::schedule_deferred_transaction( const uint128_t& sender_id, a
       try {
          control.get_authorization_manager()
                 .check_authorization( trx.actions,
+                                      {},
                                       {},
                                       {{receiver, config::eosio_code_name}},
                                       delay,
@@ -1065,5 +1085,141 @@ action_name apply_context::get_sender() const {
    }
    return action_name();
 }
+
+//////////////////////////////////////
+/// InfraBlockchain Core API - Standard-Token
+
+symbol apply_context::get_token_symbol( const account_name token_id ) const {
+   return control.get_standard_token_manager().get_token_symbol(token_id);
+}
+
+share_type apply_context::get_token_total_supply( const account_name token_id ) const {
+   return control.get_standard_token_manager().get_token_total_supply(token_id);
+}
+
+share_type apply_context::get_token_balance( const account_name token_id, const account_name account ) const {
+   return control.get_standard_token_manager().get_token_balance( token_id, account );
+}
+
+void apply_context::issue_token( const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can issue its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token issuance must be greater than 0" );
+
+   token_id_type token_id = receiver;
+   auto& standard_token_manager = control.get_mutable_standard_token_manager();
+
+   auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_id);
+   EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_id) );
+   auto token_meta_obj = *token_meta_obj_ptr;
+
+   EOS_ASSERT( is_account(to), no_token_target_account_exception,
+               "token issuance target account ${account} does not exist", ("account", to) );
+
+   const share_type old_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( old_total_supply + amount > 0, token_balance_overflow_exception, "total supply balance overflow" );
+
+   // update total supply
+   standard_token_manager.update_token_total_supply(token_meta_obj_ptr, amount);
+
+   // issue new token to 'to' account
+   standard_token_manager.add_token_balance( *this, token_id, to, amount );
+}
+
+void apply_context::transfer_token( const account_name from, const account_name to, const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can process transferring its own (action receiver's) tokens
+   /// Authorization check(require_authorization) and action notification(require_recipient) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( from.good(), token_action_validate_exception, "invalid from account name" );
+   EOS_ASSERT( to.good(), token_action_validate_exception, "invalid to account name" );
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token transfer must be greater than 0" );
+
+   token_id_type token_id = receiver;
+
+   auto& standard_token_manager = control.get_mutable_standard_token_manager();
+
+   EOS_ASSERT( is_account( from ), no_token_target_account_exception,
+               "transfer from account ${account} does not exist", ("account", from) );
+
+   EOS_ASSERT( is_account( to ), no_token_target_account_exception,
+               "transfer to account ${account} does not exist", ("account", to) );
+
+   standard_token_manager.subtract_token_balance( *this, token_id, from, amount );
+   standard_token_manager.add_token_balance( *this, token_id, to, amount );
+}
+
+void apply_context::retire_token( const share_type amount ) {
+
+   /// Only the contract code of an token account or native built-in token action handler code can retire(burn) its own (action receiver's) tokens
+   /// Authorization check(require_authorization) should be done outside(contract code or native action handler) of this function.
+
+   EOS_ASSERT( amount > 0, token_action_validate_exception, "amount of token redemption must be greater than 0" );
+
+   token_id_type token_account = receiver;
+
+   auto& standard_token_manager = control.get_mutable_standard_token_manager();
+
+   auto* token_meta_obj_ptr = standard_token_manager.get_token_meta_object(token_account);
+   EOS_ASSERT( token_meta_obj_ptr, token_not_yet_created_exception, "token not yet created for the account ${token_id}", ("token_id", token_account) );
+   auto token_meta_obj = *token_meta_obj_ptr;
+
+   share_type current_total_supply = token_meta_obj.total_supply;
+   EOS_ASSERT( current_total_supply - amount > 0, token_balance_underflow_exception, "total supply balance underflow" );
+
+   // update total supply
+   standard_token_manager.update_token_total_supply(token_meta_obj_ptr, -amount);
+
+   // retire(burn) tokens
+   standard_token_manager.subtract_token_balance( *this, token_account, token_account, amount );
+}
+
+//////////////////////////////////////
+/// InfraBlockchain Core API - Transaction-Fee-Management
+
+void apply_context::set_transaction_fee_for_action( const account_name& code, const action_name& action, const tx_fee_value_type value, const tx_fee_type_type fee_type ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call set_trx_fee_for_action API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   if ( !code.empty() ) {
+      EOS_ASSERT( is_account(code), account_query_exception, "account ${code} does not exist", ("code", code) );
+      if ( !infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+         auto abis = control.get_abi_serializer( code, abi_serializer::create_yield_function( fc::microseconds(chain::config::default_abi_serializer_max_time_us) /*control.get_abi_serializer_max_time()*/ ) );
+         EOS_ASSERT( abis.has_value(), abi_not_found_exception, "failed to get abi_serializer for account ${code}", ("code", code) );
+         EOS_ASSERT( abis->get_action_type( action ).size() > 0, abi_exception, "abi does not contain action ${action}", ("action", action) );
+      }
+   }
+
+   control.get_mutable_transaction_fee_table_manager().set_tx_fee_for_action( code, action, value, fee_type );
+}
+
+void apply_context::unset_transaction_fee_for_action( const account_name& code, const action_name& action ) {
+   EOS_ASSERT( privileged, unaccessible_api, "${code} does not have permission to call unset_trx_fee_for_action API", ("code", receiver) );
+   require_authorization(config::system_account_name);
+
+   control.get_mutable_transaction_fee_table_manager().unset_tx_fee_entry_for_action(code, action);
+}
+
+tx_fee_for_action apply_context::get_transaction_fee_for_action( const account_name& code, const action_name& action ) const {
+   return control.get_transaction_fee_table_manager().get_tx_fee_for_action( code, action );
+}
+
+account_name apply_context::get_transaction_fee_payer() const {
+   return trx_context.get_tx_fee_payer();
+}
+
+std::vector<tx_vote_stat_for_account> apply_context::get_top_transaction_vote_receivers( const uint32_t offset_rank, const uint32_t limit ) const {
+   return control.get_transaction_vote_stat_manager().get_top_sorted_transaction_vote_receivers( offset_rank, limit, false ).tx_vote_receiver_list;
+}
+
+double apply_context::get_total_weighted_transaction_votes() const {
+   return control.get_transaction_vote_stat_manager().get_total_weighted_transaction_vote_amount();
+}
+
+//////////////////////////////////////////////
 
 } } /// eosio::chain

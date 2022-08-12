@@ -22,6 +22,10 @@
 
 #include <fc/static_variant.hpp>
 
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
+
 namespace fc { class variant; }
 
 namespace eosio {
@@ -379,6 +383,59 @@ public:
    };
 
    get_table_by_scope_result get_table_by_scope( const get_table_by_scope_params& params )const;
+
+   struct get_token_balance_params {
+      name token;
+      name account;
+   };
+
+   asset get_token_balance(const get_token_balance_params &params) const;
+
+   struct get_token_info_params {
+      name token;
+   };
+
+   fc::variant get_token_info(const get_token_info_params &params) const;
+
+   struct get_system_token_list_params {
+       bool token_meta;
+   };
+
+   fc::variant get_system_token_list(const get_system_token_list_params &params) const;
+
+   struct get_system_token_balance_params {
+       name account;
+   };
+
+   infrablockchain::chain::system_token_balance get_system_token_balance(const get_system_token_balance_params &params) const;
+
+   struct get_txfee_item_params {
+       name code;
+       name action;
+   };
+
+   infrablockchain::chain::tx_fee_for_action get_txfee_item(const get_txfee_item_params &params) const;
+
+   struct get_txfee_list_params {
+       name code_lower_bound; // lower bound of code account name (inclusive)
+       name code_upper_bound; // upper bound of code account name (inclusive)
+       uint32_t limit = 100; // limit of result item count
+   };
+
+   infrablockchain::chain::tx_fee_list_result get_txfee_list(const get_txfee_list_params &params) const;
+
+   struct get_tx_vote_stat_for_account_params {
+      name account;
+   };
+
+   infrablockchain::chain::tx_vote_stat_for_account get_tx_vote_stat_for_account(const get_tx_vote_stat_for_account_params &params) const;
+
+   struct get_top_tx_vote_receiver_list_params {
+      uint32_t offset = 0;
+      uint32_t limit = 30;
+   };
+
+   infrablockchain::chain::tx_vote_receiver_list_result get_top_tx_vote_receiver_list(const get_top_tx_vote_receiver_list_params &params) const;
 
    struct get_currency_balance_params {
       name                  code;
@@ -841,6 +898,15 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more)(ne
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit)(reverse) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
+
+FC_REFLECT( eosio::chain_apis::read_only::get_token_balance_params, (token)(account) );
+FC_REFLECT( eosio::chain_apis::read_only::get_token_info_params, (token) );
+FC_REFLECT( eosio::chain_apis::read_only::get_system_token_list_params, (token_meta) );
+FC_REFLECT( eosio::chain_apis::read_only::get_system_token_balance_params, (account) );
+FC_REFLECT( eosio::chain_apis::read_only::get_txfee_item_params, (code)(action) );
+FC_REFLECT( eosio::chain_apis::read_only::get_txfee_list_params, (code_lower_bound)(code_upper_bound)(limit) );
+FC_REFLECT( eosio::chain_apis::read_only::get_tx_vote_stat_for_account_params, (account) );
+FC_REFLECT( eosio::chain_apis::read_only::get_top_tx_vote_receiver_list_params, (offset)(limit) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));

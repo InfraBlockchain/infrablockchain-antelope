@@ -260,6 +260,44 @@ Enables new `get_block_num` intrinsic which returns the current block number.
 */
             {}
          } )
+         (  builtin_protocol_feature_t::infrablockchain_builtin_standard_token, builtin_protocol_feature_spec{
+            "BUILTIN_STANDARD_TOKEN",
+            fc::variant("1b1da971c23a54427185b7cfb5ea8e62db150ab7ed1203b0207698d0d205dec1").as<digest_type>(),
+            {}
+         } )
+            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
+/*
+Builtin protocol feature: BUILTIN_STANDARD_TOKEN
+
+Every account created can mint a Standard Token and run standard token operations natively supported at the blockchain core level.
+*/
+         (  builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol, builtin_protocol_feature_spec{
+            "SYSTEM_TOKEN_TRANSACTION_FEE_PAYMENT_PROTOCOL",
+            fc::variant("660a2ccce59cf6da74eb02c3b444a7e782f180c7e2b4c8894f495db2735375d0").as<digest_type>(),
+            {builtin_protocol_feature_t::infrablockchain_builtin_standard_token}
+         } )
+            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
+/*
+Builtin protocol feature: SYSTEM_TOKEN_TRANSACTION_FEE_PAYMENT_PROTOCOL
+
+Among the user-issued built-in Standard Tokens, the elected block producers can select some tokens to be used for blockchain transaction fee payment.
+Whenever any blockchain transaction is executed, the block-producer-designated transaction fee tokens are collected as a transaction fee from users.
+When more than two-third of the elected block producers agree, they can manage the blockchain's transaction fees by updating the transaction fee table.
+The transaction fee payer can be specified separately from the accounts directly involved in a transaction, the transaction fee payment can be delegated to some other account.
+*/
+         (  builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol, builtin_protocol_feature_spec{
+            "PROOF_OF_TRANSACTION_PROTOCOL",
+            fc::variant("c11c0d168dad59717599b7548230d5214db70b1a776c1542f83bc67251ae48be").as<digest_type>(),
+            {builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol}
+         } )
+            // SHA256 hash of the raw message below within the comment delimiters (do not modify message below).
+/*
+Builtin protocol feature: PROOF_OF_TRANSACTION_PROTOCOL
+
+The block producers are elected by Proof-of-Transaction (PoT) consensus mechanism using Transaction-as-a-Vote (TaaV).
+The block producers are continuously elected and evicted by the transparent and fair vote index, the proof of generating meaningful transactions.
+Counting transactions on the blockchain as votes for block producer election results in promote the service providers that generated many transactions as the block producers.
+*/
    ;
 
 

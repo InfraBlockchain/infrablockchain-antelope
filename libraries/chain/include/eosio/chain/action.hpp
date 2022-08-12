@@ -83,6 +83,12 @@ namespace eosio { namespace chain {
          data = fc::raw::pack(value);
       }
 
+      template<typename T, std::enable_if_t<!std::is_base_of<bytes, T>::value, int> = 1>
+      action( vector<permission_level> auth, account_name acc, const T& value )         
+         : action_base( acc, T::get_name(), std::move(auth) ) {
+         data = fc::raw::pack(value);
+      }
+
       action( vector<permission_level> auth, account_name account, action_name name, const bytes& data )
             : action_base(account, name, std::move(auth)), data(data)  {
       }
@@ -90,6 +96,12 @@ namespace eosio { namespace chain {
       template<typename T>
       T data_as()const {
          EOS_ASSERT( account == T::get_account(), action_type_exception, "account is not consistent with action struct" );
+         EOS_ASSERT( name == T::get_name(), action_type_exception, "action name is not consistent with action struct"  );
+         return fc::raw::unpack<T>(data);
+      }
+      
+      template<typename T>
+      T data_as_built_in_common_action()const {
          EOS_ASSERT( name == T::get_name(), action_type_exception, "action name is not consistent with action struct"  );
          return fc::raw::unpack<T>(data);
       }

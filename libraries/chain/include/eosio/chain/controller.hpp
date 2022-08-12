@@ -12,6 +12,9 @@
 #include <eosio/chain/protocol_feature_manager.hpp>
 #include <eosio/chain/webassembly/eos-vm-oc/config.hpp>
 
+#include <infrablockchain/chain/standard_token_action_types.hpp>
+#include <infrablockchain/chain/system_accounts.hpp>
+
 namespace chainbase {
    class database;
 }
@@ -19,9 +22,18 @@ namespace boost { namespace asio {
    class thread_pool;
 }}
 
+namespace infrablockchain { namespace chain {
+   class infrablockchain_global_property_object;
+   class standard_token_manager;
+   class transaction_fee_table_manager;
+   class transaction_vote_stat_manager;
+} }
+
 namespace eosio { namespace vm { class wasm_allocator; }}
 
 namespace eosio { namespace chain {
+
+   using namespace infrablockchain::chain;
 
    class authorization_manager;
 
@@ -186,11 +198,22 @@ namespace eosio { namespace chain {
          const account_object&                 get_account( account_name n )const;
          const global_property_object&         get_global_properties()const;
          const dynamic_global_property_object& get_dynamic_global_properties()const;
+
+         const infrablockchain_global_property_object& get_infrablockchain_global_properties()const;
+
          const resource_limits_manager&        get_resource_limits_manager()const;
          resource_limits_manager&              get_mutable_resource_limits_manager();
          const authorization_manager&          get_authorization_manager()const;
          authorization_manager&                get_mutable_authorization_manager();
          const protocol_feature_manager&       get_protocol_feature_manager()const;
+
+         const standard_token_manager&         get_standard_token_manager()const;
+         standard_token_manager&               get_mutable_standard_token_manager();
+         const transaction_fee_table_manager&  get_transaction_fee_table_manager()const;
+         transaction_fee_table_manager&        get_mutable_transaction_fee_table_manager();
+         const transaction_vote_stat_manager&  get_transaction_vote_stat_manager()const;
+         transaction_vote_stat_manager&        get_mutable_transaction_vote_stat_manager();
+
          uint32_t                              get_max_nonprivileged_inline_action_size()const;
 
          const flat_set<account_name>&   get_actor_whitelist() const;
@@ -335,6 +358,9 @@ namespace eosio { namespace chain {
          signal<void(const transaction_trace_ptr&)>  pre_apply_action;
          signal<void(const transaction_trace_ptr&)>  post_apply_action;
          */
+        
+         /// InfraBlockchain Built-in Actions
+         const apply_handler* find_built_in_action_apply_handler( action_name act ) const;
 
          const apply_handler* find_apply_handler( account_name contract, scope_name scope, action_name act )const;
          wasm_interface& get_wasm_interface();
@@ -356,7 +382,12 @@ namespace eosio { namespace chain {
          fc::variant to_variant_with_abi( const T& obj, const abi_serializer::yield_function_t& yield )const {
             fc::variant pretty_output;
             abi_serializer::to_variant( obj, pretty_output,
-                                        [&]( account_name n ){ return get_abi_serializer( n, yield ); }, yield );
+                                       [&]( account_name code, action_name action ){
+                                           if ( infrablockchain::chain::standard_token::utils::is_infrablockchain_standard_token_action(action) ) {
+                                              code = infrablockchain::chain::infrablockchain_standard_token_interface_abi_account_name;
+                                           }
+                                           return get_abi_serializer( code, yield );
+                                       }, yield );
             return pretty_output;
          }
 

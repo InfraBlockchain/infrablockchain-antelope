@@ -4,7 +4,15 @@
 #include <eosio/chain/platform_timer.hpp>
 #include <signal.h>
 
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+
+namespace infrablockchain { namespace chain {
+   class transaction_fee_table_manager;
+} }
+
 namespace eosio { namespace chain {
+
+   using namespace infrablockchain::chain;
 
    struct transaction_checktime_timer {
       public:
@@ -88,6 +96,7 @@ namespace eosio { namespace chain {
 
          friend struct controller_impl;
          friend class apply_context;
+         friend class infrablockchain::chain::standard_token_manager;
 
          void add_ram_usage( account_name account, int64_t ram_delta );
 
@@ -116,6 +125,17 @@ namespace eosio { namespace chain {
          void validate_account_cpu_usage_estimate( int64_t billed_us, int64_t account_cpu_limit )const;
 
          void disallow_transaction_extensions( const char* error_msg )const;
+
+         void process_transaction_fee_payment();
+
+      public:
+         /// InfraBlockchain Proof-of-Transaction, Transaction-as-a-Vote
+         void cast_transaction_vote(transaction_vote_amount_type vote_amount);
+         bool has_transaction_vote() const;
+         const transaction_vote& get_transaction_vote() const;
+
+         /// InfraBlockchain Transaction-Fee-Payer
+         account_name get_tx_fee_payer() const;
 
       /// Fields:
       public:
@@ -150,6 +170,22 @@ namespace eosio { namespace chain {
          transaction_checktime_timer   transaction_timer;
 
          const bool                    is_read_only;
+         
+         bool                          implicit_tx = false;
+
+         flat_multimap<uint16_t, transaction_extension> unpacked_transaction_extensions;
+
+         /// InfraBlockchain Transaction Fee Payer
+         /// InfraBlockchain provides 'transaction fee payer' field for a blockchain transaction.
+         /// If 'transaction fee payer' field is specified in a submitted transaction, transaction fee is charged to
+         /// the specified transaction fee payer who signed the transaction message.
+         std::optional<account_name>   tx_fee_payer;
+
+         /// InfraBlockchain Proof-of-Transaction
+         /// tracking transaction vote amount generated from current transaction.
+         /// transaction votes collected from each transaction are accumulated in the (pending) 'block state' of each block.
+         /// this field is also used for transaction-vote logging in secondary log store
+         std::optional<infrablockchain::chain::transaction_vote>  trx_vote;
    private:
          bool                          is_initialized = false;
 

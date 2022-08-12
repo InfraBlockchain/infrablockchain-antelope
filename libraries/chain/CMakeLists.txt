@@ -3,6 +3,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/genesis_state_root_key.cpp.in ${CMAKE
 
 file(GLOB HEADERS "include/eosio/chain/*.hpp"
                   "include/eosio/chain/webassembly/*.hpp"
+                  "include/infrablockchain/chain/*.hpp"
                   "${CMAKE_CURRENT_BINARY_DIR}/include/eosio/chain/core_symbol.hpp" )
 
 if(APPLE AND UNIX)
@@ -70,6 +71,21 @@ set(CHAIN_WEBASSEMBLY_SOURCES
    webassembly/softfloat.cpp
    webassembly/system.cpp
    webassembly/transaction.cpp
+   webassembly/infrablockchain/standard_token_intrinsics.cpp
+   webassembly/infrablockchain/system_token_intrinsics.cpp
+   webassembly/infrablockchain/transaction_fee_management_intrinsics.cpp
+   webassembly/infrablockchain/proof_of_transaction_intrinsics.cpp
+)
+
+set(INFRABLOCKCHAIN_CORE_SOURCES
+   infrablockchain/infrablockchain_global_property_object.cpp
+   infrablockchain/standard_token_manager.cpp
+   infrablockchain/standard_token_action_handlers.cpp
+   infrablockchain/standard_token_object.cpp
+   infrablockchain/transaction_fee_table_manager.cpp
+   infrablockchain/transaction_extensions.cpp
+   infrablockchain/softfloat64.cpp
+   infrablockchain/transaction_vote_stat_manager.cpp
 )
 
 ## SORT .cpp by most likely to change / break compile
@@ -121,6 +137,9 @@ add_library( eosio_chain
              whitelisted_intrinsics.cpp
              thread_utils.cpp
              platform_timer_accuracy.cpp
+
+             ${INFRABLOCKCHAIN_CORE_SOURCES}
+
              ${PLATFORM_TIMER_IMPL}
              ${HEADERS}
              )

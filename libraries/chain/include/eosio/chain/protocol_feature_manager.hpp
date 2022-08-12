@@ -35,6 +35,12 @@ enum class builtin_protocol_feature_t : uint32_t {
    configurable_wasm_limits = 18, // configurable_wasm_limits2,
    crypto_primitives = 19,
    get_block_num = 20,
+
+   INFRABLOCKCHAIN_BUILTIN_PROTOCOL_FEATURE_TYPE_DELIMITER = 65536,
+   infrablockchain_builtin_standard_token,
+   infrablockchain_system_token_transaction_fee_payment_protocol,
+   infrablockchain_proof_of_transaction_protocol,
+
    reserved_private_fork_protocol_features = 500000,
 };
 

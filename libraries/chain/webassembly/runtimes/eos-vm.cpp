@@ -629,6 +629,29 @@ REGISTER_CF_HOST_FUNCTION( blake2_f );
 REGISTER_CF_HOST_FUNCTION( sha3 );
 REGISTER_CF_HOST_FUNCTION( k1_recover );
 
+// InfraBlockchain standard token api
+REGISTER_HOST_FUNCTION(get_token_symbol);
+REGISTER_HOST_FUNCTION(get_token_total_supply);
+REGISTER_HOST_FUNCTION(get_token_balance);
+REGISTER_HOST_FUNCTION(issue_token);
+REGISTER_HOST_FUNCTION(transfer_token);
+REGISTER_HOST_FUNCTION(retire_token);
+
+// InfraBlockchain system token api
+REGISTER_HOST_FUNCTION(get_system_token_count);
+REGISTER_LEGACY_HOST_FUNCTION(get_system_token_list_packed);
+REGISTER_LEGACY_HOST_FUNCTION(set_system_token_list_packed, privileged_check);
+
+// InfraBlockchain transaction fee management api
+REGISTER_HOST_FUNCTION(set_trx_fee_for_action, privileged_check);
+REGISTER_HOST_FUNCTION(unset_trx_fee_for_action, privileged_check);
+REGISTER_LEGACY_HOST_FUNCTION(get_trx_fee_for_action_packed);
+REGISTER_HOST_FUNCTION(trx_fee_payer);
+
+// InfraBlockchain proof-of-transaction api
+REGISTER_LEGACY_HOST_FUNCTION(get_top_transaction_vote_receivers_packed);
+REGISTER_HOST_FUNCTION(get_total_weighted_transaction_votes);
+
 } // namespace webassembly
 } // namespace chain
 } // namespace eosio

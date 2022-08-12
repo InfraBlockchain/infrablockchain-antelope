@@ -35,7 +35,15 @@
 
 #include <new>
 
+#include <infrablockchain/chain/infrablockchain_global_property_object.hpp>
+#include <infrablockchain/chain/standard_token_manager.hpp>
+#include <infrablockchain/chain/standard_token_action_handlers.hpp>
+#include <infrablockchain/chain/transaction_fee_table_manager.hpp>
+#include <infrablockchain/chain/transaction_as_a_vote.hpp>
+#include <infrablockchain/chain/transaction_vote_stat_manager.hpp>
 namespace eosio { namespace chain {
+
+using namespace infrablockchain::chain;
 
 using resource_limits::resource_limits_manager;
 
@@ -46,6 +54,7 @@ using controller_index_set = index_set<
    global_property_multi_index,
    protocol_state_multi_index,
    dynamic_global_property_multi_index,
+   infrablockchain_global_property_multi_index,
    block_summary_multi_index,
    transaction_multi_index,
    generated_transaction_multi_index,
@@ -125,6 +134,10 @@ struct building_block {
    vector<transaction_receipt>                _pending_trx_receipts;
    vector<digest_type>                        _action_receipt_digests;
    std::optional<checksum256_type>            _transaction_mroot;
+
+   /// InfraBlockchain Transaction-as-a-Vote for Proof-of-Transaction
+   /// the accumulated transaction votes data of this block.
+   transaction_votes_in_block                 _trx_votes;
 };
 
 struct assembled_block {
@@ -135,6 +148,8 @@ struct assembled_block {
 
    // if the _unsigned_block pre-dates block-signing authorities this may be present.
    std::optional<producer_authority_schedule> _new_producer_authority_cache;
+
+   transaction_votes_in_block        _trx_votes; // will be moved to completed_block::_block_state
 };
 
 struct completed_block {
@@ -236,6 +251,9 @@ struct controller_impl {
    resource_limits_manager         resource_limits;
    authorization_manager           authorization;
    protocol_feature_manager        protocol_features;
+   standard_token_manager          standard_token;
+   transaction_fee_table_manager   transaction_fee_table;
+   transaction_vote_stat_manager   transaction_vote_stat;
    controller::config              conf;
    const chain_id_type             chain_id; // read by thread_pool threads, value will not be changed
    std::optional<fc::time_point>   replay_head_time;
@@ -254,6 +272,13 @@ struct controller_impl {
    typedef pair<scope_name,action_name>                   handler_key;
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
    unordered_map< builtin_protocol_feature_t, std::function<void(controller_impl&)>, enum_hash<builtin_protocol_feature_t> > protocol_feature_activation_handlers;
+
+   /**
+    * [InfraBlockchain Built-in Actions Feature]
+    * predefined actions can be executed on every account even though an account doesn't have contract code.
+    * InfraBlockchain Standard Token operations (issue,retire,transfer,txfee,...) are built-in actions supported on every account
+    */
+   map< action_name, apply_handler >   built_in_action_apply_handlers;
 
    void pop_block() {
       auto prev = fork_db.get_block( head->header.previous );
@@ -293,6 +318,10 @@ struct controller_impl {
       apply_handlers[receiver][make_pair(contract,action)] = v;
    }
 
+   void set_built_in_action_apply_handler( action_name action, apply_handler v ) {
+      built_in_action_apply_handlers[action] = v;
+   }
+
    controller_impl( const controller::config& cfg, controller& s, protocol_feature_set&& pfs, const chain_id_type& chain_id )
    :rnh(),
     self(s),
@@ -305,6 +334,9 @@ struct controller_impl {
     resource_limits( db, [&s]() { return s.get_deep_mind_logger(); }),
     authorization( s, db ),
     protocol_features( std::move(pfs), [&s]() { return s.get_deep_mind_logger(); } ),
+    standard_token( db ),
+    transaction_fee_table( db ),
+    transaction_vote_stat( db ),
     conf( cfg ),
     chain_id( chain_id ),
     read_mode( cfg.read_mode ),
@@ -327,6 +359,10 @@ struct controller_impl {
       set_activation_handler<builtin_protocol_feature_t::get_code_hash>();
       set_activation_handler<builtin_protocol_feature_t::get_block_num>();
       set_activation_handler<builtin_protocol_feature_t::crypto_primitives>();
+
+      set_activation_handler<builtin_protocol_feature_t::infrablockchain_builtin_standard_token>();
+      set_activation_handler<builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol>();
+      set_activation_handler<builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol>();
 
       self.irreversible_block.connect([this](const block_state_ptr& bsp) {
          wasmif.current_lib(bsp->block_num);
@@ -351,6 +387,16 @@ struct controller_impl {
 */
 
    SET_APP_HANDLER( eosio, eosio, canceldelay );
+
+#define SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( action ) \
+   set_built_in_action_apply_handler( action_name(#action), \
+                                      &BOOST_PP_CAT(infrablockchain::chain::apply_, BOOST_PP_CAT(infrablockchain_built_in_action, BOOST_PP_CAT(_,action) ) ) )
+
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( settokenmeta );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( issue );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( transfer );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( txfee );
+   SET_INFRABLOCKCHAIN_BUILT_IN_ACTION_APPLY_HANDLER( retire );
    }
 
    /**
@@ -731,6 +777,10 @@ struct controller_impl {
 
       authorization.add_indices();
       resource_limits.add_indices();
+
+      standard_token.add_indices();
+      transaction_fee_table.add_indices();
+      transaction_vote_stat.add_indices();
    }
 
    void clear_all_undo() {
@@ -831,6 +881,10 @@ struct controller_impl {
 
       authorization.add_to_snapshot(snapshot);
       resource_limits.add_to_snapshot(snapshot);
+
+      standard_token.add_to_snapshot(snapshot);
+      transaction_fee_table.add_to_snapshot(snapshot);
+      transaction_vote_stat.add_to_snapshot(snapshot);
    }
 
    static std::optional<genesis_state> extract_legacy_genesis_state( snapshot_reader& snapshot, uint32_t version ) {
@@ -959,6 +1013,10 @@ struct controller_impl {
       authorization.read_from_snapshot(snapshot);
       resource_limits.read_from_snapshot(snapshot);
 
+      standard_token.read_from_snapshot(snapshot);
+      transaction_fee_table.read_from_snapshot(snapshot);
+      transaction_vote_stat.read_from_snapshot(snapshot);
+
       db.set_revision( head->block_num );
       db.create<database_header_object>([](const auto& header){
          // nothing to do
@@ -1050,6 +1108,12 @@ struct controller_impl {
 
       authorization.initialize_database();
       resource_limits.initialize_database();
+
+      db.create<infrablockchain_global_property_object>([](auto&){});
+
+      standard_token.initialize_database();
+      transaction_fee_table.initialize_database();
+      transaction_vote_stat.initialize_database();
 
       authority system_auth(genesis.initial_key);
       create_native_account( genesis.initial_timestamp, config::system_account_name, system_auth, system_auth, true );
@@ -1324,6 +1388,19 @@ struct controller_impl {
                                         trx_context.billed_cpu_time_us,
                                         trace->net_usage );
 
+         // InfraBlockchain Proof-of-Transaction
+         // accumulate transaction vote of this transaction to current block data,
+         // in a block, there can be multiple transaction-vote to multiple vote-to(candidate) accounts.
+         // the accumulated transaction vote data will finally be stored in the 'block_state' data structure of completed block data
+         // which will be propagated to the other blockchain node components (such as state_history_plugin)
+         if (self.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol)) {
+            if ( trx_context.has_transaction_vote() ) {
+               auto& bb = std::get<building_block>(pending->_block_stage);
+               // auto& bb = pending->_block_stage.get<building_block>();
+               bb._trx_votes.add_transaction_vote( trx_context.get_transaction_vote() );
+            }
+         }
+
          fc::move_append( std::get<building_block>(pending->_block_stage)._action_receipt_digests,
                           std::move(trx_context.executed_action_receipt_digests) );
 
@@ -1510,6 +1587,7 @@ struct controller_impl {
                authorization.check_authorization(
                        trn.actions,
                        trx->recovered_keys(),
+                       trx_context.tx_fee_payer,
                        {},
                        trx_context.delay,
                        [&trx_context](){ trx_context.checktime(); },
@@ -1535,6 +1613,19 @@ struct controller_impl {
                r.cpu_usage_us = trx_context.billed_cpu_time_us;
                r.net_usage_words = trace->net_usage / 8;
                trace->receipt = r;
+            }
+
+            // InfraBlockchain Proof-of-Transaction
+            // accumulate transaction vote of this transaction to current block data,
+            // in a block, there can be multiple transaction-vote to multiple vote-to(candidate) accounts.
+            // the accumulated transaction vote data will finally be stored in the 'block_state' data structure of completed block data
+            // which will be propagated to the other blockchain node components (such as state_history_plugin)
+            if (self.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol)) {
+               if ( trx_context.has_transaction_vote() ) {
+                  auto& bb = std::get<building_block>(pending->_block_stage);
+                  // auto& bb = pending->_block_stage.get<building_block>();
+                  bb._trx_votes.add_transaction_vote( trx_context.get_transaction_vote() );
+               }
             }
 
             fc::move_append( std::get<building_block>(pending->_block_stage)._action_receipt_digests,
@@ -1809,7 +1900,8 @@ struct controller_impl {
                                  std::move( bb._pending_block_header_state ),
                                  std::move( bb._pending_trx_metas ),
                                  std::move( block_ptr ),
-                                 std::move( bb._new_pending_producer_schedule )
+                                 std::move( bb._new_pending_producer_schedule ),
+                                 std::move( bb._trx_votes ) // to forward transaction-votes-in-block info to block_state
                               };
    } FC_CAPTURE_AND_RETHROW() } /// finalize_block
 
@@ -2035,6 +2127,12 @@ struct controller_impl {
          if( !use_bsp_cached ) {
             bsp->set_trxs_metas( std::move( ab._trx_metas ), !skip_auth_checks );
          }
+
+         if( self.is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol) ) {
+            // forward transaction-votes-in-block info to block_state
+            bsp->set_transaction_votes_in_block( std::move(ab._trx_votes) );
+         }
+
          // create completed_block with the existing block_state as we just verified it is the same as assembled_block
          pending->_block_stage = completed_block{ bsp };
 
@@ -2560,6 +2658,36 @@ const protocol_feature_manager& controller::get_protocol_feature_manager()const
    return my->protocol_features;
 }
 
+const standard_token_manager&  controller::get_standard_token_manager()const
+{
+   return my->standard_token;
+}
+
+standard_token_manager&        controller::get_mutable_standard_token_manager()
+{
+   return my->standard_token;
+}
+
+const transaction_fee_table_manager&  controller::get_transaction_fee_table_manager()const
+{
+   return my->transaction_fee_table;
+}
+
+transaction_fee_table_manager&        controller::get_mutable_transaction_fee_table_manager()
+{
+   return my->transaction_fee_table;
+}
+
+const transaction_vote_stat_manager&  controller::get_transaction_vote_stat_manager()const
+{
+   return my->transaction_vote_stat;
+}
+
+transaction_vote_stat_manager&        controller::get_mutable_transaction_vote_stat_manager()
+{
+   return my->transaction_vote_stat;
+}
+
 uint32_t controller::get_max_nonprivileged_inline_action_size()const
 {
    return my->conf.max_nonprivileged_inline_action_size;
@@ -2792,6 +2920,11 @@ block_state_ptr controller::finalize_block( const signer_callback_type& signer_c
                   signer_callback
               );
 
+   if( is_builtin_activated(builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol) ) {
+      // forward transaction-votes-in-block info to block_state
+      bsp->set_transaction_votes_in_block( std::move(ab._trx_votes) );
+   }
+
    my->pending->_block_stage = completed_block{ bsp };
 
    return bsp;
@@ -2997,6 +3130,10 @@ const dynamic_global_property_object& controller::get_dynamic_global_properties(
 }
 const global_property_object& controller::get_global_properties()const {
   return my->db.get<global_property_object>();
+}
+
+const infrablockchain_global_property_object& controller::get_infrablockchain_global_properties()const {
+   return my->db.get<infrablockchain_global_property_object>();
 }
 
 signed_block_ptr controller::fetch_block_by_id( block_id_type id )const {
@@ -3220,6 +3357,16 @@ validation_mode controller::get_validation_mode()const {
 
 uint32_t controller::get_terminate_at_block()const {
    return my->conf.terminate_at_block;
+}
+
+/// InfraBlockchain Built-in Actions
+const apply_handler* controller::find_built_in_action_apply_handler( action_name act ) const
+{
+   auto handler = my->built_in_action_apply_handlers.find( act );
+   if ( handler != my->built_in_action_apply_handlers.end() ) {
+      return &handler->second;
+   }
+   return nullptr;
 }
 
 const apply_handler* controller::find_apply_handler( account_name receiver, account_name scope, action_name act ) const
@@ -3607,6 +3754,40 @@ void controller_impl::on_activation<builtin_protocol_feature_t::crypto_primitive
       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "blake2_f" );
       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "sha3" );
       add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "k1_recover" );
+   } );
+}
+
+template<>
+void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_builtin_standard_token>() {
+   db.modify( db.get<protocol_state_object>(), [&]( auto& ps ) {
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_token_symbol" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_token_total_supply" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_token_balance" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "issue_token" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "transfer_token" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "retire_token" );
+   } );
+}
+
+template<>
+void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_system_token_transaction_fee_payment_protocol>() {
+   db.modify( db.get<protocol_state_object>(), [&]( auto& ps ) {
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_system_token_count" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_system_token_list_packed" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "set_system_token_list_packed" );
+
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "set_trx_fee_for_action" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "unset_trx_fee_for_action" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_trx_fee_for_action_packed" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "trx_fee_payer" );
+   } );
+}
+
+template<>
+void controller_impl::on_activation<builtin_protocol_feature_t::infrablockchain_proof_of_transaction_protocol>() {
+   db.modify( db.get<protocol_state_object>(), [&]( auto& ps ) {
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_top_transaction_vote_receivers_packed" );
+      add_intrinsic_to_whitelist( ps.whitelisted_intrinsics, "get_total_weighted_transaction_votes" );
    } );
 }
 

@@ -267,7 +267,22 @@ inline constexpr auto get_intrinsic_table() {
       "env.sha3",
       "env.blake2_f",
       "env.k1_recover",
-      "env.get_block_num"
+      "env.get_block_num",
+      "env.get_token_symbol",
+      "env.get_token_total_supply",
+      "env.get_token_balance",
+      "env.issue_token",
+      "env.transfer_token",
+      "env.retire_token",
+      "env.get_system_token_count",
+      "env.get_system_token_list_packed",
+      "env.set_system_token_list_packed",
+      "env.set_trx_fee_for_action",
+      "env.unset_trx_fee_for_action",
+      "env.get_trx_fee_for_action_packed",
+      "env.trx_fee_payer",
+      "env.get_top_transaction_vote_receivers_packed",
+      "env.get_total_weighted_transaction_votes"
    );
 }
 inline constexpr std::size_t find_intrinsic_index(std::string_view hf) {

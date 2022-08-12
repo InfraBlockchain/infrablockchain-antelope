@@ -7,6 +7,7 @@
 #include <fc/variant_object.hpp>
 #include <fc/scoped_exit.hpp>
 
+#include <infrablockchain/chain/transaction_extensions.hpp>
 namespace eosio { namespace chain {
 
 using std::map;
@@ -467,7 +468,7 @@ namespace impl {
          };
 
          try {
-            auto abi = resolver(act.account);
+            auto abi = resolver(act.account, act.name);
             if (abi) {
                auto type = abi->get_action_type(act.name);
                if (!type.empty()) {
@@ -528,7 +529,7 @@ namespace impl {
          mvo("return_value_hex_data", act_trace.return_value);
          auto act = act_trace.act;
          try {
-            auto abi = resolver(act.account);
+            auto abi = resolver(act.account, act.name);
             if (abi) {
                auto type = abi->get_action_result_type(act.name);
                if (!type.empty()) {
@@ -577,6 +578,8 @@ namespace impl {
       template<typename Resolver>
       static void add( mutable_variant_object &out, const char* name, const transaction& trx, Resolver resolver, abi_traverse_context& ctx )
       {
+         using namespace infrablockchain::chain;
+
          static_assert(fc::reflector<transaction>::total_member_count == 9);
          auto h = ctx.enter_scope();
          mutable_variant_object mvo;
@@ -594,6 +597,18 @@ namespace impl {
          if (exts.count(deferred_transaction_generation_context::extension_id()) > 0) {
             const auto& deferred_transaction_generation = std::get<deferred_transaction_generation_context>(exts.lower_bound(deferred_transaction_generation_context::extension_id())->second);
             mvo("deferred_transaction_generation", deferred_transaction_generation);
+         }
+
+         // InfraBlockchain Transaction Fee Payer tx extension
+         if (exts.count(transaction_fee_payer_tx_ext::extension_id()) > 0) {
+            const auto& transaction_fee_payer = std::get<transaction_fee_payer_tx_ext>(exts.lower_bound(transaction_fee_payer_tx_ext::extension_id())->second);
+            mvo("transaction_fee_payer", transaction_fee_payer);
+         }
+
+         // InfraBlockchain Transaction Vote tx extension
+         if (exts.count(transaction_vote_tx_ext::extension_id()) > 0) {
+            const auto& transaction_vote = std::get<transaction_vote_tx_ext>(exts.lower_bound(transaction_vote_tx_ext::extension_id())->second);
+            mvo("transaction_vote", transaction_vote);
          }
 
          out(name, std::move(mvo));
@@ -770,7 +785,7 @@ namespace impl {
                from_variant(data, act.data);
                valid_empty_data = act.data.empty();
             } else if ( data.is_object() ) {
-               auto abi = resolver(act.account);
+               auto abi = resolver(act.account, act.name);
                if (abi) {
                   auto type = abi->get_action_type(act.name);
                   if (!type.empty()) {
