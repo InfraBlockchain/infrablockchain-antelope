@@ -2,7 +2,7 @@
 # InfraBlockchain
 
 * [InfraBlockchain Website - https://infrablockchain.com](https://infrablockchain.com)
-* [Technical White Paper Version 2.4 - InfraBlockchain_Technical_White_Paper_Version_2_4_ENG_202008.pdf](https://infrablockchain.com/documents/InfraBlockchain_Technical_White_Paper_Version_2_4_ENG_202008.pdf)
+* [Technical White Paper Version 2.4 - InfraBlockchain_Technical_White_Paper_Version_2_4_ENG_202008.pdf](https://infrablockchain.net/documents/InfraBlockchain_Technical_White_Paper_Version_2_4_ENG_202008.pdf)
 
 ### No Native Cryptocurrency
 Using programmable fiat-pegged stable tokens (e.g. USD, EUR, CNY) as base currencies
